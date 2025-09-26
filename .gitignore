@@ -6,8 +6,6 @@
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 *.log
@@ -67,11 +65,7 @@ sysinfo.txt
 mono_crash.*
 
 # Builds
-*.apk
-*.aab
-*.unitypackage
-*.unitypackage.meta
-*.app
+
 
 # Crashlytics generated file
 crashlytics-build.properties

@@ -35,8 +35,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnDrag(PointerEventData eventData)
     {
-        // Mueve la carta en pantalla
-        rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
+        // Mueve la carta solo horizontalmente (X)
+        Vector2 newPos = rectTransform.anchoredPosition;
+        newPos.x += eventData.delta.x / canvas.scaleFactor;
+        rectTransform.anchoredPosition = newPos;
 
         float distanceToRight = rectTransform.anchoredPosition.x - originalPosition.x;
 

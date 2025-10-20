@@ -1,10 +1,18 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    public GameObject defensePrefab;
+    public CardData cardData;
+
     public Camera mainCamera;
+    public Image cardImage;
+    public Image iconImage;
+    public TextMeshProUGUI costText;
+    public TextMeshProUGUI nameText;
 
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
@@ -15,6 +23,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private bool inPlacementMode = false;
     private float placementThreshold = 50f;
+
+    private bool canDragThisTime = false;
 
     private void Awake()
     {
@@ -27,10 +37,35 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         originalPosition = rectTransform.anchoredPosition;
     }
 
+    private void Start()
+    {
+        SetupCardUI();
+        UpdateInteractable();
+        PointsManager.Instance.OnPointsChanged += (points) => UpdateInteractable();
+    }
+
+    private void SetupCardUI()
+    {
+        if (cardData == null) return;
+
+        if (iconImage != null) iconImage.sprite = cardData.icon;
+        if (costText != null) costText.text = cardData.cost.ToString();
+        if (nameText != null) nameText.text = cardData.cardName;
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
+
+        if (!PointsManager.Instance.CanAfford(cardData.cost))
+        {
+            canDragThisTime = false;
+            StartCoroutine(ShakeCard());
+            return;
+        }
+
+        canDragThisTime = true;
 
         canvasGroup.blocksRaycasts = false;
         inPlacementMode = false;
@@ -38,27 +73,22 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (eventData.button != PointerEventData.InputButton.Left)
+        if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
             return;
 
-        // Mueve la carta solo horizontalmente (X)
         Vector2 newPos = rectTransform.anchoredPosition;
         newPos.x += eventData.delta.x / canvas.scaleFactor;
         rectTransform.anchoredPosition = newPos;
 
         float distanceToRight = rectTransform.anchoredPosition.x - originalPosition.x;
-
-        // Transición de alpha en base al desplazamiento horizontal
         float alpha = Mathf.Clamp01(1f - (distanceToRight / placementThreshold));
         canvasGroup.alpha = alpha;
 
-        // Si ya superó el umbral, activa modo de colocación (una sola vez)
         if (!inPlacementMode && distanceToRight >= placementThreshold)
         {
             EnterPlacementMode();
         }
 
-        // Si está en modo de colocar, seguir actualizando el preview
         if (inPlacementMode)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -66,7 +96,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             {
                 if (previewInstance == null)
                 {
-                    previewInstance = Instantiate(defensePrefab);
+                    previewInstance = Instantiate(cardData.defensePrefab);
                     DisablePreviewLogic(previewInstance);
                 }
 
@@ -77,11 +107,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (eventData.button != PointerEventData.InputButton.Left)
+        if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
             return;
 
         canvasGroup.blocksRaycasts = true;
-        canvasGroup.alpha = 1f; // Restaurar visibilidad
+        canvasGroup.alpha = 1f;
         rectTransform.anchoredPosition = originalPosition;
 
         if (inPlacementMode)
@@ -89,7 +119,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                DefensePlacer.Instance.PlaceDefense(defensePrefab, hit.point);
+                if (PointsManager.Instance.SpendPoints(cardData.cost))
+                {
+                    DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, hit.point);
+                }
             }
 
             if (previewInstance != null)
@@ -127,5 +160,42 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 mat.color = c;
             }
         }
+    }
+
+    private bool isShaking = false;
+
+    private IEnumerator ShakeCard(float duration = 0.2f, float magnitude = 10f)
+    {
+        if (isShaking)
+            yield break;
+
+        isShaking = true;
+
+        Vector2 originalPos = originalPosition;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float offsetX = Random.Range(-1f, 1f) * magnitude;
+            rectTransform.anchoredPosition = originalPos + new Vector2(offsetX, 0f);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        rectTransform.anchoredPosition = originalPos;
+        isShaking = false;
+    }
+
+    private void UpdateInteractable()
+    {
+        bool canUse = PointsManager.Instance.CanAfford(cardData.cost);
+
+        if (cardImage != null)
+        {
+            cardImage.color = canUse ? Color.white : Color.gray;
+        }
+
+        canvasGroup.interactable = canUse;
     }
 }

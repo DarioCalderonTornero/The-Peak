@@ -29,12 +29,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+            return;
+
         canvasGroup.blocksRaycasts = false;
         inPlacementMode = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+            return;
+
         // Mueve la carta solo horizontalmente (X)
         Vector2 newPos = rectTransform.anchoredPosition;
         newPos.x += eventData.delta.x / canvas.scaleFactor;
@@ -71,6 +77,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+            return;
+
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f; // Restaurar visibilidad
         rectTransform.anchoredPosition = originalPosition;

@@ -4,13 +4,13 @@ using UnityEngine;
 /// <summary>
 /// MeshSlopeScannerSimple:
 /// Escanea un MeshFilter (por ejemplo, una montaña),
-/// calcula la normal y el centro de cada triángulo visible en la malla.
+/// calcula la normal de **cara**, el centro, la pendiente (grados) y el área de cada triángulo.
 /// Dibuja los gizmos justo en la posición real del triángulo.
 /// </summary>
 public class MeshSlopeScannerSimple : MonoBehaviour
 {
     [Header("Opciones")]
-    public float vertexPrecision = 0.001f; // Precisión al comparar vértices
+    public float vertexPrecision = 0.001f; // (No usado por ahora; se mantiene a petición)
     public float gizmoOffset = 0.05f;      // Desplazamiento visual para dibujar los gizmos sobre la montaña
 
     [Header("Resultado")]
@@ -19,14 +19,21 @@ public class MeshSlopeScannerSimple : MonoBehaviour
     // Guardamos la referencia del transform real de la montaña
     private Transform mountainTransform;
 
+    // Umbral interno para filtrar triángulos degenerados (área ~ 0)
+    private const float AREA_EPS = 1e-6f;
+
     [System.Serializable]
     public class TriangleData
     {
         public int id;                // Índice del triángulo
         public Vector3 v0, v1, v2;    // Vértices en espacio MUNDIAL
         public Vector3 center;        // Centro geométrico (mundo)
-        public Vector3 normal;        // Normal del triángulo (mundo)
+        public Vector3 normal;        // Normal de la CARA (mundo)
         public int highestVertexIndex; // Índice (0,1,2) del vértice más alto
+
+        // NUEVO: métricas para siguientes fases
+        public float slopeDeg;        // Ángulo respecto a Vector3.up (pendiente en grados)
+        public float area;            // Área del triángulo (mundo)
     }
 
     private void Update()
@@ -59,7 +66,7 @@ public class MeshSlopeScannerSimple : MonoBehaviour
         Mesh mesh = meshFilter.sharedMesh;
         Vector3[] vertices = mesh.vertices;
         int[] tris = mesh.triangles;
-        Vector3[] normals = mesh.normals;
+        Vector3[] normals = mesh.normals; // (Se mantiene aunque no se use, para no tocar el punto 4)
 
         triangles = new List<TriangleData>();
         int triCount = tris.Length / 3;
@@ -76,8 +83,20 @@ public class MeshSlopeScannerSimple : MonoBehaviour
             Vector3 v1 = t.TransformPoint(vertices[idx1]);
             Vector3 v2 = t.TransformPoint(vertices[idx2]);
 
-            // Normal promedio en espacio de mundo
-            Vector3 normal = t.TransformDirection((normals[idx0] + normals[idx1] + normals[idx2]).normalized);
+            // === CAMBIO 1: Normal de CARA en espacio de mundo ===
+            // Usamos la normal del triángulo derivada de los vértices en MUNDO
+            Vector3 e0 = v1 - v0;
+            Vector3 e1 = v2 - v0;
+            Vector3 faceCross = Vector3.Cross(e0, e1);
+            float area = 0.5f * faceCross.magnitude;
+
+            // === CAMBIO 3: Filtrar triángulos degenerados ===
+            if (area < AREA_EPS)
+            {
+                continue; // Saltamos triángulos con área casi nula
+            }
+
+            Vector3 normal = faceCross.normalized;
 
             // Centro del triángulo en espacio de mundo
             Vector3 center = (v0 + v1 + v2) / 3f;
@@ -92,6 +111,9 @@ public class MeshSlopeScannerSimple : MonoBehaviour
             if (y1 > highestY) { highestY = y1; highestIndex = 1; }
             if (y2 > highestY) { highestY = y2; highestIndex = 2; }
 
+            // === CAMBIO 2: Métricas clave ===
+            float slopeDeg = Vector3.Angle(normal, Vector3.up); // 0° plano horizontal; 90° vertical
+
             triangles.Add(new TriangleData
             {
                 id = i,
@@ -100,7 +122,9 @@ public class MeshSlopeScannerSimple : MonoBehaviour
                 v2 = v2,
                 center = center,
                 normal = normal,
-                highestVertexIndex = highestIndex
+                highestVertexIndex = highestIndex,
+                slopeDeg = slopeDeg,
+                area = area
             });
         }
     }

@@ -4,8 +4,7 @@ using UnityEngine;
 /// <summary>
 /// MeshSlopeScannerSimple:
 /// Escanea un MeshFilter (por ejemplo, una montaña),
-/// y calcula la inclinación y dirección (ascendente/descendente)
-/// de cada triángulo visible en la malla.
+/// calcula la normal y el centro de cada triángulo visible en la malla.
 /// Dibuja los gizmos justo en la posición real del triángulo.
 /// </summary>
 public class MeshSlopeScannerSimple : MonoBehaviour
@@ -28,12 +27,8 @@ public class MeshSlopeScannerSimple : MonoBehaviour
         public Vector3 center;        // Centro geométrico (mundo)
         public Vector3 normal;        // Normal del triángulo (mundo)
         public int highestVertexIndex; // Índice (0,1,2) del vértice más alto
-        public bool isAscending;      // Si el triángulo asciende respecto al vértice más alto
     }
 
-    // ------------------------------------------------------------
-    // Se ejecuta al pulsar la tecla E
-    // ------------------------------------------------------------
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.E))
@@ -59,9 +54,6 @@ public class MeshSlopeScannerSimple : MonoBehaviour
         }
     }
 
-    // ------------------------------------------------------------
-    // Escanea la malla y calcula inclinaciones
-    // ------------------------------------------------------------
     public void ScanMesh(MeshFilter meshFilter)
     {
         Mesh mesh = meshFilter.sharedMesh;
@@ -71,7 +63,6 @@ public class MeshSlopeScannerSimple : MonoBehaviour
 
         triangles = new List<TriangleData>();
         int triCount = tris.Length / 3;
-
         Transform t = meshFilter.transform;
 
         for (int i = 0; i < triCount; i++)
@@ -101,9 +92,7 @@ public class MeshSlopeScannerSimple : MonoBehaviour
             if (y1 > highestY) { highestY = y1; highestIndex = 1; }
             if (y2 > highestY) { highestY = y2; highestIndex = 2; }
 
-            bool isAscending = Vector3.Dot(normal, Vector3.up) > 0;
-
-            TriangleData tData = new TriangleData
+            triangles.Add(new TriangleData
             {
                 id = i,
                 v0 = v0,
@@ -111,17 +100,11 @@ public class MeshSlopeScannerSimple : MonoBehaviour
                 v2 = v2,
                 center = center,
                 normal = normal,
-                highestVertexIndex = highestIndex,
-                isAscending = isAscending
-            };
-
-            triangles.Add(tData);
+                highestVertexIndex = highestIndex
+            });
         }
     }
 
-    // ------------------------------------------------------------
-    // Dibuja los triángulos ligeramente por encima del mesh real
-    // ------------------------------------------------------------
     private void OnDrawGizmosSelected()
     {
         if (triangles == null || triangles.Count == 0)
@@ -132,8 +115,8 @@ public class MeshSlopeScannerSimple : MonoBehaviour
             // Desplazamos el gizmo sobre la superficie real del triángulo
             Vector3 offsetPos = t.center + t.normal * gizmoOffset;
 
-            // Color según inclinación: verde si sube, rojo si baja
-            Gizmos.color = t.isAscending ? Color.green : Color.red;
+            // Dibujamos todos los gizmos del mismo color
+            Gizmos.color = Color.yellow;
             Gizmos.DrawSphere(offsetPos, 0.04f);
 
             // Dibujar la normal en azul

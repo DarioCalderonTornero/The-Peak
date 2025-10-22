@@ -1097,7 +1097,7 @@ MonoBehaviour:
   walkableColor: {r: 0, g: 1, b: 0, a: 0.15}
   unwalkableColor: {r: 1, g: 0, b: 0, a: 0.15}
   pathColor: {r: 0, g: 1, b: 1, a: 1}
-  lineWidth: 0.1
+  lineWidth: 0.02
 --- !u!4 &912259692
 Transform:
   m_ObjectHideFlags: 0

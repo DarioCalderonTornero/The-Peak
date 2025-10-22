@@ -1,117 +1,167 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// MountainPathfinder:
-/// - Construye el grafo de adyacencias de caras (dual) a partir del Mesh de la montaÒa.
+/// - Construye el grafo de adyacencias de caras (dual) a partir del Mesh de la monta√±a.
 /// - Marca walkable por pendiente.
-/// - Ejecuta A* sobre caras con un coste que prioriza menor inclinaciÛn.
-/// - Dibuja la ruta resultante entre centros de tri·ngulo.
+/// - Ejecuta A* sobre caras con un coste que prioriza menor inclinaci√≥n.
+/// - Dibuja la ruta resultante entre centros de tri√°ngulo.
 /// Uso:
-///  1) Ejecuta el esc·ner (E) para llenar "triangles" en el scanner.
-///  2) Pulsa P para construir el grafo y planificar ruta (de tri·ngulo m·s bajo a m·s alto).
+///  1) Ejecuta el esc√°ner (E) para llenar "triangles" en el scanner.
+///  2) Pulsa P para construir el grafo y planificar ruta (de tri√°ngulo m√°s bajo a m√°s alto).
 /// </summary>
 public class MountainPathfinder : MonoBehaviour
 {
-    [Header("Referencias")]
-    public MeshSlopeScannerSimple scanner;       // arrastra el componente existente
-    public MeshFilter mountainMeshFilter;        // el mismo MeshFilter de la montaÒa
+    // ============================================================
+    // === CONFIGURACI√ìN PRINCIPAL ===
+    // ============================================================
 
-    [Header("Par·metros de navegaciÛn (solo inclinaciÛn)")]
+    [Header("Referencias")]
+    [Tooltip("Referencia al componente que escanea la monta√±a y guarda los tri√°ngulos.")]
+    public MeshSlopeScannerSimple scanner;
+
+    [Tooltip("MeshFilter que contiene el mesh real de la monta√±a.")]
+    public MeshFilter mountainMeshFilter;
+
+    [Header("Par√°metros de navegaci√≥n (solo inclinaci√≥n)")]
+    [Tooltip("Caras con pendiente mayor a este √°ngulo no ser√°n transitables.")]
     [Range(0f, 89.9f)]
-    public float maxSlopeDeg = 60f;              // por encima, la cara es no transitable
+    public float maxSlopeDeg = 60f;
+
+    [Tooltip("Peso de la penalizaci√≥n por inclinaci√≥n (1 = equilibrio, >1 = evita m√°s las pendientes).")]
     [Range(0f, 5f)]
-    public float slopeCostAlpha = 1.0f;          // peso de penalizaciÛn por pendiente
-    public bool penalizeUphill = false;          // opcional: penalizar subir (deltaY>0)
+    public float slopeCostAlpha = 1.0f;
+
+    [Tooltip("Si est√° activado, subir cuesta m√°s que bajar.")]
+    public bool penalizeUphill = false;
+
+    [Tooltip("Porcentaje extra de coste al subir (se multiplica sobre el coste base).")]
     [Range(0f, 2f)]
-    public float uphillExtra = 0.25f;            // penalizaciÛn extra relativa si se sube
+    public float uphillExtra = 0.25f;
 
     [Header("Controles")]
-    public KeyCode buildAndSolveKey = KeyCode.P; // tecla para construir grafo y resolver ruta
+    [Tooltip("Tecla para construir el grafo y resolver la ruta.")]
+    public KeyCode buildAndSolveKey = KeyCode.P;
 
     [Header("Debug draw")]
+    [Tooltip("Dibujar tri√°ngulos walkables y no walkables.")]
     public bool drawWalkableFaces = true;
-    public bool drawPath = true;
-    public Color walkableColor = new Color(0f, 1f, 0f, 0.15f);
-    public Color unwalkableColor = new Color(1f, 0f, 0f, 0.15f);
-    public Color pathColor = Color.cyan;
-    public float lineWidth = 0.02f; // no afecta a Gizmos; es orientativo si usas otros dibujados
 
-    // --- Datos internos ---
-    // Adyacencias: por cada cara, lista de ids de caras vecinas
+    [Tooltip("Dibujar la ruta hallada por A*.")]
+    public bool drawPath = true;
+
+    [Tooltip("Color para las caras transitables.")]
+    public Color walkableColor = new Color(0f, 1f, 0f, 0.15f);
+
+    [Tooltip("Color para las caras no transitables.")]
+    public Color unwalkableColor = new Color(1f, 0f, 0f, 0.15f);
+
+    [Tooltip("Color para la l√≠nea de la ruta.")]
+    public Color pathColor = Color.cyan;
+
+    [Tooltip("Grosor orientativo para la ruta (no afecta a Gizmos, solo referencia).")]
+    public float lineWidth = 0.02f;
+
+    // ============================================================
+    // === VARIABLES INTERNAS ===
+    // ============================================================
+
+    // Lista de adyacencias: para cada tri√°ngulo, qu√© tri√°ngulos son sus vecinos.
     private List<int>[] neighbors;
-    // Para coste: distancia entre centros precomputada (opcional) o se calcula al vuelo
-    // AquÌ lo calculamos al vuelo; si quieres performance, cachea.
+
+    // Caras transitables seg√∫n la pendiente
     private bool[] isWalkable;
-    private List<int> pathFaceIds;  // resultado A*
+
+    // Ruta resultante del A*
+    private List<int> pathFaceIds;
+
+    // Identificadores de la cara inicial y final
     private int startFaceId = -1;
     private int goalFaceId = -1;
 
-    // Para construir adyacencias
+    // ============================================================
+    // === ESTRUCTURAS AUXILIARES ===
+    // ============================================================
+
+    /// <summary>
+    /// Representa una arista entre dos v√©rtices (ordenada y cuantizada).
+    /// Se usa como clave para detectar qu√© tri√°ngulos comparten borde.
+    /// </summary>
     private struct EdgeKey : IEquatable<EdgeKey>
     {
         public Vector3Int a;
         public Vector3Int b;
+
         public EdgeKey(Vector3Int p1, Vector3Int p2)
         {
-            // Ordenar extremos para que (A,B)==(B,A)
+            // Ordena los puntos para que (A,B) == (B,A)
             if (p2.x < p1.x || (p2.x == p1.x && (p2.y < p1.y || (p2.y == p1.y && p2.z < p1.z))))
             {
-                a = p2; b = p1;
+                a = p2;
+                b = p1;
             }
             else
             {
-                a = p1; b = p2;
+                a = p1;
+                b = p2;
             }
         }
+
         public bool Equals(EdgeKey other) => a.Equals(other.a) && b.Equals(other.b);
         public override bool Equals(object obj) => obj is EdgeKey other && Equals(other);
         public override int GetHashCode() => a.GetHashCode() ^ (b.GetHashCode() * 486187739);
     }
 
+    // ============================================================
+    // === CICLO DE EJECUCI√ìN ===
+    // ============================================================
+
     private void Update()
     {
+        // Pulsa "P" para ejecutar el algoritmo
         if (Input.GetKeyDown(buildAndSolveKey))
-        {
             TryBuildGraphAndSolve();
-        }
     }
 
+    // ============================================================
+    // === FLUJO PRINCIPAL ===
+    // ============================================================
+
+    /// <summary>
+    /// Paso principal: construye el grafo, marca walkables y calcula la ruta.
+    /// </summary>
     private void TryBuildGraphAndSolve()
     {
-        // Validaciones mÌnimas
+        // --- VALIDACIONES ---
         if (scanner == null || mountainMeshFilter == null)
         {
             Debug.LogError("[MountainPathfinder] Falta scanner o mountainMeshFilter.");
             return;
         }
+
         if (scanner.triangles == null || scanner.triangles.Count == 0)
         {
-            Debug.LogError("[MountainPathfinder] La lista 'triangles' del scanner est· vacÌa. øPulsaste E para escanear?");
+            Debug.LogError("[MountainPathfinder] La lista 'triangles' del scanner est√° vac√≠a. ¬øPulsaste E para escanear?");
             return;
         }
+
         if (mountainMeshFilter.sharedMesh == null)
         {
             Debug.LogError("[MountainPathfinder] El MeshFilter no tiene mesh.");
             return;
         }
 
-        // 1) Elegir start/goal (por ahora: minY / maxY sobre centros de cara)
-        SelectStartAndGoalByHeight();
-
-        // 2) Construir adyacencias de caras (dual graph)
-        BuildAdjacencyDualGraph();
-
-        // 3) Walkability por pendiente
-        ComputeWalkability();
-
-        // 4) A* sobre caras
-        pathFaceIds = RunAStar(startFaceId, goalFaceId);
+        // --- PASOS PRINCIPALES ---
+        SelectStartAndGoalByHeight(); // 1. Escoger punto inicial/final
+        BuildAdjacencyDualGraph();    // 2. Crear grafo de caras vecinas
+        ComputeWalkability();         // 3. Marcar caras transitables
+        pathFaceIds = RunAStar(startFaceId, goalFaceId); // 4. Calcular ruta
 
         if (pathFaceIds == null || pathFaceIds.Count == 0)
         {
-            Debug.LogWarning("[MountainPathfinder] No se encontrÛ ruta. ømaxSlopeDeg demasiado bajo? øMalla desconectada?");
+            Debug.LogWarning("[MountainPathfinder] No se encontr√≥ ruta. Puede que maxSlopeDeg sea muy bajo o la malla est√© desconectada.");
         }
         else
         {
@@ -119,7 +169,15 @@ public class MountainPathfinder : MonoBehaviour
         }
     }
 
-    // --- (1) Start/Goal autom·ticos ---
+    // ============================================================
+    // === (1) SELECCI√ìN START/GOAL ===
+    // ============================================================
+
+    /// <summary>
+    /// Selecciona como punto inicial el tri√°ngulo con menor Y (m√°s bajo)
+    /// y como destino el de mayor Y (m√°s alto). Es una forma sencilla
+    /// de simular ‚Äúbase‚Äù y ‚Äúcima‚Äù.
+    /// </summary>
     private void SelectStartAndGoalByHeight()
     {
         float minY = float.PositiveInfinity;
@@ -128,9 +186,9 @@ public class MountainPathfinder : MonoBehaviour
 
         for (int i = 0; i < scanner.triangles.Count; i++)
         {
-            var c = scanner.triangles[i].center.y;
-            if (c < minY) { minY = c; minId = i; }
-            if (c > maxY) { maxY = c; maxId = i; }
+            float y = scanner.triangles[i].center.y;
+            if (y < minY) { minY = y; minId = i; }
+            if (y > maxY) { maxY = y; maxId = i; }
         }
 
         startFaceId = minId;
@@ -139,52 +197,59 @@ public class MountainPathfinder : MonoBehaviour
         Debug.Log($"[MountainPathfinder] startFace={startFaceId} (y={minY:F2}), goalFace={goalFaceId} (y={maxY:F2})");
     }
 
-    // --- (2) Dual graph con hash de aristas por POSICI”N local cuantizada ---
+    // ============================================================
+    // === (2) CONSTRUCCI√ìN DEL GRAFO (DUAL GRAPH) ===
+    // ============================================================
+
+    /// <summary>
+    /// Crea las adyacencias entre caras del mesh.
+    /// Dos caras son vecinas si comparten una arista.
+    /// </summary>
     private void BuildAdjacencyDualGraph()
     {
         Mesh mesh = mountainMeshFilter.sharedMesh;
-        var vertsLocal = mesh.vertices;   // espacio LOCAL del mesh
-        var tris = mesh.triangles;
+        Vector3[] vertsLocal = mesh.vertices;
+        int[] tris = mesh.triangles;
         int faceCount = tris.Length / 3;
 
         neighbors = new List<int>[faceCount];
-        for (int i = 0; i < faceCount; i++) neighbors[i] = new List<int>(3);
+        for (int i = 0; i < faceCount; i++)
+            neighbors[i] = new List<int>(3);
 
-        // factor de cuantizaciÛn: reutilizamos el "vertexPrecision" de tu scanner para tolerar duplicados
+        // Usamos "vertexPrecision" del scanner para igualar v√©rtices cercanos
         float q = Mathf.Max(1e-6f, scanner.vertexPrecision);
 
-        // diccionario: arista -> faceId que la ìreclamÛî primero
+        // Diccionario: arista -> faceId que la reclam√≥ primero
         var edgeOwner = new Dictionary<EdgeKey, int>(faceCount * 3);
 
+        // Recorre cada tri√°ngulo y registra sus tres aristas
         for (int face = 0; face < faceCount; face++)
         {
             int i0 = tris[face * 3 + 0];
             int i1 = tris[face * 3 + 1];
             int i2 = tris[face * 3 + 2];
 
-            // posiciones locales (no mundo)
             Vector3 p0 = vertsLocal[i0];
             Vector3 p1 = vertsLocal[i1];
             Vector3 p2 = vertsLocal[i2];
 
-            // cuantiza a enteros
+            // Cuantiza posiciones locales (evita errores de precisi√≥n)
             Vector3Int q0 = Quantize(p0, q);
             Vector3Int q1 = Quantize(p1, q);
             Vector3Int q2 = Quantize(p2, q);
 
+            // Registra aristas (en cualquier orden)
             TryRegisterEdge(edgeOwner, new EdgeKey(q0, q1), face);
             TryRegisterEdge(edgeOwner, new EdgeKey(q1, q2), face);
             TryRegisterEdge(edgeOwner, new EdgeKey(q2, q0), face);
         }
 
-        // Cuando una arista ya existÌa, TryRegisterEdge habr· unido face <-> otherFace
-        // Nada m·s que hacer aquÌ.
         Debug.Log($"[MountainPathfinder] Adyacencias construidas. Caras: {faceCount}");
     }
 
     private static Vector3Int Quantize(Vector3 p, float step)
     {
-        // Redondeo simÈtrico a rejilla de tamaÒo "step"
+        // Convierte una posici√≥n en valores enteros seg√∫n la precisi√≥n deseada
         return new Vector3Int(
             Mathf.RoundToInt(p.x / step),
             Mathf.RoundToInt(p.y / step),
@@ -192,17 +257,19 @@ public class MountainPathfinder : MonoBehaviour
         );
     }
 
+    /// <summary>
+    /// Asocia una arista a una cara. Si la arista ya estaba en el diccionario,
+    /// significa que dos caras comparten ese borde ‚Üí se marcan como vecinas.
+    /// </summary>
     private void TryRegisterEdge(Dictionary<EdgeKey, int> edgeOwner, EdgeKey key, int face)
     {
         if (edgeOwner.TryGetValue(key, out int otherFace))
         {
-            // Ya habÌa una cara que compartÌa esta arista adyacencia bidireccional
+            // Si otra cara ya registr√≥ esta arista, son vecinas
             if (otherFace != face)
             {
-                var nA = neighbors[face];
-                var nB = neighbors[otherFace];
-                if (!nA.Contains(otherFace)) nA.Add(otherFace);
-                if (!nB.Contains(face)) nB.Add(face);
+                if (!neighbors[face].Contains(otherFace)) neighbors[face].Add(otherFace);
+                if (!neighbors[otherFace].Contains(face)) neighbors[otherFace].Add(face);
             }
         }
         else
@@ -211,7 +278,10 @@ public class MountainPathfinder : MonoBehaviour
         }
     }
 
-    // --- (3) Walkability por pendiente ---
+    // ============================================================
+    // === (3) MARCAR CARAS WALKABLE ===
+    // ============================================================
+
     private void ComputeWalkability()
     {
         int n = scanner.triangles.Count;
@@ -221,7 +291,7 @@ public class MountainPathfinder : MonoBehaviour
         for (int i = 0; i < n; i++)
         {
             float slope = scanner.triangles[i].slopeDeg;
-            bool w = slope <= maxSlopeDeg;
+            bool w = slope <= maxSlopeDeg; // transitable si pendiente <= umbral
             isWalkable[i] = w;
             if (w) walkables++;
         }
@@ -229,7 +299,10 @@ public class MountainPathfinder : MonoBehaviour
         Debug.Log($"[MountainPathfinder] Walkables: {walkables}/{n} con maxSlopeDeg={maxSlopeDeg}");
     }
 
-    // --- (4) A* sobre caras ---
+    // ============================================================
+    // === (4) A* SOBRE CARAS ===
+    // ============================================================
+
     private List<int> RunAStar(int start, int goal)
     {
         if (start < 0 || goal < 0) return null;
@@ -242,29 +315,32 @@ public class MountainPathfinder : MonoBehaviour
 
         var tri = scanner.triangles;
 
-        // TÌpico A*
-        var open = new PriorityQueue<int>();
-        var cameFrom = new Dictionary<int, int>();
-        var gScore = new Dictionary<int, float>();
-        var fScore = new Dictionary<int, float>();
+        // Estructuras para A*
+        var open = new PriorityQueue<int>(); // lista de nodos abiertos
+        var cameFrom = new Dictionary<int, int>(); // de d√≥nde venimos
+        var gScore = new Dictionary<int, float>(); // coste acumulado
+        var fScore = new Dictionary<int, float>(); // g + heur√≠stica
 
         open.Push(start, 0f);
         gScore[start] = 0f;
         fScore[start] = Heuristic(tri[start].center, tri[goal].center);
 
+        // Bucle principal de A*
         while (open.Count > 0)
         {
-            int current = open.Pop(); // menor fScore
+            int current = open.Pop(); // el nodo con menor fScore
 
+            // Caso base: hemos llegado
             if (current == goal)
                 return ReconstructPath(cameFrom, current);
 
             foreach (int nb in neighbors[current])
             {
-                if (!isWalkable[nb]) continue; // bloqueado por pendiente
+                if (!isWalkable[nb]) continue; // cara bloqueada
 
                 float tentative = gScore[current] + TransitionCost(current, nb);
 
+                // Si encontramos un camino mejor hacia nb
                 if (!gScore.ContainsKey(nb) || tentative < gScore[nb])
                 {
                     cameFrom[nb] = current;
@@ -282,20 +358,25 @@ public class MountainPathfinder : MonoBehaviour
 
     private float Heuristic(Vector3 a, Vector3 b)
     {
-        // Distancia euclÌdea en mundo (admisible)
+        // Distancia eucl√≠dea en mundo (admisible)
         return Vector3.Distance(a, b);
     }
 
+    /// <summary>
+    /// Coste de transici√≥n entre dos caras vecinas.
+    /// - Base: distancia entre centros.
+    /// - Penalizaci√≥n por pendiente (m√°s caro pisar inclinadas).
+    /// - Extra opcional por subir.
+    /// </summary>
     private float TransitionCost(int fromFace, int toFace)
     {
         var tri = scanner.triangles;
-        // Base: distancia entre centros (aprox geodÈsica razonable)
-        float baseDist = Vector3.Distance(tri[fromFace].center, tri[toFace].center);
 
-        // PenalizaciÛn por pendiente de la cara destino (m·s costoso pisar cara m·s inclinada)
+        float baseDist = Vector3.Distance(tri[fromFace].center, tri[toFace].center);
         float slopeNorm = Mathf.Clamp01(tri[toFace].slopeDeg / Mathf.Max(0.0001f, maxSlopeDeg));
         float cost = baseDist * (1f + slopeCostAlpha * slopeNorm);
 
+        // Penaliza subir si est√° activado
         if (penalizeUphill)
         {
             float dy = tri[toFace].center.y - tri[fromFace].center.y;
@@ -307,8 +388,7 @@ public class MountainPathfinder : MonoBehaviour
 
     private List<int> ReconstructPath(Dictionary<int, int> cameFrom, int current)
     {
-        var path = new List<int>();
-        path.Add(current);
+        var path = new List<int> { current };
         while (cameFrom.TryGetValue(current, out int prev))
         {
             current = prev;
@@ -318,13 +398,16 @@ public class MountainPathfinder : MonoBehaviour
         return path;
     }
 
-    // --- (5) Dibujado de debug ---
+    // ============================================================
+    // === (5) VISUALIZACI√ìN (GIZMOS) ===
+    // ============================================================
+
     private void OnDrawGizmosSelected()
     {
         if (scanner == null || scanner.triangles == null) return;
 
-        // Pintar walkables / unwalkables (caras como tri·ngulos semi-transparentes)
-        if (drawWalkableFaces && isWalkable != null && neighbors != null)
+        // Dibuja contornos de tri√°ngulos walkables / no walkables
+        if (drawWalkableFaces && isWalkable != null)
         {
             for (int i = 0; i < scanner.triangles.Count; i++)
             {
@@ -336,7 +419,7 @@ public class MountainPathfinder : MonoBehaviour
             }
         }
 
-        // Pintar ruta como polilÌnea entre centros
+        // Dibuja la ruta final (polil√≠nea)
         if (drawPath && pathFaceIds != null && pathFaceIds.Count > 1)
         {
             Gizmos.color = pathColor;
@@ -347,15 +430,15 @@ public class MountainPathfinder : MonoBehaviour
                 Gizmos.DrawLine(a, b);
             }
 
-            // Marcar start/goal
+            // Esferas para inicio y fin
             var s = scanner.triangles[pathFaceIds[0]].center;
-            var g = scanner.triangles[pathFaceIds[pathFaceIds.Count - 1]].center;
+            var g = scanner.triangles[pathFaceIds[^1]].center;
             Gizmos.DrawSphere(s, 0.15f);
             Gizmos.DrawSphere(g, 0.15f);
         }
     }
 
-    // --- Cola de prioridad mÌnima para A* ---
+    // --- Cola de prioridad m√≠nima para A* ---
     private class PriorityQueue<T>
     {
         private readonly List<(T item, float pri)> heap = new();

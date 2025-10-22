@@ -8,4 +8,9 @@ public class CardData : ScriptableObject
     public Sprite icon;
     public GameObject defensePrefab;
     public int cost;
+
+    public bool hasFixedPlacement = false;
+    public Vector3 fixedPosition;
+
+    public Material previewMaterial;
 }

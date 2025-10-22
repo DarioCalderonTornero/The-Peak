@@ -26,6 +26,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private bool canDragThisTime = false;
 
+    private Vector3 fixedPlacementPosition;
+    private bool useFixedPosition = false;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -89,7 +92,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             EnterPlacementMode();
         }
 
-        if (inPlacementMode)
+        if (inPlacementMode && !useFixedPosition)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
@@ -103,6 +106,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 previewInstance.transform.position = hit.point;
             }
         }
+
+
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -116,13 +121,27 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         if (inPlacementMode)
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            Vector3 finalPosition = Vector3.zero;
+            bool valid = false;
+
+            if (useFixedPosition)
             {
-                if (PointsManager.Instance.SpendPoints(cardData.cost))
+                finalPosition = fixedPlacementPosition;
+                valid = true;
+            }
+            else
+            {
+                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit))
                 {
-                    DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, hit.point);
+                    finalPosition = hit.point;
+                    valid = true;
                 }
+            }
+
+            if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
+            {
+                DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition);
             }
 
             if (previewInstance != null)
@@ -130,14 +149,30 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         inPlacementMode = false;
+        useFixedPosition = false;
     }
 
     private void EnterPlacementMode()
     {
         inPlacementMode = true;
         canvasGroup.alpha = 0f;
+
+        if (cardData.hasFixedPlacement)
+        {
+            useFixedPosition = true;
+            fixedPlacementPosition = cardData.fixedPosition;
+
+            if (previewInstance == null)
+            {
+                previewInstance = Instantiate(cardData.defensePrefab);
+                DisablePreviewLogic(previewInstance);
+            }
+
+            previewInstance.transform.position = fixedPlacementPosition;
+        }
     }
 
+    
     private void DisablePreviewLogic(GameObject preview)
     {
         foreach (var behavior in preview.GetComponents<MonoBehaviour>())
@@ -150,15 +185,21 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             col.enabled = false;
         }
 
+        if (cardData.previewMaterial == null)
+        {
+            Debug.LogWarning("No preview material asignado en CardData");
+            return;
+        }
+
         var renderers = preview.GetComponentsInChildren<Renderer>();
         foreach (var rend in renderers)
         {
-            foreach (var mat in rend.materials)
+            Material[] mats = rend.materials;
+            for (int i = 0; i < mats.Length; i++)
             {
-                Color c = mat.color;
-                c.a = 0.4f;
-                mat.color = c;
+                mats[i] = cardData.previewMaterial; // reemplaza todos los materiales por el transparente
             }
+            rend.materials = mats;
         }
     }
 

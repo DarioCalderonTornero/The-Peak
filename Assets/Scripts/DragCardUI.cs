@@ -37,7 +37,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         canvas = GetComponentInParent<Canvas>();
-        originalPosition = rectTransform.anchoredPosition;
     }
 
     private void Start()
@@ -45,6 +44,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         SetupCardUI();
         UpdateInteractable();
         PointsManager.Instance.OnPointsChanged += (points) => UpdateInteractable();
+
+        //  Esperar al siguiente frame para asegurar que el layout haya colocado la carta
+        StartCoroutine(InitializeOriginalPosition());
+    }
+
+    private IEnumerator InitializeOriginalPosition()
+    {
+        // Espera un frame para que el VerticalLayoutGroup haya hecho su trabajo
+        yield return null;
+
+        // Ahora sí, guarda la posición correcta
+        originalPosition = rectTransform.anchoredPosition;
     }
 
     private void SetupCardUI()

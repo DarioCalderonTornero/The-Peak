@@ -981,6 +981,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3cf293ffb9cef6c45b7ef977ffbe2b2c, type: 3}
+--- !u!33 &693272639 stripped
+MeshFilter:
+  m_CorrespondingSourceObject: {fileID: -5754084199372789682, guid: 3cf293ffb9cef6c45b7ef977ffbe2b2c, type: 3}
+  m_PrefabInstance: {fileID: 545063833}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &696567374
 GameObject:
   m_ObjectHideFlags: 0
@@ -1101,11 +1106,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 883862850}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &693272639 stripped
-MeshFilter:
-  m_CorrespondingSourceObject: {fileID: -5754084199372789682, guid: 3cf293ffb9cef6c45b7ef977ffbe2b2c, type: 3}
-  m_PrefabInstance: {fileID: 545063833}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &747177921
 GameObject:
   m_ObjectHideFlags: 0
@@ -1623,11 +1623,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 866595424}
   m_CullTransparentMesh: 1
---- !u!33 &883862849 stripped
-MeshFilter:
-  m_CorrespondingSourceObject: {fileID: -5754084199372789682, guid: fcef97004f9566549a4a8a622538a9f3, type: 3}
-  m_PrefabInstance: {fileID: 1160850422}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &883862850 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: fcef97004f9566549a4a8a622538a9f3, type: 3}
@@ -2058,7 +2053,7 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 745572558}
+    TrackingTarget: {fileID: 0}
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:

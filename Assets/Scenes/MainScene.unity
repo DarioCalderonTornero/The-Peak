@@ -1101,6 +1101,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 883862850}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &693272639 stripped
+MeshFilter:
+  m_CorrespondingSourceObject: {fileID: -5754084199372789682, guid: 3cf293ffb9cef6c45b7ef977ffbe2b2c, type: 3}
+  m_PrefabInstance: {fileID: 545063833}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &747177921
 GameObject:
   m_ObjectHideFlags: 0
@@ -1284,7 +1289,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scanner: {fileID: 496032606}
-  mountainMeshFilter: {fileID: 883862849}
+  mountainMeshFilter: {fileID: 693272639}
   campMaxSlopeDeg: 8
   minRegionArea: 4
   minRegionTriangles: 4
@@ -1658,8 +1663,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scanner: {fileID: 496032606}
-  mountainMeshFilter: {fileID: 883862849}
-  maxSlopeDeg: 44.4
+  mountainMeshFilter: {fileID: 693272639}
+  maxSlopeDeg: 60
   slopeCostAlpha: 1
   penalizeUphill: 0
   uphillExtra: 0.25

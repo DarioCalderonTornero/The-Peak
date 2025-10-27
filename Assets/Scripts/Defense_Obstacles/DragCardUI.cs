@@ -29,6 +29,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private Vector3 fixedPlacementPosition;
     private bool useFixedPosition = false;
 
+    private System.Action<DragCardUI> replacementCallback;
+    private Button cardButton;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -37,6 +40,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         canvas = GetComponentInParent<Canvas>();
+        cardButton = GetComponent<Button>();
     }
 
     private void Start()
@@ -47,6 +51,25 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         //  Esperar al siguiente frame para asegurar que el layout haya colocado la carta
         StartCoroutine(InitializeOriginalPosition());
+    }
+
+    public void EnableReplacementSelection(System.Action<DragCardUI> callback)
+    {
+        replacementCallback = callback;
+        if (cardButton != null)
+            cardButton.onClick.AddListener(OnReplacementClicked);
+    }
+
+    public void DisableReplacementSelection()
+    {
+        if (cardButton != null)
+            cardButton.onClick.RemoveListener(OnReplacementClicked);
+        replacementCallback = null;
+    }
+
+    private void OnReplacementClicked()
+    {
+        replacementCallback?.Invoke(this);
     }
 
     private IEnumerator InitializeOriginalPosition()

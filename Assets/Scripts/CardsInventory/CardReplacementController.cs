@@ -20,6 +20,8 @@ public class CardReplacementController : MonoBehaviour
     [SerializeField] private RectTransform newCardPreviewSlot; // Panel dentro del panel de reemplazo donde aparecer� la nueva carta
     private GameObject previewCardInstance;
 
+    [SerializeField] private CardInventoryUI cardInventoryUI;
+
     private void Start()
     {
         if (cancelButton != null)
@@ -91,6 +93,13 @@ public class CardReplacementController : MonoBehaviour
     private void CancelReplacement()
     {
         if (!isReplacementActive) return;
+
+        // Guarda la nueva carta en el inventario
+        if (cardInventoryUI != null && newCardData != null)
+        {
+            Debug.Log($" Carta {newCardData.cardName} guardada en inventario");
+            cardInventoryUI.AddCard(newCardData);
+        }
 
         EndReplacement();
     }

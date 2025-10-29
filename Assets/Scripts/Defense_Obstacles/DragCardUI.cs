@@ -64,7 +64,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         originalPosition = rectTransform.anchoredPosition;
     }
 
-    private void SetupCardUI()
+    public void SetupCardUI()
     {
         if (cardData == null) return;
 
@@ -126,6 +126,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
 
     }
+
 
     public void OnEndDrag(PointerEventData eventData)
     {
@@ -254,7 +255,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         isShaking = false;
     }
 
-    private void UpdateInteractable()
+    public void UpdateInteractable()
     {
         bool canUse = PointsManager.Instance.CanAfford(cardData.cost);
 

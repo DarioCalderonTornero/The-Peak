@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler,
+    IPointerEnterHandler, IPointerExitHandler
 {
     public CardData cardData;
 
@@ -271,5 +272,50 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             replacementCallback.Invoke(this);
         }
+    }
+
+    private bool isHoveringForReplacement = false;
+    private Coroutine hoverRoutine;
+    private Vector2 hoverTargetOffset = new Vector2(30f, 0f); // distancia del movimiento
+    private float hoverSpeed = 10f; // velocidad de interpolación
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (replacementCallback != null && !isHoveringForReplacement)
+        {
+            isHoveringForReplacement = true;
+
+            if (hoverRoutine != null)
+                StopCoroutine(hoverRoutine);
+
+            hoverRoutine = StartCoroutine(MoveCardSmooth(originalPosition, originalPosition + hoverTargetOffset));
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (replacementCallback != null && isHoveringForReplacement)
+        {
+            isHoveringForReplacement = false;
+
+            if (hoverRoutine != null)
+                StopCoroutine(hoverRoutine);
+
+            hoverRoutine = StartCoroutine(MoveCardSmooth(rectTransform.anchoredPosition, originalPosition));
+        }
+    }
+
+    private IEnumerator MoveCardSmooth(Vector2 from, Vector2 to)
+    {
+        float t = 0f;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime * hoverSpeed;
+            rectTransform.anchoredPosition = Vector2.Lerp(from, to, t);
+            yield return null;
+        }
+
+        rectTransform.anchoredPosition = to;
     }
 }

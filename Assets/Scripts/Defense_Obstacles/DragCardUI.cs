@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
     public CardData cardData;
 
@@ -29,6 +29,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private Vector3 fixedPlacementPosition;
     private bool useFixedPosition = false;
 
+    private System.Action<DragCardUI> replacementCallback;
+    private Button cardButton;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -37,6 +40,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         canvas = GetComponentInParent<Canvas>();
+
+        cardButton = GetComponent<Button>();
     }
 
     private void Start()
@@ -183,7 +188,16 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
     }
 
-    
+    public void EnableReplacementSelection(System.Action<DragCardUI> callback)
+    {
+        replacementCallback = callback;
+    }
+
+    public void DisableReplacementSelection()
+    {
+        replacementCallback = null;
+    }
+
     private void DisablePreviewLogic(GameObject preview)
     {
         foreach (var behavior in preview.GetComponents<MonoBehaviour>())
@@ -249,5 +263,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         canvasGroup.interactable = canUse;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (replacementCallback != null)
+        {
+            replacementCallback.Invoke(this);
+        }
     }
 }

@@ -109,6 +109,37 @@ public class ClimberMinimal : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        if (!pathfinder) pathfinder = FindFirstObjectByType<MountainPathfinder>();
+        if (pathfinder != null) pathfinder.OnNavTopologyChanged += ReplanNow;
+    }
+    private void OnDisable()
+    {
+        if (pathfinder != null) pathfinder.OnNavTopologyChanged -= ReplanNow;
+    }
+
+    private void ReplanNow()
+    {
+        if (_arrived) return;
+        // replan desde posición actual
+        var newRoute = pathfinder.PlanCentersFromWorldToSummit(transform.position);
+        if (newRoute != null && newRoute.Count > 0)
+        {
+            _waypoints = newRoute;
+            // opcional: salta al waypoint más cercano para evitar retrocesos bruscos
+            _wpIndex = 0;
+        }
+        else
+        {
+            // sin ruta: quedar idle (podrías marcar muerto/atascado si quieres)
+            _waypoints.Clear();
+            _arrived = true;
+            Debug.LogWarning("[ClimberMinimal] Replan fallido, sin ruta.");
+        }
+    }
+
+
     private void OnArrivedToGoal()
     {
         _arrived = true;

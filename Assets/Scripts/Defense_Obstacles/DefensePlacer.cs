@@ -16,7 +16,7 @@ public class DefensePlacer : MonoBehaviour
         }
     }
 
-    public void PlaceDefense(GameObject prefab, Vector3 position)
+    public GameObject PlaceDefense(GameObject prefab, Vector3 position)
     {
         GameObject instance = Instantiate(prefab, position, Quaternion.identity);
 
@@ -26,5 +26,8 @@ public class DefensePlacer : MonoBehaviour
         {
             defense.Initialize();
         }
+
+        return instance; // <<< DEVOLVEMOS LA INSTANCIA
     }
+
 }

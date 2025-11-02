@@ -202,33 +202,44 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private void DisablePreviewLogic(GameObject preview)
     {
-        foreach (var behavior in preview.GetComponents<MonoBehaviour>())
+        // 1) Quitar scripts que tienen dependencias en orden correcto
+        var blocker = preview.GetComponent<BlockFaceOnPlacement>();
+        if (blocker != null) Destroy(blocker);
+
+        var rock = preview.GetComponent<RockDefense>();
+        if (rock != null) Destroy(rock);
+
+        // 2) Quitar el resto de comportamientos (excepto Transform, obvio)
+        var behaviours = preview.GetComponentsInChildren<MonoBehaviour>(true);
+        foreach (var b in behaviours)
         {
-            Destroy(behavior);
+            // por si este GO tuviera otros scripts de gameplay
+            if (b == null) continue;
+            if (b is BlockFaceOnPlacement) continue;
+            if (b is RockDefense) continue;
+            Destroy(b);
         }
 
-        foreach (var col in preview.GetComponentsInChildren<Collider>())
-        {
+        // 3) Desactivar colliders del preview
+        foreach (var col in preview.GetComponentsInChildren<Collider>(true))
             col.enabled = false;
-        }
 
+        // 4) Materiales de preview (transparente)
         if (cardData.previewMaterial == null)
         {
             Debug.LogWarning("No preview material asignado en CardData");
             return;
         }
-
-        var renderers = preview.GetComponentsInChildren<Renderer>();
+        var renderers = preview.GetComponentsInChildren<Renderer>(true);
         foreach (var rend in renderers)
         {
-            Material[] mats = rend.materials;
+            var mats = rend.materials;
             for (int i = 0; i < mats.Length; i++)
-            {
-                mats[i] = cardData.previewMaterial; // reemplaza todos los materiales por el transparente
-            }
+                mats[i] = cardData.previewMaterial;
             rend.materials = mats;
         }
     }
+
 
     private bool isShaking = false;
 

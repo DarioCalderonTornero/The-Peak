@@ -2,14 +2,22 @@
 using UnityEngine;
 
 /// <summary>
-/// MountainPathfinder (actualizado):
-/// - Construye adyacencias (dual) y marca walkables por pendiente.
-/// - A* sobre caras, con coste que penaliza inclinación (y subida opcional).
-/// - NUEVO: API no destructiva para planificar desde una posición en mundo
-///          (no pisa la ruta global); útil para múltiples escaladores.
+/// MountainPathfinder (ACTUALIZADO)
+/// --------------------------------
+/// - Grafo dual por caras (adyacencias por aristas compartidas).
+/// - Walkability = (pendiente <= maxSlopeDeg) AND (no bloqueada externamente).
+/// - A* sobre caras, coste con penalización por inclinación y subida opcional.
+/// - API para planificar DESDE una posición mundo hasta la CIMA (no pisa la ruta global).
+/// - Integra sistema de obstáculos vía ObstacleNavBlocker:
+///     * Recalcula walkability al cambiar bloqueos
+///     * Emite OnNavTopologyChanged para que la IA replantee rutas.
+/// - Tecla P mantiene un flujo manual de debug (ruta base→cima) para gizmos.
 /// </summary>
 public class MountainPathfinder : MonoBehaviour
 {
+    // ==========================
+    // Configuración
+    // ==========================
     [Header("Referencias")]
     public MeshSlopeScannerSimple scanner;
     public MeshFilter mountainMeshFilter;
@@ -20,7 +28,7 @@ public class MountainPathfinder : MonoBehaviour
     public bool penalizeUphill = false;
     [Range(0f, 2f)] public float uphillExtra = 0.25f;
 
-    [Header("Controles")]
+    [Header("Controles (debug)")]
     public KeyCode buildAndSolveKey = KeyCode.P;
 
     [Header("Debug draw")]
@@ -29,30 +37,66 @@ public class MountainPathfinder : MonoBehaviour
     public Color walkableColor = new Color(0f, 1f, 0f, 0.15f);
     public Color unwalkableColor = new Color(1f, 0f, 0f, 0.15f);
     public Color pathColor = Color.cyan;
-    public float lineWidth = 0.02f;
 
-    // --- Internos
-    private List<int>[] neighbors;
-    private bool[] isWalkable;
+    // ==========================
+    // Estado interno
+    // ==========================
+    private List<int>[] neighbors;   // adyacencias entre caras
+    private bool[] isWalkable;       // caras transitables
 
-    // Ruta “global” opcional (para depurar con gizmos)
+    // Ruta “global” (solo para debug/gizmos; la API de agentes usa rutas locales)
     private List<int> pathFaceIds;
     private int startFaceId = -1;
     private int goalFaceId = -1;
 
-    // --------- Input manual (tecla P) ----------
+    // Bloqueos externos (obstáculos)
+    private System.Func<int, bool> _isExternallyBlocked = null;
+
+    // Eventos
+    /// <summary>
+    /// Se emite cuando cambia la topología de navegación (p.ej., se bloquea/ desbloquea una cara).
+    /// Los agentes deberían replanificar al recibir este evento.
+    /// </summary>
+    public event System.Action OnNavTopologyChanged;
+
+    // ==========================
+    // Ciclo de vida
+    // ==========================
+    private void Start()
+    {
+        // Integración con el sistema de obstáculos (si está en la escena)
+        var nb = ObstacleNavBlocker.Instance;
+        if (nb != null)
+        {
+            _isExternallyBlocked = nb.IsBlocked;
+            nb.OnBlockedFacesChanged += HandleBlockedChanged;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        var nb = ObstacleNavBlocker.Instance;
+        if (nb != null) nb.OnBlockedFacesChanged -= HandleBlockedChanged;
+    }
+
     private void Update()
     {
+        // Debug manual con tecla P (ruta base→cima para gizmos)
         if (Input.GetKeyDown(buildAndSolveKey))
             TryBuildGraphAndSolve();
     }
 
+    // ==========================
+    // Flujo debug (tecla P)
+    // ==========================
     private void TryBuildGraphAndSolve()
     {
         if (!ValidateScannerAndMesh()) return;
+
         SelectStartAndGoalByHeight();
         BuildAdjacencyDualGraph();
         ComputeWalkability();
+
         pathFaceIds = RunAStar(startFaceId, goalFaceId);
         if (pathFaceIds == null || pathFaceIds.Count == 0)
             Debug.LogWarning("[MountainPathfinder] No se encontró ruta (P).");
@@ -60,13 +104,13 @@ public class MountainPathfinder : MonoBehaviour
             Debug.Log($"[MountainPathfinder] Ruta (P) OK. Caras: {pathFaceIds.Count}");
     }
 
-    // ============================================================
-    // ============ NUEVA API: PLANIFICACIÓN LOCAL =================
-    // ============================================================
+    // ==========================
+    // API pública (para agentes)
+    // ==========================
 
     /// <summary>
-    /// Garantiza que adyacencias y walkables están listas.
-    /// No resuelve ninguna ruta.
+    /// Asegura que el grafo y el array de walkability están listos.
+    /// No calcula rutas.
     /// </summary>
     public void EnsureGraphReady()
     {
@@ -75,12 +119,10 @@ public class MountainPathfinder : MonoBehaviour
         if (isWalkable == null || isWalkable.Length != scanner.triangles.Count) ComputeWalkability();
     }
 
-    /// <summary>
-    /// Devuelve el id de la cara cuyo centro está más cerca de una posición mundo.
-    /// </summary>
+    /// <summary> Id de la cara cuyo centro está más cerca de worldPos (no filtra por walkable). </summary>
     public int GetClosestFaceId(Vector3 worldPos)
     {
-        if (scanner == null || scanner.triangles == null || scanner.triangles.Count == 0) return -1;
+        if (scanner?.triangles == null || scanner.triangles.Count == 0) return -1;
         int best = -1; float bestSqr = float.PositiveInfinity;
         for (int i = 0; i < scanner.triangles.Count; i++)
         {
@@ -90,44 +132,54 @@ public class MountainPathfinder : MonoBehaviour
         return best;
     }
 
-    /// <summary>
-    /// Devuelve una ruta de caras entre startFace y goalFace (no modifica la ruta global).
-    /// </summary>
+    /// <summary> Id de la cara walkable más cercana a worldPos. </summary>
+    public int GetClosestWalkableFaceId(Vector3 worldPos)
+    {
+        EnsureGraphReady();
+        if (scanner?.triangles == null || isWalkable == null) return -1;
+
+        int best = -1; float bestSqr = float.PositiveInfinity;
+        for (int i = 0; i < scanner.triangles.Count; i++)
+        {
+            if (i >= isWalkable.Length || !isWalkable[i]) continue;
+            float d2 = (scanner.triangles[i].center - worldPos).sqrMagnitude;
+            if (d2 < bestSqr) { bestSqr = d2; best = i; }
+        }
+        return best;
+    }
+
+    /// <summary> Devuelve una ruta de caras entre startFace y goalFace (no pisa la ruta global). </summary>
     public List<int> ComputeFacePath(int startFace, int goalFace)
     {
         EnsureGraphReady();
         return RunAStar(startFace, goalFace);
     }
 
-    /// <summary>
-    /// Convierte una ruta de caras en puntos (centros de triángulo) en mundo.
-    /// </summary>
+    /// <summary> Convierte una ruta de caras a puntos (centros) en mundo. </summary>
     public List<Vector3> BuildCenterPath(List<int> facePath)
     {
         var pts = new List<Vector3>();
-        if (facePath == null || scanner == null || scanner.triangles == null) return pts;
+        if (facePath == null || scanner?.triangles == null) return pts;
         foreach (var f in facePath) pts.Add(scanner.triangles[f].center);
         return pts;
     }
 
     /// <summary>
-    /// Planifica desde la posición mundo dada hasta la cima (cara de mayor Y).
-    /// Devuelve puntos (centros). No pisa la ruta global.
+    /// Planifica desde worldPos hasta la cima (cara con mayor Y).
+    /// Devuelve puntos (centros). No modifica la ruta global de debug.
     /// </summary>
-    public List<Vector3> PlanCentersFromWorldToSummit(Vector3 startWorld)
+    public List<Vector3> PlanCentersFromWorldToSummit(Vector3 worldPos)
     {
         EnsureGraphReady();
-        int start = GetClosestFaceId(startWorld);
+        int start = GetClosestWalkableFaceId(worldPos);
         int goal = GetHighestFaceId();
         var faces = ComputeFacePath(start, goal);
         return BuildCenterPath(faces);
     }
 
-    // ============================================================
-    // ============ API anterior (opcional, para gizmos) ==========
-    // ============================================================
-
-    /// <summary> Construye grafo y resuelve base→cima (para debug / gizmos). </summary>
+    /// <summary>
+    /// Construye grafo y resuelve base→cima (para debug/gizmos).
+    /// </summary>
     public bool BuildGraphAndSolveAuto()
     {
         if (!ValidateScannerAndMesh()) return false;
@@ -135,7 +187,11 @@ public class MountainPathfinder : MonoBehaviour
         BuildAdjacencyDualGraph();
         ComputeWalkability();
         pathFaceIds = RunAStar(startFaceId, goalFaceId);
-        if (pathFaceIds == null || pathFaceIds.Count == 0) { Debug.LogWarning("[MountainPathfinder] Auto: sin ruta."); return false; }
+        if (pathFaceIds == null || pathFaceIds.Count == 0)
+        {
+            Debug.LogWarning("[MountainPathfinder] Auto: sin ruta.");
+            return false;
+        }
         Debug.Log($"[MountainPathfinder] Auto ruta OK. Caras: {pathFaceIds.Count}");
         return true;
     }
@@ -150,10 +206,31 @@ public class MountainPathfinder : MonoBehaviour
         return pts;
     }
 
-    // ============================================================
-    // ================== utilidades internas =====================
-    // ============================================================
+    public int GetLowestFaceId()
+    {
+        int id = -1; float minY = float.PositiveInfinity;
+        for (int i = 0; i < scanner.triangles.Count; i++)
+        {
+            float y = scanner.triangles[i].center.y;
+            if (y < minY) { minY = y; id = i; }
+        }
+        return id;
+    }
 
+    public int GetHighestFaceId()
+    {
+        int id = -1; float maxY = float.NegativeInfinity;
+        for (int i = 0; i < scanner.triangles.Count; i++)
+        {
+            float y = scanner.triangles[i].center.y;
+            if (y > maxY) { maxY = y; id = i; }
+        }
+        return id;
+    }
+
+    // ==========================
+    // Internos (grafo / walkability / A*)
+    // ==========================
     private bool ValidateScannerAndMesh()
     {
         if (scanner == null || mountainMeshFilter == null)
@@ -163,7 +240,7 @@ public class MountainPathfinder : MonoBehaviour
         }
         if (scanner.triangles == null || scanner.triangles.Count == 0)
         {
-            Debug.LogError("[MountainPathfinder] 'triangles' vacío. Ejecuta escaneo antes.");
+            Debug.LogError("[MountainPathfinder] 'triangles' vacío. Ejecuta el escaneo antes.");
             return false;
         }
         if (mountainMeshFilter.sharedMesh == null)
@@ -212,6 +289,7 @@ public class MountainPathfinder : MonoBehaviour
             TryRegisterEdge(edgeOwner, new EdgeKey(q1, q2), face);
             TryRegisterEdge(edgeOwner, new EdgeKey(q2, q0), face);
         }
+
         Debug.Log($"[MountainPathfinder] Adyacencias construidas. Caras: {faceCount}");
     }
 
@@ -244,7 +322,9 @@ public class MountainPathfinder : MonoBehaviour
         int walk = 0;
         for (int i = 0; i < n; i++)
         {
-            bool w = scanner.triangles[i].slopeDeg <= maxSlopeDeg;
+            bool slopeOK = scanner.triangles[i].slopeDeg <= maxSlopeDeg;
+            bool blocked = _isExternallyBlocked != null && _isExternallyBlocked(i);
+            bool w = slopeOK && !blocked;
             isWalkable[i] = w;
             if (w) walk++;
         }
@@ -290,7 +370,6 @@ public class MountainPathfinder : MonoBehaviour
     }
 
     private bool CheckFaceIndex(int id) => id >= 0 && id < scanner.triangles.Count;
-
     private float Heuristic(Vector3 a, Vector3 b) => Vector3.Distance(a, b);
 
     private float TransitionCost(int fromFace, int toFace)
@@ -319,29 +398,20 @@ public class MountainPathfinder : MonoBehaviour
         return path;
     }
 
-    public int GetLowestFaceId()
+    // ==========================
+    // Eventos de bloqueo externo
+    // ==========================
+    private void HandleBlockedChanged()
     {
-        int id = -1; float minY = float.PositiveInfinity;
-        for (int i = 0; i < scanner.triangles.Count; i++)
-        {
-            float y = scanner.triangles[i].center.y;
-            if (y < minY) { minY = y; id = i; }
-        }
-        return id;
+        // No hace falta rehacer el grafo; basta con recomputar walkability
+        if (neighbors == null) BuildAdjacencyDualGraph();
+        ComputeWalkability();
+        OnNavTopologyChanged?.Invoke();
     }
 
-    public int GetHighestFaceId()
-    {
-        int id = -1; float maxY = float.NegativeInfinity;
-        for (int i = 0; i < scanner.triangles.Count; i++)
-        {
-            float y = scanner.triangles[i].center.y;
-            if (y > maxY) { maxY = y; id = i; }
-        }
-        return id;
-    }
-
-    // ----- Gizmos (debug ruta global) -----
+    // ==========================
+    // Gizmos (debug)
+    // ==========================
     private void OnDrawGizmosSelected()
     {
         if (scanner == null || scanner.triangles == null) return;
@@ -374,7 +444,9 @@ public class MountainPathfinder : MonoBehaviour
         }
     }
 
-    // --- Soporte ---
+    // ==========================
+    // Soporte (estructuras)
+    // ==========================
     private struct EdgeKey : System.IEquatable<EdgeKey>
     {
         public Vector3Int a, b;
@@ -393,6 +465,7 @@ public class MountainPathfinder : MonoBehaviour
     {
         private readonly List<(T item, float pri)> heap = new();
         public int Count => heap.Count;
+
         public void Push(T item, float priority)
         {
             heap.Add((item, priority));
@@ -405,6 +478,7 @@ public class MountainPathfinder : MonoBehaviour
                 i = p;
             }
         }
+
         public T Pop()
         {
             var root = heap[0].item;

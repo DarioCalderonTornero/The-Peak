@@ -80,12 +80,21 @@ public class CardReplacementController : MonoBehaviour
             return;
 
         int slotIndex = cardSlotsUI.GetCardIndex(oldCard);
-
         if (slotIndex < 0)
             return;
 
-        // Reemplazamos la carta
+        // 🔹 Guarda los datos de la carta antigua antes de reemplazarla
+        CardData oldCardData = oldCard.cardData;
+
+        // 🔹 Reemplaza visual y lógicamente la carta en ese slot
         cardSlotsUI.ReplaceCardAt(slotIndex, newCardData);
+
+        // 🔹 Mueve la carta vieja al inventario
+        if (cardInventoryUI != null && oldCardData != null)
+        {
+            Debug.Log($"Carta {oldCardData.cardName} movida al inventario tras el reemplazo");
+            cardInventoryUI.AddCard(oldCardData);
+        }
 
         EndReplacement();
     }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using System;
 
 /// <summary>
 /// ClimberMinimal (sin snap-to-ground)
@@ -61,7 +62,7 @@ public class ClimberMinimal : MonoBehaviour
 
         if (_waypoints == null || _waypoints.Count == 0)
         {
-            Debug.LogWarning("[ClimberMinimal] No hay ruta disponible. Quedo en Idle.");
+            NoRouteDetected("[ClimberMinimal] No hay ruta disponible. Quedo en Idle.");
             _arrived = true;
             yield break;
         }
@@ -69,6 +70,8 @@ public class ClimberMinimal : MonoBehaviour
         _wpIndex = 0;
         _arrived = false;
     }
+
+
 
     private void Update()
     {
@@ -135,7 +138,7 @@ public class ClimberMinimal : MonoBehaviour
             // sin ruta: quedar idle (podrías marcar muerto/atascado si quieres)
             _waypoints.Clear();
             _arrived = true;
-            Debug.LogWarning("[ClimberMinimal] Replan fallido, sin ruta.");
+            NoRouteDetected("[ClimberMinimal] Replan fallido, sin ruta.");
         }
     }
 
@@ -144,6 +147,23 @@ public class ClimberMinimal : MonoBehaviour
     {
         _arrived = true;
         Debug.Log("[ClimberMinimal] ¡Cima alcanzada!");
+        ShowVictoryPopUp();
+    }
+
+    private void ShowVictoryPopUp()//Muestra en pantalla que has ganado y vuelve al Menú
+    {
+        throw new NotImplementedException();
+    }
+
+    private void NoRouteDetected(string WhyLost)
+    {
+        Debug.LogWarning(WhyLost);
+        ShowDefeatPopUp();
+    }
+
+    private void ShowDefeatPopUp() //Muestra en pantalla que has perdido y vulve al Menú
+    {
+        throw new NotImplementedException();
     }
 
 #if UNITY_EDITOR

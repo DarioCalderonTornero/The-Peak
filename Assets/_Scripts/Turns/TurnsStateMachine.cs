@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,8 +9,8 @@ public class TurnsStateMachine : MonoBehaviour
     [SerializeField] private float maxClimberTime = 10f;
     [SerializeField] private Button nexTurnButton;
     [SerializeField] private float time;
-    [SerializeField] private SpawnManager spawnManager;
-    private bool spawning;
+
+    private GameState _lastState;
 
     private void Awake()
     {
@@ -21,6 +22,8 @@ public class TurnsStateMachine : MonoBehaviour
             state = GameState.ClimberTurn;
         });
     }
+
+    
 
     public enum GameState
     {
@@ -35,6 +38,7 @@ public class TurnsStateMachine : MonoBehaviour
     private void Start()
     {
         state = GameState.PlayerTurn;
+        _lastState = state;
     }
 
     private void Update()
@@ -48,19 +52,18 @@ public class TurnsStateMachine : MonoBehaviour
 
                 Debug.Log("PlayerTurn");
                 break;
+
             case GameState.ClimberTurn:
 
-               
-                    spawnManager.SpawnClimbers();
-                
-               
+                SpawnManager.Instance.SpawnClimbers();
+
                 time += Time.deltaTime;
 
                 if (time >= maxClimberTime)
                 {
                     time = 0f;
                     state = GameState.PlayerTurn;
-                    Debug.Log("ClimberTurn");
+                    Debug.Log("PlayerTurn");
                 }
 
                 break;
@@ -70,6 +73,16 @@ public class TurnsStateMachine : MonoBehaviour
 
             default:
                 break;
+        }
+
+        if (state != _lastState)
+        {
+            if (state == GameState.ClimberTurn)
+            {
+                SpawnManager.Instance.ResetSpawner();
+            }
+
+            _lastState = state;
         }
 
         Debug.Log(state);

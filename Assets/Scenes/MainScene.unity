@@ -700,7 +700,7 @@ Transform:
   m_GameObject: {fileID: 162465932}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 58.59, y: -109.84, z: -133}
+  m_LocalPosition: {x: 58.59, y: -109.84, z: -143.81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2334,7 +2334,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scanner: {fileID: 496032606}
   mountainMeshFilter: {fileID: 2058430285}
-  maxSlopeDeg: 60
+  maxSlopeDeg: 75
   slopeCostAlpha: 1
   penalizeUphill: 0
   uphillExtra: 0.25
@@ -2580,8 +2580,10 @@ MonoBehaviour:
   startPoint: {fileID: 1334092444}
   endPoint: {fileID: 162465933}
   amountToSpawn: 3
-  spawnCooldown: 2
+  spawnCooldown: 1
   time: 0
+  spawnedCount: 0
+  isMaxCount: 0
 --- !u!4 &1094738311
 Transform:
   m_ObjectHideFlags: 0
@@ -3260,7 +3262,7 @@ Transform:
   m_GameObject: {fileID: 1334092443}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 67.6, y: -110.3, z: 129.1}
+  m_LocalPosition: {x: 67.6, y: -105.23, z: 169.71}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4469,10 +4471,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7b0149226ada340b4500503d30befe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxClimberTime: 6
+  maxClimberTime: 15
   nexTurnButton: {fileID: 1078300522}
   time: 0
-  spawnManager: {fileID: 1094738310}
   state: 0
 --- !u!4 &2111597414
 Transform:

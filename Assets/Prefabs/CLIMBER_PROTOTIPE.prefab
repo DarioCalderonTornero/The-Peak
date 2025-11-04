@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -95.4, y: 2.57, z: 97.22}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalScale: {x: 5, y: 2.5988002, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -66,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 963abb606e5a6704990451551d9c71c6, type: 2}
+  - {fileID: 2100000, guid: 40e2deaf902d49249b2812f645a99e21, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -123,3 +123,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4713c6e4c2950cf49bffe66f6deb4000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pathfinder: {fileID: 0}
+  moveSpeed: 3
+  arriveRadius: 0.25
+  rotateSpeed: 10
+  drawLocalPath: 1
+  localPathColor: {r: 1, g: 0, b: 1, a: 1}

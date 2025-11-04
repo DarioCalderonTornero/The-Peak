@@ -8,6 +8,8 @@ public class TurnsStateMachine : MonoBehaviour
     [SerializeField] private float maxClimberTime = 10f;
     [SerializeField] private Button nexTurnButton;
     [SerializeField] private float time;
+    [SerializeField] private SpawnManager spawnManager;
+    private bool spawning;
 
     private void Awake()
     {
@@ -15,7 +17,7 @@ public class TurnsStateMachine : MonoBehaviour
 
 
         nexTurnButton.onClick.AddListener(() =>
-        {
+        { 
             state = GameState.ClimberTurn;
         });
     }
@@ -48,6 +50,9 @@ public class TurnsStateMachine : MonoBehaviour
                 break;
             case GameState.ClimberTurn:
 
+               
+                    spawnManager.SpawnClimbers();
+                
                
                 time += Time.deltaTime;
 

@@ -33,6 +33,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private System.Action<DragCardUI> replacementCallback;
     private Button cardButton;
 
+    public event System.Action<DragCardUI> OnCardUsed;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -49,7 +51,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         SetupCardUI();
         UpdateInteractable();
-        PointsManager.Instance.OnPointsChanged += (points) => UpdateInteractable();
+        PointsManager.Instance.OnPointsChanged += HandlePointsChanged;
 
         //  Esperar al siguiente frame para asegurar que el layout haya colocado la carta
         StartCoroutine(InitializeOriginalPosition());
@@ -71,6 +73,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (iconImage != null) iconImage.sprite = cardData.icon;
         if (costText != null) costText.text = cardData.cost.ToString();
         if (nameText != null) nameText.text = cardData.cardName;
+    }
+
+    private void HandlePointsChanged(int points)
+    {
+        UpdateInteractable();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -156,14 +163,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
-                // Usamos la versión de PlaceDefense que ya devuelve la instancia
                 GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition);
 
-                // Registramos inmediatamente la instancia en el manager por turnos
                 if (placed != null && DefensePlacementManager.Instance != null)
-                {
                     DefensePlacementManager.Instance.RegisterPlaced(placed);
-                }
+
+                //Nueva línea:
+                OnCardUsed?.Invoke(this);
             }
 
             if (previewInstance != null)
@@ -271,12 +277,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void UpdateInteractable()
     {
-        bool canUse = PointsManager.Instance.CanAfford(cardData.cost);
+        if (this == null || canvasGroup == null) return; // seguridad extra
+        bool canUse = PointsManager.Instance != null && PointsManager.Instance.CanAfford(cardData.cost);
 
         if (cardImage != null)
-        {
             cardImage.color = canUse ? Color.white : Color.gray;
-        }
 
         canvasGroup.interactable = canUse;
     }
@@ -333,4 +338,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         rectTransform.anchoredPosition = to;
     }
+    private void OnDestroy()
+    {
+        if (PointsManager.Instance != null)
+            PointsManager.Instance.OnPointsChanged -= HandlePointsChanged;
+    }
+
 }

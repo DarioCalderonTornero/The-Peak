@@ -28,7 +28,7 @@ public class CardSlotsUI : MonoBehaviour
             return;
         }
 
-        CreateInitialCards();
+        // CreateInitialCards();
     }
 
     /// <summary>

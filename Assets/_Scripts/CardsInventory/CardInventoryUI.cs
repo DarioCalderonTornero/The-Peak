@@ -1,72 +1,164 @@
+using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CardInventoryUI : MonoBehaviour
 {
     [Header("Referencias UI")]
-    [SerializeField] private GameObject inventoryPanel; // Panel con layout
-    [SerializeField] private Button toggleButton;       // Botón para abrir/cerrar
-    [SerializeField] private Transform cardContainer;   // Contenedor de cartas
-    [SerializeField] private GameObject cardPrefab;     // Prefab visual de carta (usa el mismo que tus slots)
+    [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private Transform cardContainer;
+    [SerializeField] private GameObject cardPrefab;
 
-    private bool isVisible = false;
-    private List<CardData> storedCards = new List<CardData>();
+    [Header("Header UI")]
+    [SerializeField] private TextMeshProUGUI selectedCountText;
+    [SerializeField] private Button startMatchButton;
+
+    [Header("Configuración")]
+    [SerializeField] private int maxSelectedCards = 8;
+    [SerializeField] private Color selectedColor = new Color(0.4f, 1f, 0.4f, 1f);
+    [SerializeField] private Color normalColor = Color.white;
+
+    [Header("Escala de las cartas en el inventario")]
+    [SerializeField] private Vector3 cardScale = Vector3.one;
+
+    [Header("Cartas disponibles (desde el editor o en runtime)")]
+    [SerializeField] private List<CardData> availableCards = new();
+
+    public event Action<CardData> OnCardSelected;
+    public event Action<CardData> OnCardDeselected;
+    public event Action<List<CardData>> OnStartMatch;
+
+    private readonly List<CardData> selectedCards = new();
 
     private void Start()
     {
-        if (inventoryPanel != null)
-            inventoryPanel.SetActive(false);
+        if (startMatchButton != null)
+        {
+            startMatchButton.interactable = false;
+            startMatchButton.onClick.AddListener(OnStartMatchButtonClicked);
+        }
 
-        if (toggleButton != null)
-            toggleButton.onClick.AddListener(ToggleInventory);
+        RefreshInventory();
+        UpdateCountText();
     }
 
     public void AddCard(CardData card)
     {
         if (card == null) return;
 
-        storedCards.Add(card);
-
-        // Si el panel está visible, actualiza inmediatamente
-        if (isVisible)
-            RefreshInventory();
+        if (!availableCards.Contains(card))
+        {
+            availableCards.Add(card);
+            if (inventoryPanel.activeSelf)
+                RefreshInventory();
+        }
     }
 
-    private void ToggleInventory()
+    public void ShowInventory()
     {
-        isVisible = !isVisible;
+        inventoryPanel.SetActive(true);
+        RefreshInventory();
+        UpdateCountText();
+    }
 
-        if (inventoryPanel != null)
-            inventoryPanel.SetActive(isVisible);
-
-        if (isVisible)
-            RefreshInventory();
+    public void HideInventory()
+    {
+        inventoryPanel.SetActive(false);
     }
 
     private void RefreshInventory()
     {
-        // Limpia las cartas viejas del contenedor
         foreach (Transform child in cardContainer)
             Destroy(child.gameObject);
 
-        // Genera visualmente las cartas almacenadas
-        foreach (var cardData in storedCards)
+        foreach (var cardData in availableCards)
         {
+            if (cardData == null) continue;
+
             GameObject cardObj = Instantiate(cardPrefab, cardContainer);
-            DragCardUI cardUI = cardObj.GetComponent<DragCardUI>();
+            cardObj.transform.localScale = cardScale; // Escala definida desde el editor
+
+            var cardUI = cardObj.GetComponent<DragCardUI>();
 
             if (cardUI != null)
             {
                 cardUI.cardData = cardData;
-                cardUI.mainCamera = Camera.main;
                 cardUI.SetupCardUI();
-                cardUI.UpdateInteractable();
 
-                // Desactiva cualquier interacción (solo visual)
-                var cg = cardUI.GetComponent<CanvasGroup>();
-                if (cg != null) cg.blocksRaycasts = false;
+                // Eliminamos el bloqueo de raycasts — permite pulsar las cartas
+                // var cg = cardUI.GetComponent<CanvasGroup>();
+                // if (cg) cg.blocksRaycasts = false;
+
+                // Agregar selección por clic
+                Button btn = cardObj.GetComponent<Button>();
+                if (btn != null)
+                    btn.onClick.AddListener(() => ToggleSelect(cardUI, cardData));
+
+                // Mostrar color según estado
+                cardUI.cardImage.color = selectedCards.Contains(cardData) ? selectedColor : normalColor;
             }
+        }
+    }
+
+    private void ToggleSelect(DragCardUI ui, CardData data)
+    {
+        bool isSelected = selectedCards.Contains(data);
+
+        if (isSelected)
+        {
+            selectedCards.Remove(data);
+            ui.cardImage.color = normalColor;
+            OnCardDeselected?.Invoke(data);
+        }
+        else
+        {
+            if (selectedCards.Count >= maxSelectedCards)
+                return;
+
+            selectedCards.Add(data);
+            ui.cardImage.color = selectedColor;
+            OnCardSelected?.Invoke(data);
+        }
+
+        UpdateCountText();
+        UpdateStartButtonState();
+    }
+
+    private void UpdateCountText()
+    {
+        if (selectedCountText != null)
+            selectedCountText.text = $"Selecciona cartas para comenzar la partida {selectedCards.Count} / {maxSelectedCards}";
+    }
+
+    private void UpdateStartButtonState()
+    {
+        if (startMatchButton != null)
+            startMatchButton.interactable = selectedCards.Count == maxSelectedCards;
+    }
+
+    private void OnStartMatchButtonClicked()
+    {
+        if (selectedCards.Count == maxSelectedCards)
+        {
+            OnStartMatch?.Invoke(new List<CardData>(selectedCards));
+            HideInventory();
+        }
+    }
+
+    public List<CardData> GetSelectedCards()
+    {
+        return new List<CardData>(selectedCards);
+    }
+
+    // Permite ajustar la escala de las cartas en tiempo real desde el inspector
+    private void OnValidate()
+    {
+        if (cardContainer != null)
+        {
+            foreach (Transform child in cardContainer)
+                child.localScale = cardScale;
         }
     }
 }

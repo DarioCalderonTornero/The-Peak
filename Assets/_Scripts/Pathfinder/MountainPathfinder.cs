@@ -228,9 +228,7 @@ public class MountainPathfinder : MonoBehaviour
         return id;
     }
 
-    // ==========================
     // Internos (grafo / walkability / A*)
-    // ==========================
     private bool ValidateScannerAndMesh()
     {
         if (scanner == null || mountainMeshFilter == null)

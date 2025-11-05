@@ -52,5 +52,11 @@ public class SpawnManager : MonoBehaviour
         isMaxCount = false;
     }
 
+    public void StopSpawning()
+    {
+        isMaxCount = true;
+    }
+
+
 }
 

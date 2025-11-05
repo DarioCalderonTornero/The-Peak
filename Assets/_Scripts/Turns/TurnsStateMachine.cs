@@ -16,14 +16,11 @@ public class TurnsStateMachine : MonoBehaviour
     {
         Instance = this;
 
-
         nexTurnButton.onClick.AddListener(() =>
-        { 
+        {
             state = GameState.ClimberTurn;
         });
     }
-
-    
 
     public enum GameState
     {
@@ -49,12 +46,9 @@ public class TurnsStateMachine : MonoBehaviour
                 Debug.Log("Idle");
                 break;
             case GameState.PlayerTurn:
-
                 Debug.Log("PlayerTurn");
                 break;
-
             case GameState.ClimberTurn:
-
                 SpawnManager.Instance.SpawnClimbers();
 
                 time += Time.deltaTime;
@@ -80,6 +74,13 @@ public class TurnsStateMachine : MonoBehaviour
             if (state == GameState.ClimberTurn)
             {
                 SpawnManager.Instance.ResetSpawner();
+
+                // NUEVO: avisar al gestor de defensas de que comienza un nuevo turno
+                // para que archive el turno que acaba y destruya las defensas de hace dos turnos.
+                if (DefensePlacementManager.Instance != null)
+                {
+                    DefensePlacementManager.Instance.AdvanceTurn();
+                }
             }
 
             _lastState = state;

@@ -123,10 +123,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 previewInstance.transform.position = hit.point;
             }
         }
-
-
     }
-
 
     public void OnEndDrag(PointerEventData eventData)
     {
@@ -159,7 +156,14 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
-                DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition);
+                // Usamos la versión de PlaceDefense que ya devuelve la instancia
+                GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition);
+
+                // Registramos inmediatamente la instancia en el manager por turnos
+                if (placed != null && DefensePlacementManager.Instance != null)
+                {
+                    DefensePlacementManager.Instance.RegisterPlaced(placed);
+                }
             }
 
             if (previewInstance != null)
@@ -239,7 +243,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             rend.materials = mats;
         }
     }
-
 
     private bool isShaking = false;
 

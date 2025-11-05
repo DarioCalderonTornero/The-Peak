@@ -44,6 +44,18 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Noise:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -68,6 +80,7 @@ Material:
     - _CullModeForward: 2
     - _Density: 10
     - _DepthOffsetEnable: 0
+    - _DistortionAmount: 0.05
     - _DoubleSidedEnable: 0
     - _DoubleSidedGIMode: 0
     - _DoubleSidedNormalMode: 2
@@ -76,9 +89,13 @@ Material:
     - _EnableBlendModePreserveSpecularLighting: 0
     - _EnableFogOnTransparent: 1
     - _ExcludeFromTUAndAA: 0
+    - _FoamIntensity: 1
+    - _FresnelPower: 4
+    - _GlobalTimeScale: 1
+    - _NoiseIntensity: 0.05
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0
-    - _Power: 8
+    - _Power: 6
     - _RenderQueueType: 1
     - _Speed: 1.8
     - _SrcBlend: 1
@@ -105,7 +122,13 @@ Material:
     m_Colors:
     - _ColorOlas: {r: 0, g: 0.98360723, b: 1, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
+    - _EdgeFoamColor: {r: 0.74056596, g: 0.9699082, b: 1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FresnelColor: {r: 0.48998755, g: 0.7072014, b: 0.7264151, a: 0}
+    - _NoiseSpeed: {r: 0.2, g: 0.1, b: 0, a: 0}
+    - _NoiseSpeedA: {r: 0.5, g: 0.1, b: 0, a: 0}
+    - _NoiseSpeedB: {r: -0.3, g: -0.12, b: 0, a: 0}
+    - _NoiseTiling: {r: 3, g: 3, b: 0, a: 0}
     - _WaterColor: {r: 0.12941177, g: 0.5411765, b: 0.6313726, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

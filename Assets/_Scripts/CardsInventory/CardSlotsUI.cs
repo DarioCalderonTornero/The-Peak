@@ -3,12 +3,19 @@ using UnityEngine;
 
 public class CardSlotsUI : MonoBehaviour
 {
+    public static CardSlotsUI Instance { get; private set; }
+
     [Header("Configuraci�n UI")]
     [SerializeField] private RectTransform slotsContainer; // Contenedor con VerticalLayoutGroup
     public GameObject cardPrefab;        // Prefab que contiene DragCardUI
     [SerializeField] private List<CardData> startingCards; // Cartas iniciales que se mostrar�n
 
     private readonly List<DragCardUI> currentCards = new List<DragCardUI>();
+
+    private void Awake()
+    {
+        Instance = this;    
+    }
 
     private void Start()
     {
@@ -126,5 +133,15 @@ public class CardSlotsUI : MonoBehaviour
 
         // Actualiza la lista lógica
         currentCards[index] = dragCard;
+    }
+
+    public void ShowSlotContainer()
+    {
+        slotsContainer.gameObject.SetActive(true);
+    }
+
+    public void HideSlotContainer()
+    {
+        slotsContainer.gameObject.SetActive(false);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,9 @@ public class TurnsStateMachine : MonoBehaviour
     [SerializeField] private float maxClimberTime = 10f;
     [SerializeField] private Button nexTurnButton;
     [SerializeField] private float time;
+
+    public event EventHandler OnPlayerStateTurn;
+    public event EventHandler OnClimberStateTurn;
 
     private GameState _lastState;
 
@@ -46,9 +50,16 @@ public class TurnsStateMachine : MonoBehaviour
                 Debug.Log("Idle");
                 break;
             case GameState.PlayerTurn:
+                OnPlayerStateTurn?.Invoke(this, EventArgs.Empty);
+                CardSlotsUI.Instance.ShowSlotContainer();
                 Debug.Log("PlayerTurn");
                 break;
             case GameState.ClimberTurn:
+
+                OnClimberStateTurn?.Invoke(this, EventArgs.Empty);
+
+                CardSlotsUI.Instance.HideSlotContainer();
+
                 SpawnManager.Instance.SpawnClimbers();
 
                 time += Time.deltaTime;

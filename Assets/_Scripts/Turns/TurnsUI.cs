@@ -10,25 +10,44 @@ public class TurnsUI : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(ShowOneSecond());
+        //StartCoroutine(ShowOneSecondPlayerTurn());
+
+        HidePlayerTurn();
+        HideIATurn();
+
+        TurnsStateMachine.Instance.OnPlayerStateTurn += TurnsStateMachine_OnPlayerStateTurn;
+        TurnsStateMachine.Instance.OnClimberStateTurn += TurnsStateMachine_OnClimberStateTurn;
     }
 
-    private IEnumerator ShowOneSecond()
+    private void TurnsStateMachine_OnClimberStateTurn(object sender, System.EventArgs e)
     {
-        Show();
-        yield return new WaitForSeconds(1);
-        Hide();
+        ShowIATurn();
+        HidePlayerTurn();
     }
 
-    private void Show()
+    private void TurnsStateMachine_OnPlayerStateTurn(object sender, System.EventArgs e)
+    {
+        ShowPlayerTurn();
+        HideIATurn();
+    }
+
+    private void ShowPlayerTurn()
     {
         playerTurnText.gameObject.SetActive(true);
+    }
+
+    private void HidePlayerTurn()
+    {
+        playerTurnText.gameObject.SetActive(false);
+    }
+
+    private void ShowIATurn()
+    {
         climberTurnText.gameObject.SetActive(true);
     }
 
-    private void Hide()
+    private void HideIATurn()
     {
-        playerTurnText.gameObject.SetActive(false);
         climberTurnText.gameObject.SetActive(false);
     }
 }

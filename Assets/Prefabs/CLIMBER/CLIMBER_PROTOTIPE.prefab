@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4070928808904378361
+--- !u!1 &4930685435348997123
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,49 +8,48 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5345643741481616988}
-  - component: {fileID: 6682307770136354402}
-  - component: {fileID: 1091613057394986}
-  - component: {fileID: 5087622762850858765}
-  - component: {fileID: -2599692647300675575}
-  - component: {fileID: -8443762973840266356}
+  - component: {fileID: 4485760709519042262}
+  - component: {fileID: 7532526771892659054}
+  - component: {fileID: 1859666521064503008}
+  - component: {fileID: 4274721090101795705}
+  - component: {fileID: -527157051954980485}
   m_Layer: 0
-  m_Name: Roca
+  m_Name: CLIMBER_PROTOTIPE
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5345643741481616988
+--- !u!4 &4485760709519042262
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4070928808904378361}
+  m_GameObject: {fileID: 4930685435348997123}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -229.75, y: 53.97, z: -153.5}
-  m_LocalScale: {x: 7.5, y: 7.5, z: 7.5}
+  m_LocalPosition: {x: -95.4, y: 2.57, z: 97.22}
+  m_LocalScale: {x: 5, y: 2.5988002, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6682307770136354402
+--- !u!33 &7532526771892659054
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4070928808904378361}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &1091613057394986
+  m_GameObject: {fileID: 4930685435348997123}
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &1859666521064503008
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4070928808904378361}
+  m_GameObject: {fileID: 4930685435348997123}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -67,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1a2f80db3a4595c49894dd5eeca32deb, type: 2}
+  - {fileID: 2100000, guid: 40e2deaf902d49249b2812f645a99e21, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -89,13 +88,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &5087622762850858765
-SphereCollider:
+--- !u!136 &4274721090101795705
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4070928808904378361}
+  m_GameObject: {fileID: 4930685435348997123}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -107,30 +106,26 @@ SphereCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
+  serializedVersion: 2
   m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-2599692647300675575
+--- !u!114 &-527157051954980485
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4070928808904378361}
+  m_GameObject: {fileID: 4930685435348997123}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bdcc574b18f7a542900218b1d45fd87, type: 3}
+  m_Script: {fileID: 11500000, guid: 4713c6e4c2950cf49bffe66f6deb4000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-8443762973840266356
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4070928808904378361}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a05f81d033fd9ae4481c847a7584ccad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  pathfinder: {fileID: 0}
+  moveSpeed: 7
+  arriveRadius: 0.25
+  rotateSpeed: 10
+  drawLocalPath: 1
+  localPathColor: {r: 1, g: 0, b: 1, a: 1}

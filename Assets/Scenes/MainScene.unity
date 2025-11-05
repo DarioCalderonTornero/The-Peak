@@ -599,14 +599,14 @@ Light:
   m_Enabled: 1
   serializedVersion: 11
   m_Type: 1
-  m_Color: {r: 0.8160377, g: 0.851764, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 130000
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -663,7 +663,7 @@ Transform:
   m_GameObject: {fileID: 157207112}
   serializedVersion: 2
   m_LocalRotation: {x: 0.16298217, y: 0.76189715, z: -0.37471518, w: 0.5025317}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 50.2, y: 44.9, z: -31.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -691,7 +691,7 @@ MonoBehaviour:
   m_InnerSpotPercent: 0
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
-  m_VolumetricDimmer: 1
+  m_VolumetricDimmer: 1.63
   m_FadeDistance: 10000
   m_VolumetricFadeDistance: 10000
   m_AffectDiffuse: 1
@@ -726,7 +726,7 @@ MonoBehaviour:
   moonPhase: 0.2
   moonPhaseRotation: 0
   earthshine: 1
-  flareSize: 2
+  flareSize: 5.5
   flareTint: {r: 1, g: 1, b: 1, a: 1}
   flareFalloff: 4
   flareMultiplier: 1
@@ -904,7 +904,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b66a1428e982e574898d43cbc2317363, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingPoints: 10
+  startingPoints: 2000000
   pointsText: {fileID: 1410541747}
 --- !u!114 &281424686
 MonoBehaviour:
@@ -957,7 +957,7 @@ MonoBehaviour:
   replacementText: {fileID: 560772898}
   cancelButton: {fileID: 1792850871}
   newCardData: {fileID: 11400000, guid: 1fbd222a3b929814586f57caa6d90b5a, type: 2}
-  newCardPreviewSlot: {fileID: 801801629}
+  newCardPreviewSlot: {fileID: 0}
   cardInventoryUI: {fileID: 281424690}
 --- !u!114 &281424689
 MonoBehaviour:
@@ -1120,7 +1120,7 @@ Transform:
   m_GameObject: {fileID: 432432459}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 16.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1681,7 +1681,7 @@ Transform:
   m_GameObject: {fileID: 586180999}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.531, y: -0, z: 0.327}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2588,7 +2588,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scanner: {fileID: 496032606}
   mountainMeshFilter: {fileID: 1278379736}
-  maxSlopeDeg: 70
+  maxSlopeDeg: 60
   slopeCostAlpha: 1
   penalizeUphill: 0
   uphillExtra: 0.25
@@ -2833,7 +2833,7 @@ MonoBehaviour:
   prefab: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
   startPoint: {fileID: 1334092444}
   endPoint: {fileID: 162465933}
-  amountToSpawn: 3
+  amountToSpawn: 2
   spawnCooldown: 1
   time: 0
   spawnedCount: 0
@@ -3313,13 +3313,14 @@ GameObject:
   - component: {fileID: 1299652161}
   - component: {fileID: 1299652164}
   - component: {fileID: 1299652160}
+  - component: {fileID: 1299652165}
   m_Layer: 0
   m_Name: MainCinemachineVCAM
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1299652160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3390,7 +3391,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5d7c088409d9a40b7b09aa707777f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetOffset: {x: 0, y: 41.6, z: -65.21}
+  TargetOffset: {x: 0, y: 0, z: 0}
   TrackerSettings:
     BindingMode: 4
     PositionDamping: {x: 0, y: 1, z: 1}
@@ -3398,7 +3399,7 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   OrbitStyle: 0
-  Radius: 200
+  Radius: 281.4
   Orbits:
     Top:
       Radius: 2
@@ -3424,7 +3425,7 @@ MonoBehaviour:
   VerticalAxis:
     Value: 40
     Center: 40
-    Range: {x: -10, y: 85}
+    Range: {x: 0, y: 85}
     Wrap: 0
     Recentering:
       Enabled: 0
@@ -3492,8 +3493,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1299652159}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.18052007, y: -0.000000041454427, z: 0.000000007608351, w: 0.9835713}
-  m_LocalPosition: {x: 0, y: 170.1575, z: -218.41888}
+  m_LocalRotation: {x: 0.34202015, y: -6.549742e-17, z: -5.413813e-17, w: 0.9396926}
+  m_LocalPosition: {x: 0, y: 213.56189, z: -162.45349}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3512,22 +3513,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Composition:
-    ScreenPosition: {x: 0, y: 0.27}
+    ScreenPosition: {x: 0, y: 0}
     DeadZone:
       Enabled: 1
-      Size: {x: 0.2, y: 0.2}
+      Size: {x: 0, y: 0}
     HardLimits:
       Enabled: 0
       Size: {x: 0.8, y: 0.8}
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 0.5, y: 0.5}
+  Damping: {x: 0, y: 0}
   Lookahead:
     Enabled: 0
     Time: 1
     Smoothing: 0
     IgnoreY: 0
+--- !u!114 &1299652165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1299652159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dac0aaae1022b24494e816841775d36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1334092443
 GameObject:
   m_ObjectHideFlags: 0
@@ -4269,8 +4282,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1823688464}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.18052007, y: -0.00000004145443, z: 0.00000000760835, w: 0.9835713}
-  m_LocalPosition: {x: 0, y: 170.1575, z: -218.41888}
+  m_LocalRotation: {x: 0.34202015, y: -9.821275e-17, z: 3.574652e-17, w: 0.9396926}
+  m_LocalPosition: {x: 0, y: 213.56189, z: -162.45349}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

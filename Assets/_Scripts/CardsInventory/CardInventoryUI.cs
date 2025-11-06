@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class CardInventoryUI : MonoBehaviour
@@ -22,6 +24,8 @@ public class CardInventoryUI : MonoBehaviour
 
     [Header("Escala de las cartas en el inventario")]
     [SerializeField] private Vector3 cardScale = Vector3.one;
+    [SerializeField][Range(1.01f, 1.5f)] private float hoverScaleMultiplier = 1.1f;
+    [SerializeField] private float hoverSmoothTime = 0.12f;
 
     [Header("Cartas disponibles (desde el editor o en runtime)")]
     [SerializeField] private List<CardData> availableCards = new();
@@ -61,6 +65,7 @@ public class CardInventoryUI : MonoBehaviour
         inventoryPanel.SetActive(true);
         RefreshInventory();
         UpdateCountText();
+        ResetAllCardScales();
     }
 
     public void HideInventory()
@@ -78,38 +83,90 @@ public class CardInventoryUI : MonoBehaviour
             if (cardData == null) continue;
 
             GameObject cardObj = Instantiate(cardPrefab, cardContainer);
-            cardObj.transform.localScale = cardScale; // Escala definida desde el editor
+            cardObj.transform.localScale = cardScale;
 
+            // Si tiene DragCardUI, lo desactivamos dentro del inventario
+            var dragComponent = cardObj.GetComponent<DragCardUI>();
+            if (dragComponent != null)
+                dragComponent.enabled = false;
+
+            // Configurar la UI de la carta
             var cardUI = cardObj.GetComponent<DragCardUI>();
-
             if (cardUI != null)
             {
                 cardUI.cardData = cardData;
                 cardUI.SetupCardUI();
-
-                // Eliminamos el bloqueo de raycasts — permite pulsar las cartas
-                // var cg = cardUI.GetComponent<CanvasGroup>();
-                // if (cg) cg.blocksRaycasts = false;
-
-                // Agregar selección por clic
-                Button btn = cardObj.GetComponent<Button>();
-                if (btn != null)
-                    btn.onClick.AddListener(() => ToggleSelect(cardUI, cardData));
-
-                // Mostrar color según estado
-                cardUI.cardImage.color = selectedCards.Contains(cardData) ? selectedColor : normalColor;
             }
+
+            // Añadir efecto hover
+            AddHoverEffect(cardObj);
+
+            // Configurar botón de selección
+            Button btn = cardObj.GetComponent<Button>();
+            if (btn == null) btn = cardObj.AddComponent<Button>();
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => ToggleSelect(cardObj, cardData));
+
+            // Mostrar color según estado
+            var img = GetMainImage(cardObj);
+            if (img != null)
+                img.color = selectedCards.Contains(cardData) ? selectedColor : normalColor;
         }
     }
 
-    private void ToggleSelect(DragCardUI ui, CardData data)
+    private void AddHoverEffect(GameObject cardObj)
+    {
+        EventTrigger trigger = cardObj.GetComponent<EventTrigger>();
+        if (trigger == null) trigger = cardObj.AddComponent<EventTrigger>();
+        trigger.triggers.Clear();
+
+        Vector3 baseScale = cardScale;
+        Vector3 targetScale = baseScale * hoverScaleMultiplier;
+        Coroutine scaleCoroutine = null;
+
+        void StartSmoothScale(Vector3 to)
+        {
+            if (scaleCoroutine != null)
+                StopCoroutine(scaleCoroutine);
+            scaleCoroutine = StartCoroutine(SmoothScale(cardObj.transform, to));
+        }
+
+        // Pointer Enter
+        var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        entryEnter.callback.AddListener((_) => StartSmoothScale(targetScale));
+        trigger.triggers.Add(entryEnter);
+
+        // Pointer Exit
+        var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        entryExit.callback.AddListener((_) => StartSmoothScale(baseScale));
+        trigger.triggers.Add(entryExit);
+    }
+
+    private IEnumerator SmoothScale(Transform target, Vector3 to)
+    {
+        Vector3 from = target.localScale;
+        float elapsed = 0f;
+
+        while (elapsed < hoverSmoothTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0, 1, elapsed / hoverSmoothTime);
+            target.localScale = Vector3.Lerp(from, to, t);
+            yield return null;
+        }
+
+        target.localScale = to;
+    }
+
+    private void ToggleSelect(GameObject cardObj, CardData data)
     {
         bool isSelected = selectedCards.Contains(data);
+        var img = GetMainImage(cardObj);
 
         if (isSelected)
         {
             selectedCards.Remove(data);
-            ui.cardImage.color = normalColor;
+            if (img != null) img.color = normalColor;
             OnCardDeselected?.Invoke(data);
         }
         else
@@ -118,7 +175,7 @@ public class CardInventoryUI : MonoBehaviour
                 return;
 
             selectedCards.Add(data);
-            ui.cardImage.color = selectedColor;
+            if (img != null) img.color = selectedColor;
             OnCardSelected?.Invoke(data);
         }
 
@@ -152,7 +209,12 @@ public class CardInventoryUI : MonoBehaviour
         return new List<CardData>(selectedCards);
     }
 
-    // Permite ajustar la escala de las cartas en tiempo real desde el inspector
+    private void ResetAllCardScales()
+    {
+        foreach (Transform child in cardContainer)
+            child.localScale = cardScale;
+    }
+
     private void OnValidate()
     {
         if (cardContainer != null)
@@ -160,5 +222,14 @@ public class CardInventoryUI : MonoBehaviour
             foreach (Transform child in cardContainer)
                 child.localScale = cardScale;
         }
+    }
+
+    private Image GetMainImage(GameObject cardObj)
+    {
+        // Busca el Image principal de la carta
+        var img = cardObj.GetComponent<Image>();
+        if (img == null)
+            img = cardObj.GetComponentInChildren<Image>();
+        return img;
     }
 }

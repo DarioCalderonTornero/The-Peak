@@ -2595,6 +2595,8 @@ MonoBehaviour:
   selectedColor: {r: 0.4, g: 1, b: 0.4, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   cardScale: {x: 1.74, y: 1.74, z: 1}
+  hoverScaleMultiplier: 1.1
+  hoverSmoothTime: 0.1
   availableCards:
   - {fileID: 11400000, guid: aa2442207350490408cf85bcf942e728, type: 2}
   - {fileID: 11400000, guid: a648721e5957e1e48a68cb0ff7817a4e, type: 2}
@@ -4890,7 +4892,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 108, y: 34}
+  m_AnchoredPosition: {x: 289, y: 34}
   m_SizeDelta: {x: 536.226, y: 719.012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1832778369

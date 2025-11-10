@@ -78,7 +78,7 @@ Material:
     - _ConservativeDepthOffsetEnable: 0
     - _CullMode: 2
     - _CullModeForward: 2
-    - _Density: 10
+    - _Density: 3.1
     - _DepthOffsetEnable: 0
     - _DistortionAmount: 0.05
     - _DoubleSidedEnable: 0

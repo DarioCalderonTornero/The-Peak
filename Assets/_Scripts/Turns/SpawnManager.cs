@@ -1,4 +1,5 @@
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class SpawnManager : MonoBehaviour
 {
@@ -7,14 +8,17 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private GameObject prefab;
     [SerializeField] private Transform startPoint;
     [SerializeField] private Transform endPoint;
-    [SerializeField] private int amountToSpawn = 3;     
-    [SerializeField] private float spawnCooldown = 2f;  
+    [SerializeField] private int amountToSpawn = 3;
+    [SerializeField] private float spawnCooldown = 2f;
+    [SerializeField] private float minDistance = 2f; 
 
     [SerializeField] private float time = 0f;
     [SerializeField] private int spawnedCount = 0;
 
-
     [SerializeField] public bool isMaxCount = false;
+
+ 
+    private List<Vector3> spawnedPositions = new List<Vector3>();
 
     private void Awake()
     {
@@ -27,15 +31,39 @@ public class SpawnManager : MonoBehaviour
 
         if (time >= spawnCooldown && !isMaxCount)
         {
+            Vector3 spawnPos;
+            bool validPosition = false;
+            int maxAttempts = 20; 
+            int attempts = 0;
 
-            float t = Random.Range(0f, 1f);
-            Vector3 spawnPos = Vector3.Lerp(startPoint.position, endPoint.position, t);
+            
+            do
+            {
+                float t = Random.Range(0f, 1f);
+                spawnPos = Vector3.Lerp(startPoint.position, endPoint.position, t);
+                validPosition = true;
 
-            Instantiate(prefab, spawnPos, Quaternion.identity);
+                foreach (var pos in spawnedPositions)
+                {
+                    if (Vector3.Distance(spawnPos, pos) < minDistance)
+                    {
+                        validPosition = false;
+                        break;
+                    }
+                }
 
-            spawnedCount++;
+                attempts++;
+            }
+            while (!validPosition && attempts < maxAttempts);
 
-            time = 0f;
+            
+            if (validPosition)
+            {
+                Instantiate(prefab, spawnPos, Quaternion.identity);
+                spawnedPositions.Add(spawnPos);
+                spawnedCount++;
+                time = 0f;
+            }
 
             if (spawnedCount >= amountToSpawn)
             {
@@ -50,13 +78,13 @@ public class SpawnManager : MonoBehaviour
         time = 0f;
         spawnedCount = 0;
         isMaxCount = false;
+        spawnedPositions.Clear(); 
     }
 
     public void StopSpawning()
     {
         isMaxCount = true;
     }
-
-
 }
+
 

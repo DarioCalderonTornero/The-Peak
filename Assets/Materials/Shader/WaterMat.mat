@@ -45,7 +45,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _Noise:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 32e38908c5e99ef4983a80b4515bb5ac, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseA:
@@ -95,7 +95,7 @@ Material:
     - _NoiseIntensity: 0.05
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0
-    - _Power: 6
+    - _Power: 4.5
     - _RenderQueueType: 1
     - _Speed: 1.8
     - _SrcBlend: 1
@@ -120,7 +120,7 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - _ColorOlas: {r: 0, g: 0.98360723, b: 1, a: 0}
+    - _ColorOlas: {r: 0.4575472, g: 0.99149096, b: 1, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EdgeFoamColor: {r: 0.74056596, g: 0.9699082, b: 1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
@@ -129,6 +129,6 @@ Material:
     - _NoiseSpeedA: {r: 0.5, g: 0.1, b: 0, a: 0}
     - _NoiseSpeedB: {r: -0.3, g: -0.12, b: 0, a: 0}
     - _NoiseTiling: {r: 3, g: 3, b: 0, a: 0}
-    - _WaterColor: {r: 0.12941177, g: 0.5411765, b: 0.6313726, a: 1}
+    - _WaterColor: {r: 0, g: 0.7031784, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

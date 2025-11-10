@@ -1065,7 +1065,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scanner: {fileID: 496032606}
   mountainMeshFilter: {fileID: 1278379736}
-  maxSlopeDeg: 60
+  maxSlopeDeg: 50
   slopeCostAlpha: 1
   penalizeUphill: 0
   uphillExtra: 0.25

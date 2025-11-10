@@ -58,7 +58,7 @@
 
 //                OnClimberStateTurn?.Invoke(this, EventArgs.Empty);
 
-//                CardSlotsUI.Instance.HideSlotContainer();
+                //CardSlotsUI.Instance.HideSlotContainer();
 
 //                SpawnManager.Instance.SpawnClimbers();
 

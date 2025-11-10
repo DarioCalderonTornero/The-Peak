@@ -42,6 +42,8 @@ public class TurnsStateMachine : MonoBehaviour
         _lastState = state;
     }
 
+    //DESCOMENTAR MAS ADELANTE
+
     private void Update()
     {
         switch (state)
@@ -51,14 +53,14 @@ public class TurnsStateMachine : MonoBehaviour
                 break;
             case GameState.PlayerTurn:
                 OnPlayerStateTurn?.Invoke(this, EventArgs.Empty);
-                CardSlotsUI.Instance.ShowSlotContainer();
+                //CardSlotsUI.Instance.ShowSlotContainer();
                 Debug.Log("PlayerTurn");
                 break;
             case GameState.ClimberTurn:
 
                 OnClimberStateTurn?.Invoke(this, EventArgs.Empty);
 
-                CardSlotsUI.Instance.HideSlotContainer();
+                //CardSlotsUI.Instance.HideSlotContainer();
 
                 SpawnManager.Instance.SpawnClimbers();
 

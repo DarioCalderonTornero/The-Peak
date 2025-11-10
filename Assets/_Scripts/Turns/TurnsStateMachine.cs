@@ -1,102 +1,102 @@
-using System;
-using Unity.VisualScripting;
-using UnityEngine;
-using UnityEngine.UI;
+//using System;
+//using Unity.VisualScripting;
+//using UnityEngine;
+//using UnityEngine.UI;
 
-public class TurnsStateMachine : MonoBehaviour
-{
-    public static TurnsStateMachine Instance { get; private set; }
+//public class TurnsStateMachine : MonoBehaviour
+//{
+//    public static TurnsStateMachine Instance { get; private set; }
 
-    [SerializeField] private float maxClimberTime = 10f;
-    [SerializeField] private Button nexTurnButton;
-    [SerializeField] private float time;
+//    [SerializeField] private float maxClimberTime = 10f;
+//    [SerializeField] private Button nexTurnButton;
+//    [SerializeField] private float time;
 
-    public event EventHandler OnPlayerStateTurn;
-    public event EventHandler OnClimberStateTurn;
+//    public event EventHandler OnPlayerStateTurn;
+//    public event EventHandler OnClimberStateTurn;
 
-    private GameState _lastState;
+//    private GameState _lastState;
 
-    private void Awake()
-    {
-        Instance = this;
+//    private void Awake()
+//    {
+//        Instance = this;
 
-        nexTurnButton.onClick.AddListener(() =>
-        {
-            state = GameState.ClimberTurn;
-        });
-    }
+//        nexTurnButton.onClick.AddListener(() =>
+//        {
+//            state = GameState.ClimberTurn;
+//        });
+//    }
 
-    public enum GameState
-    {
-        Idle,
-        PlayerTurn,
-        ClimberTurn,
-        GameOverState,
-    }
+//    public enum GameState
+//    {
+//        Idle,
+//        PlayerTurn,
+//        ClimberTurn,
+//        GameOverState,
+//    }
 
-    public GameState state;
+//    public GameState state;
 
-    private void Start()
-    {
-        state = GameState.PlayerTurn;
-        _lastState = state;
-    }
+//    private void Start()
+//    {
+//        state = GameState.PlayerTurn;
+//        _lastState = state;
+//    }
 
-    private void Update()
-    {
-        switch (state)
-        {
-            case GameState.Idle:
-                Debug.Log("Idle");
-                break;
-            case GameState.PlayerTurn:
-                OnPlayerStateTurn?.Invoke(this, EventArgs.Empty);
-                CardSlotsUI.Instance.ShowSlotContainer();
-                Debug.Log("PlayerTurn");
-                break;
-            case GameState.ClimberTurn:
+//    private void Update()
+//    {
+//        switch (state)
+//        {
+//            case GameState.Idle:
+//                Debug.Log("Idle");
+//                break;
+//            case GameState.PlayerTurn:
+//                OnPlayerStateTurn?.Invoke(this, EventArgs.Empty);
+//                CardSlotsUI.Instance.ShowSlotContainer();
+//                Debug.Log("PlayerTurn");
+//                break;
+//            case GameState.ClimberTurn:
 
-                OnClimberStateTurn?.Invoke(this, EventArgs.Empty);
+//                OnClimberStateTurn?.Invoke(this, EventArgs.Empty);
 
-                CardSlotsUI.Instance.HideSlotContainer();
+//                CardSlotsUI.Instance.HideSlotContainer();
 
-                SpawnManager.Instance.SpawnClimbers();
+//                SpawnManager.Instance.SpawnClimbers();
 
-                time += Time.deltaTime;
+//                time += Time.deltaTime;
 
-                if (time >= maxClimberTime)
-                {
-                    time = 0f;
-                    state = GameState.PlayerTurn;
-                    Debug.Log("PlayerTurn");
-                }
+//                if (time >= maxClimberTime)
+//                {
+//                    time = 0f;
+//                    state = GameState.PlayerTurn;
+//                    Debug.Log("PlayerTurn");
+//                }
 
-                break;
-            case GameState.GameOverState:
-                Debug.Log("GameOver");
-                break;
+//                break;
+//            case GameState.GameOverState:
+//                Debug.Log("GameOver");
+//                break;
 
-            default:
-                break;
-        }
+//            default:
+//                break;
+//        }
 
-        if (state != _lastState)
-        {
-            if (state == GameState.ClimberTurn)
-            {
-                SpawnManager.Instance.ResetSpawner();
+//        if (state != _lastState)
+//        {
+//            if (state == GameState.ClimberTurn)
+//            {
+//                SpawnManager.Instance.ResetSpawner();
 
-                // NUEVO: avisar al gestor de defensas de que comienza un nuevo turno
-                // para que archive el turno que acaba y destruya las defensas de hace dos turnos.
-                if (DefensePlacementManager.Instance != null)
-                {
-                    DefensePlacementManager.Instance.AdvanceTurn();
-                }
-            }
+//                // NUEVO: avisar al gestor de defensas de que comienza un nuevo turno
+//                // para que archive el turno que acaba y destruya las defensas de hace dos turnos.
+//                if (DefensePlacementManager.Instance != null)
+//                {
+//                    DefensePlacementManager.Instance.AdvanceTurn();
+//                }
+//            }
 
-            _lastState = state;
-        }
+//            _lastState = state;
+//        }
 
-        Debug.Log(state);
-    }
-}
+//        Debug.Log(state);
+//    }
+//}

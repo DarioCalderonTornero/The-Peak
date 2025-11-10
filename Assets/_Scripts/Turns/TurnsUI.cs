@@ -1,25 +1,22 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 
 public class TurnsUI : MonoBehaviour
 {
-
     [SerializeField] private TextMeshProUGUI playerTurnText;
     [SerializeField] private TextMeshProUGUI climberTurnText;
 
     private void Start()
     {
-        //StartCoroutine(ShowOneSecondPlayerTurn());
-
         HidePlayerTurn();
         HideIATurn();
 
-        // ACTUALIZADO: Ahora usa TurnManager en lugar de TurnsStateMachine
         if (TurnManager.Instance != null)
         {
-            TurnManager.Instance.OnPlayerTurnStart += TurnManager_OnPlayerTurnStart;
-            TurnManager.Instance.OnClimberTurnStart += TurnManager_OnClimberTurnStart;
+            TurnManager.Instance.OnPlayerTurnStart += HandlePlayerTurnStart;
+            TurnManager.Instance.OnPlayerTurnEnd += HandlePlayerTurnEnd;
+            TurnManager.Instance.OnClimberTurnStart += HandleClimberTurnStart;
+            TurnManager.Instance.OnClimberTurnEnd += HandleClimberTurnEnd;
         }
         else
         {
@@ -27,47 +24,41 @@ public class TurnsUI : MonoBehaviour
         }
     }
 
-// ACTUALIZADO: Renombrado para TurnManager
-    private void TurnManager_OnClimberTurnStart()
-    {
-        ShowIATurn();
-        HidePlayerTurn();
-    }
-
-// ACTUALIZADO: Renombrado para TurnManager
-    private void TurnManager_OnPlayerTurnStart()
+    private void HandlePlayerTurnStart()
     {
         ShowPlayerTurn();
         HideIATurn();
     }
 
-    private void ShowPlayerTurn()
+    private void HandlePlayerTurnEnd()
     {
-        playerTurnText.gameObject.SetActive(true);
+        HidePlayerTurn();
     }
 
-    private void HidePlayerTurn()
+    private void HandleClimberTurnStart()
     {
-        playerTurnText.gameObject.SetActive(false);
+        ShowIATurn();
+        HidePlayerTurn();
     }
 
-    private void ShowIATurn()
+    private void HandleClimberTurnEnd()
     {
-        climberTurnText.gameObject.SetActive(true);
+        HideIATurn();
     }
 
-    private void HideIATurn()
-    {
-        climberTurnText.gameObject.SetActive(false);
-    }
+    private void ShowPlayerTurn() => playerTurnText.gameObject.SetActive(true);
+    private void HidePlayerTurn() => playerTurnText.gameObject.SetActive(false);
+    private void ShowIATurn() => climberTurnText.gameObject.SetActive(true);
+    private void HideIATurn() => climberTurnText.gameObject.SetActive(false);
 
     private void OnDestroy()
     {
-        // Desuscribirse de eventos para evitar memory leaks
         if (TurnManager.Instance != null)
         {
-            TurnManager.Instance.OnPlayerTurnStart -= TurnManager_OnPlayerTurnStart;
-            TurnManager.Instance.OnClimberTurnStart -= TurnManager_OnClimberTurnStart;
+            TurnManager.Instance.OnPlayerTurnStart -= HandlePlayerTurnStart;
+            TurnManager.Instance.OnPlayerTurnEnd -= HandlePlayerTurnEnd;
+            TurnManager.Instance.OnClimberTurnStart -= HandleClimberTurnStart;
+            TurnManager.Instance.OnClimberTurnEnd -= HandleClimberTurnEnd;
         }
     }
 }

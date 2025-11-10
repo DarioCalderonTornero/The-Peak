@@ -75,11 +75,20 @@ public class ClimberMinimal : MonoBehaviour
 
     private void Update()
     {
-       
 
-        if (TurnsStateMachine.Instance.state == TurnsStateMachine.GameState.ClimberTurn)
+        // Verificar estado global del juego
+        if (GameManager.Instance == null)
+            Debug.LogWarning("[ClimberMinimal] GameManager.Instance es NULL");
+        if (!GameManager.Instance.IsGameActive())
+            Debug.LogWarning("[ClimberMinimal] Game is not Active");
+
+        if (GameManager.Instance == null || !GameManager.Instance.IsGameActive())
+            return;
+        if (TurnManager.Instance == null || TurnManager.Instance.IsClimberTurn())
         {
-            if (_arrived || _waypoints == null || _waypoints.Count == 0) return;
+
+            if (_arrived || _waypoints == null || _waypoints.Count == 0) 
+            return;
 
             // Objetivo actual
             Vector3 target = _waypoints[_wpIndex];
@@ -114,6 +123,7 @@ public class ClimberMinimal : MonoBehaviour
                 Vector3 dir = to.normalized;
                 transform.position += dir * moveSpeed * Time.deltaTime;
             }
+        
         }
     }
 

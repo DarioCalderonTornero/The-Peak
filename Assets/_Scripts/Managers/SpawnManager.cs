@@ -33,10 +33,9 @@ public class SpawnManager : MonoBehaviour
         {
             Vector3 spawnPos;
             bool validPosition = false;
-            int maxAttempts = 20; 
+            int maxAttempts = 20;
             int attempts = 0;
 
-            
             do
             {
                 float t = Random.Range(0f, 1f);
@@ -56,13 +55,23 @@ public class SpawnManager : MonoBehaviour
             }
             while (!validPosition && attempts < maxAttempts);
 
-            
             if (validPosition)
             {
-                Instantiate(prefab, spawnPos, Quaternion.identity);
+                // Instanciamos el escalador
+                GameObject obj = Instantiate(prefab, spawnPos, Quaternion.identity);
                 spawnedPositions.Add(spawnPos);
                 spawnedCount++;
                 time = 0f;
+
+                // 🔹 Activamos inmediatamente el turno si ya estamos en ClimberTurn
+                if (TurnManager.Instance != null && TurnManager.Instance.IsClimberTurn())
+                {
+                    ClimberMinimal climber = obj.GetComponent<ClimberMinimal>();
+                    if (climber != null)
+                    {
+                        climber.SendMessage("HandleClimberTurnStart", SendMessageOptions.DontRequireReceiver);
+                    }
+                }
             }
 
             if (spawnedCount >= amountToSpawn)
@@ -72,6 +81,7 @@ public class SpawnManager : MonoBehaviour
             }
         }
     }
+
 
     public void ResetSpawner()
     {

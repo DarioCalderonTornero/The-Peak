@@ -8,6 +8,8 @@ public class CameraOrbitRightClick : MonoBehaviour
     void Awake()
     {
         axisController = GetComponent<CinemachineInputAxisController>();
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 0;
     }
 
     void Update()

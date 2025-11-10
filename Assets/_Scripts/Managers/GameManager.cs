@@ -36,6 +36,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Manager References")]
     public TurnManager turnManager;
+    public UIManager uiManager;
+
     public SpawnManager spawnManager;
     public DefensePlacementManager defenseManager;
     public PointsManager resourceManager;

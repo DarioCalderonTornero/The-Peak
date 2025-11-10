@@ -1023,15 +1023,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  turnManager: {fileID: 0}
-  spawnManager: {fileID: 0}
+  turnManager: {fileID: 246802376}
+  uiManager: {fileID: 1763326765}
+  spawnManager: {fileID: 1094738310}
   defenseManager: {fileID: 0}
   resourceManager: {fileID: 0}
-  pathfinder: {fileID: 0}
-  scanner: {fileID: 0}
-  cardInventoryUI: {fileID: 0}
-  cardSlotsUI: {fileID: 0}
-  turnsUI: {fileID: 0}
+  pathfinder: {fileID: 912259691}
+  scanner: {fileID: 496032606}
+  cardInventoryUI: {fileID: 895229882}
+  cardSlotsUI: {fileID: 281424687}
+  turnsUI: {fileID: 1629871906}
   logStateChanges: 1
   autoStartGame: 0
 --- !u!1 &246802374
@@ -1132,6 +1133,7 @@ Transform:
   m_Children:
   - {fileID: 202855860}
   - {fileID: 246802375}
+  - {fileID: 1763326764}
   - {fileID: 1094738311}
   - {fileID: 1360902141}
   - {fileID: 1262298391}
@@ -2501,7 +2503,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00012207031, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &829626364
@@ -4399,6 +4401,70 @@ MonoBehaviour:
   scanner: {fileID: 496032606}
   pathfinder: {fileID: 912259691}
   logInfo: 1
+--- !u!1 &1763326763
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1763326764}
+  - component: {fileID: 1763326765}
+  m_Layer: 0
+  m_Name: UIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1763326764
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763326763}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 281424684}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1763326765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763326763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a33217de00855f449a58767d04bc9e9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainMenuPanel: {fileID: 0}
+  gameUIPanel: {fileID: 0}
+  pauseMenuPanel: {fileID: 0}
+  victoryScreenPanel: {fileID: 0}
+  gameOverScreenPanel: {fileID: 0}
+  pointsText: {fileID: 0}
+  turnNumberText: {fileID: 0}
+  turnTimerText: {fileID: 0}
+  turnTimerFillBar: {fileID: 0}
+  playerTurnIndicator: {fileID: 0}
+  climberTurnIndicator: {fileID: 0}
+  cardInventoryUI: {fileID: 895229882}
+  cardSlotsUI: {fileID: 281424687}
+  notificationPanel: {fileID: 0}
+  notificationText: {fileID: 0}
+  notificationDuration: 3
+  gameOverReasonText: {fileID: 0}
+  restartButton: {fileID: 0}
+  mainMenuButton: {fileID: 0}
+  quitButton: {fileID: 0}
 --- !u!1 &1792850869
 GameObject:
   m_ObjectHideFlags: 0
@@ -5475,7 +5541,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -5.557007, y: -71.70997}
+  m_AnchoredPosition: {x: -5.557129, y: -71.70996}
   m_SizeDelta: {x: -1558.038, y: -143.42}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2123289952

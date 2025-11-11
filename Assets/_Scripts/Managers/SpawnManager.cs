@@ -10,18 +10,22 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private Transform endPoint;
     [SerializeField] private int amountToSpawn = 3;
     [SerializeField] private float spawnCooldown = 2f;
-    [SerializeField] private float minDistance = 2f; 
+    [SerializeField] private float minDistance = 2f;
 
-    [SerializeField] private float time = 0f;
+    [SerializeField] private float spawnCooldownTimer = 0f;
     [SerializeField] private int spawnedCount = 0;
 
     [SerializeField] public bool isMaxCount = false;
 
- 
     private List<Vector3> spawnedPositions = new List<Vector3>();
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
     }
 
@@ -61,9 +65,9 @@ public class SpawnManager : MonoBehaviour
                 GameObject obj = Instantiate(prefab, spawnPos, Quaternion.identity);
                 spawnedPositions.Add(spawnPos);
                 spawnedCount++;
-                time = 0f;
+                spawnCooldownTimer = 0f;
 
-                // 🔹 Activamos inmediatamente el turno si ya estamos en ClimberTurn
+                // Activamos inmediatamente el turno si ya estamos en ClimberTurn
                 if (TurnManager.Instance != null && TurnManager.Instance.IsClimberTurn())
                 {
                     ClimberMinimal climber = obj.GetComponent<ClimberMinimal>();
@@ -77,7 +81,7 @@ public class SpawnManager : MonoBehaviour
             if (spawnedCount >= amountToSpawn)
             {
                 isMaxCount = true;
-                time = 0f;
+                spawnCooldownTimer = 0f;
             }
         }
     }
@@ -85,7 +89,7 @@ public class SpawnManager : MonoBehaviour
 
     public void ResetSpawner()
     {
-        time = 0f;
+        spawnCooldownTimer = 0f;
         spawnedCount = 0;
         isMaxCount = false;
         spawnedPositions.Clear(); 
@@ -94,6 +98,14 @@ public class SpawnManager : MonoBehaviour
     public void StopSpawning()
     {
         isMaxCount = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 }
 

@@ -37,7 +37,6 @@ public class GameManager : MonoBehaviour
     [Header("Manager References")]
     public TurnManager turnManager;
     public UIManager uiManager;
-
     public SpawnManager spawnManager;
     public DefensePlacementManager defenseManager;
     public PointsManager resourceManager;
@@ -120,6 +119,10 @@ public class GameManager : MonoBehaviour
             return;
         CurrentState = GameState.Victory;
         Time.timeScale = 0f;
+
+        if (uiManager != null)
+            uiManager.ShowVictoryScreen();
+
         Debug.Log("[GameManager] VICTORY!");
     }
 
@@ -129,6 +132,10 @@ public class GameManager : MonoBehaviour
             return;
         CurrentState = GameState.GameOver;
         Time.timeScale = 0f;
+
+        if (uiManager != null)
+            uiManager.ShowGameOverScreen(reason);
+
         Debug.Log($"[GameManager] GAME OVER: {reason}");
     }
 
@@ -167,6 +174,8 @@ public class GameManager : MonoBehaviour
     {
         if (turnManager == null)
             turnManager = FindFirstObjectByType<TurnManager>();
+        if (uiManager == null)
+            uiManager = FindFirstObjectByType<UIManager>();
         if (defenseManager == null)
             defenseManager = FindFirstObjectByType<DefensePlacementManager>();
         if (resourceManager == null)

@@ -193,13 +193,11 @@ public class TurnManager : MonoBehaviour
 
     private void Update()
     {
-        //Debug.Log("Is Game Active");
         if (GameManager.Instance != null && !GameManager.Instance.IsGameActive() && CurrentTurnState != TurnState.ClimberTurn)
             return;
-        //Debug.Log("Updating TurnManager");
+
         if (CurrentTurnState == TurnState.ClimberTurn)
         {
-            //Debug.Log("Updating ClimberTurn");
             UpdateClimberTurn();
         }
     }
@@ -210,7 +208,7 @@ public class TurnManager : MonoBehaviour
         climberTurnTimer += Time.deltaTime;
         OnClimberTurnTick?.Invoke(ClimberTurnProgress);
 
-        // Hacer que los escaladores actúen durante este tiempo
+        // Hacer que los escaladores actuen durante este tiempo
         if (spawnManager != null && !spawnManager.isMaxCount)
         {
             spawnManager.SpawnClimbers();
@@ -224,7 +222,7 @@ public class TurnManager : MonoBehaviour
         }
     }
 
-        public bool IsPlayerTurn()
+    public bool IsPlayerTurn()
     {
         return CurrentTurnState == TurnState.PlayerTurn;
     }

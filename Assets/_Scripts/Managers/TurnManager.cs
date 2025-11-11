@@ -131,10 +131,7 @@ public class TurnManager : MonoBehaviour
         currentTurnNumber++;
         OnTurnNumberChanged?.Invoke(currentTurnNumber);
         
-        if (CardSlotsUI.Instance != null)
-        {
-            CardSlotsUI.Instance.ShowSlotContainer();
-        }
+        // CardManager maneja la visibilidad de las cartas
         
         OnPlayerTurnStart?.Invoke();
         
@@ -160,10 +157,7 @@ public class TurnManager : MonoBehaviour
         CurrentTurnState = TurnState.ClimberTurn;
         climberTurnTimer = 0f;
         
-        if (CardSlotsUI.Instance != null)
-        {
-            CardSlotsUI.Instance.HideSlotContainer();
-        }
+        // CardManager maneja la visibilidad de las cartas
         
         if (nextTurnButton != null)
         {

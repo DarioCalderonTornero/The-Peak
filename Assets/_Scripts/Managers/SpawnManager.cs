@@ -17,6 +17,8 @@ public class SpawnManager : MonoBehaviour
 
     [SerializeField] public bool isMaxCount = false;
 
+    [SerializeField] private float time = 10f;
+
     private List<Vector3> spawnedPositions = new List<Vector3>();
 
     private void Awake()

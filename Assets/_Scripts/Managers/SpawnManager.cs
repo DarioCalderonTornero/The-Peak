@@ -31,9 +31,9 @@ public class SpawnManager : MonoBehaviour
 
     public void SpawnClimbers()
     {
-        spawnCooldownTimer += Time.deltaTime;
+        time += Time.deltaTime;
 
-        if (spawnCooldownTimer >= spawnCooldown && !isMaxCount)
+        if (time >= spawnCooldown && !isMaxCount)
         {
             Vector3 spawnPos;
             bool validPosition = false;

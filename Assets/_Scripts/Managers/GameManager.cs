@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     public TurnManager turnManager;
     public UIManager uiManager;
     public SpawnManager spawnManager;
-    public DefenseManager defenseManager;
+    public DefensePlacementManager defenseManager;
     public PointsManager resourceManager;
 
     [Header("Core Systems")]
@@ -177,7 +177,7 @@ public class GameManager : MonoBehaviour
         if (uiManager == null)
             uiManager = FindFirstObjectByType<UIManager>();
         if (defenseManager == null)
-            defenseManager = FindFirstObjectByType<DefenseManager>();
+            defenseManager = FindFirstObjectByType<DefensePlacementManager>();
         if (resourceManager == null)
             resourceManager = FindFirstObjectByType<PointsManager>();
         if (spawnManager == null)

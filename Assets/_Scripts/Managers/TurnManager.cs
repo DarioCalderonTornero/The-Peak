@@ -55,7 +55,7 @@ public class TurnManager : MonoBehaviour
     public event Action<float> OnClimberTurnTick;
 
     private SpawnManager spawnManager;
-    private DefenseManager defenseManager;
+    private DefensePlacementManager defenseManager;
 
     private void Awake()
     {
@@ -70,7 +70,7 @@ public class TurnManager : MonoBehaviour
     private void Start()
     {
         spawnManager = SpawnManager.Instance;
-        defenseManager = DefenseManager.Instance;
+        defenseManager = DefensePlacementManager.Instance;
         
         if (nextTurnButton != null)
         {

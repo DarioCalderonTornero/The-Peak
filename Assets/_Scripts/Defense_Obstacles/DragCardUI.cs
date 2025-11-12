@@ -62,7 +62,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         // Espera un frame para que el VerticalLayoutGroup haya hecho su trabajo
         yield return null;
 
-        // Ahora sï¿½, guarda la posiciï¿½n correcta
+        // Ahora sí, guarda la posición correcta
         originalPosition = rectTransform.anchoredPosition;
     }
 
@@ -163,30 +163,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
-                // CORRECCIÃ“N: VerificaciÃ³n defensiva y manejo mejorado
-                if (DefenseManager.Instance == null)
-                {
-                    Debug.LogError("[DragCardUI] DefenseManager no encontrado en la escena!");
-                    PointsManager.Instance.AddPoints(cardData.cost);
-                    if (previewInstance != null)
-                        Destroy(previewInstance);
-                    inPlacementMode = false;
-                    useFixedPosition = false;
-                    return;
-                }
+                GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition);
 
-                GameObject placed = DefenseManager.Instance.PlaceDefenseAndRegister(cardData.defensePrefab, finalPosition);
+                if (placed != null && DefensePlacementManager.Instance != null)
+                    DefensePlacementManager.Instance.RegisterPlaced(placed);
 
-                if (placed != null)
-                {
-                    OnCardUsed?.Invoke(this);
-                    Debug.Log($"[DragCardUI] Defensa colocada: {cardData.cardName} en {finalPosition}");
-                }
-                else
-                {
-                    Debug.LogError("[DragCardUI] No se pudo crear la defensa!");
-                    PointsManager.Instance.AddPoints(cardData.cost);
-                }
+                //Nueva línea:
+                OnCardUsed?.Invoke(this);
             }
 
             if (previewInstance != null)
@@ -314,7 +297,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private bool isHoveringForReplacement = false;
     private Coroutine hoverRoutine;
     private Vector2 hoverTargetOffset = new Vector2(30f, 0f); // distancia del movimiento
-    private float hoverSpeed = 10f; // velocidad de interpolaciï¿½n
+    private float hoverSpeed = 10f; // velocidad de interpolación
 
     public void OnPointerEnter(PointerEventData eventData)
     {

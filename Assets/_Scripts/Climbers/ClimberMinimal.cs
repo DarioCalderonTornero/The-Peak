@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
 using System;
@@ -73,50 +73,57 @@ public class ClimberMinimal : MonoBehaviour
 
 
 
-private void Update()
+    private void Update()
     {
-        // Solo moverse durante el turno de escaladores
+
+        // Verificar estado global del juego
+        if (GameManager.Instance == null)
+            Debug.LogWarning("[ClimberMinimal] GameManager.Instance es NULL");
+        if (!GameManager.Instance.IsGameActive())
+            Debug.LogWarning("[ClimberMinimal] Game is not Active");
+
         if (GameManager.Instance == null || !GameManager.Instance.IsGameActive())
             return;
-
-        if (TurnManager.Instance == null || !TurnManager.Instance.IsClimberTurn())
-            return;
-
-        if (_arrived || _waypoints == null || _waypoints.Count == 0)
-            return;
-
-        // Objetivo actual
-        Vector3 target = _waypoints[_wpIndex];
-        Vector3 to = target - transform.position;
-        Vector3 toFlat = new Vector3(to.x, 0f, to.z);
-        float dist = to.magnitude;
-
-        // ¿Alcanzó waypoint?
-        if (dist <= arriveRadius)
+        if (TurnManager.Instance == null || TurnManager.Instance.IsClimberTurn())
         {
-            _wpIndex++;
-            if (_wpIndex >= _waypoints.Count)
+
+            if (_arrived || _waypoints == null || _waypoints.Count == 0) 
+            return;
+
+            // Objetivo actual
+            Vector3 target = _waypoints[_wpIndex];
+            Vector3 to = target - transform.position;
+            Vector3 toFlat = new Vector3(to.x, 0f, to.z);
+            float dist = to.magnitude;
+
+            // ¿Alcanzó waypoint?
+            if (dist <= arriveRadius)
             {
-                OnArrivedToGoal();
-                return;
+                _wpIndex++;
+                if (_wpIndex >= _waypoints.Count)
+                {
+                    OnArrivedToGoal();
+                    return;
+                }
+                target = _waypoints[_wpIndex];
+                to = target - transform.position;
+                toFlat = new Vector3(to.x, 0f, to.z);
             }
-            target = _waypoints[_wpIndex];
-            to = target - transform.position;
-            toFlat = new Vector3(to.x, 0f, to.z);
-        }
 
-        // Rotar hacia la dirección de avance (solo yaw)
-        if (toFlat.sqrMagnitude > 1e-6f)
-        {
-            Quaternion look = Quaternion.LookRotation(toFlat.normalized, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, look, rotateSpeed * Time.deltaTime);
-        }
+            // Rotar hacia la dirección de avance (solo yaw)
+            if (toFlat.sqrMagnitude > 1e-6f)
+            {
+                Quaternion look = Quaternion.LookRotation(toFlat.normalized, Vector3.up);
+                transform.rotation = Quaternion.Slerp(transform.rotation, look, rotateSpeed * Time.deltaTime);
+            }
 
-        // Avanzar
-        if (to.sqrMagnitude > 1e-6f)
-        {
-            Vector3 dir = to.normalized;
-            transform.position += dir * moveSpeed * Time.deltaTime;
+            // Avanzar
+            if (to.sqrMagnitude > 1e-6f)
+            {
+                Vector3 dir = to.normalized;
+                transform.position += dir * moveSpeed * Time.deltaTime;
+            }
+        
         }
     }
 
@@ -151,28 +158,28 @@ private void Update()
     }
 
 
-private void OnArrivedToGoal()
+    private void OnArrivedToGoal()
     {
         _arrived = true;
-        Debug.Log("[ClimberMinimal] ¡Cima alcanzada! - GAME OVER");
-        
-        // Notificar al GameManager que el jugador ha perdido
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.GameOver("Un escalador ha alcanzado la cima");
-        }
+        Debug.Log("[ClimberMinimal] ¡Cima alcanzada!");
+        //ShowVictoryPopUp();
     }
 
-
-
-private void NoRouteDetected(string reason)
+    private void ShowVictoryPopUp()//Muestra en pantalla que has ganado y vuelve al Menú
     {
-        Debug.LogWarning($"[ClimberMinimal] {reason}");
-        _arrived = true;
-        // El escalador no puede moverse, se queda bloqueado
+        throw new NotImplementedException();
     }
 
+    private void NoRouteDetected(string WhyLost)
+    {
+        Debug.LogWarning(WhyLost);
+        //ShowDefeatPopUp();
+    }
 
+    private void ShowDefeatPopUp() //Muestra en pantalla que has perdido y vulve al Menú
+    {
+        throw new NotImplementedException();
+    }
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()

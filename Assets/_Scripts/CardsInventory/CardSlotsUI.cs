@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class CardSlotsUI : MonoBehaviour
 {
-    
+    public static CardSlotsUI Instance { get; private set; }
 
     [Header("Configuraci�n UI")]
     [SerializeField] private RectTransform slotsContainer; // Contenedor con VerticalLayoutGroup
@@ -12,7 +12,10 @@ public class CardSlotsUI : MonoBehaviour
 
     private readonly List<DragCardUI> currentCards = new List<DragCardUI>();
 
-    
+    private void Awake()
+    {
+        Instance = this;    
+    }
 
     private void Start()
     {

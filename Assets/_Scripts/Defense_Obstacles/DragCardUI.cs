@@ -132,7 +132,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
     }
 
-public void OnEndDrag(PointerEventData eventData)
+    public void OnEndDrag(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
             return;
@@ -161,26 +161,31 @@ public void OnEndDrag(PointerEventData eventData)
                 }
             }
 
-            if (valid)
+            if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
-                // NUEVO: CardManager se encarga de todo (validación, puntos, colocación, robo)
-                if (CardManager.Instance != null)
+                // CORRECCIÓN: Verificación defensiva y manejo mejorado
+                if (DefenseManager.Instance == null)
                 {
-                    bool success = CardManager.Instance.PlayCard(cardData, finalPosition);
-                    
-                    if (success)
-                    {
-                        OnCardUsed?.Invoke(this);
-                        Debug.Log($"[DragCardUI] Card played via CardManager: {cardData.cardName}");
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[DragCardUI] CardManager rejected card play: {cardData.cardName}");
-                    }
+                    Debug.LogError("[DragCardUI] DefenseManager no encontrado en la escena!");
+                    PointsManager.Instance.AddPoints(cardData.cost);
+                    if (previewInstance != null)
+                        Destroy(previewInstance);
+                    inPlacementMode = false;
+                    useFixedPosition = false;
+                    return;
+                }
+
+                GameObject placed = DefenseManager.Instance.PlaceDefenseAndRegister(cardData.defensePrefab, finalPosition);
+
+                if (placed != null)
+                {
+                    OnCardUsed?.Invoke(this);
+                    Debug.Log($"[DragCardUI] Defensa colocada: {cardData.cardName} en {finalPosition}");
                 }
                 else
                 {
-                    Debug.LogError("[DragCardUI] CardManager not found!");
+                    Debug.LogError("[DragCardUI] No se pudo crear la defensa!");
+                    PointsManager.Instance.AddPoints(cardData.cost);
                 }
             }
 
@@ -287,22 +292,10 @@ public void OnEndDrag(PointerEventData eventData)
         isShaking = false;
     }
 
-public void UpdateInteractable()
+    public void UpdateInteractable()
     {
-        if (this == null || canvasGroup == null) return;
-        
-        // NUEVO: Usar CardManager para validar si se puede jugar
-        bool canUse = false;
-        
-        if (CardManager.Instance != null)
-        {
-            canUse = CardManager.Instance.CanPlayCard(cardData);
-        }
-        else if (PointsManager.Instance != null)
-        {
-            // Fallback al sistema antiguo si CardManager no existe
-            canUse = PointsManager.Instance.CanAfford(cardData.cost);
-        }
+        if (this == null || canvasGroup == null) return; // seguridad extra
+        bool canUse = PointsManager.Instance != null && PointsManager.Instance.CanAfford(cardData.cost);
 
         if (cardImage != null)
             cardImage.color = canUse ? Color.white : Color.gray;

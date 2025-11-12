@@ -3136,7 +3136,7 @@ MonoBehaviour:
   amountToSpawn: 2
   spawnCooldown: 1
   minDistance: 2
-  spawnCooldownTimer: 0
+  time: 0
   spawnedCount: 0
   isMaxCount: 0
 --- !u!4 &1094738311
@@ -3946,7 +3946,7 @@ GameObject:
   - component: {fileID: 1360902141}
   - component: {fileID: 1360902140}
   m_Layer: 0
-  m_Name: DefenseManager
+  m_Name: 'DefensePlacementManager '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3961,12 +3961,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1360902139}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: beaa5d0b6a6ae9246a854b8232902b2c, type: 3}
+  m_Script: {fileID: 11500000, guid: 87b1211ca958ef049b72c17cd15e5d93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logInitialization: 1
-  logDefensePlacement: 1
-  logTurnAdvance: 1
 --- !u!4 &1360902141
 Transform:
   m_ObjectHideFlags: 0

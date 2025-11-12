@@ -40,8 +40,6 @@ public class GameManager : MonoBehaviour
     public SpawnManager spawnManager;
     public DefenseManager defenseManager;
     public PointsManager resourceManager;
-    public CardManager cardManager;
-
 
     [Header("Core Systems")]
     public MountainPathfinder pathfinder;
@@ -50,7 +48,7 @@ public class GameManager : MonoBehaviour
     [Header("UI References")]
     public CardInventoryUI cardInventoryUI;
     public CardSlotsUI cardSlotsUI;
-    
+    public TurnsUI turnsUI;
 
     [Header("Configuration")]
     [SerializeField] private bool logStateChanges = true;
@@ -184,10 +182,6 @@ public class GameManager : MonoBehaviour
             resourceManager = FindFirstObjectByType<PointsManager>();
         if (spawnManager == null)
             spawnManager = FindFirstObjectByType<SpawnManager>();
-
-        if (cardManager == null)
-            cardManager = FindFirstObjectByType<CardManager>();
-
         if (pathfinder == null)
             pathfinder = FindFirstObjectByType<MountainPathfinder>();
         if (scanner == null)
@@ -196,7 +190,8 @@ public class GameManager : MonoBehaviour
             cardInventoryUI = FindFirstObjectByType<CardInventoryUI>();
         if (cardSlotsUI == null)
             cardSlotsUI = FindFirstObjectByType<CardSlotsUI>();
-        
+        if (turnsUI == null)
+            turnsUI = FindFirstObjectByType<TurnsUI>();
     }
 
     private void InitializeCoreLevel()

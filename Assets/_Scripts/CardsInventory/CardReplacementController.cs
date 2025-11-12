@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -74,64 +74,40 @@ public class CardReplacementController : MonoBehaviour
         ShowNewCardPreview();
     }
 
-private void OnCardSelected(DragCardUI oldCard)
+    private void OnCardSelected(DragCardUI oldCard)
     {
         if (!isReplacementActive)
             return;
 
-        if (oldCard == null || oldCard.cardData == null)
+        int slotIndex = cardSlotsUI.GetCardIndex(oldCard);
+        if (slotIndex < 0)
             return;
 
+        // 🔹 Guarda los datos de la carta antigua antes de reemplazarla
         CardData oldCardData = oldCard.cardData;
 
-        // NUEVO: Usar CardManager para reemplazar la carta
-        if (CardManager.Instance != null)
+        // 🔹 Reemplaza visual y lógicamente la carta en ese slot
+        cardSlotsUI.ReplaceCardAt(slotIndex, newCardData);
+
+        // 🔹 Mueve la carta vieja al inventario
+        if (cardInventoryUI != null && oldCardData != null)
         {
-            bool success = CardManager.Instance.ReplaceCardInHand(oldCardData, newCardData);
-            
-            if (success)
-            {
-                // Mover la carta vieja al inventario
-                if (cardInventoryUI != null)
-                {
-                    cardInventoryUI.AddCard(oldCardData);
-                    Debug.Log($"[CardReplacementController] Carta {oldCardData.cardName} reemplazada por {newCardData.cardName}");
-                }
-                else
-                {
-                    Debug.LogWarning("[CardReplacementController] CardInventoryUI no encontrado para devolver carta vieja");
-                }
-            }
-            else
-            {
-                Debug.LogError($"[CardReplacementController] No se pudo reemplazar {oldCardData.cardName}");
-            }
-        }
-        else
-        {
-            Debug.LogError("[CardReplacementController] CardManager no encontrado!");
+            Debug.Log($"Carta {oldCardData.cardName} movida al inventario tras el reemplazo");
+            cardInventoryUI.AddCard(oldCardData);
         }
 
         EndReplacement();
     }
 
-private void CancelReplacement()
+    private void CancelReplacement()
     {
         if (!isReplacementActive) return;
 
-        // Guardar la nueva carta en el inventario (jugador rechaza el reemplazo)
-        if (CardManager.Instance != null && newCardData != null)
+        // Guarda la nueva carta en el inventario
+        if (cardInventoryUI != null && newCardData != null)
         {
-            // Añadir al inventario de cartas disponibles
-            CardManager.Instance.AddCardToInventory(newCardData);
-            
-            // También mostrar en UI de inventario si está disponible
-            if (cardInventoryUI != null)
-            {
-                cardInventoryUI.AddCard(newCardData);
-            }
-            
-            Debug.Log($"[CardReplacementController] Carta {newCardData.cardName} guardada en inventario (reemplazo cancelado)");
+            Debug.Log($" Carta {newCardData.cardName} guardada en inventario");
+            cardInventoryUI.AddCard(newCardData);
         }
 
         EndReplacement();

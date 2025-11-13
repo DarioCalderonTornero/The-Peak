@@ -12,6 +12,7 @@ using System;
 /// </summary>
 public class ClimberMinimal : MonoBehaviour
 {
+    /*
     [Header("Referencias")]
     public MountainPathfinder pathfinder;   // Si está vacío, se auto-busca
 
@@ -192,4 +193,6 @@ public class ClimberMinimal : MonoBehaviour
             Gizmos.DrawSphere(p + Vector3.up * 0.05f, 0.06f);
     }
 #endif
+
+    */
 }

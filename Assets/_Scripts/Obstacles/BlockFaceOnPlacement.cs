@@ -1,8 +1,9 @@
 using UnityEngine;
 
-[RequireComponent(typeof(RockDefense))]
+//[RequireComponent(typeof(RockDefense))]
 public class BlockFaceOnPlacement : MonoBehaviour
 {
+    /*
     private int faceId = -1;
 
     private void Start()
@@ -24,4 +25,5 @@ public class BlockFaceOnPlacement : MonoBehaviour
     {
         if (faceId >= 0) ObstacleNavBlocker.Instance?.UnblockFace(faceId);
     }
+    */
 }

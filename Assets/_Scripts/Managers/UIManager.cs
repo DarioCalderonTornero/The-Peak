@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    /*
     public static UIManager Instance { get; private set; }
 
     [Header("Screen Panels")]
@@ -289,4 +290,6 @@ public class UIManager : MonoBehaviour
         if (notificationPanel != null)
             notificationPanel.SetActive(false);
     }
+
+    */
 }

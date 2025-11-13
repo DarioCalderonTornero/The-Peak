@@ -101,8 +101,8 @@ public class TurnManager : MonoBehaviour
                 StartGame();
                 break;
             case GameManager.GameState.GameOver:
-            case GameManager.GameState.Victory:
-                CurrentTurnState = TurnState.GameOver;
+            //case GameManager.GameState.Victory:
+                //CurrentTurnState = TurnState.GameOver;
                 break;
         }
     }
@@ -193,9 +193,6 @@ public class TurnManager : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance != null && !GameManager.Instance.IsGameActive() && CurrentTurnState != TurnState.ClimberTurn)
-            return;
-
         if (CurrentTurnState == TurnState.ClimberTurn)
         {
             UpdateClimberTurn();

@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 4274721090101795705}
   - component: {fileID: 8195220715332458517}
   - component: {fileID: 948342635942547329}
+  - component: {fileID: 8495448889631796368}
+  - component: {fileID: -810517234460364880}
   m_Layer: 0
   m_Name: CLIMBER_PROTOTIPE
   m_TagString: Untagged
@@ -125,7 +127,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 948342635942547329}
-  finalDestination: {fileID: 0}
   reachedThreshold: 0.2
 --- !u!195 &948342635942547329
 NavMeshAgent:
@@ -149,3 +150,30 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 0
+--- !u!114 &8495448889631796368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4930685435348997123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d99a1119f548548a77c89144126ea6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-810517234460364880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4930685435348997123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5c475a7007d6ba4aa83b9220b6963ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  archetype: {fileID: 11400000, guid: f16b76461f5b004449ab8f6d8c99af4c, type: 2}
+  agent: {fileID: 0}
+  loadout: {fileID: 0}

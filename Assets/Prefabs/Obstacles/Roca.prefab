@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 5087622762850858765}
   - component: {fileID: -2599692647300675575}
   - component: {fileID: -8443762973840266356}
+  - component: {fileID: -3012489319758654930}
+  - component: {fileID: 5348119894939488011}
   m_Layer: 0
   m_Name: Roca
   m_TagString: Untagged
@@ -104,11 +106,11 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Radius: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &-2599692647300675575
 MonoBehaviour:
@@ -122,6 +124,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bdcc574b18f7a542900218b1d45fd87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  obstacle: {fileID: 0}
+  configureObstacleAtRuntime: 1
 --- !u!114 &-8443762973840266356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,3 +138,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a05f81d033fd9ae4481c847a7584ccad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-3012489319758654930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4070928808904378361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97a96f72894c20429c31f3cf6833f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleType: 1
+--- !u!54 &5348119894939488011
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4070928808904378361}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0

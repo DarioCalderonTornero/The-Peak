@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 public class ClimberMovement : MonoBehaviour
@@ -7,31 +7,38 @@ public class ClimberMovement : MonoBehaviour
     [SerializeField] private NavMeshAgent agent;
 
     [Header("Campamentos / Grafo")]
-    [Tooltip("Se buscará automáticamente en la escena si está vacío.")]
     [SerializeField] private CampGraphBuilder campGraph;
 
     [Header("Objetivo (Cima)")]
-    [Tooltip("Si está vacío, buscará un objeto llamado 'FinalDestination' en la escena.")]
     [SerializeField] private Transform summit;
 
-    [Header("Configuración llegada")]
-    [Tooltip("Margen adicional para considerar que ha llegado al campamento/destino.")]
+    [Header("ConfiguraciÃ³n llegada")]
     [SerializeField] private float reachedThreshold = 0.2f;
 
     [Header("Debug")]
     [SerializeField] private bool debugLogs = true;
 
-    // Estado de turnos
+    [Header("Stamina")]
+    [SerializeField] private float maxStamina = 100f;
+    [SerializeField] private float baseCostPerMeter = 1f;
+    [SerializeField] private float uphillExtraCostFactor = 2f;
+    [SerializeField] private float minStaminaCost = 0.1f;
+
+    [SerializeField] private float currentStamina;
+
+    private Vector3 lastFramePosition;
+    private float lastFrameHeight;
+
+    private float originalSpeed;
+
     private bool isActiveThisTurn = false;
 
-    // Estado del grafo
-    private CampGraphBuilder.CampNode currentNode;   // campamento lógico donde está ahora
-    private CampGraphBuilder.CampNode targetNode;    // campamento al que quiere ir este turno
-    private CampGraphBuilder.CampNode lastNode;      // campamento anterior, para evitar ping-pong
+    private CampGraphBuilder.CampNode currentNode;
+    private CampGraphBuilder.CampNode targetNode;
+    private CampGraphBuilder.CampNode lastNode;
 
-    // Estado general
     private bool reachedSummit = false;
-    private bool isGoingToFirstCamp = true;          // al principio va al campamento más cercano
+    private bool isGoingToFirstCamp = true;
 
     private void Awake()
     {
@@ -59,33 +66,22 @@ public class ClimberMovement : MonoBehaviour
 
     private void Start()
     {
-        // 1) Buscar la cima si no se ha asignado
         if (summit == null)
         {
             GameObject targetObj = GameObject.Find("FinalDestination");
             if (targetObj != null)
-            {
                 summit = targetObj.transform;
-            }
-            else
-            {
-                Debug.LogWarning("[ClimberMovement] No se encontró un objeto llamado 'FinalDestination' en la escena (opcional).");
-            }
         }
 
-        // 2) Buscar automáticamente el CampGraphBuilder si no se ha asignado nada
         if (campGraph == null)
-        {
-#if UNITY_2023_1_OR_NEWER
-            campGraph = Object.FindFirstObjectByType<CampGraphBuilder>();
-#else
-            campGraph = Object.FindObjectOfType<CampGraphBuilder>();
-#endif
-            if (campGraph == null)
-            {
-                Debug.LogError("[ClimberMovement] No se encontró ningún CampGraphBuilder en la escena.");
-            }
-        }
+            campGraph = FindObjectOfType<CampGraphBuilder>();
+
+        currentStamina = maxStamina;
+
+        lastFramePosition = transform.position;
+        lastFrameHeight = transform.position.y;
+
+        originalSpeed = agent.speed;
     }
 
     private void Update()
@@ -93,7 +89,34 @@ public class ClimberMovement : MonoBehaviour
         if (!isActiveThisTurn || agent == null || campGraph == null || reachedSummit)
             return;
 
-        // Comprobar si ha llegado al destino actual (campamento)
+        Vector3 currentPos = transform.position;
+        float frameDistance = Vector3.Distance(currentPos, lastFramePosition);
+        float heightDelta = currentPos.y - lastFrameHeight;
+
+        if (frameDistance > 0f)
+        {
+            float uphill = Mathf.Max(heightDelta, 0f);
+            float slope = uphill / frameDistance;
+
+            float frameCost = frameDistance * baseCostPerMeter * (1f + slope * uphillExtraCostFactor);
+            frameCost = Mathf.Max(frameCost, 0f);
+
+            currentStamina = Mathf.Max(0f, currentStamina - frameCost);
+        }
+
+        lastFramePosition = currentPos;
+        lastFrameHeight = currentPos.y;
+
+        // ReducciÃ³n de velocidad al quedarse sin estamina
+        if (currentStamina <= 0f)
+        {
+            agent.speed = 0f;
+        }
+        else
+        {
+            agent.speed = originalSpeed;
+        }
+
         if (!agent.pathPending &&
             agent.remainingDistance <= agent.stoppingDistance + reachedThreshold)
         {
@@ -101,49 +124,27 @@ public class ClimberMovement : MonoBehaviour
         }
     }
 
-    // -------------------------------------------------------
-    //                LÓGICA DE TURNOS
-    // -------------------------------------------------------
-
     private void HandleClimberTurnStart()
     {
         if (reachedSummit) return;
 
-        // PRIMER TURNO ? ir al campamento más cercano desde su posición actual
         if (isGoingToFirstCamp)
         {
             MoveToClosestCamp();
             return;
         }
 
-        // RESTO DE TURNOS ? moverse entre campamentos del grafo
         ChooseNextCampAndMove();
     }
 
     private void HandleClimberTurnEnd()
     {
-        StopMoving();
-    }
-
-    private void StopMoving()
-    {
         isActiveThisTurn = false;
-        if (agent != null)
-            agent.isStopped = true;
+        agent.isStopped = true;
     }
-
-    // -------------------------------------------------------
-    //    PRIMER MOVIMIENTO: IR AL CAMPAMENTO MÁS CERCANO
-    // -------------------------------------------------------
 
     private void MoveToClosestCamp()
     {
-        if (campGraph == null || campGraph.nodes == null || campGraph.nodes.Count == 0)
-        {
-            Debug.LogError("[ClimberMovement] No hay campamentos disponibles.");
-            return;
-        }
-
         CampGraphBuilder.CampNode closest = null;
         float bestDist = float.MaxValue;
 
@@ -157,165 +158,114 @@ public class ClimberMovement : MonoBehaviour
             }
         }
 
-        if (closest == null)
-        {
-            Debug.LogError("[ClimberMovement] No se ha podido encontrar ningún campamento cercano.");
-            return;
-        }
-
-        // Moverse físicamente al campamento más cercano
         targetNode = closest;
         isActiveThisTurn = true;
         agent.isStopped = false;
         agent.SetDestination(closest.position);
 
-        if (debugLogs)
-            Debug.Log($"{name} inicia el juego moviéndose al campamento más cercano: Camp {closest.id}");
+        lastFramePosition = transform.position;
+        lastFrameHeight = transform.position.y;
     }
 
-    // -------------------------------------------------------
-    //          MOVIMIENTOS NORMALES ENTRE CAMPAMENTOS
-    // -------------------------------------------------------
+    private float CalculateStaminaCost(CampGraphBuilder.CampEdge edge)
+    {
+        float length = Mathf.Max(edge.pathLength, 0.01f);
+        float uphill = Mathf.Max(edge.heightDelta, 0f);
+        float slope = uphill / length;
+
+        float cost = length * baseCostPerMeter * (1f + slope * uphillExtraCostFactor);
+        return Mathf.Max(cost, minStaminaCost);
+    }
 
     private void ChooseNextCampAndMove()
     {
-        if (currentNode == null)
-        {
-            Debug.LogError("[ClimberMovement] currentNode es null al intentar elegir siguiente campamento.");
-            return;
-        }
+        CampGraphBuilder.CampEdge bestAffordable = null;
+        float bestAffordableScore = float.NegativeInfinity;
 
-        if (currentNode.neighbors == null || currentNode.neighbors.Count == 0)
-        {
-            if (debugLogs)
-                Debug.LogWarning($"{name} está en un campamento sin vecinos (camp {currentNode.id}). No puede avanzar.");
-            return;
-        }
+        CampGraphBuilder.CampEdge bestUnaffordable = null;
+        float bestUnaffordableScore = float.NegativeInfinity;
 
-        CampGraphBuilder.CampEdge bestEdge = null;
-        float bestScore = float.NegativeInfinity;
-
-        float currentDistToSummit = (summit != null)
-            ? Vector3.Distance(currentNode.position, summit.position)
-            : 0f;
-
-        const float minApproachGain = 0.05f; // margen para considerar que nos acercamos "de verdad"
+        float distNow = Vector3.Distance(currentNode.position, summit.position);
+        const float minApproachGain = 0.05f;
 
         foreach (var edge in currentNode.neighbors)
         {
-            // Evitar volver directamente al campamento anterior si hay otras opciones
             if (edge.to == lastNode && currentNode.neighbors.Count > 1)
                 continue;
 
-            float pathLength = Mathf.Max(edge.pathLength, 0.01f); // evitar división por cero
-            float score = 0f;
+            float cost = CalculateStaminaCost(edge);
 
-            if (summit != null)
+            float distNext = Vector3.Distance(edge.to.position, summit.position);
+            float approach = distNow - distNext;
+
+            float score = (approach < -minApproachGain)
+                ? -9999f
+                : approach / Mathf.Max(cost, 0.01f);
+
+            bool affordable = cost <= currentStamina;
+
+            if (affordable)
             {
-                float distFromNext = Vector3.Distance(edge.to.position, summit.position);
-                float approach = currentDistToSummit - distFromNext; // positivo si nos acercamos
-
-                // Si nos alejamos claramente, penalizamos fuerte
-                if (approach < -minApproachGain)
+                if (score > bestAffordableScore)
                 {
-                    score = -9999f; // solo se elegirá si no queda nada mejor
-                }
-                else
-                {
-                    // Rentabilidad = cuánto nos acercamos por metro recorrido
-                    float profitability = approach / pathLength;
-                    score = profitability;
+                    bestAffordableScore = score;
+                    bestAffordable = edge;
                 }
             }
             else
             {
-                // Si no hay cima, simplemente preferimos el camino más corto
-                score = -pathLength; // más corto = score más alto (menos negativo)
-            }
-
-            if (score > bestScore)
-            {
-                bestScore = score;
-                bestEdge = edge;
+                if (score > bestUnaffordableScore)
+                {
+                    bestUnaffordableScore = score;
+                    bestUnaffordable = edge;
+                }
             }
         }
 
-        if (bestEdge == null)
-        {
-            if (debugLogs)
-                Debug.LogWarning($"{name} no ha encontrado un siguiente campamento al que moverse.");
-            return;
-        }
+        CampGraphBuilder.CampEdge chosen =
+            bestAffordable != null ? bestAffordable : bestUnaffordable;
 
-        // Guardar el campamento objetivo y el anterior para evitar ping-pong
         lastNode = currentNode;
-        targetNode = bestEdge.to;
-
-        if (debugLogs)
-        {
-            Debug.Log($"{name} se mueve de camp {currentNode.id} a camp {targetNode.id}. " +
-                      $"Score: {bestScore:F3}");
-        }
+        targetNode = chosen.to;
 
         isActiveThisTurn = true;
         agent.isStopped = false;
         agent.SetDestination(targetNode.position);
-    }
 
-    // -------------------------------------------------------
-    //            CUANDO LLEGA A UN CAMPAMENTO
-    // -------------------------------------------------------
+        lastFramePosition = transform.position;
+        lastFrameHeight = transform.position.y;
+    }
 
     private void HandleReachedCamp()
     {
-        if (targetNode == null)
-        {
-            isActiveThisTurn = false;
-            if (agent != null) agent.isStopped = true;
-            return;
-        }
-
-        // Actualizar nodo lógico actual
         currentNode = targetNode;
         targetNode = null;
         isActiveThisTurn = false;
         agent.isStopped = true;
 
-        // Si era el primer movimiento (desde fuera de los campamentos)
+        lastFramePosition = transform.position;
+        lastFrameHeight = transform.position.y;
+
         if (isGoingToFirstCamp)
         {
-            isGoingToFirstCamp = false; // ya tiene su primer campamento real
-            lastNode = null;            // aún no hay campamento previo
+            isGoingToFirstCamp = false;
+            lastNode = null;
         }
 
-        if (debugLogs)
-            Debug.Log($"{name} ha llegado al campamento {currentNode.id} (altura {currentNode.height}).");
+        currentStamina = maxStamina;
+        agent.speed = originalSpeed;
 
-        // ?? COMPROBAR SI ESTE CAMPAMENTO ES LA CIMA
-        if (campGraph != null && campGraph.finalDestinationNodeId >= 0)
-        {
-            if (currentNode.id == campGraph.finalDestinationNodeId)
-            {
-                HandleReachedGoal();
-            }
-        }
+        if (currentNode.id == campGraph.finalDestinationNodeId)
+            HandleReachedGoal();
     }
-
 
     private void HandleReachedGoal()
     {
-        if (reachedSummit)
-            return;
-
         reachedSummit = true;
         isActiveThisTurn = false;
+        agent.isStopped = true;
 
-        if (agent != null)
-            agent.isStopped = true;
-
-        Debug.Log("GAME OVER: {name} ha alcanzado la cima (FinalDestination).");
-
-
+        Debug.Log($"GAME OVER: {name} ha alcanzado la cima.");
         Destroy(gameObject);
     }
 }

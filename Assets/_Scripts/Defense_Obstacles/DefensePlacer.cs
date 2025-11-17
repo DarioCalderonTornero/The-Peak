@@ -16,18 +16,27 @@ public class DefensePlacer : MonoBehaviour
         }
     }
 
+    // Versión antigua (por si algún código la usa todavía)
     public GameObject PlaceDefense(GameObject prefab, Vector3 position)
     {
-        GameObject instance = Instantiate(prefab, position, Quaternion.identity);
+        return PlaceDefense(prefab, position, Vector3.up);
+    }
 
-        // Inicializar defensa si tiene lógica
+    // NUEVA: con normal de superficie
+    public GameObject PlaceDefense(GameObject prefab, Vector3 position, Vector3 surfaceNormal)
+    {
+        // Queremos que el "up" del prefab apunte a la normal del suelo/paret
+        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
+
+        GameObject instance = Instantiate(prefab, position, rotation);
+
         var defense = instance.GetComponent<BaseDefense>();
         if (defense != null)
         {
             defense.Initialize();
         }
 
-        return instance; // <<< DEVOLVEMOS LA INSTANCIA
+        return instance;
     }
 
 }

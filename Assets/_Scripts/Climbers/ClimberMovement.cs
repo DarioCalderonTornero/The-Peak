@@ -45,6 +45,11 @@ public class ClimberMovement : MonoBehaviour
     // Estado general
     private bool reachedSummit = false;
     private bool isGoingToFirstCamp = true;
+    
+    // --- Modificadores de velocidad (zarzas, etc.) ---
+    private float currentSpeedMultiplier = 1f;
+    private int slowZoneCount = 0;
+
 
     private void Awake()
     {
@@ -137,7 +142,7 @@ public class ClimberMovement : MonoBehaviour
         }
         else
         {
-            agent.speed = originalSpeed;
+            agent.speed = originalSpeed * currentSpeedMultiplier;
         }
 
         // Comprobar llegada al campamento
@@ -427,5 +432,25 @@ public class ClimberMovement : MonoBehaviour
 
         Debug.Log($"GAME OVER: {name} ha alcanzado la cima.");
         Destroy(gameObject);
+    }
+
+    public void EnterSlowZone(float factor)
+    {
+        slowZoneCount++;
+        RecalculateSpeedMultiplier(factor);
+    }
+
+    public void ExitSlowZone(float factor)
+    {
+        slowZoneCount = Mathf.Max(0, slowZoneCount - 1);
+        RecalculateSpeedMultiplier(factor);
+    }
+
+    private void RecalculateSpeedMultiplier(float factor)
+    {
+        if (slowZoneCount <= 0)
+            currentSpeedMultiplier = 1f;
+        else
+            currentSpeedMultiplier = factor;   // 0.7f → 30% más lento
     }
 }

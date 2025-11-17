@@ -296,9 +296,9 @@ MonoBehaviour:
   prefab: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
   startPoint: {fileID: 1730901958}
   endPoint: {fileID: 230477813}
-  amountToSpawn: 2
+  amountToSpawn: 1
   spawnCooldown: 2
-  minDistance: 2
+  minDistance: 20
   spawnCooldownTimer: 0
   spawnedCount: 0
   isMaxCount: 0

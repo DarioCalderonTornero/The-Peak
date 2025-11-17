@@ -8,6 +8,11 @@ public class CampGraphBuilder : MonoBehaviour
     [Header("Referencia al detector de campamentos")]
     public NavMeshCampZoneFinder campZoneFinder;
 
+    [Header("Conectividad del grafo")]
+    [Tooltip("Número máximo de vecinos por campamento. Se quedará con los caminos más cortos.")]
+    [Min(1)]
+    public int maxNeighborsPerNode = 3;
+
     [Header("Debug")]
     public bool drawConnections = true;
     public Color connectionColor = Color.yellow;
@@ -112,7 +117,10 @@ public class CampGraphBuilder : MonoBehaviour
             }
         }
 
-        Debug.Log("[CampGraphBuilder] Grafo completado.");
+        // 3) Limitar vecinos a los caminos más cercanos
+        PruneNeighborsByDistance();
+
+        Debug.Log("[CampGraphBuilder] Grafo completado. (Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
     }
 
     private float CalculatePathLength(Vector3[] corners)
@@ -126,6 +134,27 @@ public class CampGraphBuilder : MonoBehaviour
             length += Vector3.Distance(corners[i], corners[i + 1]);
         }
         return length;
+    }
+
+    /// <summary>
+    /// Para cada nodo, ordena sus vecinos por longitud de camino y se queda solo con los más cercanos.
+    /// </summary>
+    private void PruneNeighborsByDistance()
+    {
+        foreach (var node in nodes)
+        {
+            if (node.neighbors == null || node.neighbors.Count <= maxNeighborsPerNode)
+                continue;
+
+            // Ordenar caminos por longitud (de menor a mayor)
+            node.neighbors.Sort((a, b) => a.pathLength.CompareTo(b.pathLength));
+
+            // Si hay más vecinos que el máximo, eliminar los últimos (los más lejanos)
+            if (node.neighbors.Count > maxNeighborsPerNode)
+            {
+                node.neighbors.RemoveRange(maxNeighborsPerNode, node.neighbors.Count - maxNeighborsPerNode);
+            }
+        }
     }
 
     // Dibuja las líneas SOLO al seleccionar el objeto

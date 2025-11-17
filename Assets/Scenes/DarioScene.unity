@@ -196,7 +196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentTurnState: 1
   currentTurnNumber: 0
-  climberTurnDuration: 10
+  climberTurnDuration: 5
   logTurnChanges: 1
   nextTurnButton: {fileID: 1534971994}
 --- !u!1 &1108060492

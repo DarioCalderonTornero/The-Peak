@@ -76,7 +76,11 @@ public class ClimberMovement : MonoBehaviour
         // 2) Buscar automáticamente el CampGraphBuilder si no se ha asignado nada
         if (campGraph == null)
         {
+#if UNITY_2023_1_OR_NEWER
             campGraph = Object.FindFirstObjectByType<CampGraphBuilder>();
+#else
+            campGraph = Object.FindObjectOfType<CampGraphBuilder>();
+#endif
             if (campGraph == null)
             {
                 Debug.LogError("[ClimberMovement] No se encontró ningún CampGraphBuilder en la escena.");
@@ -89,7 +93,7 @@ public class ClimberMovement : MonoBehaviour
         if (!isActiveThisTurn || agent == null || campGraph == null || reachedSummit)
             return;
 
-        // Comprobar si ha llegado al campamento objetivo
+        // Comprobar si ha llegado al destino actual (campamento)
         if (!agent.pathPending &&
             agent.remainingDistance <= agent.stoppingDistance + reachedThreshold)
         {
@@ -191,7 +195,7 @@ public class ClimberMovement : MonoBehaviour
         CampGraphBuilder.CampEdge bestEdge = null;
         float bestScore = float.NegativeInfinity;
 
-        float currentDistToSummit = summit != null
+        float currentDistToSummit = (summit != null)
             ? Vector3.Distance(currentNode.position, summit.position)
             : 0f;
 
@@ -287,25 +291,30 @@ public class ClimberMovement : MonoBehaviour
         if (debugLogs)
             Debug.Log($"{name} ha llegado al campamento {currentNode.id} (altura {currentNode.height}).");
 
-        // Comprobar si estamos lo bastante cerca de la cima
-        if (summit != null)
+        // ?? COMPROBAR SI ESTE CAMPAMENTO ES LA CIMA
+        if (campGraph != null && campGraph.finalDestinationNodeId >= 0)
         {
-            float distToSummit = Vector3.Distance(transform.position, summit.position);
-            if (distToSummit <= agent.stoppingDistance + reachedThreshold)
+            if (currentNode.id == campGraph.finalDestinationNodeId)
             {
                 HandleReachedGoal();
             }
         }
     }
 
+
     private void HandleReachedGoal()
     {
-        reachedSummit = true;
+        if (reachedSummit)
+            return;
 
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.GameOver("Un escalador ha alcanzado la cima.");
-        }
+        reachedSummit = true;
+        isActiveThisTurn = false;
+
+        if (agent != null)
+            agent.isStopped = true;
+
+        Debug.Log("GAME OVER: {name} ha alcanzado la cima (FinalDestination).");
+
 
         Destroy(gameObject);
     }

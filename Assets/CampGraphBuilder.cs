@@ -8,6 +8,10 @@ public class CampGraphBuilder : MonoBehaviour
     [Header("Referencia al detector de campamentos")]
     public NavMeshCampZoneFinder campZoneFinder;
 
+    [Header("Destino final como campamento")]
+    [Tooltip("Destino final (cima) que se tratará como un campamento más en el grafo.")]
+    public Transform finalDestination;
+
     [Header("Conectividad del grafo")]
     [Tooltip("Número máximo de vecinos por campamento. Se quedará con los caminos más cortos.")]
     [Min(1)]
@@ -35,9 +39,11 @@ public class CampGraphBuilder : MonoBehaviour
         public Vector3[] pathCorners;
     }
 
-    // Oculto para evitar freeze del inspector al seleccionarlo
     [HideInInspector]
     public List<CampNode> nodes = new List<CampNode>();
+
+    [HideInInspector]
+    public int finalDestinationNodeId = -1; // id del nodo que representa la cima (si existe)
 
     private void Start()
     {
@@ -47,6 +53,7 @@ public class CampGraphBuilder : MonoBehaviour
     public void BuildGraph()
     {
         nodes.Clear();
+        finalDestinationNodeId = -1;
 
         if (campZoneFinder == null)
         {
@@ -61,9 +68,9 @@ public class CampGraphBuilder : MonoBehaviour
         }
 
         int count = campZoneFinder.campZones.Count;
-        Debug.Log("[CampGraphBuilder] Construyendo grafo con " + count + " campamentos.");
+        Debug.Log("[CampGraphBuilder] Construyendo grafo con " + count + " campamentos base.");
 
-        // 1) Crear nodos del grafo
+        // 1) Crear nodos del grafo a partir de campZones
         for (int i = 0; i < count; i++)
         {
             Vector3 pos = campZoneFinder.campZones[i];
@@ -76,6 +83,24 @@ public class CampGraphBuilder : MonoBehaviour
             };
 
             nodes.Add(node);
+        }
+
+        // 1b) Añadir la cima como campamento extra (si se ha asignado)
+        if (finalDestination != null)
+        {
+            Vector3 pos = finalDestination.position;
+
+            CampNode summitNode = new CampNode
+            {
+                id = nodes.Count,
+                position = pos,
+                height = pos.y
+            };
+
+            nodes.Add(summitNode);
+            finalDestinationNodeId = summitNode.id;
+
+            Debug.Log("[CampGraphBuilder] Nodo extra añadido para FinalDestination con id " + finalDestinationNodeId);
         }
 
         // 2) Conectar nodos físicamente usando NavMesh.CalculatePath
@@ -94,6 +119,7 @@ public class CampGraphBuilder : MonoBehaviour
                     continue;
 
                 float length = CalculatePathLength(navPath.corners);
+                var cornersCopy = (Vector3[])navPath.corners.Clone();
 
                 // Crear conexión A→B
                 a.neighbors.Add(new CampEdge
@@ -102,7 +128,7 @@ public class CampGraphBuilder : MonoBehaviour
                     to = b,
                     pathLength = length,
                     heightDelta = b.height - a.height,
-                    pathCorners = (Vector3[])navPath.corners.Clone()
+                    pathCorners = cornersCopy
                 });
 
                 // Crear conexión B→A
@@ -112,7 +138,7 @@ public class CampGraphBuilder : MonoBehaviour
                     to = a,
                     pathLength = length,
                     heightDelta = a.height - b.height,
-                    pathCorners = (Vector3[])navPath.corners.Clone()
+                    pathCorners = cornersCopy
                 });
             }
         }
@@ -120,7 +146,8 @@ public class CampGraphBuilder : MonoBehaviour
         // 3) Limitar vecinos a los caminos más cercanos
         PruneNeighborsByDistance();
 
-        Debug.Log("[CampGraphBuilder] Grafo completado. (Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
+        Debug.Log("[CampGraphBuilder] Grafo completado. (Nodos totales: " + nodes.Count +
+                  ", Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
     }
 
     private float CalculatePathLength(Vector3[] corners)
@@ -157,7 +184,6 @@ public class CampGraphBuilder : MonoBehaviour
         }
     }
 
-    // Dibuja las líneas SOLO al seleccionar el objeto
     private void OnDrawGizmosSelected()
     {
         if (!drawConnections || nodes == null || nodes.Count == 0)

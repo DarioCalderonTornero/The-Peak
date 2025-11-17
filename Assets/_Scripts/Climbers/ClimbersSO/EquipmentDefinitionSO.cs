@@ -1,15 +1,15 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "EquipmentDefinition", menuName = "Climbers/Equipment Definition")]
+[CreateAssetMenu(menuName = "Climbers/EquipmentDefinitionSO")]
 public class EquipmentDefinitionSO : ScriptableObject
 {
-    [Header("General Info")]
+    [Header("Basic Info")]
     public string equipmentName;
-    public Sprite icon;
 
-    [Header("Which obstacle does this counter?")]
-    //public ObstacleType obstacleType;
-
-    [Header("Logic Class (equipment behavior)")]
+    [Tooltip("Nombre EXACTO de la clase que implementa el comportamiento. Ej: 'RockBreakerEquipment'.")]
     public string logicClassName;
+
+    [Header("Obstacle Capability")]
+    [Tooltip("Tipo de obstáculo que este equipo puede contrarrestar.")]
+    public ObstacleType supportedType = ObstacleType.None;
 }

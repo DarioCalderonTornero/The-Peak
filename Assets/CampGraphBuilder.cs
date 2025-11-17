@@ -37,6 +37,9 @@ public class CampGraphBuilder : MonoBehaviour
         public float pathLength;
         public float heightDelta;
         public Vector3[] pathCorners;
+
+        // Obstáculos que afectan a este edge (rocas, hielo, etc.)
+        public List<EdgeObstacleMarker> blockingObstacles = new List<EdgeObstacleMarker>();
     }
 
     [HideInInspector]
@@ -148,6 +151,9 @@ public class CampGraphBuilder : MonoBehaviour
 
         Debug.Log("[CampGraphBuilder] Grafo completado. (Nodos totales: " + nodes.Count +
                   ", Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
+
+        // 4) Auto-asociar obstáculos que ya estén en escena (rocas precolocadas)
+        AutoRegisterObstaclesOnEdges();
     }
 
     private float CalculatePathLength(Vector3[] corners)
@@ -184,6 +190,60 @@ public class CampGraphBuilder : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Permite a un EdgeObstacleMarker registrar que está bloqueando un edge concreto.
+    /// </summary>
+    public void RegisterObstacleOnEdge(EdgeObstacleMarker marker, CampEdge edge)
+    {
+        if (marker == null || edge == null)
+            return;
+
+        if (edge.blockingObstacles == null)
+            edge.blockingObstacles = new List<EdgeObstacleMarker>();
+
+        if (!edge.blockingObstacles.Contains(marker))
+        {
+            edge.blockingObstacles.Add(marker);
+            Debug.Log($"[CampGraphBuilder] Obstacle '{marker.name}' registrado en edge " +
+                      $"from node {edge.from.id} to node {edge.to.id} (type={marker.obstacleType}).");
+        }
+    }
+
+    /// <summary>
+    /// Busca todos los EdgeObstacleMarker que ya existan en escena
+    /// y los asocia al edge más cercano. Útil si tienes rocas precolocadas.
+    /// (Para las rocas instanciadas en partida, se encargan ellas mismas en su Start()).
+    /// </summary>
+    private void AutoRegisterObstaclesOnEdges()
+    {
+        // Limpiamos bindings previos por si se reconstruye el grafo
+        foreach (var node in nodes)
+        {
+            if (node.neighbors == null) continue;
+            foreach (var edge in node.neighbors)
+            {
+                if (edge.blockingObstacles != null)
+                    edge.blockingObstacles.Clear();
+            }
+        }
+
+        // Unity API nueva
+        EdgeObstacleMarker[] markers =
+            Object.FindObjectsByType<EdgeObstacleMarker>(FindObjectsSortMode.None);
+
+        if (markers == null || markers.Length == 0)
+        {
+            Debug.Log("[CampGraphBuilder] No se han encontrado EdgeObstacleMarker en la escena.");
+            return;
+        }
+
+        foreach (var marker in markers)
+        {
+            if (marker == null) continue;
+            marker.TryBindToClosestEdge(this);
+        }
+    }
+
     private void OnDrawGizmosSelected()
     {
         if (!drawConnections || nodes == null || nodes.Count == 0)
@@ -193,6 +253,8 @@ public class CampGraphBuilder : MonoBehaviour
 
         foreach (var node in nodes)
         {
+            if (node.neighbors == null) continue;
+
             foreach (var edge in node.neighbors)
             {
                 Vector3 from = edge.from.position + Vector3.up * 0.1f;

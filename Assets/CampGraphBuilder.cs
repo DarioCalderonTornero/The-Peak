@@ -21,7 +21,11 @@ public class CampGraphBuilder : MonoBehaviour
     public bool drawConnections = true;
     public Color connectionColor = Color.yellow;
 
-    // Ya NO son serializables → el inspector no intenta dibujarlos
+    [Tooltip("Dibujar en rojo las aristas que tengan algún obstáculo asociado.")]
+    public bool drawObstacleEdges = true;
+    public Color obstacleEdgeColor = Color.red;
+
+    // ----------------- CLASES DEL GRAFO -----------------
     public class CampNode
     {
         public int id;
@@ -37,6 +41,10 @@ public class CampGraphBuilder : MonoBehaviour
         public float pathLength;
         public float heightDelta;
         public Vector3[] pathCorners;
+
+        // 🔹 NUEVO: información de obstáculo en este camino
+        public bool hasObstacle;
+        public ObstacleType obstacleType;
     }
 
     [HideInInspector]
@@ -128,7 +136,9 @@ public class CampGraphBuilder : MonoBehaviour
                     to = b,
                     pathLength = length,
                     heightDelta = b.height - a.height,
-                    pathCorners = cornersCopy
+                    pathCorners = cornersCopy,
+                    hasObstacle = false,
+                    obstacleType = ObstacleType.None
                 });
 
                 // Crear conexión B→A
@@ -138,13 +148,18 @@ public class CampGraphBuilder : MonoBehaviour
                     to = a,
                     pathLength = length,
                     heightDelta = a.height - b.height,
-                    pathCorners = cornersCopy
+                    pathCorners = cornersCopy,
+                    hasObstacle = false,
+                    obstacleType = ObstacleType.None
                 });
             }
         }
 
         // 3) Limitar vecinos a los caminos más cercanos
         PruneNeighborsByDistance();
+
+        // 4) Asociar obstáculos a aristas (EdgeObstacleMarker)
+        AutoRegisterObstaclesOnEdges();
 
         Debug.Log("[CampGraphBuilder] Grafo completado. (Nodos totales: " + nodes.Count +
                   ", Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
@@ -173,10 +188,8 @@ public class CampGraphBuilder : MonoBehaviour
             if (node.neighbors == null || node.neighbors.Count <= maxNeighborsPerNode)
                 continue;
 
-            // Ordenar caminos por longitud (de menor a mayor)
             node.neighbors.Sort((a, b) => a.pathLength.CompareTo(b.pathLength));
 
-            // Si hay más vecinos que el máximo, eliminar los últimos (los más lejanos)
             if (node.neighbors.Count > maxNeighborsPerNode)
             {
                 node.neighbors.RemoveRange(maxNeighborsPerNode, node.neighbors.Count - maxNeighborsPerNode);
@@ -184,21 +197,144 @@ public class CampGraphBuilder : MonoBehaviour
         }
     }
 
+    // ----------------- NUEVO: ASOCIAR OBSTÁCULOS A ARISTAS -----------------
+
+    private void AutoRegisterObstaclesOnEdges()
+    {
+        EdgeObstacleMarker[] markers = FindObjectsOfType<EdgeObstacleMarker>();
+
+        if (markers == null || markers.Length == 0)
+        {
+            Debug.Log("[CampGraphBuilder] No se han encontrado EdgeObstacleMarker en la escena.");
+            return;
+        }
+
+        int linksCount = 0;
+
+        foreach (var marker in markers)
+        {
+            if (marker == null || marker.Obstacle == null)
+                continue;
+
+            Vector3 obstaclePos = marker.transform.position;
+            float radius = marker.obstacleRadius;
+            ObstacleType type = marker.Obstacle.obstacleType;
+
+            // Buscar la arista cuyo camino pasa más cerca de esta roca
+            CampEdge bestEdge = null;
+            float bestDistance = float.MaxValue;
+
+            foreach (var node in nodes)
+            {
+                foreach (var edge in node.neighbors)
+                {
+                    if (edge.pathCorners == null || edge.pathCorners.Length < 2)
+                        continue;
+
+                    float d = DistancePointToPath(obstaclePos, edge.pathCorners);
+
+                    if (d < bestDistance)
+                    {
+                        bestDistance = d;
+                        bestEdge = edge;
+                    }
+                }
+            }
+
+            // Si la distancia mínima es menor o igual al radio, consideramos que la roca bloquea ese camino
+            if (bestEdge != null && bestDistance <= radius)
+            {
+                bestEdge.hasObstacle = true;
+                bestEdge.obstacleType = type;
+                linksCount++;
+
+                if (marker.debugLog)
+                {
+                    Debug.Log($"[CampGraphBuilder] Obstacle '{marker.name}' ({type}) asignado a edge {bestEdge.from.id} -> {bestEdge.to.id} (dist {bestDistance:F2}, radius {radius:F2})");
+                }
+            }
+            else if (marker.debugLog)
+            {
+                Debug.LogWarning($"[CampGraphBuilder] No se ha encontrado ninguna arista cercana para el obstáculo '{marker.name}'. Distancia mínima: {bestDistance:F2}, radius: {radius:F2}");
+            }
+        }
+
+        Debug.Log($"[CampGraphBuilder] Asociación de obstáculos completada. Aristas marcadas: {linksCount}");
+    }
+
+    /// <summary>
+    /// Distancia mínima entre un punto y una polilínea (array de corners).
+    /// </summary>
+    private float DistancePointToPath(Vector3 point, Vector3[] corners)
+    {
+        float minDist = float.MaxValue;
+
+        for (int i = 0; i < corners.Length - 1; i++)
+        {
+            float d = DistancePointToSegment(point, corners[i], corners[i + 1]);
+            if (d < minDist)
+                minDist = d;
+        }
+
+        return minDist;
+    }
+
+    /// <summary>
+    /// Distancia de un punto a un segmento (3D).
+    /// </summary>
+    private float DistancePointToSegment(Vector3 point, Vector3 a, Vector3 b)
+    {
+        Vector3 ab = b - a;
+        float t = Vector3.Dot(point - a, ab) / ab.sqrMagnitude;
+        t = Mathf.Clamp01(t);
+        Vector3 closest = a + ab * t;
+        return Vector3.Distance(point, closest);
+    }
+
+    // ----------------- GIZMOS -----------------
+
     private void OnDrawGizmosSelected()
     {
-        if (!drawConnections || nodes == null || nodes.Count == 0)
+        if (nodes == null || nodes.Count == 0)
             return;
 
-        Gizmos.color = connectionColor;
-
-        foreach (var node in nodes)
+        // Aristas normales
+        if (drawConnections)
         {
-            foreach (var edge in node.neighbors)
-            {
-                Vector3 from = edge.from.position + Vector3.up * 0.1f;
-                Vector3 to = edge.to.position + Vector3.up * 0.1f;
+            Gizmos.color = connectionColor;
 
-                Gizmos.DrawLine(from, to);
+            foreach (var node in nodes)
+            {
+                foreach (var edge in node.neighbors)
+                {
+                    if (drawObstacleEdges && edge.hasObstacle)
+                        continue; // las rojas se dibujan aparte
+
+                    Vector3 from = edge.from.position + Vector3.up * 0.1f;
+                    Vector3 to = edge.to.position + Vector3.up * 0.1f;
+
+                    Gizmos.DrawLine(from, to);
+                }
+            }
+        }
+
+        // Aristas con obstáculo (rojas)
+        if (drawObstacleEdges)
+        {
+            Gizmos.color = obstacleEdgeColor;
+
+            foreach (var node in nodes)
+            {
+                foreach (var edge in node.neighbors)
+                {
+                    if (!edge.hasObstacle)
+                        continue;
+
+                    Vector3 from = edge.from.position + Vector3.up * 0.15f;
+                    Vector3 to = edge.to.position + Vector3.up * 0.15f;
+
+                    Gizmos.DrawLine(from, to);
+                }
             }
         }
     }

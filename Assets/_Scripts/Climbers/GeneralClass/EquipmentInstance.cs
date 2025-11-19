@@ -3,7 +3,7 @@ using UnityEngine;
 public abstract class EquipmentInstance
 {
     protected string equipmentName;
-    
+
     public virtual void Initialize(string name)
     {
         equipmentName = name;
@@ -23,5 +23,15 @@ public abstract class EquipmentInstance
     public virtual void OnCounterFail(ObstacleType type)
     {
         Debug.Log($"[Equipment] {equipmentName} failed to counter obstacle {type}.");
+    }
+
+    /// <summary>
+    /// Indica si este equipo puede manejar / contrarrestar
+    /// un obstáculo de cierto tipo a nivel de grafo.
+    /// Por defecto, ninguno.
+    /// </summary>
+    public virtual bool CanHandleObstacle(ObstacleType obstacleType)
+    {
+        return false;
     }
 }

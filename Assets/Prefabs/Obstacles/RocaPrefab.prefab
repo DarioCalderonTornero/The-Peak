@@ -16,8 +16,8 @@ GameObject:
   - component: {fileID: -8443762973840266356}
   - component: {fileID: -3012489319758654930}
   - component: {fileID: 5348119894939488011}
-  m_Layer: 0
-  m_Name: Roca
+  m_Layer: 7
+  m_Name: RocaPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

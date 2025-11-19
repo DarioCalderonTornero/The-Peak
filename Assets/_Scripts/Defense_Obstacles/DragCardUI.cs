@@ -35,6 +35,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public event System.Action<DragCardUI> OnCardUsed;
 
+    [Header("Placement")]
+    [SerializeField] private LayerMask placementMask;     // aquí pondrás la capa Mountain
+    [SerializeField] private LayerMask defenseMask;       // capa o máscaras donde están las defensas
+    [SerializeField] private float placementCheckRadius = 0.5f;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -119,7 +124,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (inPlacementMode && !useFixedPosition)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+
+            // Solo golpea las capas de placementMask (Mountain)
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
             {
                 if (previewInstance == null)
                 {
@@ -128,7 +135,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 }
 
                 previewInstance.transform.position = hit.point;
-                previewInstance.transform.up = hit.normal;
+                previewInstance.transform.up = hit.normal; // para que se apoye bien en suelo/paret
             }
         }
     }
@@ -156,16 +163,35 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             else
             {
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit))
+
+                // solo montaña
+                if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
                 {
                     finalPosition = hit.point;
-                    finalNormal = hit.normal;   // guardamos la normal
+                    finalNormal = hit.normal;
                     valid = true;
+                }
+            }
+
+            // Comprobar que no hay otra defensa demasiado cerca
+            if (valid)
+            {
+                // levantamos un poquito en la normal para evitar ir "dentro" de la montaña
+                Vector3 checkCenter = finalPosition + finalNormal * 0.1f;
+
+                bool overlapsDefense = Physics.CheckSphere(checkCenter, placementCheckRadius, defenseMask);
+                if (overlapsDefense)
+                {
+                    valid = false;
+                    // pequeño feedback (reutilizamos el shake de la carta)
+                    StartCoroutine(ShakeCard());
+                    Debug.Log("[DragCardUI] No se puede colocar: ya hay una defensa en ese sitio.");
                 }
             }
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
+                // usamos la versión con normal para que se apoye bien en suelo/paret
                 GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition, finalNormal);
 
                 if (placed != null && DefensePlacementManager.Instance != null)

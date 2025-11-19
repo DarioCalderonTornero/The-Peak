@@ -1,4 +1,4 @@
-using UnityEngine;
+锘縰sing UnityEngine;
 
 public class DefensePlacer : MonoBehaviour
 {
@@ -16,18 +16,24 @@ public class DefensePlacer : MonoBehaviour
         }
     }
 
-    // Versi髇 antigua (por si alg鷑 c骴igo la usa todav韆)
+    // Versi贸n antigua (por si alg煤n c贸digo la usa todav铆a):
+    // ahora instancia con rotaci贸n identidad
     public GameObject PlaceDefense(GameObject prefab, Vector3 position)
     {
-        return PlaceDefense(prefab, position, Vector3.up);
+        return PlaceDefense(prefab, position, Quaternion.identity);
     }
 
-    // NUEVA: con normal de superficie
+    // Versi贸n con normal de superficie (se sigue usando si quieres)
     public GameObject PlaceDefense(GameObject prefab, Vector3 position, Vector3 surfaceNormal)
     {
         // Queremos que el "up" del prefab apunte a la normal del suelo/paret
-        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
+        Quaternion baseRotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
+        return PlaceDefense(prefab, position, baseRotation);
+    }
 
+    // 馃敼 NUEVA: versi贸n central que recibe una rotaci贸n expl铆cita
+    public GameObject PlaceDefense(GameObject prefab, Vector3 position, Quaternion rotation)
+    {
         GameObject instance = Instantiate(prefab, position, rotation);
 
         var defense = instance.GetComponent<BaseDefense>();
@@ -38,5 +44,4 @@ public class DefensePlacer : MonoBehaviour
 
         return instance;
     }
-
 }

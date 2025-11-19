@@ -40,6 +40,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [SerializeField] private LayerMask defenseMask;       // capa o máscaras donde están las defensas
     [SerializeField] private float placementCheckRadius = 0.5f;
 
+    // 🔹 ROTACIÓN DEL PREVIEW
+    private float currentRotationDegrees = 0f;
+    private Vector3 lastHitNormal = Vector3.up;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -58,16 +62,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         UpdateInteractable();
         PointsManager.Instance.OnPointsChanged += HandlePointsChanged;
 
-        //  Esperar al siguiente frame para asegurar que el layout haya colocado la carta
+        // Esperar un frame para que el VerticalLayoutGroup haya hecho su trabajo
         StartCoroutine(InitializeOriginalPosition());
     }
 
     private IEnumerator InitializeOriginalPosition()
     {
-        // Espera un frame para que el VerticalLayoutGroup haya hecho su trabajo
         yield return null;
-
-        // Ahora sí, guarda la posición correcta
         originalPosition = rectTransform.anchoredPosition;
     }
 
@@ -83,6 +84,28 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private void HandlePointsChanged(int points)
     {
         UpdateInteractable();
+    }
+
+    // 🔹 ROTACIÓN CON R DEL PREVIEW
+    private void Update()
+    {
+        if (inPlacementMode && !useFixedPosition && previewInstance != null)
+        {
+            // Pulsar R → rotar 45º alrededor de la normal de la superficie
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                currentRotationDegrees += 45f;
+                if (currentRotationDegrees >= 360f)
+                    currentRotationDegrees -= 360f;
+            }
+
+            // Orientación base: "up" del objeto alineado con la normal del terreno
+            Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
+            // Rotación extra alrededor de esa normal
+            Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
+
+            previewInstance.transform.rotation = extraRot * baseRot;
+        }
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -135,7 +158,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 }
 
                 previewInstance.transform.position = hit.point;
-                previewInstance.transform.up = hit.normal; // para que se apoye bien en suelo/paret
+
+                // 🔹 guardamos la normal actual para la orientación del preview y del colocado
+                lastHitNormal = hit.normal;
             }
         }
     }
@@ -158,6 +183,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (useFixedPosition)
             {
                 finalPosition = fixedPlacementPosition;
+                finalNormal = Vector3.up; // si quieres puedes guardar otra normal para fixed
                 valid = true;
             }
             else
@@ -176,14 +202,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             // Comprobar que no hay otra defensa demasiado cerca
             if (valid)
             {
-                // levantamos un poquito en la normal para evitar ir "dentro" de la montaña
                 Vector3 checkCenter = finalPosition + finalNormal * 0.1f;
 
                 bool overlapsDefense = Physics.CheckSphere(checkCenter, placementCheckRadius, defenseMask);
                 if (overlapsDefense)
                 {
                     valid = false;
-                    // pequeño feedback (reutilizamos el shake de la carta)
                     StartCoroutine(ShakeCard());
                     Debug.Log("[DragCardUI] No se puede colocar: ya hay una defensa en ese sitio.");
                 }
@@ -191,8 +215,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
-                // usamos la versión con normal para que se apoye bien en suelo/paret
-                GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition, finalNormal);
+                // 🔹 RECREAMOS LA MISMA ROTACIÓN QUE TENÍA EL PREVIEW
+                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
+                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
+                Quaternion finalRotation = extraRot * baseRot;
+
+                GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition, finalRotation);
 
                 if (placed != null && DefensePlacementManager.Instance != null)
                     DefensePlacementManager.Instance.RegisterPlaced(placed);
@@ -212,6 +240,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         inPlacementMode = true;
         canvasGroup.alpha = 0f;
+
+        // 🔹 reseteamos rotación al empezar el placement
+        currentRotationDegrees = 0f;
+        lastHitNormal = Vector3.up;
 
         if (cardData.hasFixedPlacement)
         {
@@ -240,29 +272,24 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private void DisablePreviewLogic(GameObject preview)
     {
-        // 1) Quitar scripts que tienen dependencias en orden correcto
         var blocker = preview.GetComponent<BlockFaceOnPlacement>();
         if (blocker != null) Destroy(blocker);
 
         var rock = preview.GetComponent<RockDefense>();
         if (rock != null) Destroy(rock);
 
-        // 2) Quitar el resto de comportamientos (excepto Transform, obvio)
         var behaviours = preview.GetComponentsInChildren<MonoBehaviour>(true);
         foreach (var b in behaviours)
         {
-            // por si este GO tuviera otros scripts de gameplay
             if (b == null) continue;
             if (b is BlockFaceOnPlacement) continue;
             if (b is RockDefense) continue;
             Destroy(b);
         }
 
-        // 3) Desactivar colliders del preview
         foreach (var col in preview.GetComponentsInChildren<Collider>(true))
             col.enabled = false;
 
-        // 4) Materiales de preview (transparente)
         if (cardData.previewMaterial == null)
         {
             Debug.LogWarning("No preview material asignado en CardData");
@@ -305,7 +332,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void UpdateInteractable()
     {
-        if (this == null || canvasGroup == null) return; // seguridad extra
+        if (this == null || canvasGroup == null) return;
         bool canUse = PointsManager.Instance != null && PointsManager.Instance.CanAfford(cardData.cost);
 
         if (cardImage != null)
@@ -324,8 +351,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private bool isHoveringForReplacement = false;
     private Coroutine hoverRoutine;
-    private Vector2 hoverTargetOffset = new Vector2(30f, 0f); // distancia del movimiento
-    private float hoverSpeed = 10f; // velocidad de interpolación
+    private Vector2 hoverTargetOffset = new Vector2(30f, 0f);
+    private float hoverSpeed = 10f;
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -366,10 +393,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         rectTransform.anchoredPosition = to;
     }
+
     private void OnDestroy()
     {
         if (PointsManager.Instance != null)
             PointsManager.Instance.OnPointsChanged -= HandlePointsChanged;
     }
-
 }

@@ -130,8 +130,12 @@ MonoBehaviour:
   campGraph: {fileID: 0}
   summit: {fileID: 0}
   reachedThreshold: 0.2
-  goToSummitDistance: 10
   debugLogs: 1
+  maxStamina: 1000
+  baseCostPerMeter: 1
+  uphillExtraCostFactor: 2
+  minStaminaCost: 0.1
+  currentStamina: 1000
 --- !u!195 &948342635942547329
 NavMeshAgent:
   m_ObjectHideFlags: 0

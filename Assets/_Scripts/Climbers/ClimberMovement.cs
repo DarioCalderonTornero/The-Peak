@@ -284,4 +284,6 @@ public class ClimberMovement : MonoBehaviour
     {
         externalSpeedMultiplier = Mathf.Max(0f, multiplier);
     }
+
+
 }

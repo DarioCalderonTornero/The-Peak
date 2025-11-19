@@ -357,6 +357,13 @@ MonoBehaviour:
   iconImage: {fileID: 5212092917713885387}
   costText: {fileID: 3486152942710666636}
   nameText: {fileID: 6006037764332422141}
+  placementMask:
+    serializedVersion: 2
+    m_Bits: 64
+  defenseMask:
+    serializedVersion: 2
+    m_Bits: 128
+  placementCheckRadius: 0.5
 --- !u!225 &2838217454017087479
 CanvasGroup:
   m_ObjectHideFlags: 0

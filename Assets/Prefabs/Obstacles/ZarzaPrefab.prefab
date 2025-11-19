@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7444917588695643957}
   - component: {fileID: 885675723107041713}
   - component: {fileID: 6126965442273955557}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: ZarzaPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}

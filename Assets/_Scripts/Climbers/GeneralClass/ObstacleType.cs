@@ -1,9 +1,7 @@
-using UnityEngine;
-
 public enum ObstacleType
 {
-    None,
-    Rock,
-    Ice,
-    Mud
+    None = 0,
+    Rock = 1,
+    Ice = 2,
+    Wind = 3, 
 }

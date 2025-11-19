@@ -9,26 +9,18 @@ public class ClimberLoadout : MonoBehaviour
 
     private ClimberArchetypeSO archetype;
 
-    // Tipos de obstáculo soportados (derivados del equipo)
-    private List<ObstacleType> supportedObstacleTypes = new List<ObstacleType>();
-
-    private ClimberCapabilities capabilities;
-
-    private void Awake()
-    {
-        capabilities = GetComponent<ClimberCapabilities>();
-    }
-
+    /// <summary>
+    /// Initialize the loadout based on the archetype.
+    /// This is called by the Climber main controller.
+    /// </summary>
     public void InitializeLoadout(ClimberArchetypeSO data)
     {
         archetype = data;
         equippedItems.Clear();
-        supportedObstacleTypes.Clear();
 
         if (archetype == null || archetype.startingEquipment == null)
         {
             Debug.LogWarning("[ClimberLoadout] Archetype or equipment list is null.");
-            SyncCapabilities();
             return;
         }
 
@@ -46,22 +38,17 @@ public class ClimberLoadout : MonoBehaviour
             {
                 instance.Initialize(eq.equipmentName);
                 equippedItems.Add(instance);
-                Debug.Log($"[ClimberLoadout] Equipped: {eq.equipmentName}");
 
-                if (eq.supportedType != ObstacleType.None &&
-                    !supportedObstacleTypes.Contains(eq.supportedType))
-                {
-                    supportedObstacleTypes.Add(eq.supportedType);
-                }
+                Debug.Log($"[ClimberLoadout] Equipped: {eq.equipmentName}");
             }
         }
 
-        Debug.Log($"[ClimberLoadout] Loadout initialized with {equippedItems.Count} items. " +
-                  $"Supported obstacle types: {string.Join(", ", supportedObstacleTypes)}");
-
-        SyncCapabilities();
+        Debug.Log($"[ClimberLoadout] Loadout initialized with {equippedItems.Count} items.");
     }
 
+    /// <summary>
+    /// Creates the EquipmentInstance using reflection and the logicClassName.
+    /// </summary>
     private EquipmentInstance CreateEquipmentInstance(EquipmentDefinitionSO definition)
     {
         if (string.IsNullOrWhiteSpace(definition.logicClassName))
@@ -88,6 +75,9 @@ public class ClimberLoadout : MonoBehaviour
         return instance;
     }
 
+    /// <summary>
+    /// Called when the climber hits an obstacle.
+    /// </summary>
     public void TryHandleObstacle(ObstacleType obstacleType)
     {
         Debug.Log($"[ClimberLoadout] Climber encountered obstacle: {obstacleType}");
@@ -96,19 +86,5 @@ public class ClimberLoadout : MonoBehaviour
         {
             eq.OnEncounterObstacle(obstacleType);
         }
-    }
-
-    public bool CanHandleObstacleType(ObstacleType type)
-    {
-        if (capabilities != null)
-            return capabilities.CanHandleObstacleType(type);
-
-        return supportedObstacleTypes.Contains(type);
-    }
-
-    private void SyncCapabilities()
-    {
-        if (capabilities != null)
-            capabilities.SetCapabilitiesFromTypes(supportedObstacleTypes);
     }
 }

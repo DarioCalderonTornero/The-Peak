@@ -1,16 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 
 public class RockDefense : BaseDefense
 {
-    [Header("NavMesh Blocking (opcional)")]
+    [Header("NavMesh Blocking")]
     [SerializeField] private NavMeshObstacle obstacle;
-
-    [Tooltip("Si está a true, configurará el NavMeshObstacle en runtime.")]
     [SerializeField] private bool configureObstacleAtRuntime = true;
-
-    [Tooltip("Si está a true, desactivará completamente el NavMeshObstacle para que NO afecte al NavMesh.")]
-    [SerializeField] private bool disableNavMeshObstacle = true;
 
     public override void Initialize()
     {
@@ -20,27 +15,21 @@ public class RockDefense : BaseDefense
 
     private void SetupNavMeshObstacle()
     {
-        // Intentar coger el componente que ya tenga el prefab
         if (obstacle == null)
             obstacle = GetComponent<NavMeshObstacle>();
 
-        // Si no hay NavMeshObstacle en el prefab y no lo necesitamos, simplemente salimos
+        // Si no hay, lo a�adimos
         if (obstacle == null)
-            return;
-
-        // Opción fuerte: desactivar completamente el NavMeshObstacle
-        if (disableNavMeshObstacle)
         {
-            obstacle.enabled = false;
-            return;
+            obstacle = gameObject.AddComponent<NavMeshObstacle>();
+            obstacle.shape = NavMeshObstacleShape.Box; // o Cylinder, seg�n tu modelo
         }
 
-        // Si no queremos deshabilitarlo, al menos nos aseguramos de que NO carva el NavMesh
         if (configureObstacleAtRuntime)
         {
-            obstacle.carving = false;              // ← clave: que NO haga agujero en el NavMesh
+            obstacle.carving = true;
             obstacle.carveOnlyStationary = true;
-            // El tamaño/forma lo sigues controlando desde el inspector si decides usarlo para otra cosa.
+            // El tama�o lo controlas desde el inspector con el componente.
         }
     }
 }

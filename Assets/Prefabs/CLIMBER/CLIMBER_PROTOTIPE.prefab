@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 948342635942547329}
   - component: {fileID: 8495448889631796368}
   - component: {fileID: -810517234460364880}
-  - component: {fileID: 1060807739361669045}
   m_Layer: 0
   m_Name: CLIMBER_PROTOTIPE
   m_TagString: Untagged
@@ -129,15 +128,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agent: {fileID: 948342635942547329}
   campGraph: {fileID: 0}
-  summit: {fileID: 4485760709519042262}
+  summit: {fileID: 0}
   reachedThreshold: 0.2
-  capabilities: {fileID: 0}
+  goToSummitDistance: 10
   debugLogs: 1
-  maxStamina: 1000000
-  baseCostPerMeter: 1
-  uphillExtraCostFactor: 2
-  minStaminaCost: 0.1
-  currentStamina: 0
 --- !u!195 &948342635942547329
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -187,16 +181,3 @@ MonoBehaviour:
   archetype: {fileID: 11400000, guid: f16b76461f5b004449ab8f6d8c99af4c, type: 2}
   agent: {fileID: 0}
   loadout: {fileID: 0}
---- !u!114 &1060807739361669045
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4930685435348997123}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc958fb2d43dd614187fa0379944ca25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  debugLogs: 1

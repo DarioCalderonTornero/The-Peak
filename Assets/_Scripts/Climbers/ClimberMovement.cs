@@ -3,6 +3,8 @@ using UnityEngine.AI;
 
 public class ClimberMovement : MonoBehaviour
 {
+    public static ClimberMovement Instance { get; private set; }
+
     [Header("NavMesh")]
     [SerializeField] private NavMeshAgent agent;
 
@@ -39,14 +41,14 @@ public class ClimberMovement : MonoBehaviour
 
     private bool reachedSummit = false;
     private bool isGoingToFirstCamp = true;
-    
-    // --- Modificadores de velocidad (zarzas, etc.) ---
-    private float currentSpeedMultiplier = 1f;
-    private int slowZoneCount = 0;
+
+    private float externalSpeedMultiplier = 1f;
 
 
     private void Awake()
     {
+        Instance = this;
+
         if (agent == null)
             agent = GetComponent<NavMeshAgent>();
     }
@@ -119,7 +121,7 @@ public class ClimberMovement : MonoBehaviour
         }
         else
         {
-            agent.speed = originalSpeed * currentSpeedMultiplier;
+            agent.speed = originalSpeed * externalSpeedMultiplier;
         }
 
         if (!agent.pathPending &&
@@ -274,23 +276,12 @@ public class ClimberMovement : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void EnterSlowZone(float factor)
+    /// <summary>
+    /// Permite a otros sistemas (obstáculos, buffs, etc.) modificar la velocidad del escalador.
+    /// 1 = velocidad normal, 0.7 = 30% más lento, etc.
+    /// </summary>
+    public void SetExternalSpeedMultiplier(float multiplier)
     {
-        slowZoneCount++;
-        RecalculateSpeedMultiplier(factor);
-    }
-
-    public void ExitSlowZone(float factor)
-    {
-        slowZoneCount = Mathf.Max(0, slowZoneCount - 1);
-        RecalculateSpeedMultiplier(factor);
-    }
-
-    private void RecalculateSpeedMultiplier(float factor)
-    {
-        if (slowZoneCount <= 0)
-            currentSpeedMultiplier = 1f;
-        else
-            currentSpeedMultiplier = factor;   // 0.7f → 30% más lento
+        externalSpeedMultiplier = Mathf.Max(0f, multiplier);
     }
 }

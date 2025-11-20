@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -196,14 +196,14 @@ public class TurnManager : MonoBehaviour
 
     private void UpdateClimberTurn()
     {
-        // Spawnear escaladores mientras no se llegue al m�ximo
+        // 1) Spawnear escaladores mientras no se llegue al máximo
         if (spawnManager != null && !spawnManager.isMaxCount)
         {
             spawnManager.SpawnClimbers();
         }
 
-        // Mirar TODOS los escaladores vivos en escena
-        var climbers = FindObjectsOfType<ClimberMovement>();
+        // 2) Mirar TODOS los escaladores vivos en escena
+        ClimberMovement[] climbers = FindObjectsOfType<ClimberMovement>();
 
         bool hasClimbers = false;
         bool allDone = true;
@@ -215,6 +215,7 @@ public class TurnManager : MonoBehaviour
 
             hasClimbers = true;
 
+            // Si alguno no ha terminado su turno, el turno completo sigue
             if (!climber.IsDoneThisTurn)
             {
                 allDone = false;
@@ -222,18 +223,32 @@ public class TurnManager : MonoBehaviour
             }
         }
 
-        // Si todav�a no hay escaladores, no cerramos el turno
+        // 3) Si NO hay escaladores vivos ahora mismo...
         if (!hasClimbers)
-            return;
+        {
+            // ...y el spawner TODAVÍA puede crear más, dejamos el turno abierto
+            if (spawnManager != null && !spawnManager.isMaxCount)
+            {
+                return;
+            }
 
-        // Si todos los escaladores han terminado, fin de turno
+            // ...y el spawner YA NO puede crear más → fin de turno de escaladores
+            if (logTurnChanges)
+                Debug.Log("[TurnManager] Climber turn ended: no climbers alive and spawner cannot create more.");
+
+            EndClimberTurn();
+            return;
+        }
+
+        // 4) Si hay escaladores y TODOS han terminado su turno → fin de turno
         if (allDone)
         {
             if (logTurnChanges)
-                Debug.Log("[TurnManager] Climber turn ended because all climbers are out of stamina or at a camp.");
+                Debug.Log("[TurnManager] Climber turn ended: all climbers are done (at camp, out of stamina, or destroyed).");
             EndClimberTurn();
         }
     }
+
 
     public bool IsPlayerTurn()
     {

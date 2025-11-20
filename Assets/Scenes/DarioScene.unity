@@ -175,12 +175,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 675079559}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1827429946}
+  m_Father: {fileID: 1116203804}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &675079561
 MonoBehaviour:
@@ -196,7 +196,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentTurnState: 1
   currentTurnNumber: 0
-  climberTurnDuration: 5
   logTurnChanges: 1
   nextTurnButton: {fileID: 1534971994}
 --- !u!1 &1108060492
@@ -278,7 +277,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 675079560}
   m_Father: {fileID: 1827429946}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1116203805
@@ -484,7 +484,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1108060493}
-  - {fileID: 675079560}
   - {fileID: 1116203804}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

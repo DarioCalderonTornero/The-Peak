@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 using UnityEngine.AI;
 
 public class ClimberMovement : MonoBehaviour
@@ -133,7 +134,8 @@ public class ClimberMovement : MonoBehaviour
         // Reducción de velocidad al quedarse sin estamina
         if (currentStamina <= 0f)
         {
-            agent.speed = 0f;
+            Destroy(gameObject);
+            return;
         }
         else
         {

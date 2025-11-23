@@ -27,8 +27,8 @@ public class RockDefense : BaseDefense
 
         if (configureObstacleAtRuntime)
         {
-            obstacle.carving = true;
-            obstacle.carveOnlyStationary = true;
+            obstacle.carving = false;
+            obstacle.carveOnlyStationary = false;
             // El tamaño lo controlas desde el inspector con el componente.
         }
     }

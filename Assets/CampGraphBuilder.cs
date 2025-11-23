@@ -42,16 +42,12 @@ public class CampGraphBuilder : MonoBehaviour
         public float heightDelta;
         public Vector3[] pathCorners;
 
-        // 🔹 NUEVO: información de obstáculo en este camino
         public bool hasObstacle;
         public ObstacleType obstacleType;
     }
 
-    [HideInInspector]
-    public List<CampNode> nodes = new List<CampNode>();
-
-    [HideInInspector]
-    public int finalDestinationNodeId = -1; // id del nodo que representa la cima (si existe)
+    [HideInInspector] public List<CampNode> nodes = new List<CampNode>();
+    [HideInInspector] public int finalDestinationNodeId = -1;
 
     private void Start()
     {
@@ -78,7 +74,7 @@ public class CampGraphBuilder : MonoBehaviour
         int count = campZoneFinder.campZones.Count;
         Debug.Log("[CampGraphBuilder] Construyendo grafo con " + count + " campamentos base.");
 
-        // 1) Crear nodos del grafo a partir de campZones
+        // 1) Crear nodos
         for (int i = 0; i < count; i++)
         {
             Vector3 pos = campZoneFinder.campZones[i];
@@ -93,7 +89,7 @@ public class CampGraphBuilder : MonoBehaviour
             nodes.Add(node);
         }
 
-        // 1b) Añadir la cima como campamento extra (si se ha asignado)
+        // 1b) Añadir cima
         if (finalDestination != null)
         {
             Vector3 pos = finalDestination.position;
@@ -111,7 +107,7 @@ public class CampGraphBuilder : MonoBehaviour
             Debug.Log("[CampGraphBuilder] Nodo extra añadido para FinalDestination con id " + finalDestinationNodeId);
         }
 
-        // 2) Conectar nodos físicamente usando NavMesh.CalculatePath
+        // 2) Conectar nodos con NavMesh
         NavMeshPath navPath = new NavMeshPath();
 
         for (int i = 0; i < nodes.Count; i++)
@@ -129,7 +125,7 @@ public class CampGraphBuilder : MonoBehaviour
                 float length = CalculatePathLength(navPath.corners);
                 var cornersCopy = (Vector3[])navPath.corners.Clone();
 
-                // Crear conexión A→B
+                // A→B
                 a.neighbors.Add(new CampEdge
                 {
                     from = a,
@@ -141,7 +137,7 @@ public class CampGraphBuilder : MonoBehaviour
                     obstacleType = ObstacleType.None
                 });
 
-                // Crear conexión B→A
+                // B→A
                 b.neighbors.Add(new CampEdge
                 {
                     from = b,
@@ -155,10 +151,10 @@ public class CampGraphBuilder : MonoBehaviour
             }
         }
 
-        // 3) Limitar vecinos a los caminos más cercanos
+        // 3) Limitar vecinos
         PruneNeighborsByDistance();
 
-        // 4) Asociar obstáculos a aristas (EdgeObstacleMarker)
+        // 4) Asociar obstáculos
         AutoRegisterObstaclesOnEdges();
 
         Debug.Log("[CampGraphBuilder] Grafo completado. (Nodos totales: " + nodes.Count +
@@ -178,9 +174,6 @@ public class CampGraphBuilder : MonoBehaviour
         return length;
     }
 
-    /// <summary>
-    /// Para cada nodo, ordena sus vecinos por longitud de camino y se queda solo con los más cercanos.
-    /// </summary>
     private void PruneNeighborsByDistance()
     {
         foreach (var node in nodes)
@@ -197,7 +190,7 @@ public class CampGraphBuilder : MonoBehaviour
         }
     }
 
-    // ----------------- NUEVO: ASOCIAR OBSTÁCULOS A ARISTAS -----------------
+    // ----------------- NUEVO: ASOCIAR OBSTÁCULOS CON CORREDOR ESTRECHO -----------------
 
     private void AutoRegisterObstaclesOnEdges()
     {
@@ -209,7 +202,7 @@ public class CampGraphBuilder : MonoBehaviour
             return;
         }
 
-        int linksCount = 0;
+        int edgesMarkedTotal = 0;
 
         foreach (var marker in markers)
         {
@@ -220,8 +213,7 @@ public class CampGraphBuilder : MonoBehaviour
             float radius = marker.obstacleRadius;
             ObstacleType type = marker.Obstacle.obstacleType;
 
-            // Buscar la arista cuyo camino pasa más cerca de esta roca
-            CampEdge bestEdge = null;
+            // 1) PRIMER PASO: encontrar la distancia mínima (mejor arista)
             float bestDistance = float.MaxValue;
 
             foreach (var node in nodes)
@@ -232,39 +224,68 @@ public class CampGraphBuilder : MonoBehaviour
                         continue;
 
                     float d = DistancePointToPath(obstaclePos, edge.pathCorners);
-
                     if (d < bestDistance)
-                    {
                         bestDistance = d;
-                        bestEdge = edge;
+                }
+            }
+
+            // Si la mejor arista está más lejos que el radio, no marcamos nada
+            if (bestDistance > radius)
+            {
+                if (marker.debugLog)
+                {
+                    Debug.Log($"[CampGraphBuilder] Obstacle '{marker.name}' está demasiado lejos de cualquier arista. bestDist={bestDistance:F2}, radius={radius:F2}");
+                }
+                continue;
+            }
+
+            // 2) DEFINIR UMBRAL ESTRECHO ALREDEDOR DE ESA MEJOR DISTANCIA
+            float extraTolerance = radius * 0.3f; // puedes ajustar este factor si quieres más/menos ancho
+            float maxDistToMark = Mathf.Min(radius, bestDistance + extraTolerance);
+
+            int edgesMarkedForThisMarker = 0;
+
+            // 3) SEGUNDO PASO: marcar solo las aristas dentro de ese umbral
+            foreach (var node in nodes)
+            {
+                foreach (var edge in node.neighbors)
+                {
+                    if (edge.pathCorners == null || edge.pathCorners.Length < 2)
+                        continue;
+
+                    float d = DistancePointToPath(obstaclePos, edge.pathCorners);
+                    if (d <= maxDistToMark)
+                    {
+                        if (!edge.hasObstacle || edge.obstacleType == ObstacleType.None)
+                        {
+                            edge.hasObstacle = true;
+                            edge.obstacleType = type;
+                            edgesMarkedForThisMarker++;
+                            edgesMarkedTotal++;
+                        }
+
+                        // marcar también la arista inversa
+                        CampEdge reverse = edge.to.neighbors.Find(e => e.to == edge.from);
+                        if (reverse != null && (!reverse.hasObstacle || reverse.obstacleType == ObstacleType.None))
+                        {
+                            reverse.hasObstacle = true;
+                            reverse.obstacleType = type;
+                            edgesMarkedForThisMarker++;
+                            edgesMarkedTotal++;
+                        }
                     }
                 }
             }
 
-            // Si la distancia mínima es menor o igual al radio, consideramos que la roca bloquea ese camino
-            if (bestEdge != null && bestDistance <= radius)
+            if (marker.debugLog)
             {
-                bestEdge.hasObstacle = true;
-                bestEdge.obstacleType = type;
-                linksCount++;
-
-                if (marker.debugLog)
-                {
-                    Debug.Log($"[CampGraphBuilder] Obstacle '{marker.name}' ({type}) asignado a edge {bestEdge.from.id} -> {bestEdge.to.id} (dist {bestDistance:F2}, radius {radius:F2})");
-                }
-            }
-            else if (marker.debugLog)
-            {
-                Debug.LogWarning($"[CampGraphBuilder] No se ha encontrado ninguna arista cercana para el obstáculo '{marker.name}'. Distancia mínima: {bestDistance:F2}, radius: {radius:F2}");
+                Debug.Log($"[CampGraphBuilder] Obstacle '{marker.name}' ({type}) asignado a {edgesMarkedForThisMarker} aristas. bestDist={bestDistance:F2}, maxDistToMark={maxDistToMark:F2}, radius={radius:F2}");
             }
         }
 
-        Debug.Log($"[CampGraphBuilder] Asociación de obstáculos completada. Aristas marcadas: {linksCount}");
+        Debug.Log($"[CampGraphBuilder] Asociación de obstáculos completada. Aristas marcadas: {edgesMarkedTotal}");
     }
 
-    /// <summary>
-    /// Distancia mínima entre un punto y una polilínea (array de corners).
-    /// </summary>
     private float DistancePointToPath(Vector3 point, Vector3[] corners)
     {
         float minDist = float.MaxValue;
@@ -279,9 +300,6 @@ public class CampGraphBuilder : MonoBehaviour
         return minDist;
     }
 
-    /// <summary>
-    /// Distancia de un punto a un segmento (3D).
-    /// </summary>
     private float DistancePointToSegment(Vector3 point, Vector3 a, Vector3 b)
     {
         Vector3 ab = b - a;
@@ -290,8 +308,6 @@ public class CampGraphBuilder : MonoBehaviour
         Vector3 closest = a + ab * t;
         return Vector3.Distance(point, closest);
     }
-
-    // ----------------- GIZMOS -----------------
 
     private void OnDrawGizmosSelected()
     {
@@ -308,7 +324,7 @@ public class CampGraphBuilder : MonoBehaviour
                 foreach (var edge in node.neighbors)
                 {
                     if (drawObstacleEdges && edge.hasObstacle)
-                        continue; // las rojas se dibujan aparte
+                        continue;
 
                     Vector3 from = edge.from.position + Vector3.up * 0.1f;
                     Vector3 to = edge.to.position + Vector3.up * 0.1f;

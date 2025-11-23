@@ -131,11 +131,12 @@ MonoBehaviour:
   summit: {fileID: 0}
   reachedThreshold: 0.2
   debugLogs: 1
-  maxStamina: 50
+  maxStamina: 1000
   baseCostPerMeter: 1
   uphillExtraCostFactor: 2
   minStaminaCost: 0.1
   currentStamina: 1000
+  loadout: {fileID: 8495448889631796368}
 --- !u!195 &948342635942547329
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -182,6 +183,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5c475a7007d6ba4aa83b9220b6963ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  archetype: {fileID: 11400000, guid: f16b76461f5b004449ab8f6d8c99af4c, type: 2}
-  agent: {fileID: 0}
-  loadout: {fileID: 0}
+  archetype: {fileID: 11400000, guid: 93c8ee284753a2a47b864788d2cfe2c6, type: 2}
+  agent: {fileID: 948342635942547329}
+  loadout: {fileID: 8495448889631796368}

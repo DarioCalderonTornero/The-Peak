@@ -448,6 +448,8 @@ MonoBehaviour:
   maxNeighborsPerNode: 3
   drawConnections: 1
   connectionColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  drawObstacleEdges: 1
+  obstacleEdgeColor: {r: 1, g: 0, b: 0, a: 1}
   finalDestinationNodeId: -1
 --- !u!1 &1278379734 stripped
 GameObject:

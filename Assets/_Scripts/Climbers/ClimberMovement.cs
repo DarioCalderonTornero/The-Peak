@@ -29,6 +29,9 @@ public class ClimberMovement : MonoBehaviour
 
     [SerializeField] private float currentStamina;
 
+    [Header("Equipamiento")]
+    [SerializeField] private ClimberLoadout loadout;
+
     private Vector3 lastFramePosition;
     private float lastFrameHeight;
 
@@ -60,6 +63,9 @@ public class ClimberMovement : MonoBehaviour
 
         if (agent == null)
             agent = GetComponent<NavMeshAgent>();
+
+        if (loadout == null)
+            loadout = GetComponent<ClimberLoadout>();
     }
 
     private void OnEnable()
@@ -101,7 +107,7 @@ public class ClimberMovement : MonoBehaviour
 
         isAtCamp = false;
 
-        // IMPORTANTE: si aparece en mitad de un turno de escaladores, que empiece a moverse ya
+        // si aparece en mitad de un turno de escaladores, que empiece a moverse ya
         if (TurnManager.Instance != null && TurnManager.Instance.IsClimberTurn())
         {
             HandleClimberTurnStart();
@@ -131,7 +137,6 @@ public class ClimberMovement : MonoBehaviour
         lastFramePosition = currentPos;
         lastFrameHeight = currentPos.y;
 
-        // Reducción de velocidad al quedarse sin estamina
         if (currentStamina <= 0f)
         {
             Destroy(gameObject);
@@ -153,7 +158,6 @@ public class ClimberMovement : MonoBehaviour
     {
         if (reachedSummit) return;
 
-        // Marca que este escalador participa en este turno
         hasStartedThisTurn = true;
 
         if (isGoingToFirstCamp)
@@ -169,8 +173,6 @@ public class ClimberMovement : MonoBehaviour
     {
         isActiveThisTurn = false;
         agent.isStopped = true;
-        // No reseteamos hasStartedThisTurn aquí; se volverá a poner a true
-        // en el próximo HandleClimberTurnStart.
     }
 
     private void MoveToClosestCamp()
@@ -198,7 +200,7 @@ public class ClimberMovement : MonoBehaviour
 
         targetNode = closest;
         isActiveThisTurn = true;
-        isAtCamp = false; // empieza a moverse, ya no está en campamento
+        isAtCamp = false;
         agent.isStopped = false;
         agent.SetDestination(closest.position);
 
@@ -222,7 +224,6 @@ public class ClimberMovement : MonoBehaviour
         {
             if (debugLogs)
                 Debug.LogWarning("[ClimberMovement] currentNode es null al elegir siguiente campamento.");
-            // No sabemos dónde estamos lógicamente: para el turno, consi­derarlo detenido
             isAtCamp = true;
             isActiveThisTurn = false;
             return;
@@ -250,6 +251,23 @@ public class ClimberMovement : MonoBehaviour
         {
             if (edge.to == lastNode && currentNode.neighbors.Count > 1)
                 continue;
+
+            // 🔴 FILTRO DE OBSTÁCULOS SEGÚN EQUIPAMIENTO
+            if (edge.hasObstacle && edge.obstacleType != ObstacleType.None)
+            {
+                bool canPass = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
+
+                if (!canPass)
+                {
+                    if (debugLogs)
+                        Debug.Log($"[{name}] evita edge {edge.from.id}->{edge.to.id} por obstáculo {edge.obstacleType}");
+                    continue; // para este escalador, esta arista no existe
+                }
+                else if (debugLogs)
+                {
+                    Debug.Log($"[{name}] usa edge {edge.from.id}->{edge.to.id} gracias a equipamiento ({edge.obstacleType})");
+                }
+            }
 
             float cost = CalculateStaminaCost(edge);
 
@@ -296,7 +314,7 @@ public class ClimberMovement : MonoBehaviour
         targetNode = chosen.to;
 
         isActiveThisTurn = true;
-        isAtCamp = false; // empieza trayecto
+        isAtCamp = false;
         agent.isStopped = false;
         agent.SetDestination(targetNode.position);
 
@@ -310,7 +328,6 @@ public class ClimberMovement : MonoBehaviour
         {
             isActiveThisTurn = false;
             agent.isStopped = true;
-            // Si ha llegado “a algún sitio” pero no tenemos nodo, lo consideramos en campamento
             isAtCamp = true;
             return;
         }
@@ -347,10 +364,6 @@ public class ClimberMovement : MonoBehaviour
         Destroy(gameObject);
     }
 
-    /// <summary>
-    /// Permite a otros sistemas (obstáculos, buffs, etc.) modificar la velocidad del escalador.
-    /// 1 = velocidad normal, 0.7 = 30% más lento, etc.
-    /// </summary>
     public void SetExternalSpeedMultiplier(float multiplier)
     {
         externalSpeedMultiplier = Mathf.Max(0f, multiplier);

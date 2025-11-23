@@ -16,22 +16,14 @@ public class DefensePlacer : MonoBehaviour
         }
     }
 
-    // Versión antigua (por si algún código la usa todavía):
-    // ahora instancia con rotación identidad
+    // Versión antigua (por si algún código la usa todavía)
+    // Usa rotación identidad por defecto
     public GameObject PlaceDefense(GameObject prefab, Vector3 position)
     {
         return PlaceDefense(prefab, position, Quaternion.identity);
     }
 
-    // Versión con normal de superficie (se sigue usando si quieres)
-    public GameObject PlaceDefense(GameObject prefab, Vector3 position, Vector3 surfaceNormal)
-    {
-        // Queremos que el "up" del prefab apunte a la normal del suelo/paret
-        Quaternion baseRotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
-        return PlaceDefense(prefab, position, baseRotation);
-    }
-
-    // 🔹 NUEVA: versión central que recibe una rotación explícita
+    // NUEVA: recibe la rotación YA calculada (por ejemplo desde DragCardUI)
     public GameObject PlaceDefense(GameObject prefab, Vector3 position, Quaternion rotation)
     {
         GameObject instance = Instantiate(prefab, position, rotation);
@@ -40,6 +32,22 @@ public class DefensePlacer : MonoBehaviour
         if (defense != null)
         {
             defense.Initialize();
+        }
+
+        // Si esta defensa tiene un EdgeObstacleMarker, actualizamos el grafo
+        var marker = instance.GetComponent<EdgeObstacleMarker>();
+        if (marker != null)
+        {
+            CampGraphBuilder graph = FindObjectOfType<CampGraphBuilder>();
+            if (graph != null)
+            {
+                Debug.Log("[DefensePlacer] Nueva defensa con obstáculo colocada. Reconstruyendo grafo de campamentos...");
+                graph.BuildGraph();
+            }
+            else
+            {
+                Debug.LogWarning("[DefensePlacer] No se ha encontrado CampGraphBuilder al intentar reconstruir el grafo.");
+            }
         }
 
         return instance;

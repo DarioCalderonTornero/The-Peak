@@ -180,7 +180,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1116203804}
+  m_Father: {fileID: 1827429946}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &675079561
 MonoBehaviour:
@@ -277,8 +277,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 675079560}
+  m_Children: []
   m_Father: {fileID: 1827429946}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1116203805
@@ -299,6 +298,9 @@ MonoBehaviour:
   amountToSpawn: 1
   spawnCooldown: 2
   minDistance: 20
+  possibleArchetypes:
+  - {fileID: 11400000, guid: 93c8ee284753a2a47b864788d2cfe2c6, type: 2}
+  - {fileID: 11400000, guid: f16b76461f5b004449ab8f6d8c99af4c, type: 2}
   spawnCooldownTimer: 0
   spawnedCount: 0
   isMaxCount: 0
@@ -484,6 +486,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1108060493}
+  - {fileID: 675079560}
   - {fileID: 1116203804}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

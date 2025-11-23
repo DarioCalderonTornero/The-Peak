@@ -6,12 +6,16 @@ public class SpawnManager : MonoBehaviour
     public static SpawnManager Instance { get; private set; }
 
     [Header("Spawning")]
-    [SerializeField] private GameObject prefab;    // Prefab del escalador (con ClimberController + NavMeshAgent)
+    [SerializeField] private GameObject prefab;
     [SerializeField] private Transform startPoint;
     [SerializeField] private Transform endPoint;
-    [SerializeField] private int amountToSpawn = 2;      // Escaladores por turno
-    [SerializeField] private float spawnCooldown = 2f;   // Tiempo entre spawns dentro del mismo turno
-    [SerializeField] private float minDistance = 2f;     // Distancia mínima entre puntos de spawn
+    [SerializeField] private int amountToSpawn = 2;
+    [SerializeField] private float spawnCooldown = 2f;
+    [SerializeField] private float minDistance = 2f;
+
+    [Header("Tipos de escalador")]
+    [Tooltip("Lista de arquetipos posibles. Ej: sin pico, con pico, etc.")]
+    [SerializeField] private ClimberArchetypeSO[] possibleArchetypes;
 
     [Header("Estado interno (debug)")]
     [SerializeField] private float spawnCooldownTimer = 0f;
@@ -30,22 +34,16 @@ public class SpawnManager : MonoBehaviour
         Instance = this;
     }
 
-    /// <summary>
-    /// Llamado en cada frame durante el ClimberTurn (desde TurnManager.UpdateClimberTurn).
-    /// Se encarga de spawnear escaladores con cooldown y número máximo por turno.
-    /// </summary>
     public void SpawnClimbers()
     {
         if (isMaxCount)
             return;
 
-        // Avanzar el temporizador del cooldown
         spawnCooldownTimer += Time.deltaTime;
 
         if (spawnCooldownTimer < spawnCooldown)
             return;
 
-        // Intentar encontrar una posición válida
         Vector3 spawnPos;
         bool validPosition = false;
         int maxAttempts = 20;
@@ -77,15 +75,28 @@ public class SpawnManager : MonoBehaviour
             spawnedCount++;
             spawnCooldownTimer = 0f;
 
-            // Opcional: comprobación de que lleva ClimberController
+            // 🔹 Elegir arquetipo aleatorio (si hay)
+            var config = obj.GetComponent<ClimberConfig>();
+            if (config != null && possibleArchetypes != null && possibleArchetypes.Length > 0)
+            {
+                ClimberArchetypeSO chosen = possibleArchetypes[Random.Range(0, possibleArchetypes.Length)];
+                if (chosen != null)
+                {
+                    config.ApplyArchetype(chosen);
+                }
+            }
+            else if (config == null)
+            {
+                Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberConfig.");
+            }
+
             var climber = obj.GetComponent<ClimberMovement>();
             if (climber == null)
             {
-                Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberController.");
+                Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberMovement.");
             }
         }
 
-        // Comprobamos si ya hemos alcanzado el máximo de spawns de este turno
         if (spawnedCount >= amountToSpawn)
         {
             isMaxCount = true;
@@ -93,9 +104,6 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Se llama al comenzar cada ClimberTurn para reiniciar el conteo de spawns del turno.
-    /// </summary>
     public void ResetSpawner()
     {
         spawnCooldownTimer = 0f;

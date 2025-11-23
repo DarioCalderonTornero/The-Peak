@@ -25,6 +25,15 @@ public class ClimberConfig : MonoBehaviour
         InitializeFromArchetype();
     }
 
+    /// <summary>
+    /// Llamable desde fuera (SpawnManager) para aplicar un arquetipo concreto a este escalador.
+    /// </summary>
+    public void ApplyArchetype(ClimberArchetypeSO newArchetype)
+    {
+        archetype = newArchetype;
+        InitializeFromArchetype();
+    }
+
     private void InitializeFromArchetype()
     {
         if (archetype == null)

@@ -48,11 +48,9 @@ public class ClimberMovement : MonoBehaviour
 
     private float externalSpeedMultiplier = 1f;
 
-    // Estado para coordinación con TurnManager
-    private bool isAtCamp = false;          // true cuando está parado en un campamento
-    private bool hasStartedThisTurn = false; // se marca a true en HandleClimberTurnStart
+    private bool isAtCamp = false;
+    private bool hasStartedThisTurn = false;
 
-    // Propiedades para el TurnManager
     public bool IsAtCamp => isAtCamp;
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => hasStartedThisTurn && (IsAtCamp || IsOutOfStamina || reachedSummit);
@@ -107,7 +105,6 @@ public class ClimberMovement : MonoBehaviour
 
         isAtCamp = false;
 
-        // si aparece en mitad de un turno de escaladores, que empiece a moverse ya
         if (TurnManager.Instance != null && TurnManager.Instance.IsClimberTurn())
         {
             HandleClimberTurnStart();
@@ -154,11 +151,19 @@ public class ClimberMovement : MonoBehaviour
         }
     }
 
+    // ==============================
+    // MODIFICADO AQUÍ
+    // ==============================
+
     private void HandleClimberTurnStart()
     {
         if (reachedSummit) return;
 
         hasStartedThisTurn = true;
+
+        //  NUEVO: actualizar rocas/aristas antes de elegir camino
+        if (campGraph != null)
+            campGraph.RecalculateObstaclesOnEdges();
 
         if (isGoingToFirstCamp)
         {
@@ -192,7 +197,6 @@ public class ClimberMovement : MonoBehaviour
 
         if (closest == null)
         {
-            Debug.LogWarning("[ClimberMovement] No se ha encontrado campamento cercano.");
             isAtCamp = false;
             isActiveThisTurn = false;
             return;
@@ -222,8 +226,6 @@ public class ClimberMovement : MonoBehaviour
     {
         if (currentNode == null)
         {
-            if (debugLogs)
-                Debug.LogWarning("[ClimberMovement] currentNode es null al elegir siguiente campamento.");
             isAtCamp = true;
             isActiveThisTurn = false;
             return;
@@ -231,8 +233,6 @@ public class ClimberMovement : MonoBehaviour
 
         if (currentNode.neighbors == null || currentNode.neighbors.Count == 0)
         {
-            if (debugLogs)
-                Debug.LogWarning($"{name} está en campamento {currentNode.id} sin vecinos.");
             isAtCamp = true;
             isActiveThisTurn = false;
             return;
@@ -252,20 +252,14 @@ public class ClimberMovement : MonoBehaviour
             if (edge.to == lastNode && currentNode.neighbors.Count > 1)
                 continue;
 
-            // 🔴 FILTRO DE OBSTÁCULOS SEGÚN EQUIPAMIENTO
+            // FILTRO DE OBSTÁCULOS
             if (edge.hasObstacle && edge.obstacleType != ObstacleType.None)
             {
                 bool canPass = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
 
                 if (!canPass)
                 {
-                    if (debugLogs)
-                        Debug.Log($"[{name}] evita edge {edge.from.id}->{edge.to.id} por obstáculo {edge.obstacleType}");
-                    continue; // para este escalador, esta arista no existe
-                }
-                else if (debugLogs)
-                {
-                    Debug.Log($"[{name}] usa edge {edge.from.id}->{edge.to.id} gracias a equipamiento ({edge.obstacleType})");
+                    continue;
                 }
             }
 
@@ -303,8 +297,6 @@ public class ClimberMovement : MonoBehaviour
 
         if (chosen == null)
         {
-            if (debugLogs)
-                Debug.LogWarning($"{name} no encuentra camino desde camp {currentNode.id}.");
             isAtCamp = true;
             isActiveThisTurn = false;
             return;
@@ -360,7 +352,6 @@ public class ClimberMovement : MonoBehaviour
         isActiveThisTurn = false;
         agent.isStopped = true;
 
-        Debug.Log($"GAME OVER: {name} ha alcanzado la cima.");
         Destroy(gameObject);
     }
 

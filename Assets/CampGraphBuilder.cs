@@ -190,9 +190,24 @@ public class CampGraphBuilder : MonoBehaviour
         }
     }
 
+    public void RecalculateObstaclesOnEdges()
+    {
+        // limpiar todo antes
+        foreach (var node in nodes)
+        {
+            foreach (var edge in node.neighbors)
+            {
+                edge.hasObstacle = false;
+                edge.obstacleType = ObstacleType.None;
+            }
+        }
+
+        AutoRegisterObstaclesOnEdges();
+    }
+
     // ----------------- NUEVO: ASOCIAR OBSTÁCULOS CON CORREDOR ESTRECHO -----------------
 
-    private void AutoRegisterObstaclesOnEdges()
+    public void AutoRegisterObstaclesOnEdges()
     {
         EdgeObstacleMarker[] markers = FindObjectsOfType<EdgeObstacleMarker>();
 

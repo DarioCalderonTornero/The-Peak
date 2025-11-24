@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 8195220715332458517}
   - component: {fileID: 948342635942547329}
   - component: {fileID: 8495448889631796368}
-  - component: {fileID: -810517234460364880}
   m_Layer: 0
   m_Name: CLIMBER_PROTOTIPE
   m_TagString: Untagged
@@ -171,18 +170,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98d99a1119f548548a77c89144126ea6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-810517234460364880
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4930685435348997123}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5c475a7007d6ba4aa83b9220b6963ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  archetype: {fileID: 11400000, guid: 93c8ee284753a2a47b864788d2cfe2c6, type: 2}
-  agent: {fileID: 948342635942547329}
-  loadout: {fileID: 8495448889631796368}
+  randomEquipmentPool:
+  - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
+  - {fileID: 11400000, guid: e1e3bc880ea646a4d8e09cda704cbac6, type: 2}
+  minRandomItems: 1
+  maxRandomItems: 1

@@ -87,7 +87,7 @@ public class SpawnManager : MonoBehaviour
             }
             else if (config == null)
             {
-                Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberConfig.");
+                //Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberConfig.");
             }
 
             var climber = obj.GetComponent<ClimberMovement>();

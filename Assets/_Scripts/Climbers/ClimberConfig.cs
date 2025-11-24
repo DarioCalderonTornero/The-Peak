@@ -53,11 +53,6 @@ public class ClimberConfig : MonoBehaviour
             Debug.Log($"[ClimberConfig] NavMeshAgent speed set to {agent.speed} from archetype {archetype.archetypeName}.");
         }
 
-        // Initialize equipment loadout
-        if (loadout != null)
-        {
-            loadout.InitializeLoadout(archetype);
-        }
         else
         {
             Debug.LogWarning("[ClimberConfig] No ClimberLoadout found on this climber.");

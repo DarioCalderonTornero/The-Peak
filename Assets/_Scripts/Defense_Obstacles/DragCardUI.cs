@@ -38,7 +38,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [Header("Placement")]
     [SerializeField] private LayerMask placementMask;     // aquí pondrás la capa Mountain
     [SerializeField] private LayerMask defenseMask;       // capa o máscaras donde están las defensas
-    [SerializeField] private float placementCheckRadius = 0.5f;
 
     // 🔹 ROTACIÓN DEL PREVIEW
     private float currentRotationDegrees = 0f;
@@ -91,7 +90,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         if (inPlacementMode && !useFixedPosition && previewInstance != null)
         {
-            // Pulsar R → rotar 45º alrededor de la normal de la superficie
             if (Input.GetKeyDown(KeyCode.R))
             {
                 currentRotationDegrees += 45f;
@@ -99,9 +97,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     currentRotationDegrees -= 360f;
             }
 
-            // Orientación base: "up" del objeto alineado con la normal del terreno
             Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
-            // Rotación extra alrededor de esa normal
             Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
 
             previewInstance.transform.rotation = extraRot * baseRot;
@@ -155,6 +151,23 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 {
                     previewInstance = Instantiate(cardData.defensePrefab);
                     DisablePreviewLogic(previewInstance);
+
+                    // Gizmo de soporte (cuadrado + rayos), si procede
+                    if (cardData.requireFullSupport)
+                    {
+                        var supportGiz = previewInstance.GetComponent<SupportGizmoPreview>();
+                        if (supportGiz == null)
+                            supportGiz = previewInstance.AddComponent<SupportGizmoPreview>();
+
+                        supportGiz.debugCardData = cardData;
+                    }
+
+                    // 🔹 Gizmo del cubo de colisión entre defensas (siempre que quieras verlo)
+                    var overlapGiz = previewInstance.GetComponent<PlacementOverlapGizmo>();
+                    if (overlapGiz == null)
+                        overlapGiz = previewInstance.AddComponent<PlacementOverlapGizmo>();
+
+                    overlapGiz.debugCardData = cardData;
                 }
 
                 previewInstance.transform.position = hit.point;
@@ -183,7 +196,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (useFixedPosition)
             {
                 finalPosition = fixedPlacementPosition;
-                finalNormal = Vector3.up; // si quieres puedes guardar otra normal para fixed
+                finalNormal = Vector3.up; // o la normal que quieras para posiciones fijas
                 valid = true;
             }
             else
@@ -199,27 +212,48 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 }
             }
 
-            // Comprobar que no hay otra defensa demasiado cerca
             if (valid)
             {
+                // Un pelín separado de la montaña en la normal
                 Vector3 checkCenter = finalPosition + finalNormal * 0.1f;
 
-                bool overlapsDefense = Physics.CheckSphere(checkCenter, placementCheckRadius, defenseMask);
+                // Mitades del cubo desde CardData
+                Vector3 halfExtents =
+                    (cardData != null && cardData.placementCheckExtents != Vector3.zero)
+                    ? cardData.placementCheckExtents
+                    : new Vector3(0.5f, 0.5f, 0.5f);
+
+                // Rotación del cubo igual que la defensa final
+                Quaternion cubeRotation = Quaternion.FromToRotation(Vector3.up, finalNormal);
+                cubeRotation = Quaternion.AngleAxis(currentRotationDegrees, finalNormal) * cubeRotation;
+
+                bool overlapsDefense = Physics.CheckBox(checkCenter, halfExtents, cubeRotation, defenseMask);
                 if (overlapsDefense)
                 {
                     valid = false;
                     StartCoroutine(ShakeCard());
-                    Debug.Log("[DragCardUI] No se puede colocar: ya hay una defensa en ese sitio.");
+                    Debug.Log("[DragCardUI] No se puede colocar: ya hay una defensa en ese sitio (cubo).");
+                }
+            }
+
+            // 🔹 Calculamos la rotación final tal como hacemos con el preview (base + extra)
+            Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
+            Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
+            Quaternion finalRotation = extraRot * baseRot;
+
+            // 🔹 Chequeo de soporte completo, solo si la carta lo exige
+            if (valid && cardData != null && cardData.requireFullSupport)
+            {
+                if (!HasFullSupport(finalPosition, finalRotation))
+                {
+                    valid = false;
+                    StartCoroutine(ShakeCard());
+                    Debug.Log("[DragCardUI] No se puede colocar: quedaría flotando.");
                 }
             }
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
-                // 🔹 RECREAMOS LA MISMA ROTACIÓN QUE TENÍA EL PREVIEW
-                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
-                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
-                Quaternion finalRotation = extraRot * baseRot;
-
                 GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition, finalRotation);
 
                 if (placed != null && DefensePlacementManager.Instance != null)
@@ -392,6 +426,46 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         rectTransform.anchoredPosition = to;
+    }
+
+    /// <summary>
+    /// Comprueba que toda la "huella" de la defensa está apoyada en la montaña.
+    /// Lanza raycasts verticales hacia abajo desde el centro y las 4 esquinas
+    /// de un cuadrado definido por supportCheckExtents.
+    /// </summary>
+    private bool HasFullSupport(Vector3 center, Quaternion rotation)
+    {
+        if (cardData == null || !cardData.requireFullSupport)
+            return true;
+
+        Vector2 ext = cardData.supportCheckExtents;
+        float maxDist = cardData.supportRayDistance;
+        float yOff = cardData.supportYOffset;
+
+        Vector3 raisedCenter = center + Vector3.up * yOff;
+
+        Vector3[] localOffsets =
+        {
+        Vector3.zero,
+        new Vector3( ext.x, 0f,  ext.y),
+        new Vector3(-ext.x, 0f,  ext.y),
+        new Vector3( ext.x, 0f, -ext.y),
+        new Vector3(-ext.x, 0f, -ext.y),
+    };
+
+        foreach (var local in localOffsets)
+        {
+            Vector3 worldOffset = rotation * local;
+            Vector3 origin = raisedCenter + worldOffset;
+
+            if (!Physics.Raycast(origin, Vector3.down, maxDist, placementMask))
+            {
+                Debug.Log("[Support] Falta soporte en: " + origin);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void OnDestroy()

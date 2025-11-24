@@ -38,7 +38,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [Header("Placement")]
     [SerializeField] private LayerMask placementMask;     // aquí pondrás la capa Mountain
     [SerializeField] private LayerMask defenseMask;       // capa o máscaras donde están las defensas
-    [SerializeField] private float placementCheckRadius = 0.5f;
 
     // 🔹 ROTACIÓN DEL PREVIEW
     private float currentRotationDegrees = 0f;
@@ -153,15 +152,22 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     previewInstance = Instantiate(cardData.defensePrefab);
                     DisablePreviewLogic(previewInstance);
 
-                    // Añadir gizmo solo si la carta lo requiere (una sola vez)
+                    // Gizmo de soporte (cuadrado + rayos), si procede
                     if (cardData.requireFullSupport)
                     {
-                        var giz = previewInstance.GetComponent<SupportGizmoPreview>();
-                        if (giz == null)
-                            giz = previewInstance.AddComponent<SupportGizmoPreview>();
+                        var supportGiz = previewInstance.GetComponent<SupportGizmoPreview>();
+                        if (supportGiz == null)
+                            supportGiz = previewInstance.AddComponent<SupportGizmoPreview>();
 
-                        giz.debugCardData = cardData; // 🔹 aquí está la clave
+                        supportGiz.debugCardData = cardData;
                     }
+
+                    // 🔹 Gizmo del cubo de colisión entre defensas (siempre que quieras verlo)
+                    var overlapGiz = previewInstance.GetComponent<PlacementOverlapGizmo>();
+                    if (overlapGiz == null)
+                        overlapGiz = previewInstance.AddComponent<PlacementOverlapGizmo>();
+
+                    overlapGiz.debugCardData = cardData;
                 }
 
                 previewInstance.transform.position = hit.point;
@@ -206,17 +212,27 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 }
             }
 
-            // Comprobar que no hay otra defensa demasiado cerca
             if (valid)
             {
+                // Un pelín separado de la montaña en la normal
                 Vector3 checkCenter = finalPosition + finalNormal * 0.1f;
 
-                bool overlapsDefense = Physics.CheckSphere(checkCenter, placementCheckRadius, defenseMask);
+                // Mitades del cubo desde CardData
+                Vector3 halfExtents =
+                    (cardData != null && cardData.placementCheckExtents != Vector3.zero)
+                    ? cardData.placementCheckExtents
+                    : new Vector3(0.5f, 0.5f, 0.5f);
+
+                // Rotación del cubo igual que la defensa final
+                Quaternion cubeRotation = Quaternion.FromToRotation(Vector3.up, finalNormal);
+                cubeRotation = Quaternion.AngleAxis(currentRotationDegrees, finalNormal) * cubeRotation;
+
+                bool overlapsDefense = Physics.CheckBox(checkCenter, halfExtents, cubeRotation, defenseMask);
                 if (overlapsDefense)
                 {
                     valid = false;
                     StartCoroutine(ShakeCard());
-                    Debug.Log("[DragCardUI] No se puede colocar: ya hay una defensa en ese sitio.");
+                    Debug.Log("[DragCardUI] No se puede colocar: ya hay una defensa en ese sitio (cubo).");
                 }
             }
 

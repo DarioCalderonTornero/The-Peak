@@ -359,4 +359,19 @@ public class ClimberMovement : MonoBehaviour
     {
         externalSpeedMultiplier = Mathf.Max(0f, multiplier);
     }
+
+    public float GetCurrentStamina()
+    {
+        return currentStamina;
+    }
+
+    public void SetCurrentStamina(float value)
+    {
+        currentStamina = Mathf.Clamp(value, 0f, maxStamina);
+    }
+
+    public float GetMaxStamina()
+    {
+        return maxStamina;
+    }
 }

@@ -619,11 +619,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotsContainer: {fileID: 1832778368}
   cardPrefab: {fileID: 6781065058651717317, guid: 481e41b82fd4e0848aa9426e6965403a, type: 3}
-  startingCards:
-  - {fileID: 11400000, guid: aa2442207350490408cf85bcf942e728, type: 2}
-  - {fileID: 11400000, guid: a648721e5957e1e48a68cb0ff7817a4e, type: 2}
-  - {fileID: 11400000, guid: d607a17d468724b4ebc3eb72f1c3b6ba, type: 2}
-  - {fileID: 11400000, guid: 4cd3e132234793944bb2c3f73368c0ac, type: 2}
+  startingCards: []
 --- !u!114 &281424688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1540,6 +1536,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f0985a409b4beb54c8a75e76675f5b5b, type: 2}
   - {fileID: 11400000, guid: 8e082cff2f1e3a740a5c143bfdcb31f1, type: 2}
   - {fileID: 11400000, guid: 0cf55efb4a688e642abc4f23ff15c39f, type: 2}
+  - {fileID: 11400000, guid: add7f9942751ca04189daaf009869321, type: 2}
 --- !u!4 &895229883
 Transform:
   m_ObjectHideFlags: 0

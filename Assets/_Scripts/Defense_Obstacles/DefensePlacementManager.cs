@@ -4,8 +4,8 @@ using UnityEngine;
 /// <summary>
 /// Gestiona las defensas colocadas por turnos.
 /// - RegisterPlaced(GameObject go): registra un GameObject como colocado durante el turno actual.
-/// - AdvanceTurn(): llama cuando comienza un nuevo turno (ej. cuando comienza ClimberTurn). Archiva la lista del turno que acaba
-///   y, si hay más de 2 turnos en historial, destruye las defensas de hace dos turnos.
+/// - AdvanceTurn(): llama cuando comienza un nuevo turno (ej. cuando comienza ClimberTurn).
+///   Actualmente **no destruye ninguna defensa antigua**, solo archiva el historial.
 /// </summary>
 public class DefensePlacementManager : MonoBehaviour
 {
@@ -44,8 +44,8 @@ public class DefensePlacementManager : MonoBehaviour
     /// Avanza el estado de turnos:
     /// - Añade la lista del turno actual al historial.
     /// - Reinicia la lista actual.
-    /// - Si hay más de 2 turnos en historial, destruye los objetos del turno más antiguo (hace 2 turnos).
-    /// Llamar esto cuando empiece el nuevo turno (por ejemplo, al comenzar ClimberTurn).
+    /// 
+    /// IMPORTANTE: ya NO destruye defensas antiguas.
     /// </summary>
     public void AdvanceTurn()
     {
@@ -55,24 +55,13 @@ public class DefensePlacementManager : MonoBehaviour
         // Reiniciar la lista del turno actual para acumular los nuevos objetos del siguiente turno
         currentTurnPlaced = new List<GameObject>();
 
-        // Si hay más de 2 turnos guardados, el primero es el de hace 2 turnos -> destruirlo
-        if (placedHistory.Count > 2)
-        {
-            List<GameObject> toDestroy = placedHistory[0];
-            for (int i = 0; i < toDestroy.Count; i++)
-            {
-                GameObject g = toDestroy[i];
-                if (g != null)
-                {
-                    Destroy(g);
-                }
-            }
-            placedHistory.RemoveAt(0);
-        }
+        // Antes aquí se destruían las defensas de hace dos turnos.
+        // Eso se ha eliminado para que las defensas sean permanentes.
     }
 
     /// <summary>
-    /// (Opcional) Reinicia completamente el gestor destruyendo todo lo registrado.
+    /// Reinicia completamente el gestor destruyendo todo lo registrado.
+    /// (Solo se llama si tú lo invocas explícitamente.)
     /// </summary>
     public void ResetAll()
     {

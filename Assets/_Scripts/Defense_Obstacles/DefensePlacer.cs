@@ -34,19 +34,20 @@ public class DefensePlacer : MonoBehaviour
             defense.Initialize();
         }
 
-        // Si esta defensa tiene un EdgeObstacleMarker, actualizamos el grafo
+        // Si esta defensa tiene un EdgeObstacleMarker, solo recalculamos obstáculos en el grafo,
+        // NO reconstruimos todo el grafo para no invalidar las referencias de los escaladores.
         var marker = instance.GetComponent<EdgeObstacleMarker>();
         if (marker != null)
         {
             CampGraphBuilder graph = FindObjectOfType<CampGraphBuilder>();
             if (graph != null)
             {
-                Debug.Log("[DefensePlacer] Nueva defensa con obstáculo colocada. Reconstruyendo grafo de campamentos...");
-                graph.BuildGraph();
+                Debug.Log("[DefensePlacer] Nueva defensa con obstáculo colocada. Recalculando obstáculos en las aristas...");
+                graph.RecalculateObstaclesOnEdges();
             }
             else
             {
-                Debug.LogWarning("[DefensePlacer] No se ha encontrado CampGraphBuilder al intentar reconstruir el grafo.");
+                Debug.LogWarning("[DefensePlacer] No se ha encontrado CampGraphBuilder al intentar recalcular obstáculos.");
             }
         }
 

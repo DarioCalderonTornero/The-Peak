@@ -14,7 +14,6 @@ public class CardData : ScriptableObject
 
     public Material previewMaterial;
 
-    // NUEVO: exigir que toda la base esté apoyada en la montaña
     [Header("Soporte completo")]
     public bool requireFullSupport = false;
 

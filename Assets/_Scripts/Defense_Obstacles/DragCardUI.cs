@@ -442,8 +442,14 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         float maxDist = cardData.supportRayDistance;
         float yOff = cardData.supportYOffset;
 
-        Vector3 raisedCenter = center + Vector3.up * yOff;
+        // La normal de la superficie a partir de la rotación final
+        // (recuerda que rotation es la que hace que Vector3.up -> normal de la montaña)
+        Vector3 surfaceNormal = rotation * Vector3.up;
 
+        // Centro de la “huella” un poco separado en la normal
+        Vector3 supportCenter = center + surfaceNormal * yOff;
+
+        // Offsets locales en el plano XZ local de la defensa
         Vector3[] localOffsets =
         {
         Vector3.zero,
@@ -455,10 +461,16 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         foreach (var local in localOffsets)
         {
+            // Pasar el offset local a mundo respetando la rotación
             Vector3 worldOffset = rotation * local;
-            Vector3 origin = raisedCenter + worldOffset;
 
-            if (!Physics.Raycast(origin, Vector3.down, maxDist, placementMask))
+            // Origen del raycast
+            Vector3 origin = supportCenter + worldOffset;
+
+            // Dirección “hacia la montaña”: opuesta a la normal de la superficie
+            Vector3 dir = -surfaceNormal;
+
+            if (!Physics.Raycast(origin, dir, maxDist, placementMask))
             {
                 Debug.Log("[Support] Falta soporte en: " + origin);
                 return false;

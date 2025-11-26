@@ -589,15 +589,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0056b46bcda61a6489b605deab9d5920, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pivotTransform: {fileID: 0}
-  mainCamera: {fileID: 0}
-  rayLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
-  maxRayDistance: 500
-  moveSpeed: 20
-  requireRightMouseButton: 1
-  onlyOnZoomIn: 1
 --- !u!1 &1534971992
 GameObject:
   m_ObjectHideFlags: 0

@@ -147,7 +147,7 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.2
   m_Speed: 20
-  m_Acceleration: 8
+  m_Acceleration: 80
   avoidancePriority: 50
   m_AngularSpeed: 360
   m_StoppingDistance: 0
@@ -175,3 +175,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e1e3bc880ea646a4d8e09cda704cbac6, type: 2}
   minRandomItems: 1
   maxRandomItems: 1
+  debugEquippedItemNames: []

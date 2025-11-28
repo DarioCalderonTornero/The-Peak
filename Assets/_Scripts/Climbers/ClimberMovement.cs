@@ -1,5 +1,4 @@
-﻿using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
 public class ClimberMovement : MonoBehaviour
@@ -31,6 +30,10 @@ public class ClimberMovement : MonoBehaviour
 
     [Header("Equipamiento")]
     [SerializeField] private ClimberLoadout loadout;
+
+    [Header("IA - Potencial hacia la cima")]
+    [Tooltip("Cuánto influye la diferencia de potencial (distancia a la cima) en la decisión de camino.")]
+    [SerializeField] private float potentialWeightFactor = 1f;
 
     private Vector3 lastFramePosition;
     private float lastFrameHeight;
@@ -152,7 +155,7 @@ public class ClimberMovement : MonoBehaviour
     }
 
     // ==============================
-    // MODIFICADO AQUÍ
+    // TURNOS
     // ==============================
 
     private void HandleClimberTurnStart()
@@ -161,7 +164,7 @@ public class ClimberMovement : MonoBehaviour
 
         hasStartedThisTurn = true;
 
-        //  NUEVO: actualizar rocas/aristas antes de elegir camino
+        // Actualizar rocas/aristas antes de elegir camino (también recalcula pesos y potenciales)
         if (campGraph != null)
             campGraph.RecalculateObstaclesOnEdges();
 
@@ -180,8 +183,19 @@ public class ClimberMovement : MonoBehaviour
         agent.isStopped = true;
     }
 
+    // ==============================
+    // MOVIMIENTO HACIA CAMPAMENTOS
+    // ==============================
+
     private void MoveToClosestCamp()
     {
+        if (campGraph == null || campGraph.nodes == null || campGraph.nodes.Count == 0)
+        {
+            isAtCamp = false;
+            isActiveThisTurn = false;
+            return;
+        }
+
         CampGraphBuilder.CampNode closest = null;
         float bestDist = float.MaxValue;
 
@@ -239,64 +253,84 @@ public class ClimberMovement : MonoBehaviour
         }
 
         CampGraphBuilder.CampEdge bestAffordable = null;
-        float bestAffordableScore = float.NegativeInfinity;
+        float bestAffordableWeight = float.PositiveInfinity;
 
         CampGraphBuilder.CampEdge bestUnaffordable = null;
-        float bestUnaffordableScore = float.NegativeInfinity;
-
-        float distNow = Vector3.Distance(currentNode.position, summit.position);
-        const float minApproachGain = 0.05f;
+        float bestUnaffordableWeight = float.PositiveInfinity;
 
         foreach (var edge in currentNode.neighbors)
         {
+            // Evitar ping-pong al nodo anterior si hay alternativas
             if (edge.to == lastNode && currentNode.neighbors.Count > 1)
                 continue;
 
-            // FILTRO DE OBSTÁCULOS
+            bool canPassObstacle = true;
+
+            // Si hay obstáculo y NO tengo equipo → descarto este camino
             if (edge.hasObstacle && edge.obstacleType != ObstacleType.None)
             {
-                bool canPass = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
+                canPassObstacle = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
 
-                if (!canPass)
-                {
+                if (!canPassObstacle)
                     continue;
+            }
+
+            // Peso base del grafo
+            float effectiveWeight = edge.weight;
+
+            // Si hay obstáculos y tengo equipo, resto el peso de esos obstáculos
+            if (edge.hasObstacle && canPassObstacle && campGraph != null)
+            {
+                float obstaclesWeight = campGraph.obstaclePenalty * edge.obstacleCount;
+                effectiveWeight -= obstaclesWeight;
+            }
+
+            // 🔵 Integrar potencial: moverse a nodos con potencial menor es más atractivo
+            if (campGraph != null && currentNode != null)
+            {
+                float currentPot = currentNode.potential;
+                float nextPot = edge.to.potential;
+
+                if (!float.IsPositiveInfinity(currentPot) && !float.IsPositiveInfinity(nextPot))
+                {
+                    float deltaPot = nextPot - currentPot; // negativo = más cerca de la cima
+                    effectiveWeight += deltaPot * potentialWeightFactor;
                 }
             }
 
-            float cost = CalculateStaminaCost(edge);
+            // Evitar pesos negativos o cero
+            effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
 
-            float distNext = Vector3.Distance(edge.to.position, summit.position);
-            float approach = distNow - distNext;
-
-            float score = (approach < -minApproachGain)
-                ? -9999f
-                : approach / Mathf.Max(cost, 0.01f);
-
-            bool affordable = cost <= currentStamina;
+            // Coste de estamina de este camino
+            float staminaCost = CalculateStaminaCost(edge);
+            bool affordable = staminaCost <= currentStamina;
 
             if (affordable)
             {
-                if (score > bestAffordableScore)
+                if (effectiveWeight < bestAffordableWeight)
                 {
-                    bestAffordableScore = score;
+                    bestAffordableWeight = effectiveWeight;
                     bestAffordable = edge;
                 }
             }
             else
             {
-                if (score > bestUnaffordableScore)
+                if (effectiveWeight < bestUnaffordableWeight)
                 {
-                    bestUnaffordableScore = score;
+                    bestUnaffordableWeight = effectiveWeight;
                     bestUnaffordable = edge;
                 }
             }
         }
 
+        // Preferimos el camino más ligero que pueda pagar con estamina;
+        // si no hay ninguno asequible, cogemos el más ligero de los no asequibles.
         CampGraphBuilder.CampEdge chosen =
             bestAffordable != null ? bestAffordable : bestUnaffordable;
 
         if (chosen == null)
         {
+            // No hay caminos válidos desde este campamento
             isAtCamp = true;
             isActiveThisTurn = false;
             return;
@@ -312,7 +346,19 @@ public class ClimberMovement : MonoBehaviour
 
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
+
+        if (debugLogs)
+        {
+            float currentPot = currentNode.potential;
+            float nextPot = targetNode.potential;
+            Debug.Log($"[ClimberMovement] Camino elegido {lastNode.id} -> {targetNode.id}, " +
+                      $"pesoEdge={chosen.weight:F1}, potActual={currentPot:F1}, potNext={nextPot:F1}");
+        }
     }
+
+    // ==============================
+    // LLEGADA A CAMPAMENTO / CIMA
+    // ==============================
 
     private void HandleReachedCamp()
     {
@@ -354,6 +400,10 @@ public class ClimberMovement : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    // ==============================
+    // EXTRAS
+    // ==============================
 
     public void SetExternalSpeedMultiplier(float multiplier)
     {

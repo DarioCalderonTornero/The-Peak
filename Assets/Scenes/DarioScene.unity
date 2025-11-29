@@ -597,11 +597,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   maxRayDistance: 500
-  pivotMoveSpeed: 15
+  pivotMoveSpeed: 17
   smoothMovement: 1
   zoomSpeed: 0.1
-  minZoom: 0.5
-  maxZoom: 2
+  minZoom: 0.3
+  maxZoom: 1.25
   requireRightMouseButton: 1
   onlyOnZoomIn: 1
   mouseMoveThresholdPixels: 50

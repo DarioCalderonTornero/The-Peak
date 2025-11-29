@@ -3,7 +3,6 @@ using Unity.Cinemachine;
 
 public class CameraZoomPivotFocus : MonoBehaviour
 {
-    /*
     [Header("Referencias")]
     [SerializeField] private Transform pivotTransform;          // Empty del centro de la montaña
     [SerializeField] private Camera mainCamera;                 // Main Camera (con el CinemachineBrain)
@@ -27,9 +26,17 @@ public class CameraZoomPivotFocus : MonoBehaviour
     [SerializeField] private bool requireRightMouseButton = true; // Solo funciona con RMB
     [SerializeField] private bool onlyOnZoomIn = true;            // Solo mueve el pivote al acercar
 
+    [Header("Cambio de foco por movimiento de ratón")]
+    [SerializeField] private float mouseMoveThresholdPixels = 30f;
+
+    [Header("Altura del foco")]
+    [SerializeField] private float minNormalYForHeight = 0.3f;    // Si la superficie es más vertical que esto, ignoramos su Y
+    [SerializeField] private float verticalFollowStrength = 0.8f; // 0..1 cuánto seguimos la Y del hit cuando es válida
+
     private Vector3 targetPivotPos;
     private Vector3 focalPoint;
     private bool hasFocalPoint = false;
+    private Vector2 lastFocusMousePos;
 
     private float currentZoom = 1f;
 
@@ -60,7 +67,7 @@ public class CameraZoomPivotFocus : MonoBehaviour
             targetPivotPos = pivotTransform.position;
 
         if (orbitalFollow != null)
-            currentZoom = orbitalFollow.RadialAxis.Value;   // Valor inicial del zoom
+            currentZoom = orbitalFollow.RadialAxis.Value;   
     }
 
     private void Update()
@@ -68,54 +75,84 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (mainCamera == null || pivotTransform == null || orbitalFollow == null)
             return;
 
-        // Si queremos requerir RMB, salimos si no está pulsado
-        if (requireRightMouseButton && !Input.GetMouseButton(1))
-        {
-            hasFocalPoint = false;
-            return;
-        }
+        
+        //if (requireRightMouseButton && !Input.GetMouseButton(1))
+            //return;
 
         float scroll = Input.mouseScrollDelta.y;
 
-        // Si no hay scroll este frame, no hacemos nada
+        // Si no hay scroll, no hacemos nada
         if (Mathf.Abs(scroll) < 0.01f)
             return;
 
-        // --- ZOOM: modificamos el RadialAxis de Cinemachine ---
-        // Scroll positivo = acercar (disminuir RadialAxis.Value)
-        currentZoom -= scroll * zoomSpeed;
-        currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
-        orbitalFollow.RadialAxis.Value = currentZoom;
+        // Posición actual del ratón
+        Vector2 currentMousePos = Input.mousePosition;
 
-        // --- FOCAL POINT (pivote dinámico) ---
-        // Solo actualizamos el pivote cuando nos estamos acercando
+        bool shouldRecalculateFocus =
+            !hasFocalPoint ||
+            Vector2.Distance(currentMousePos, lastFocusMousePos) > mouseMoveThresholdPixels;
+
+        
         if (onlyOnZoomIn && scroll < 0f)
         {
-            // Alejar: no cambiamos el focalPoint ni el targetPivotPos
+            ApplyZoom(scroll);
+            // No tocamos el foco ni el targetPivotPos aquí
             return;
         }
 
-        // Primer "tick" de scroll hacia dentro calculamos el punto bajo el ratón
-        if (!hasFocalPoint)
+      
+        if (scroll > 0f && shouldRecalculateFocus)
         {
+            TryRecalculateFocalPoint(currentMousePos);
+            return;
+        }
+
+       
+        ApplyZoom(scroll);
+
+        
+        if (hasFocalPoint)
+        {
+            targetPivotPos = focalPoint;
+        }
+    }
+
+    private void ApplyZoom(float scroll)
+    {
+        currentZoom -= scroll * zoomSpeed;
+        currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
+        orbitalFollow.RadialAxis.Value = currentZoom;
+    }
+
+    private void TryRecalculateFocalPoint(Vector2 currentMousePos)
+    {
+        Ray ray = mainCamera.ScreenPointToRay(currentMousePos);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, rayLayerMask))
+        {
+            lastFocusMousePos = currentMousePos;
             hasFocalPoint = true;
 
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            Vector3 point = hit.point;
+            float nY = hit.normal.y;
 
-            if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, rayLayerMask))
+            if (nY > minNormalYForHeight)
             {
-                focalPoint = hit.point;
+                float newY = Mathf.Lerp(pivotTransform.position.y, point.y, verticalFollowStrength);
+                point.y = newY;
             }
             else
             {
-                // Si no golpea nada, usamos un punto arbitrario hacia delante
-                focalPoint = ray.GetPoint(50f);
+                point.y = pivotTransform.position.y;
             }
-        }
 
-        // Movemos el pivote hacia el punto de foco (aplanando Y para evitar “paredes locas”)
-        Vector3 flatFocal = new Vector3(focalPoint.x, pivotTransform.position.y, focalPoint.z);
-        targetPivotPos = flatFocal;
+            focalPoint = point;
+            targetPivotPos = focalPoint;
+        }
+        else
+        {
+            Debug.Log("No mountain on mouse");
+        }
     }
 
     private void LateUpdate()
@@ -135,13 +172,5 @@ public class CameraZoomPivotFocus : MonoBehaviour
         {
             pivotTransform.position = targetPivotPos;
         }
-
-        // Cuando el pivote ya está prácticamente en el punto de foco,
-        // podemos permitir recalcular otro focalPoint en el siguiente gesto de zoom
-        if (Vector3.SqrMagnitude(pivotTransform.position - targetPivotPos) < 0.0001f)
-        {
-            hasFocalPoint = false;
-        }
     }
-    */
 }

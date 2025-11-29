@@ -597,7 +597,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   maxRayDistance: 500
-  pivotMoveSpeed: 10
+  pivotMoveSpeed: 15
   smoothMovement: 1
   zoomSpeed: 0.1
   minZoom: 0.5
@@ -605,8 +605,6 @@ MonoBehaviour:
   requireRightMouseButton: 1
   onlyOnZoomIn: 1
   mouseMoveThresholdPixels: 50
-  minNormalYForHeight: 0.3
-  verticalFollowStrength: 1
 --- !u!1 &1534971992
 GameObject:
   m_ObjectHideFlags: 0

@@ -75,23 +75,27 @@ public class QuicksandDefense : BaseDefense
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
-        // CASO 1: aún no hay nadie atrapado → este pasa a ser el atrapado
+        // Si aún no hay nadie absorbiéndose → empezamos con este
         if (absorbedClimber == null)
         {
             absorbedClimber = climber;
-            hasRecordedInitialY = false; // lo pillamos en Update la primera vez
+            hasRecordedInitialY = false;
 
-            // Desactivar el NavMeshAgent para que no intente moverse
             absorbedAgent = climber.GetComponent<NavMeshAgent>();
             if (absorbedAgent != null)
             {
-                absorbedAgent.enabled = false;
+                // 🔹 No desactivamos el agent, solo lo “congelamos”
+                absorbedAgent.isStopped = true;
+                absorbedAgent.updatePosition = false;
+                absorbedAgent.updateRotation = false;
             }
 
+            // Este escalador se considera "done" a efectos de turno
+            absorbedClimber.SetExternallyDoneThisTurn(true);
             return;
         }
 
-        // CASO 2: ya hay alguien atrapado y entra OTRO escalador → lo rescata
+        // Si ya había uno dentro y entra OTRO escalador → rescate
         if (climber != absorbedClimber)
         {
             RescueClimber();
@@ -100,7 +104,7 @@ public class QuicksandDefense : BaseDefense
 
     private void OnTriggerExit(Collider other)
     {
-        // No dejamos que escape una vez “pillado” de forma normal:
+        // No dejamos que escape una vez “pillado”:
         // sólo se puede salir mediante rescate o muerte.
     }
 
@@ -125,8 +129,7 @@ public class QuicksandDefense : BaseDefense
         pos = Vector3.Lerp(pos, targetXZ, Time.deltaTime * centerLerpSpeed);
         t.position = pos;
 
-        // Registrar la altura inicial UNA sola vez,
-        // cuando ya está empezando a quedar “anclado”.
+        // Registrar la altura inicial UNA sola vez
         if (!hasRecordedInitialY)
         {
             initialY = t.position.y;
@@ -171,33 +174,69 @@ public class QuicksandDefense : BaseDefense
         Destroy(gameObject);
     }
 
-    /// <summary>
-    /// Un segundo escalador entra en el trigger y rescata al que se hundía.
-    /// El atrapado sale de las arenas y las arenas desaparecen.
-    /// </summary>
     private void RescueClimber()
     {
         if (absorbedClimber != null)
         {
-            // Recolocamos al escalador en un punto seguro, justo encima del centro de las arenas
             Transform t = absorbedClimber.transform;
-            Vector3 safePos = transform.position + Vector3.up * 0.2f;
+
+            // 1) Lo sacamos un poco hacia arriba en el centro de la arena
+            Vector3 safePos = transform.position + Vector3.up * 0.3f;
             t.position = safePos;
 
-            // Reactivamos su NavMeshAgent
+            // 2) Reactivamos el control normal del NavMeshAgent
             if (absorbedAgent == null)
                 absorbedAgent = absorbedClimber.GetComponent<NavMeshAgent>();
 
             if (absorbedAgent != null)
             {
-                absorbedAgent.enabled = true;
+                absorbedAgent.updatePosition = true;
+                absorbedAgent.updateRotation = true;
                 absorbedAgent.isStopped = false;
             }
 
-            // Por si luego queremos usar flags de inmovilización, aquí se podrían resetear.
+            // Volvemos a dejar que su lógica de turnos sea normal
+            absorbedClimber.SetExternallyDoneThisTurn(false);
+
+            // 3) Mandarlo al campamento más cercano
+            CampGraphBuilder.CampNode nearest = GetNearestCamp(safePos);
+            if (nearest != null)
+            {
+                absorbedClimber.ForceMoveToCampNode(nearest);
+            }
+            else
+            {
+                Debug.LogWarning("[QuicksandDefense] No se encontró campamento cercano al rescatar al escalador.");
+            }
         }
 
-        // Las arenas desaparecen tras el rescate
+        // 4) Las arenas desaparecen tras el rescate
         Destroy(gameObject);
+    }
+
+    private CampGraphBuilder.CampNode GetNearestCamp(Vector3 pos)
+    {
+#if UNITY_6000_0_OR_NEWER
+        CampGraphBuilder graph = FindFirstObjectByType<CampGraphBuilder>();
+#else
+        CampGraphBuilder graph = FindObjectOfType<CampGraphBuilder>();
+#endif
+        if (graph == null || graph.nodes == null || graph.nodes.Count == 0)
+            return null;
+
+        CampGraphBuilder.CampNode best = null;
+        float bestDist = Mathf.Infinity;
+
+        foreach (var node in graph.nodes)
+        {
+            float d = Vector3.Distance(pos, node.position);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = node;
+            }
+        }
+
+        return best;
     }
 }

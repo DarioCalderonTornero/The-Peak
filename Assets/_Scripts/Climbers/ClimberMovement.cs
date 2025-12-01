@@ -30,7 +30,7 @@ public class ClimberMovement : MonoBehaviour
     [SerializeField] private float revisitPenaltyPerVisit = 5f;
 
     // Estado de estamina
-    private float currentStamina;
+    [SerializeField] private float currentStamina;
 
     // Estado de movimiento
     private Vector3 lastFramePosition;
@@ -54,7 +54,9 @@ public class ClimberMovement : MonoBehaviour
 
     public bool IsAtCamp => isAtCamp;
     public bool IsOutOfStamina => currentStamina <= 0f;
-    public bool IsDoneThisTurn => isAtCamp || reachedSummit || IsOutOfStamina;
+    public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
+
+    private bool externallyForcedDone = false;
 
     private void Awake()
     {
@@ -124,6 +126,9 @@ public class ClimberMovement : MonoBehaviour
         if (!isActiveThisTurn || reachedSummit || agent == null)
             return;
 
+        if (!agent.enabled || !agent.isOnNavMesh)
+            return;
+
         // 1) Cálculo de distancia recorrida y pendiente para gasto de estamina
         Vector3 currentPos = transform.position;
         float frameDistance = Vector3.Distance(currentPos, lastFramePosition);
@@ -175,13 +180,17 @@ public class ClimberMovement : MonoBehaviour
         if (reachedSummit || agent == null)
             return;
 
+        // 🔹 Si alguna defensa (arenas, etc.) nos ha marcado como "done",
+        // este escalador no hace nada este turno pero tampoco bloquea el final de turno.
+        if (externallyForcedDone)
+            return;
+
         hasStartedThisTurn = true;
 
         // Recalcular obstáculos del grafo antes de decidir
         if (campGraph != null)
             campGraph.RecalculateObstaclesOnEdges();
 
-        // Si aún no hemos ido al primer campamento, buscamos el campamento más cercano
         if (isGoingToFirstCamp || currentNode == null)
         {
             MoveToClosestCamp();
@@ -443,4 +452,36 @@ public class ClimberMovement : MonoBehaviour
     public float GetCurrentStamina() => currentStamina;
     public void SetCurrentStamina(float value) => currentStamina = Mathf.Clamp(value, 0f, maxStamina);
     public float GetMaxStamina() => maxStamina;
+
+    public void ForceMoveToCampNode(CampGraphBuilder.CampNode node)
+    {
+        if (agent == null || node == null)
+            return;
+
+        // Queremos que a partir de ahora funcione como si ya estuviera “en el grafo”
+        isGoingToFirstCamp = false;
+        isAtCamp = false;
+        isActiveThisTurn = true;
+        reachedSummit = false;
+
+        targetNode = node;
+
+        agent.isStopped = false;
+        agent.SetDestination(node.position);
+
+        // Reset de referencias para el cálculo de estamina
+        lastFramePosition = transform.position;
+        lastFrameHeight = transform.position.y;
+    }
+
+    public void SetExternallyDoneThisTurn(bool value)
+    {
+        externallyForcedDone = value;
+
+        // Por seguridad, si lo marcamos como "done", paramos el agent
+        if (value && agent != null)
+        {
+            agent.isStopped = true;
+        }
+    }
 }

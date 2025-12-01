@@ -329,9 +329,6 @@ MonoBehaviour:
   amountToSpawn: 1
   spawnCooldown: 2
   minDistance: 20
-  possibleArchetypes:
-  - {fileID: 11400000, guid: 93c8ee284753a2a47b864788d2cfe2c6, type: 2}
-  - {fileID: 11400000, guid: f16b76461f5b004449ab8f6d8c99af4c, type: 2}
   spawnCooldownTimer: 0
   spawnedCount: 0
   isMaxCount: 0

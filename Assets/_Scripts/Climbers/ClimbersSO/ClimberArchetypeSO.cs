@@ -1,17 +1,25 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ClimberArchetype", menuName = "Climbers/New Archetype")]
+public enum ClimberRarity
+{
+    None,
+    Common,
+    Uncommon,
+    Rare,
+    Epic,
+    Legendary
+}
+
+[CreateAssetMenu(fileName = "ClimberArchetype", menuName = "NewClimberArchetype")]
 public class ClimberArchetypeSO : ScriptableObject
 {
-    [Header("General Info")]
-    public string archetypeName;
-    public Sprite icon;
+    [Header("Climber Rarity")]
+    public string archetypeName = "Default";
+    public ClimberRarity rarity = ClimberRarity.None; 
 
-    [Header("Stats Base")]
-    public float maxHealth = 100f;
-    public float baseSpeed = 3.5f;
-    public float resolve = 1f; //Energy
+    [Header("Equipment")]
+    public EquipmentDefinitionSO[] equipmentPool;
 
-    [Header("Default equipment")]
-    public EquipmentDefinitionSO[] startingEquipment;
+    public int minRandomItems = 0;
+    public int maxRandomItems = 1;
 }

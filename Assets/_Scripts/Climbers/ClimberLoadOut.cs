@@ -4,14 +4,11 @@ using UnityEngine;
 
 public class ClimberLoadout : MonoBehaviour
 {
+    [Header("Arquetipo del escalador (configuración de equipamiento)")]
+    [SerializeField] private ClimberArchetypeSO archetype;
+
     [Header("Equipamiento asignado en runtime (solo lectura)")]
-    private List<EquipmentInstance> equippedItems = new List<EquipmentInstance>();
-
-    [Header("Pool de objetos posibles para este escalador")]
-    [SerializeField] private EquipmentDefinitionSO[] randomEquipmentPool;
-
-    [SerializeField] private int minRandomItems = 0;
-    [SerializeField] private int maxRandomItems = 1;
+    private List<EquipmentInstance> equippedItems = new();
 
     [Header("DEBUG – Equipo visible en Inspector (no tocar)")]
     [SerializeField] private string[] debugEquippedItemNames;
@@ -27,14 +24,16 @@ public class ClimberLoadout : MonoBehaviour
     {
         equippedItems.Clear();
 
-        if (randomEquipmentPool == null || randomEquipmentPool.Length == 0)
+        // Simplemente no equipa nada.
+        if (archetype == null || archetype.equipmentPool == null || archetype.equipmentPool.Length == 0)
         {
             UpdateDebugNames();
             return;
         }
 
-        int maxItems = Mathf.Clamp(maxRandomItems, 0, randomEquipmentPool.Length);
-        int minItems = Mathf.Clamp(minRandomItems, 0, maxItems);
+        var pool = new List<EquipmentDefinitionSO>(archetype.equipmentPool);
+        int maxItems = Mathf.Clamp(archetype.maxRandomItems, 0, pool.Count);
+        int minItems = Mathf.Clamp(archetype.minRandomItems, 0, maxItems);
 
         int itemsToEquip = UnityEngine.Random.Range(minItems, maxItems + 1);
 
@@ -43,8 +42,6 @@ public class ClimberLoadout : MonoBehaviour
             UpdateDebugNames();
             return;
         }
-
-        List<EquipmentDefinitionSO> pool = new List<EquipmentDefinitionSO>(randomEquipmentPool);
 
         for (int i = 0; i < itemsToEquip && pool.Count > 0; i++)
         {

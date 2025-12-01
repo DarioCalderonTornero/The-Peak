@@ -3,8 +3,8 @@ using UnityEngine.AI;
 
 public class ClimberConfig : MonoBehaviour
 {
+    /*
     [Header("Archetype")]
-    public ClimberArchetypeSO archetype;
 
     [Header("References")]
     [SerializeField] private NavMeshAgent agent;
@@ -22,43 +22,12 @@ public class ClimberConfig : MonoBehaviour
         if (loadout == null)
             loadout = GetComponent<ClimberLoadout>();
 
-        InitializeFromArchetype();
     }
 
     /// <summary>
     /// Llamable desde fuera (SpawnManager) para aplicar un arquetipo concreto a este escalador.
     /// </summary>
-    public void ApplyArchetype(ClimberArchetypeSO newArchetype)
-    {
-        archetype = newArchetype;
-        InitializeFromArchetype();
-    }
-
-    private void InitializeFromArchetype()
-    {
-        if (archetype == null)
-        {
-            Debug.LogWarning("[ClimberConfig] No archetype assigned to climber.");
-            return;
-        }
-
-        // Base stats
-        currentHealth = archetype.maxHealth;
-        resolve = archetype.resolve;
-
-        // Apply movement stats
-        if (agent != null)
-        {
-            agent.speed = archetype.baseSpeed;
-            Debug.Log($"[ClimberConfig] NavMeshAgent speed set to {agent.speed} from archetype {archetype.archetypeName}.");
-        }
-
-        else
-        {
-            Debug.LogWarning("[ClimberConfig] No ClimberLoadout found on this climber.");
-        }
-
-        int equipmentCount = archetype.startingEquipment != null ? archetype.startingEquipment.Length : 0;
-        Debug.Log($"[ClimberConfig] Climber initialized. HP: {currentHealth}, Resolve: {resolve}, Equipment: {equipmentCount}.");
-    }
+    
+    */
+   
 }

@@ -15,7 +15,6 @@ public class SpawnManager : MonoBehaviour
 
     [Header("Tipos de escalador")]
     [Tooltip("Lista de arquetipos posibles. Ej: sin pico, con pico, etc.")]
-    [SerializeField] private ClimberArchetypeSO[] possibleArchetypes;
 
     [Header("Estado interno (debug)")]
     [SerializeField] private float spawnCooldownTimer = 0f;
@@ -75,7 +74,8 @@ public class SpawnManager : MonoBehaviour
             spawnedCount++;
             spawnCooldownTimer = 0f;
 
-            // 🔹 Elegir arquetipo aleatorio (si hay)
+            /*
+            //Elegir arquetipo aleatorio (si hay)
             var config = obj.GetComponent<ClimberConfig>();
             if (config != null && possibleArchetypes != null && possibleArchetypes.Length > 0)
             {
@@ -89,6 +89,7 @@ public class SpawnManager : MonoBehaviour
             {
                 //Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberConfig.");
             }
+            */
 
             var climber = obj.GetComponent<ClimberMovement>();
             if (climber == null)

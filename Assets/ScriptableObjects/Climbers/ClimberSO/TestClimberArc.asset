@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e199a14edd3d8184eb7ec666f5db39d2, type: 3}
+  m_Name: TestClimberArc
+  m_EditorClassIdentifier: 
+  archetypeName: Test
+  rarity: 0
+  equipmentPool:
+  - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
+  - {fileID: 11400000, guid: e1e3bc880ea646a4d8e09cda704cbac6, type: 2}
+  minRandomItems: 1
+  maxRandomItems: 1

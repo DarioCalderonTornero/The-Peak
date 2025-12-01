@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class LodoDefense : BaseDefense
 {
@@ -12,6 +13,13 @@ public class LodoDefense : BaseDefense
     [Header("Animación de aparición")]
     [SerializeField] private float spawnDuration = 0.25f;
 
+    [Header("Hundimiento visual")]
+    [SerializeField] private float idleSinkSpeed = 0.1f;         // qué rápido se hunde mientras camina
+    [SerializeField] private float maxVisualSinkDepth = 0.5f;    // profundidad máxima visual (offset hacia abajo)
+    [SerializeField] private float restoreSpeed = 1.5f;          // velocidad para volver a la altura original
+    [SerializeField] private float deathAbsorbSpeed = 4f;        // absorción rápida al morir
+    [SerializeField] private float deathExtraSinkDepth = 0.5f;   // cuánto extra se hunde en la muerte
+
     private Vector3 originalLocalScale;
     private Coroutine spawnRoutine;
 
@@ -19,6 +27,14 @@ public class LodoDefense : BaseDefense
     {
         public float lastStamina;
         public bool inside;
+
+        // Para hundimiento visual
+        public NavMeshAgent agent;
+        public float initialBaseOffset;
+        public bool hasInitialOffset;
+
+        public bool isDying;                  // si está en animación de muerte
+        public Coroutine restoreRoutine;      // corrutina de “subir” al salir del lodo
     }
 
     private readonly Dictionary<ClimberMovement, MudClimberData> tracked =
@@ -82,7 +98,7 @@ public class LodoDefense : BaseDefense
             // Lanza OnEncounterObstacle en todos los equipos
             loadout.TryHandleObstacle(ObstacleType.Mud);
 
-            // Preguntamos si alguno puede manejar el lodo (tiene LodoBreakerEquipment o similar)
+            // Preguntamos si alguno puede manejar el lodo (tiene equipamiento anti-lodo)
             isImmuneToMud = loadout.CanHandleObstacle(ObstacleType.Mud);
         }
 
@@ -97,7 +113,6 @@ public class LodoDefense : BaseDefense
         // Si NO es inmune → aplicamos el efecto de lodo como antes
         climber.SetExternalSpeedMultiplier(slowFactor);
 
-        float current = climber.GetCurrentStamina();
         if (!tracked.TryGetValue(climber, out MudClimberData data))
         {
             data = new MudClimberData();
@@ -105,7 +120,25 @@ public class LodoDefense : BaseDefense
         }
 
         data.inside = true;
-        data.lastStamina = current;
+        data.lastStamina = climber.GetCurrentStamina();
+        data.isDying = false;
+
+        // Guardar NavMeshAgent y su offset original (para hundimiento visual)
+        if (data.agent == null)
+            data.agent = climber.GetComponent<NavMeshAgent>();
+
+        if (data.agent != null && !data.hasInitialOffset)
+        {
+            data.initialBaseOffset = data.agent.baseOffset;
+            data.hasInitialOffset = true;
+        }
+
+        // Si estaba restaurando altura de una salida anterior, cortamos esa corrutina
+        if (data.restoreRoutine != null)
+        {
+            StopCoroutine(data.restoreRoutine);
+            data.restoreRoutine = null;
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -120,9 +153,38 @@ public class LodoDefense : BaseDefense
             loadout.TryHandleObstacleExit(ObstacleType.Mud);
         }
 
-        // Restablecemos velocidad y dejamos de trackear al escalador
-        climber.SetExternalSpeedMultiplier(1f);
-        tracked.Remove(climber);
+        if (!tracked.TryGetValue(climber, out MudClimberData data))
+        {
+            // Por si acaso, reset de velocidad
+            climber.SetExternalSpeedMultiplier(1f);
+            return;
+        }
+
+        data.inside = false;
+
+        // Si está en animación de muerte, no hacemos nada: la muerte se encargará de todo
+        if (!data.isDying)
+        {
+            // Restablecemos velocidad de movimiento
+            climber.SetExternalSpeedMultiplier(1f);
+
+            // Lanzamos corrutina para volver a la altura original (baseOffset)
+            if (data.agent != null && data.hasInitialOffset)
+            {
+                if (data.restoreRoutine != null)
+                    StopCoroutine(data.restoreRoutine);
+
+                data.restoreRoutine = StartCoroutine(RestoreBaseOffset(climber, data));
+            }
+            else
+            {
+                // Si no hay agent, lo sacamos moviendo la posición Y del transform
+                if (data.restoreRoutine != null)
+                    StopCoroutine(data.restoreRoutine);
+
+                data.restoreRoutine = StartCoroutine(RestoreTransformHeight(climber, data));
+            }
+        }
     }
 
     private void LateUpdate()
@@ -140,13 +202,22 @@ public class LodoDefense : BaseDefense
                 continue;
             }
 
-            var data = tracked[climber];
-            if (!data.inside) continue;
+            if (!tracked.TryGetValue(climber, out MudClimberData data))
+                continue;
+
+            // Si ya está en animación de muerte, aquí no hacemos nada
+            if (data.isDying)
+                continue;
+
+            // Si no está dentro, tampoco aplicamos gasto ni hundimiento (se encarga la corrutina de salida)
+            if (!data.inside)
+                continue;
 
             float prev = data.lastStamina;
             float current = climber.GetCurrentStamina();
             float max = climber.GetMaxStamina();
 
+            // 🔹 Gasto de stamina multiplicado
             float delta = Mathf.Max(0f, prev - current);
 
             if (delta > 0f && staminaMultiplier > 1f)
@@ -167,12 +238,134 @@ public class LodoDefense : BaseDefense
 
             data.lastStamina = current;
 
-            if (current <= max * deathThresholdPercent)
+            // 🔹 Hundimiento visual suave mientras camina por el lodo
+            ApplyIdleSink(data);
+
+            // 🔹 Comprobamos muerte por stamina
+            if (max > 0f && current <= max * deathThresholdPercent)
             {
-                Destroy(climber.gameObject);
-                Destroy(gameObject);
-                break;
+                // Empezamos animación rápida de absorción y muerte
+                data.isDying = true;
+                StartCoroutine(QuickAbsorbAndKill(climber, data));
             }
         }
+    }
+
+    // Hundimiento lento mientras está en el lodo
+    private void ApplyIdleSink(MudClimberData data)
+    {
+        if (data.agent != null && data.hasInitialOffset)
+        {
+            float targetOffset = data.initialBaseOffset - maxVisualSinkDepth;
+            data.agent.baseOffset = Mathf.MoveTowards(
+                data.agent.baseOffset,
+                targetOffset,
+                idleSinkSpeed * Time.deltaTime
+            );
+        }
+        // Si quisieras un fallback sin NavMeshAgent, aquí podrías tocar transform.position.y
+    }
+
+    // Animación rápida de absorción al morir
+    private IEnumerator QuickAbsorbAndKill(ClimberMovement climber, MudClimberData data)
+    {
+        NavMeshAgent agent = data.agent != null ? data.agent : climber.GetComponent<NavMeshAgent>();
+
+        if (agent != null && data.hasInitialOffset)
+        {
+            float targetOffset = data.initialBaseOffset - (maxVisualSinkDepth + deathExtraSinkDepth);
+
+            while (agent != null &&
+                   Mathf.Abs(agent.baseOffset - targetOffset) > 0.01f)
+            {
+                agent.baseOffset = Mathf.MoveTowards(
+                    agent.baseOffset,
+                    targetOffset,
+                    deathAbsorbSpeed * Time.deltaTime
+                );
+                yield return null;
+            }
+        }
+        else
+        {
+            // Fallback: hundimos el transform en Y
+            Transform t = climber.transform;
+            float startY = t.position.y;
+            float targetY = startY - (maxVisualSinkDepth + deathExtraSinkDepth);
+
+            while (climber != null &&
+                   Mathf.Abs(t.position.y - targetY) > 0.01f)
+            {
+                Vector3 pos = t.position;
+                pos.y = Mathf.MoveTowards(pos.y, targetY, deathAbsorbSpeed * Time.deltaTime);
+                t.position = pos;
+                yield return null;
+            }
+        }
+
+        if (climber != null)
+        {
+            Destroy(climber.gameObject);
+        }
+
+        // El lodo desaparece tras absorber al escalador
+        Destroy(gameObject);
+    }
+
+    // Corrutina para volver suavemente al offset original al salir del lodo (con NavMeshAgent)
+    private IEnumerator RestoreBaseOffset(ClimberMovement climber, MudClimberData data)
+    {
+        NavMeshAgent agent = data.agent;
+        if (agent == null || !data.hasInitialOffset)
+        {
+            tracked.Remove(climber);
+            yield break;
+        }
+
+        while (agent != null &&
+               Mathf.Abs(agent.baseOffset - data.initialBaseOffset) > 0.01f)
+        {
+            agent.baseOffset = Mathf.MoveTowards(
+                agent.baseOffset,
+                data.initialBaseOffset,
+                restoreSpeed * Time.deltaTime
+            );
+            yield return null;
+        }
+
+        if (agent != null)
+            agent.baseOffset = data.initialBaseOffset;
+
+        // Una vez restaurado, ya no necesitamos seguir trackeando
+        tracked.Remove(climber);
+        data.restoreRoutine = null;
+    }
+
+    // Fallback si NO hay NavMeshAgent: restaurar transform.position.y
+    private IEnumerator RestoreTransformHeight(ClimberMovement climber, MudClimberData data)
+    {
+        if (climber == null)
+        {
+            tracked.Remove(climber);
+            yield break;
+        }
+
+        Transform t = climber.transform;
+        float targetY = t.position.y; // usamos la altura actual como “buena”
+
+        // Aquí podrías guardar una altura original diferente si la tuvieses.
+        // Para no liarnos, lo dejamos simple.
+
+        while (climber != null &&
+               Mathf.Abs(t.position.y - targetY) > 0.01f)
+        {
+            Vector3 pos = t.position;
+            pos.y = Mathf.MoveTowards(pos.y, targetY, restoreSpeed * Time.deltaTime);
+            t.position = pos;
+            yield return null;
+        }
+
+        tracked.Remove(climber);
+        data.restoreRoutine = null;
     }
 }

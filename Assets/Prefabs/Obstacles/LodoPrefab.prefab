@@ -127,6 +127,11 @@ MonoBehaviour:
   staminaMultiplier: 5
   deathThresholdPercent: 0.3
   spawnDuration: 0.25
+  idleSinkSpeed: 0.2
+  maxVisualSinkDepth: 0.8
+  restoreSpeed: 1.5
+  deathAbsorbSpeed: 4
+  deathExtraSinkDepth: 0.5
 --- !u!54 &1851972778595047772
 Rigidbody:
   m_ObjectHideFlags: 0

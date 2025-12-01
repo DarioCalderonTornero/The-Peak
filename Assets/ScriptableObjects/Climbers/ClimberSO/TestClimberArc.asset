@@ -18,5 +18,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
   - {fileID: 11400000, guid: e1e3bc880ea646a4d8e09cda704cbac6, type: 2}
   - {fileID: 11400000, guid: 338103a60dc2c2141ada12844300638e, type: 2}
+  - {fileID: 11400000, guid: f20865c9945b6864dadbeff59303e58d, type: 2}
   minRandomItems: 2
   maxRandomItems: 2

@@ -68,39 +68,67 @@ public class BrambleDefense : BaseDefense
     private void OnTriggerEnter(Collider other)
     {
         var climber = other.GetComponent<ClimberMovement>();
-        if (climber != null)
-        {
-            climber.SetExternalSpeedMultiplier(slowFactor);
-            Debug.Log($"[BrambleDefense] {other.name} ha entrado en zarza");
+        if (climber == null) return;
 
-            climbersInside++;
-            if (climbersInside == 1)
-            {
-                // Primer escalador dentro → empezamos a vibrar
-                if (shakeRoutine != null)
-                    StopCoroutine(shakeRoutine);
-                shakeRoutine = StartCoroutine(ShakeWhileActive());
-            }
+        // 🔹 Pasamos por el sistema de equipamiento
+        var loadout = other.GetComponent<ClimberLoadout>();
+        bool isImmuneToBramble = false;
+
+        if (loadout != null)
+        {
+            // Notificamos a los equipos que hemos encontrado este obstáculo
+            loadout.TryHandleObstacle(ObstacleType.Bramble);
+
+            // Preguntamos si alguno puede manejarlo (tiene BrambleBreakerEquipment o similar)
+            isImmuneToBramble = loadout.CanHandleObstacle(ObstacleType.Bramble);
+        }
+
+        // Si TIENE equipamiento que maneja este tipo de obstáculo → no le afecta la zarza
+        if (isImmuneToBramble)
+        {
+            // Opcional: debug
+            // Debug.Log("[BrambleDefense] Climber inmune a las zarzas.");
+            return;
+        }
+
+        // Si NO es inmune → aplicamos la lógica original de zarzas
+        climber.SetExternalSpeedMultiplier(slowFactor);
+        Debug.Log($"[BrambleDefense] {other.name} ha entrado en zarza");
+
+        climbersInside++;
+        if (climbersInside == 1)
+        {
+            // Primer escalador dentro → empezamos a vibrar
+            if (shakeRoutine != null)
+                StopCoroutine(shakeRoutine);
+            shakeRoutine = StartCoroutine(ShakeWhileActive());
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
         var climber = other.GetComponent<ClimberMovement>();
-        if (climber != null)
-        {
-            climber.SetExternalSpeedMultiplier(1f);
-            Debug.Log($"[BrambleDefense] {other.name} ha salido de zarza");
+        if (climber == null) return;
 
-            climbersInside = Mathf.Max(0, climbersInside - 1);
-            if (climbersInside == 0)
-            {
-                // Ya no quedan escaladores → paramos vibración
-                if (shakeRoutine != null)
-                    StopCoroutine(shakeRoutine);
-                shakeRoutine = null;
-                transform.localPosition = originalLocalPosition;
-            }
+        // 🔹 Avisamos al equipamiento de que salimos del obstáculo (por si quiere reaccionar)
+        var loadout = other.GetComponent<ClimberLoadout>();
+        if (loadout != null)
+        {
+            loadout.TryHandleObstacleExit(ObstacleType.Bramble);
+        }
+
+        // Restauramos velocidad (si no se había ralentizado, no pasa nada)
+        climber.SetExternalSpeedMultiplier(1f);
+        Debug.Log($"[BrambleDefense] {other.name} ha salido de zarza");
+
+        climbersInside = Mathf.Max(0, climbersInside - 1);
+        if (climbersInside == 0)
+        {
+            // Ya no quedan escaladores → paramos vibración
+            if (shakeRoutine != null)
+                StopCoroutine(shakeRoutine);
+            shakeRoutine = null;
+            transform.localPosition = originalLocalPosition;
         }
     }
 

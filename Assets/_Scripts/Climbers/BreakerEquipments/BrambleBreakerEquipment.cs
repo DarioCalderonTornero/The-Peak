@@ -5,12 +5,12 @@ public class BrambleBreakerEquipment : EquipmentInstance
     public override void Initialize(string name)
     {
         base.Initialize(name);
-        Debug.Log("<color=cyan>[RockBreakerEquipment]</color> Ready to break rocks!");
+        Debug.Log("<color=cyan>[BrambleBreakerEquipment]</color> Ready to break rocks!");
     }
 
     public override void OnEncounterObstacle(ObstacleType obstacleType)
     {
-        Debug.Log($"<color=yellow>[RockBreakerEquipment]</color> Encountered obstacle: {obstacleType}");
+        Debug.Log($"<color=yellow>[BrambleBreakerEquipment]</color> Encountered obstacle: {obstacleType}");
 
         if (obstacleType == ObstacleType.Bramble)
         {
@@ -24,12 +24,12 @@ public class BrambleBreakerEquipment : EquipmentInstance
 
     public override void OnCounterSuccess(ObstacleType type)
     {
-        Debug.Log($"<color=green>[RockBreakerEquipment]</color> Successfully countered {type}! (Would break it here)");
+        Debug.Log($"<color=green>[BrambleBreakerEquipment]</color> Successfully countered {type}! (Would break it here)");
     }
 
     public override void OnCounterFail(ObstacleType type)
     {
-        Debug.Log($"<color=red>[RockBreakerEquipment]</color> Cannot counter {type}. (Would block climber here)");
+        Debug.Log($"<color=red>[BrambleBreakerEquipment]</color> Cannot counter {type}. (Would block climber here)");
     }
 
     public override void OnExitObstacle(ObstacleType type)

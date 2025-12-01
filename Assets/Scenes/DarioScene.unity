@@ -231,6 +231,7 @@ MonoBehaviour:
   nextTurnButton: {fileID: 1534971994}
   accelarateTimeButton: {fileID: 2100247593}
   accelerateTimeText: {fileID: 1875055770}
+  timeMultipliers: 010000000200000004000000
 --- !u!1 &1108060492
 GameObject:
   m_ObjectHideFlags: 0

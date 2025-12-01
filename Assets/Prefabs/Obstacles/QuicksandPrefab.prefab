@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8389063683763908184}
   - component: {fileID: 4289226677948554762}
   - component: {fileID: 2235839593858769813}
+  - component: {fileID: 7911203287003337470}
   m_Layer: 0
   m_Name: QuicksandPrefab
   m_TagString: Untagged
@@ -153,3 +154,16 @@ MonoBehaviour:
   maxSinkDepth: 5.5
   centerLerpSpeed: 6
   spawnDuration: 0.25
+--- !u!114 &7911203287003337470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3112691383206151712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97a96f72894c20429c31f3cf6833f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleType: 4

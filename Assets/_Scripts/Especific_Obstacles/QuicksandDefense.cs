@@ -72,6 +72,28 @@ public class QuicksandDefense : BaseDefense
 
     private void OnTriggerEnter(Collider other)
     {
+        // 🔹 Pasamos por el sistema de equipamiento
+        var loadout = other.GetComponent<ClimberLoadout>();
+        bool isImmuneToMud = false;
+
+        if (loadout != null)
+        {
+            // Lanza OnEncounterObstacle en todos los equipos
+            loadout.TryHandleObstacle(ObstacleType.QuickSand);
+
+            // Preguntamos si alguno puede manejar el lodo (tiene equipamiento anti-lodo)
+            isImmuneToMud = loadout.CanHandleObstacle(ObstacleType.QuickSand);
+        }
+
+        // Si TIENE equipamiento que maneja el lodo → no aplicamos efecto
+        if (isImmuneToMud)
+        {
+            // Opcional: debug
+            // Debug.Log("[LodoDefense] Climber inmune al lodo.");
+            return;
+        }
+
+        // 2) Si no tiene equipo (o no puede manejar QuickSand), aplicamos la lógica normal
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
@@ -84,7 +106,7 @@ public class QuicksandDefense : BaseDefense
             absorbedAgent = climber.GetComponent<NavMeshAgent>();
             if (absorbedAgent != null)
             {
-                // 🔹 No desactivamos el agent, solo lo “congelamos”
+                // No desactivamos el agent, solo lo “congelamos”
                 absorbedAgent.isStopped = true;
                 absorbedAgent.updatePosition = false;
                 absorbedAgent.updateRotation = false;

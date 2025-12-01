@@ -4,4 +4,5 @@ public enum ObstacleType
     Rock = 1,
     Mud = 2,
     Bramble = 3, 
+    QuickSand = 4
 }

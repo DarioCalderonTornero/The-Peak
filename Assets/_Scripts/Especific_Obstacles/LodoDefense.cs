@@ -73,6 +73,28 @@ public class LodoDefense : BaseDefense
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
+        // 🔹 Pasamos por el sistema de equipamiento
+        var loadout = other.GetComponent<ClimberLoadout>();
+        bool isImmuneToMud = false;
+
+        if (loadout != null)
+        {
+            // Lanza OnEncounterObstacle en todos los equipos
+            loadout.TryHandleObstacle(ObstacleType.Mud);
+
+            // Preguntamos si alguno puede manejar el lodo (tiene LodoBreakerEquipment o similar)
+            isImmuneToMud = loadout.CanHandleObstacle(ObstacleType.Mud);
+        }
+
+        // Si TIENE equipamiento que maneja el lodo → no aplicamos efecto
+        if (isImmuneToMud)
+        {
+            // Opcional: debug
+            // Debug.Log("[LodoDefense] Climber inmune al lodo.");
+            return;
+        }
+
+        // Si NO es inmune → aplicamos el efecto de lodo como antes
         climber.SetExternalSpeedMultiplier(slowFactor);
 
         float current = climber.GetCurrentStamina();
@@ -91,6 +113,14 @@ public class LodoDefense : BaseDefense
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
+        // 🔹 Notificamos salida de obstáculo al equipamiento (por si quiere reaccionar)
+        var loadout = other.GetComponent<ClimberLoadout>();
+        if (loadout != null)
+        {
+            loadout.TryHandleObstacleExit(ObstacleType.Mud);
+        }
+
+        // Restablecemos velocidad y dejamos de trackear al escalador
         climber.SetExternalSpeedMultiplier(1f);
         tracked.Remove(climber);
     }

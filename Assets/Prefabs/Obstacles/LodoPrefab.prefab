@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7417496672722561584}
   - component: {fileID: 8655148108267118100}
   - component: {fileID: 1851972778595047772}
+  - component: {fileID: -232483701889047724}
   m_Layer: 0
   m_Name: LodoPrefab
   m_TagString: Untagged
@@ -153,3 +154,16 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
+--- !u!114 &-232483701889047724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9104421247320485007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97a96f72894c20429c31f3cf6833f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleType: 2

@@ -15,12 +15,22 @@ public class BaseObstacle : MonoBehaviour
         }
     }
 
-    protected virtual void OnTriggerEnter(Collider other)
+    protected virtual void OnTriggerEnter(Collider collider)
     {
-        var loadout = other.GetComponent<ClimberLoadout>();
+        var loadout = collider.GetComponent<ClimberLoadout>();
         if (loadout == null)
             return;
 
         loadout.TryHandleObstacle(obstacleType);
     }
+
+    protected virtual void OnTriggerExit(Collider other)
+    {
+        var loadout = other.GetComponent<ClimberLoadout>();
+        if (loadout == null)
+            return;
+
+        loadout.TryHandleObstacleExit(obstacleType);
+    }
+
 }

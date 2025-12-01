@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class RockBreakerEquipment : EquipmentInstance
+public class LodoBreakerEquipment : EquipmentInstance
 {
     public override void Initialize(string name)
     {
@@ -12,7 +12,7 @@ public class RockBreakerEquipment : EquipmentInstance
     {
         Debug.Log($"<color=yellow>[RockBreakerEquipment]</color> Encountered obstacle: {obstacleType}");
 
-        if (obstacleType == ObstacleType.Rock)
+        if (obstacleType == ObstacleType.Mud)
         {
             OnCounterSuccess(obstacleType);
         }
@@ -30,13 +30,18 @@ public class RockBreakerEquipment : EquipmentInstance
     public override void OnCounterFail(ObstacleType type)
     {
         Debug.Log($"<color=red>[RockBreakerEquipment]</color> Cannot counter {type}. (Would block climber here)");
-    } 
+    }
+
+    public override void OnExitObstacle(ObstacleType type)
+    {
+        Debug.Log("Exit Obstacle");
+    }
 
     /// <summary>
     /// A nivel de grafo, este equipo permite usar aristas con ROCK.
     /// </summary>
     public override bool CanHandleObstacle(ObstacleType obstacleType)
     {
-        return obstacleType == ObstacleType.Rock;
+        return obstacleType == ObstacleType.Mud;
     }
 }

@@ -111,6 +111,13 @@ public class ClimberLoadout : MonoBehaviour
             eq?.OnEncounterObstacle(obstacleType);
     }
 
+    public void TryHandleObstacleExit(ObstacleType obstacleType)
+    {
+        foreach (var eq in equippedItems)
+            eq?.OnExitObstacle(obstacleType);
+    }
+
+
     public bool CanHandleObstacle(ObstacleType obstacleType)
     {
         if (obstacleType == ObstacleType.None)

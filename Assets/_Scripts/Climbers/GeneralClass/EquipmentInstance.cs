@@ -25,6 +25,11 @@ public abstract class EquipmentInstance
         Debug.Log($"[Equipment] {equipmentName} failed to counter obstacle {type}.");
     }
 
+    public virtual void OnExitObstacle(ObstacleType type)
+    {
+        // Override aquí si ese equipo debe hacer algo al salir
+    }
+
     /// <summary>
     /// Indica si este equipo puede manejar / contrarrestar
     /// un obstáculo de cierto tipo a nivel de grafo.

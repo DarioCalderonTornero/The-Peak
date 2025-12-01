@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 #if UNITY_EDITOR
-using UnityEditor; // para Handles.Label
+using UnityEditor; // Para Handles.Label
 #endif
 
 [DefaultExecutionOrder(50)]
@@ -21,7 +21,7 @@ public class CampGraphBuilder : MonoBehaviour
     [Min(1)]
     public int maxNeighborsPerNode = 3;
 
-    [Header("Debug")]
+    [Header("Debug aristas")]
     public bool drawConnections = true;
     public Color connectionColor = Color.yellow;
 
@@ -49,16 +49,13 @@ public class CampGraphBuilder : MonoBehaviour
     private float minNodeHeight;
     private float maxNodeHeight;
 
-    // ----------------- CLASES DEL GRAFO -----------------
+    // ----------- CLASES DEL GRAFO -----------
     public class CampNode
     {
         public int id;
         public Vector3 position;
         public float height;
         public List<CampEdge> neighbors = new List<CampEdge>();
-
-        // Potencial hacia la cima (coste mínimo acumulado hasta la cima)
-        public float potential;
     }
 
     public class CampEdge
@@ -111,7 +108,7 @@ public class CampGraphBuilder : MonoBehaviour
         minNodeHeight = float.MaxValue;
         maxNodeHeight = float.MinValue;
 
-        // 1) Crear nodos
+        // 1) Crear nodos a partir de campZones
         for (int i = 0; i < count; i++)
         {
             Vector3 pos = campZoneFinder.campZones[i];
@@ -121,8 +118,7 @@ public class CampGraphBuilder : MonoBehaviour
             {
                 id = i,
                 position = pos,
-                height = h,
-                potential = float.PositiveInfinity
+                height = h
             };
 
             nodes.Add(node);
@@ -131,7 +127,7 @@ public class CampGraphBuilder : MonoBehaviour
             if (h > maxNodeHeight) maxNodeHeight = h;
         }
 
-        // 1b) Añadir cima
+        // 1b) Añadir cima como nodo extra
         if (finalDestination != null)
         {
             Vector3 pos = finalDestination.position;
@@ -141,8 +137,7 @@ public class CampGraphBuilder : MonoBehaviour
             {
                 id = nodes.Count,
                 position = pos,
-                height = h,
-                potential = float.PositiveInfinity
+                height = h
             };
 
             nodes.Add(summitNode);
@@ -210,9 +205,6 @@ public class CampGraphBuilder : MonoBehaviour
 
         // 5) Recalcular pesos de todas las aristas
         RecalculateAllEdgeWeights();
-
-        // 6) Calcular potencial de cada nodo hacia la cima
-        ComputeNodePotentialsFromSummit();
 
         Debug.Log("[CampGraphBuilder] Grafo completado. (Nodos totales: " + nodes.Count +
                   ", Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
@@ -299,82 +291,9 @@ public class CampGraphBuilder : MonoBehaviour
         return w;
     }
 
-    // ================== POTENCIAL HACIA LA CIMA ==================
-
-    private void ComputeNodePotentialsFromSummit()
-    {
-        if (nodes == null || nodes.Count == 0)
-            return;
-
-        if (finalDestinationNodeId < 0 || finalDestinationNodeId >= nodes.Count)
-        {
-            Debug.LogWarning("[CampGraphBuilder] finalDestinationNodeId inválido. No se puede calcular potenciales.");
-            // Potenciales a infinito
-            foreach (var node in nodes)
-            {
-                node.potential = float.PositiveInfinity;
-            }
-            return;
-        }
-
-        // Inicializar potenciales
-        foreach (var node in nodes)
-        {
-            node.potential = float.PositiveInfinity;
-        }
-
-        CampNode summitNode = nodes[finalDestinationNodeId];
-        summitNode.potential = 0f;
-
-        // Conjunto de nodos "no visitados"
-        List<CampNode> unvisited = new List<CampNode>(nodes);
-
-        while (unvisited.Count > 0)
-        {
-            // 1) Buscar el nodo no visitado con menor potencial
-            CampNode current = null;
-            float bestPot = float.PositiveInfinity;
-
-            foreach (var n in unvisited)
-            {
-                if (n.potential < bestPot)
-                {
-                    bestPot = n.potential;
-                    current = n;
-                }
-            }
-
-            if (current == null || float.IsPositiveInfinity(current.potential))
-            {
-                // No quedan nodos alcanzables
-                break;
-            }
-
-            unvisited.Remove(current);
-
-            // 2) Relajar sus vecinos
-            foreach (var edge in current.neighbors)
-            {
-                CampNode neighbor = edge.to;
-                if (!unvisited.Contains(neighbor))
-                    continue;
-
-                float edgeCost = Mathf.Max(edge.weight, 0.01f);
-                float newPotential = current.potential + edgeCost;
-
-                if (newPotential < neighbor.potential)
-                {
-                    neighbor.potential = newPotential;
-                }
-            }
-        }
-
-        Debug.Log("[CampGraphBuilder] Potenciales hacia la cima calculados.");
-    }
-
     public void RecalculateObstaclesOnEdges()
     {
-        // limpiar todo antes
+        // Limpiar todo antes
         foreach (var node in nodes)
         {
             foreach (var edge in node.neighbors)
@@ -387,14 +306,11 @@ public class CampGraphBuilder : MonoBehaviour
 
         AutoRegisterObstaclesOnEdges();
 
-        // actualizar pesos con la nueva info de obstáculos
+        // Actualizar pesos con la nueva info de obstáculos
         RecalculateAllEdgeWeights();
-
-        // actualizar potenciales, ya que cambian los pesos
-        ComputeNodePotentialsFromSummit();
     }
 
-    // ----------------- ASOCIAR OBSTÁCULOS CON ARISTAS -----------------
+    // ============ ASOCIAR OBSTÁCULOS CON ARISTAS ============
 
     public void AutoRegisterObstaclesOnEdges()
     {
@@ -443,7 +359,7 @@ public class CampGraphBuilder : MonoBehaviour
                 continue;
             }
 
-            // 2) DEFINIR UMBRAL ESTRECHO ALREDEDOR DE ESA MEJOR DISTANCIA
+            // 2) DEFINIR UMBRAL ALREDEDOR DE ESA MEJOR DISTANCIA
             float extraTolerance = radius * 0.3f;
             float maxDistToMark = Mathf.Min(radius, bestDistance + extraTolerance);
 
@@ -454,7 +370,7 @@ public class CampGraphBuilder : MonoBehaviour
             {
                 foreach (var edge in node.neighbors)
                 {
-                    // Procesar cada camino solo una vez (A->B, no B->A de nuevo)
+                    // ⚠️ Procesar solo una dirección por pareja A-B para no duplicar
                     if (edge.from.id > edge.to.id)
                         continue;
 
@@ -490,7 +406,7 @@ public class CampGraphBuilder : MonoBehaviour
             }
         }
 
-        Debug.Log($"[CampGraphBuilder] Asociación de obstáculos completada. Aristas marcadas: {edgesMarkedTotal}");
+        Debug.Log($"[CampGraphBuilder] Asociación de obstáculos completada. Aristas marcadas (dos direcciones): {edgesMarkedTotal}");
     }
 
     private float DistancePointToPath(Vector3 point, Vector3[] corners)

@@ -128,15 +128,14 @@ MonoBehaviour:
   agent: {fileID: 948342635942547329}
   campGraph: {fileID: 0}
   summit: {fileID: 0}
+  loadout: {fileID: 8495448889631796368}
   reachedThreshold: 0.2
-  debugLogs: 1
   maxStamina: 1000
   baseCostPerMeter: 1
   uphillExtraCostFactor: 2
   minStaminaCost: 0.1
-  currentStamina: 1000
-  loadout: {fileID: 8495448889631796368}
-  potentialWeightFactor: 1
+  externalSpeedMultiplier: 1
+  revisitPenaltyPerVisit: 150
 --- !u!195 &948342635942547329
 NavMeshAgent:
   m_ObjectHideFlags: 0

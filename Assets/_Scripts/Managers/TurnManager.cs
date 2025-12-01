@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -41,6 +42,8 @@ public class TurnManager : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private Button nextTurnButton;
+    [SerializeField] private Button accelarateTimeButton;
+    [SerializeField] private TextMeshProUGUI accelerateTimeText;
 
     public event Action<TurnState, TurnState> OnTurnStateChanged;
     public event Action OnPlayerTurnStart;
@@ -50,6 +53,11 @@ public class TurnManager : MonoBehaviour
 
     private SpawnManager spawnManager;
     private DefensePlacementManager defenseManager;
+
+    // ----- Time scale -----
+    // Ciclo: X1 -> X2 -> X4 -> X1
+    [SerializeField] private int[] timeMultipliers = { 1, 2, 4 };
+    private int currentTimeMultiplierIndex = 0;
 
     private void Awake()
     {
@@ -69,6 +77,18 @@ public class TurnManager : MonoBehaviour
         if (nextTurnButton != null)
         {
             nextTurnButton.onClick.AddListener(EndPlayerTurn);
+        }
+
+        if (accelarateTimeButton != null)
+        {
+            accelarateTimeButton.onClick.AddListener(AccelerateTime);
+        }
+
+        SetTimeScaleIndex(0);
+
+        if (accelarateTimeButton != null)
+        {
+            accelarateTimeButton.gameObject.SetActive(false);
         }
 
         if (GameManager.Instance != null)
@@ -110,6 +130,7 @@ public class TurnManager : MonoBehaviour
     {
         currentTurnNumber = 0;
         CurrentTurnState = TurnState.Idle;
+        ResetTime();
         if (logTurnChanges)
             Debug.Log("[TurnManager] Turn system reset");
     }
@@ -127,9 +148,19 @@ public class TurnManager : MonoBehaviour
 
         OnPlayerTurnStart?.Invoke();
 
+        // Turno del jugador: botón "end turn" activo
         if (nextTurnButton != null)
         {
             nextTurnButton.interactable = true;
+        }
+
+        // Reset Time al entrar en turno de jugador
+        ResetTime();
+
+        // En turno del jugador no se puede acelerar el tiempo
+        if (accelarateTimeButton != null)
+        {
+            accelarateTimeButton.gameObject.SetActive(false);
         }
     }
 
@@ -159,6 +190,15 @@ public class TurnManager : MonoBehaviour
             nextTurnButton.interactable = false;
         }
 
+        // En turno de escaladores sí se puede acelerar el tiempo
+        if (accelarateTimeButton != null)
+        {
+            accelarateTimeButton.gameObject.SetActive(true);
+        }
+
+        // Dejamos el turno de escaladores empezando en X1
+        SetTimeScaleIndex(0);
+
         if (spawnManager != null)
         {
             spawnManager.ResetSpawner();
@@ -182,8 +222,47 @@ public class TurnManager : MonoBehaviour
         if (CurrentTurnState != TurnState.ClimberTurn)
             return;
 
+        // Al terminar turno escalador, volvemos a X1 por seguridad
+        ResetTime();
+
         OnClimberTurnEnd?.Invoke();
         StartPlayerTurn();
+    }
+
+    private void AccelerateTime()
+    {
+        // Solo tiene sentido acelerar en turno de escaladores
+        if (CurrentTurnState != TurnState.ClimberTurn)
+            return;
+
+        // Avanzar al siguiente índice en el array [1,2,4]
+        currentTimeMultiplierIndex++;
+        if (currentTimeMultiplierIndex >= timeMultipliers.Length)
+            currentTimeMultiplierIndex = 0;
+
+        SetTimeScaleIndex(currentTimeMultiplierIndex);
+    }
+
+    private void SetTimeScaleIndex(int index)
+    {
+        if (timeMultipliers == null || timeMultipliers.Length == 0)
+            return;
+
+        index = Mathf.Clamp(index, 0, timeMultipliers.Length - 1);
+        currentTimeMultiplierIndex = index;
+
+        int mult = timeMultipliers[currentTimeMultiplierIndex];
+        Time.timeScale = mult;
+
+        if (accelerateTimeText != null)
+        {
+            accelerateTimeText.text = $"X{mult}";
+        }
+    }
+
+    private void ResetTime()
+    {
+        SetTimeScaleIndex(0);
     }
 
     private void Update()
@@ -248,7 +327,6 @@ public class TurnManager : MonoBehaviour
             EndClimberTurn();
         }
     }
-
 
     public bool IsPlayerTurn()
     {

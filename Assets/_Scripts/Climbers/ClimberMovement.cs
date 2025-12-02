@@ -29,6 +29,13 @@ public class ClimberMovement : MonoBehaviour
     [Tooltip("Penalización extra de peso por CADA visita previa a un campamento.")]
     [SerializeField] private float revisitPenaltyPerVisit = 5f;
 
+    [Header("Penalización por alejarse de la cima")]
+    [Tooltip("Metros de alejamiento de la cima permitidos sin penalización.")]
+    [SerializeField] private float backtrackTolerance = 2f;
+
+    [Tooltip("Peso extra por cada metro de alejamiento de la cima más allá de la tolerancia.")]
+    [SerializeField] private float backtrackPenaltyPerMeter = 5f;
+
     // Estado de estamina
     [SerializeField] private float currentStamina;
 
@@ -52,11 +59,11 @@ public class ClimberMovement : MonoBehaviour
     // key = nodeId, value = visitas
     private Dictionary<int, int> nodeVisitCount = new Dictionary<int, int>();
 
+    private bool externallyForcedDone = false;
+
     public bool IsAtCamp => isAtCamp;
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
-
-    private bool externallyForcedDone = false;
 
     private void Awake()
     {
@@ -180,8 +187,7 @@ public class ClimberMovement : MonoBehaviour
         if (reachedSummit || agent == null)
             return;
 
-        // 🔹 Si alguna defensa (arenas, etc.) nos ha marcado como "done",
-        // este escalador no hace nada este turno pero tampoco bloquea el final de turno.
+        // Si alguna defensa nos ha marcado como "done", este escalador no actúa este turno.
         if (externallyForcedDone)
             return;
 
@@ -259,6 +265,7 @@ public class ClimberMovement : MonoBehaviour
     /// - Peso del grafo (edge.weight): más ligero = mejor.
     /// - Si tiene equipo para el obstáculo, se resta el peso de esos obstáculos.
     /// - Penalización extra por ir a campamentos muy visitados (memoria anti-bucles).
+    /// - Penalización por alejarse demasiado de la cima (backtrack).
     /// - Se priorizan caminos que puede pagar con estamina; si no, el más ligero de los no asequibles.
     /// </summary>
     private void ChooseNextCampAndMove()
@@ -312,10 +319,25 @@ public class ClimberMovement : MonoBehaviour
                 effectiveWeight += visits * revisitPenaltyPerVisit;
             }
 
+            // 4) Penalización por alejarse de la cima (backtrack)
+            if (summit != null && currentNode != null && edge.to != null)
+            {
+                float distNow = Vector3.Distance(currentNode.position, summit.position);
+                float distNext = Vector3.Distance(edge.to.position, summit.position);
+                float approach = distNow - distNext; // >0 = me acerco, <0 = me alejo
+
+                if (approach < -backtrackTolerance)
+                {
+                    float backtrackAmount = -approach - backtrackTolerance; // cuánto me alejo de verdad
+                    float backtrackPenalty = backtrackAmount * backtrackPenaltyPerMeter;
+                    effectiveWeight += backtrackPenalty;
+                }
+            }
+
             // Evitar pesos negativos o 0
             effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
 
-            // 4) Coste real de estamina de este camino
+            // 5) Coste real de estamina de este camino
             float staminaCost = CalculateStaminaCost(edge);
             bool affordable = staminaCost <= currentStamina;
 

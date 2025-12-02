@@ -405,8 +405,6 @@ public class CampGraphBuilder : MonoBehaviour
                 Debug.Log($"[CampGraphBuilder] Obstacle '{marker.name}' ({type}) asignado a {edgesMarkedForThisMarker} aristas. bestDist={bestDistance:F2}, maxDistToMark={maxDistToMark:F2}, radius={radius:F2}");
             }
         }
-
-        Debug.Log($"[CampGraphBuilder] Asociación de obstáculos completada. Aristas marcadas (dos direcciones): {edgesMarkedTotal}");
     }
 
     private float DistancePointToPath(Vector3 point, Vector3[] corners)

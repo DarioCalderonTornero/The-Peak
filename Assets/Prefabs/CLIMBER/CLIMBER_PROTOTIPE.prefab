@@ -130,12 +130,15 @@ MonoBehaviour:
   summit: {fileID: 0}
   loadout: {fileID: 8495448889631796368}
   reachedThreshold: 0.2
-  maxStamina: 1000
+  maxStamina: 300
   baseCostPerMeter: 1
   uphillExtraCostFactor: 2
   minStaminaCost: 0.1
   externalSpeedMultiplier: 1
-  revisitPenaltyPerVisit: 150
+  revisitPenaltyPerVisit: 300
+  backtrackTolerance: 2
+  backtrackPenaltyPerMeter: 5
+  currentStamina: 0
 --- !u!195 &948342635942547329
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -1,12 +1,13 @@
 using UnityEngine;
-using UnityEditor;
+//using UnityEditor;
 
-[CustomEditor(typeof(ProceduralMountain))]
-public class ProceduralMountainEditor : Editor
+//[CustomEditor(typeof(ProceduralMountain))]
+public class ProceduralMountainEditor : MonoBehaviour
 {
+    /*
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
+        //DrawDefaultInspector();
 
         ProceduralMountain mountain = (ProceduralMountain)target;
         if (GUILayout.Button("Regenerar Montaña"))
@@ -14,4 +15,5 @@ public class ProceduralMountainEditor : Editor
             mountain.GenerateMountain();
         }
     }
+    */
 }

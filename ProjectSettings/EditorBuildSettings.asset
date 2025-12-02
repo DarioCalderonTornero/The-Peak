@@ -6,8 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainScene.unity
-    guid: 8124e5870f4fd4c779e7a5f994e84ad1
+    path: Assets/Scenes/DarioScene.unity
+    guid: c6d6fe79e639190409bd65bda391f7b7
+  - enabled: 1
+    path: Assets/MR.unity
+    guid: 48360728df5c8014a9ff75a9c7e9ecf6
+  - enabled: 1
+    path: Assets/Scenes/AlexScene.unity
+    guid: 73fd09b3df3999143857b0465c336da9
+  - enabled: 1
+    path: Assets/Scenes/PruebasLuz_Scene.unity
+    guid: 0c0b07446678bac4798db4397fcc8148
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 95faa4c9b8e21ff49a203edc24c82a39, type: 3}
   m_UseUCBPForAssetBundles: 0

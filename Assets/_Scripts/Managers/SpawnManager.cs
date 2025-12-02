@@ -30,7 +30,9 @@ public class SpawnManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     public void SpawnClimbers()

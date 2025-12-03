@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     {
         Initializing,
         Playing,
+        GamePause,
         GameOver
     }
 
@@ -26,6 +27,8 @@ public class GameManager : MonoBehaviour
     [Header("Config")]
     public bool autoStartGame = true;
     public bool logStateChanges = true;
+
+    private bool gamePaused = false;
 
     private void Awake()
     {
@@ -93,5 +96,15 @@ public class GameManager : MonoBehaviour
         currentState = newState;
 
         OnStateChanged?.Invoke(previous, currentState);
+    }
+
+    public void PauseGame()
+    {
+        Time.timeScale = 0f;
+    }
+
+    public void UnPauseGame()
+    {
+        Time.timeScale = 1.0f;
     }
 }

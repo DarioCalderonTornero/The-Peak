@@ -28,6 +28,8 @@ public class BerryTreeDefense : BaseDefense
     [Header("Punto al que van a comer")]
     public Transform eatPoint;
 
+    public Vector3 lastDestination;
+
     private void OnEnable()
     {
         TurnManager.Instance.OnClimberTurnEnd += OnClimberTurnEnd;
@@ -81,6 +83,7 @@ public class BerryTreeDefense : BaseDefense
         if (!TurnManager.Instance.IsClimberTurn())
             return;
 
+        // Si no hay ninguna baya disponible, no hacemos nada
         if (!goodBerryAlive && !badBerryAlive)
             return;
 
@@ -90,68 +93,69 @@ public class BerryTreeDefense : BaseDefense
         {
             ClimberMovement climber = hit.GetComponent<ClimberMovement>();
             if (climber == null) continue;
-            if (climber.isEating) continue;
 
+            // Si el escalador ya está comiendo o ya ha comido este turno, lo saltamos
+            if (climber.isEating || climber.hasEatenThisTurn) continue;
+
+            // Solo intentamos comer con la probabilidad definida
             if (Random.value <= eatProbability)
             {
-                SendClimberToEat(climber);
+                // Elegimos la baya disponible más cercana
+                GameObject berryToEat = null;
+                if (goodBerryAlive) berryToEat = goodBerry;
+                else if (badBerryAlive) berryToEat = badBerry;
+
+                if (berryToEat == null) continue;
+
+                climber.hasEatenThisTurn = true; // marca que comerá solo 1
+                SendClimberToEat(climber, berryToEat);
             }
         }
     }
 
-    private void SendClimberToEat(ClimberMovement climber)
+    private void SendClimberToEat(ClimberMovement climber, GameObject berry)
     {
         NavMeshAgent agent = climber.GetComponent<NavMeshAgent>();
-        if (agent == null) return;
+        if (agent == null || !agent.isOnNavMesh) return;
+
+        // Guardamos el destino original para volver
+        climber.originalDestination = agent.destination;
 
         climber.isEating = true;
 
-        Vector3 destination = eatPoint != null ? eatPoint.position : transform.position;
-        agent.SetDestination(destination);
+        agent.SetDestination(berry.transform.position);
+        agent.isStopped = false;
 
-        StartCoroutine(WaitForArrival(climber));
+        StartCoroutine(WaitForArrival(climber, berry));
     }
 
-    private IEnumerator WaitForArrival(ClimberMovement climber)
+    private IEnumerator WaitForArrival(ClimberMovement climber, GameObject berry)
     {
         NavMeshAgent agent = climber.GetComponent<NavMeshAgent>();
-        while (true)
+        if (agent == null)
+        {
+            climber.isEating = false;
+            yield break;
+        }
+
+        while (climber != null && agent != null)
         {
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
-                ResolveBerry(climber);
+                ResolveBerry(climber, berry);
                 yield break;
             }
             yield return null;
         }
     }
 
-    private void ResolveBerry(ClimberMovement climber)
+
+    private void ResolveBerry(ClimberMovement climber, GameObject berry)
     {
+        if (berry == goodBerry) EatGoodBerry(climber);
+        else if (berry == badBerry) EatBadBerry(climber);
+
         climber.isEating = false;
-
-        // Solo queda la buena
-        if (goodBerryAlive && !badBerryAlive)
-        {
-            EatGoodBerry(climber);
-            return;
-        }
-
-        // Solo queda la mala
-        if (!goodBerryAlive && badBerryAlive)
-        {
-            EatBadBerry(climber);
-            return;
-        }
-
-        // Están las dos → 50 / 50
-        if (goodBerryAlive && badBerryAlive)
-        {
-            if (Random.value < 0.5f)
-                EatGoodBerry(climber);
-            else
-                EatBadBerry(climber);
-        }
     }
 
     private void EatGoodBerry(ClimberMovement climber)
@@ -160,12 +164,21 @@ public class BerryTreeDefense : BaseDefense
         goodBerryAlive = false;
 
         climber.AddMaxStamina(200f);
+        climber.isEating = false;
 
+        // Restauramos el destino original
         NavMeshAgent agent = climber.GetComponent<NavMeshAgent>();
-        if (agent != null)
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.SetDestination(climber.originalDestination);
             agent.isStopped = false;
+        }
+
+        // Activamos el escalador para que Update() siga moviéndolo
+        climber.SetExternallyDoneThisTurn(false);
 
         StartCoroutine(RespawnBerryAfterTurns(true));
+
         Debug.Log("✅ Baya BUENA comida: +200 MaxStamina y sigue su camino.");
     }
 

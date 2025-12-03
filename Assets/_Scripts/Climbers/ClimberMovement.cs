@@ -66,6 +66,8 @@ public class ClimberMovement : MonoBehaviour
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
 
     public bool isEating = false;
+    public Vector3 originalDestination;
+    [HideInInspector] public bool hasEatenThisTurn = false;
 
     private void Awake()
     {
@@ -194,6 +196,8 @@ public class ClimberMovement : MonoBehaviour
             return;
 
         hasStartedThisTurn = true;
+
+        hasEatenThisTurn = false;
 
         // Recalcular obstáculos del grafo antes de decidir
         if (campGraph != null)

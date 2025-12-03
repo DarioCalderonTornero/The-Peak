@@ -65,6 +65,8 @@ public class ClimberMovement : MonoBehaviour
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
 
+    public bool isEating = false;
+
     private void Awake()
     {
         if (Instance == null)
@@ -505,5 +507,11 @@ public class ClimberMovement : MonoBehaviour
         {
             agent.isStopped = true;
         }
+    }
+
+    public void AddMaxStamina(float amount)
+    {
+        maxStamina += amount;
+        currentStamina = maxStamina;
     }
 }

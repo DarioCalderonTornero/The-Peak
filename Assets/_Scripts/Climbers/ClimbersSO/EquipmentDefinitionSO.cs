@@ -12,4 +12,6 @@ public class EquipmentDefinitionSO : ScriptableObject
 
     [Header("Logic Class (equipment behavior)")]
     public string logicClassName;
+
+    public Color color;
 }

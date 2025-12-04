@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7353014785590238863
 RectTransform:
   m_ObjectHideFlags: 0
@@ -242,6 +242,9 @@ MonoBehaviour:
   backtrackTolerance: 2
   backtrackPenaltyPerMeter: 5
   currentStamina: 0
+  isEating: 0
+  originalDestination: {x: 0, y: 0, z: 0}
+  hasEatenThisTurn: 0
 --- !u!195 &948342635942547329
 NavMeshAgent:
   m_ObjectHideFlags: 0

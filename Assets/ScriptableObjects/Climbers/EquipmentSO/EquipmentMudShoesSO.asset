@@ -15,3 +15,4 @@ MonoBehaviour:
   equipmentName: Mud_Shoes
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   logicClassName: QuickSandBreakerEquipment
+  color: {r: 1, g: 0.7405456, b: 0, a: 0}

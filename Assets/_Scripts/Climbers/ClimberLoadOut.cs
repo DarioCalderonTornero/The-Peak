@@ -8,15 +8,18 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private ClimberArchetypeSO archetype;
 
     [Header("Equipamiento asignado en runtime (solo lectura)")]
-    private List<EquipmentInstance> equippedItems = new();
+    private List<EquipmentInstance> equippedItems = new List<EquipmentInstance>();
 
     [Header("DEBUG – Equipo visible en Inspector (no tocar)")]
     [SerializeField] private string[] debugEquippedItemNames;
+
+    private Renderer climberRenderer; 
 
     public IReadOnlyList<EquipmentInstance> EquippedItems => equippedItems;
 
     private void Awake()
     {
+        climberRenderer = GetComponent<Renderer>();
         InitializeRandomLoadout();
     }
 
@@ -24,7 +27,6 @@ public class ClimberLoadout : MonoBehaviour
     {
         equippedItems.Clear();
 
-        // Simplemente no equipa nada.
         if (archetype == null || archetype.equipmentPool == null || archetype.equipmentPool.Length == 0)
         {
             UpdateDebugNames();
@@ -57,10 +59,20 @@ public class ClimberLoadout : MonoBehaviour
             {
                 instance.Initialize(chosenDef.equipmentName);
                 equippedItems.Add(instance);
+                ChangeClimberColorBasedOnEquipment(chosenDef);
             }
         }
 
         UpdateDebugNames();
+    }
+
+    private void ChangeClimberColorBasedOnEquipment(EquipmentDefinitionSO equipment)
+    {
+        
+        if (climberRenderer != null && equipment != null && equipment.color != null)
+        {
+            climberRenderer.material.color = equipment.color;  
+        }
     }
 
     private void UpdateDebugNames()

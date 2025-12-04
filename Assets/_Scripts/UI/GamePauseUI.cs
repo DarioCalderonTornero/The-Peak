@@ -5,15 +5,21 @@ public class GamePauseUI : MonoBehaviour
 {
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Button resumeButton;
+    [SerializeField] private Button settingsButton;
     [SerializeField] private Button backToMenuButton;
 
-    private bool isGamePaused;
+    private bool isGamePaused = false;
 
     private void Awake()
     {
         resumeButton.onClick.AddListener(() =>
         {
             TogglePauseMenu();
+        });
+
+        backToMenuButton.onClick.AddListener(() =>
+        {
+            Debug.Log("Main menu Scene");
         });
     }
 
@@ -50,6 +56,7 @@ public class GamePauseUI : MonoBehaviour
     {
         backgroundImage.gameObject.SetActive(true);
         resumeButton.gameObject.SetActive(true);
+        settingsButton.gameObject.SetActive(true);
         backToMenuButton.gameObject.SetActive(true);    
     }
 
@@ -57,6 +64,7 @@ public class GamePauseUI : MonoBehaviour
     {
         backgroundImage.gameObject.SetActive(false);
         resumeButton.gameObject.SetActive(false);
+        settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
     }
 }

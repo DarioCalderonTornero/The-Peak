@@ -41,12 +41,14 @@ public class GamePauseUI : MonoBehaviour
         {
             Show();
             GameManager.Instance.PauseGame();
+            HideUIManager.Instance.HideAllCanvas();
         }
 
         else if (isGamePaused)
         {
             Hide();
             GameManager.Instance.UnPauseGame();
+            HideUIManager.Instance.ShowAllCanvas();
         }
 
         isGamePaused = !isGamePaused;

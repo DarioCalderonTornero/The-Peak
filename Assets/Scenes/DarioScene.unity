@@ -1592,7 +1592,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   maxRayDistance: 500
-  pivotMoveSpeed: 17
+  pivotMoveSpeed: 5
   smoothMovement: 1
   zoomSpeed: 0.1
   minZoom: 0.3
@@ -1857,6 +1857,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1534971992}
   m_CullTransparentMesh: 1
+--- !u!1 &1561867574
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1561867575}
+  - component: {fileID: 1561867576}
+  m_Layer: 0
+  m_Name: HideAllUIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1561867575
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561867574}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1827429946}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1561867576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561867574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0a8fb2c73cf47c4a9208440b4ca8721, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiManagerSO: {fileID: 11400000, guid: 74b2b3c5bcbc27e4eb717ddcd21f5a8d, type: 2}
 --- !u!1 &1611408023
 GameObject:
   m_ObjectHideFlags: 0
@@ -2427,6 +2472,7 @@ Transform:
   - {fileID: 1108060493}
   - {fileID: 675079560}
   - {fileID: 1116203804}
+  - {fileID: 1561867575}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1875055768
@@ -2578,7 +2624,7 @@ GameObject:
   - component: {fileID: 1922772671}
   - component: {fileID: 1922772670}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: DarioCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

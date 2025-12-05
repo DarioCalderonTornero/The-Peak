@@ -27,10 +27,10 @@ public class GamePauseUI : MonoBehaviour
     {
         Hide();
 
-        InputManager.Instance.OnGamePause += InputManager_OnGamePause;
+        InputManager.Instance.OnGamePauseInput += InputManager_OnGamePauseInput;
     }
 
-    private void InputManager_OnGamePause(object sender, System.EventArgs e)
+    private void InputManager_OnGamePauseInput(object sender, System.EventArgs e)
     {
         TogglePauseMenu();
     }
@@ -68,5 +68,10 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        InputManager.Instance.OnGamePauseInput -= InputManager_OnGamePauseInput;
     }
 }

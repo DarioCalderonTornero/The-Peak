@@ -100,6 +100,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ResetCamera"",
+                    ""type"": ""Button"",
+                    ""id"": ""9dfb0952-c0d5-4453-ae7b-c3e5fe53c237"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -113,6 +122,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""GamePause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""48ba6106-6ef7-4506-8910-affff0b520d2"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ResetCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -122,6 +142,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_GamePause = m_Player.FindAction("GamePause", throwIfNotFound: true);
+        m_Player_ResetCamera = m_Player.FindAction("ResetCamera", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -203,6 +224,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_GamePause;
+    private readonly InputAction m_Player_ResetCamera;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -218,6 +240,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/GamePause".
         /// </summary>
         public InputAction @GamePause => m_Wrapper.m_Player_GamePause;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ResetCamera".
+        /// </summary>
+        public InputAction @ResetCamera => m_Wrapper.m_Player_ResetCamera;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -247,6 +273,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @GamePause.started += instance.OnGamePause;
             @GamePause.performed += instance.OnGamePause;
             @GamePause.canceled += instance.OnGamePause;
+            @ResetCamera.started += instance.OnResetCamera;
+            @ResetCamera.performed += instance.OnResetCamera;
+            @ResetCamera.canceled += instance.OnResetCamera;
         }
 
         /// <summary>
@@ -261,6 +290,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @GamePause.started -= instance.OnGamePause;
             @GamePause.performed -= instance.OnGamePause;
             @GamePause.canceled -= instance.OnGamePause;
+            @ResetCamera.started -= instance.OnResetCamera;
+            @ResetCamera.performed -= instance.OnResetCamera;
+            @ResetCamera.canceled -= instance.OnResetCamera;
         }
 
         /// <summary>
@@ -308,5 +340,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnGamePause(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ResetCamera" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnResetCamera(InputAction.CallbackContext context);
     }
 }

@@ -7,7 +7,8 @@ public class InputManager : MonoBehaviour
 
     PlayerInputActions inputActions;
 
-    public event EventHandler OnGamePause;
+    public event EventHandler OnGamePauseInput;
+    public event EventHandler OnResetCameraInput;
 
     private void Awake()
     {
@@ -27,11 +28,17 @@ public class InputManager : MonoBehaviour
     private void Start()
     {
         inputActions.Player.GamePause.performed += GamePause_performed;
+        inputActions.Player.ResetCamera.performed += ResetCamera_performed;
+    }
+
+    private void ResetCamera_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        Debug.Log("Space");
+        OnResetCameraInput?.Invoke(this, EventArgs.Empty);  
     }
 
     private void GamePause_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
-        Debug.Log("P");
-        OnGamePause?.Invoke(this, EventArgs.Empty);
+        OnGamePauseInput?.Invoke(this, EventArgs.Empty);
     }
 }

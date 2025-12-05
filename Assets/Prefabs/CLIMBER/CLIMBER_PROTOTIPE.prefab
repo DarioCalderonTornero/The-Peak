@@ -238,9 +238,10 @@ MonoBehaviour:
   uphillExtraCostFactor: 2
   minStaminaCost: 0.1
   externalSpeedMultiplier: 1
-  revisitPenaltyPerVisit: 300
+  revisitPenaltyPerVisit: 200
   backtrackTolerance: 2
   backtrackPenaltyPerMeter: 5
+  stepConversionFactor: 20
   currentStamina: 0
   isEating: 0
   originalDestination: {x: 0, y: 0, z: 0}

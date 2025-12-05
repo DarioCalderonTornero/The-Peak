@@ -36,6 +36,10 @@ public class ClimberMovement : MonoBehaviour
     [Tooltip("Peso extra por cada metro de alejamiento de la cima más allá de la tolerancia.")]
     [SerializeField] private float backtrackPenaltyPerMeter = 5f;
 
+    [Header("Estrategia IA")]
+    [Tooltip("Factor de Conversión (K): Cuánta estamina (peso) vale 1 paso. Recomendado: 15-25.")]
+    [SerializeField] private float stepConversionFactor = 20f;
+
     // Estado de estamina
     [SerializeField] private float currentStamina;
 
@@ -267,12 +271,8 @@ public class ClimberMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// Elige el siguiente camino según:
-    /// - Peso del grafo (edge.weight): más ligero = mejor.
-    /// - Si tiene equipo para el obstáculo, se resta el peso de esos obstáculos.
-    /// - Penalización extra por ir a campamentos muy visitados (memoria anti-bucles).
-    /// - Penalización por alejarse demasiado de la cima (backtrack).
-    /// - Se priorizan caminos que puede pagar con estamina; si no, el más ligero de los no asequibles.
+    /// Elige el siguiente camino basándose en una HEURÍSTICA LINEAL:
+    /// Score = PesoEfectivo + (PasosRestantes * stepConversionFactor).
     /// </summary>
     private void ChooseNextCampAndMove()
     {
@@ -291,10 +291,10 @@ public class ClimberMovement : MonoBehaviour
         }
 
         CampGraphBuilder.CampEdge bestAffordable = null;
-        float bestAffordableWeight = float.PositiveInfinity;
+        float bestAffordableScore = float.PositiveInfinity; // Usamos Score, no Weight
 
         CampGraphBuilder.CampEdge bestUnaffordable = null;
-        float bestUnaffordableWeight = float.PositiveInfinity;
+        float bestUnaffordableScore = float.PositiveInfinity; // Usamos Score, no Weight
 
         foreach (var edge in currentNode.neighbors)
         {
@@ -309,23 +309,27 @@ public class ClimberMovement : MonoBehaviour
                     continue;
             }
 
-            // 1) Peso base del grafo
+            // --- 1) CÁLCULO DEL PESO FÍSICO (Effective Weight) ---
             float effectiveWeight = edge.weight;
 
-            // 2) Si hay obstáculos y tengo equipo, resto el peso de esos obstáculos
+            // Si hay obstáculos y tengo equipo, resto el peso de esos obstáculos
             if (edge.hasObstacle && canPassObstacle && campGraph != null)
             {
                 float obstaclesWeight = campGraph.obstaclePenalty * edge.obstacleCount;
                 effectiveWeight -= obstaclesWeight;
             }
 
-            // 3) Penalización por campamentos visitados (memoria anti-bucles)
-            if (edge.to != null && nodeVisitCount.TryGetValue(edge.to.id, out int visits) && visits > 0)
-            {
-                effectiveWeight += visits * revisitPenaltyPerVisit;
-            }
+            // --------------------------------------------------------------------------
+            // 2) MEMORIA PROPIA (Contador x Multiplicador)
+            // --------------------------------------------------------------------------
+            // Usamos ContainsKey para obtener 0 si es la primera vez, o el valor si ya pasó.
+            int myVisits = nodeVisitCount.ContainsKey(edge.to.id) ? nodeVisitCount[edge.to.id] : 0;
 
-            // 4) Penalización por alejarse de la cima (backtrack)
+            // Multiplicamos el contador por la penalización
+            effectiveWeight += myVisits * revisitPenaltyPerVisit;
+            // --------------------------------------------------------------------------
+
+            // Penalización por alejarse de la cima (backtrack)
             if (summit != null && currentNode != null && edge.to != null)
             {
                 float distNow = Vector3.Distance(currentNode.position, summit.position);
@@ -334,45 +338,58 @@ public class ClimberMovement : MonoBehaviour
 
                 if (approach < -backtrackTolerance)
                 {
-                    float backtrackAmount = -approach - backtrackTolerance; // cuánto me alejo de verdad
+                    float backtrackAmount = -approach - backtrackTolerance;
                     float backtrackPenalty = backtrackAmount * backtrackPenaltyPerMeter;
                     effectiveWeight += backtrackPenalty;
                 }
             }
 
-            // Evitar pesos negativos o 0
+            // Evitar pesos negativos o 0 para cálculos seguros
             effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
 
-            // 5) Coste real de estamina de este camino
+
+            // --- 3) CÁLCULO DE LA PUNTUACIÓN (SCORE) CON PASOS ---
+            // Nota: stepsToSummit debe existir en CampNode (en CampGraphBuilder.cs)
+            int steps = (edge.to != null) ? edge.to.stepsToSummit : 999;
+
+            // FÓRMULA LINEAL: Score = Peso + (Pasos * K)
+            float finalScore = effectiveWeight + (steps * stepConversionFactor);
+
+
+            // --- 4) COMPROBACIÓN DE ESTAMINA ---
             float staminaCost = CalculateStaminaCost(edge);
             bool affordable = staminaCost <= currentStamina;
 
             if (affordable)
             {
-                if (effectiveWeight < bestAffordableWeight)
+                // Buscamos el MENOR Score posible
+                if (finalScore < bestAffordableScore)
                 {
-                    bestAffordableWeight = effectiveWeight;
+                    bestAffordableScore = finalScore;
                     bestAffordable = edge;
                 }
             }
             else
             {
-                if (effectiveWeight < bestUnaffordableWeight)
+                // Si no podemos pagarlo, le sumamos un valor grande para que sea última opción
+                // pero seguimos comparando entre los impagables cuál es "menos malo"
+                float penaltyScore = finalScore + 10000f;
+
+                if (penaltyScore < bestUnaffordableScore)
                 {
-                    bestUnaffordableWeight = effectiveWeight;
+                    bestUnaffordableScore = penaltyScore;
                     bestUnaffordable = edge;
                 }
             }
         }
 
-        // Preferimos el camino más ligero que pueda pagar con estamina;
-        // si no hay ninguno asequible, cogemos el más ligero de los no asequibles.
+        // Preferimos el camino con mejor Score que podamos pagar.
         CampGraphBuilder.CampEdge chosen =
             bestAffordable != null ? bestAffordable : bestUnaffordable;
 
         if (chosen == null)
         {
-            // No hay caminos válidos desde este campamento
+            // No hay caminos válidos
             isAtCamp = true;
             isActiveThisTurn = false;
             return;

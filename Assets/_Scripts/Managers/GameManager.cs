@@ -5,6 +5,9 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    public event EventHandler OnGamePaused;
+    public event EventHandler OnGameUnPaused;
+
     public enum GameState
     {
         Initializing,
@@ -100,11 +103,13 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame()
     {
+        OnGamePaused?.Invoke(this, EventArgs.Empty);    
         Time.timeScale = 0f;
     }
 
     public void UnPauseGame()
     {
         Time.timeScale = 1.0f;
+        OnGameUnPaused?.Invoke(this, EventArgs.Empty);
     }
 }

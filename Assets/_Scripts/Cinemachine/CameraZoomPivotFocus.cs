@@ -36,6 +36,8 @@ public class CameraZoomPivotFocus : MonoBehaviour
 
     private float currentZoom = 1f;
 
+    private bool canZoom = false;
+
     private void Reset()
     {
         if (mainCamera == null)
@@ -71,9 +73,20 @@ public class CameraZoomPivotFocus : MonoBehaviour
             currentZoom = orbitalFollow.RadialAxis.Value;
     }
 
+    private void Start()
+    {
+        canZoom = false;
+        CardGameManager.Instance.OnInventoryHide += CardGameManager_OnInventoryHide;
+    }
+
+    private void CardGameManager_OnInventoryHide(object sender, System.EventArgs e)
+    {
+        canZoom = true;
+    }
+
     private void Update()
     {
-        if (mainCamera == null || pivotTransform == null || orbitalFollow == null)
+        if (mainCamera == null || pivotTransform == null || orbitalFollow == null || !canZoom)
             return;
 
         // if (requireRightMouseButton && !Input.GetMouseButton(1))
@@ -152,5 +165,10 @@ public class CameraZoomPivotFocus : MonoBehaviour
         {
             pivotTransform.position = targetPivotPos;
         }
+    }
+
+    private void OnDestroy()
+    {
+        CardGameManager.Instance.OnInventoryHide -= CardGameManager_OnInventoryHide;
     }
 }

@@ -2284,6 +2284,7 @@ GameObject:
   - component: {fileID: 1581161915}
   - component: {fileID: 1581161914}
   - component: {fileID: 1581161913}
+  - component: {fileID: 1581161917}
   m_Layer: 5
   m_Name: CanvasCartas
   m_TagString: Untagged
@@ -2379,6 +2380,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1581161917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1581161912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0a8fb2c73cf47c4a9208440b4ca8721, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1792850869
 GameObject:
   m_ObjectHideFlags: 0

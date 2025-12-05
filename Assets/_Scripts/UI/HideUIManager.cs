@@ -2,22 +2,33 @@ using UnityEngine;
 
 public class HideUIManager : MonoBehaviour
 {
-    public static HideUIManager Instance { get; private set; }
-
-    [SerializeField] private UIManagerSO uiManagerSO;
-
-    private void Awake()
+    private void Start()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        GameManager.Instance.OnGamePaused += GameManager_OnGamePaused;
+        GameManager.Instance.OnGameUnPaused += GameManager_OnGameUnPaused;
     }
 
+    private void GameManager_OnGameUnPaused(object sender, System.EventArgs e)
+    {
+        ShowThisCanvas();
+    }
+
+    private void GameManager_OnGamePaused(object sender, System.EventArgs e)
+    {
+        HideThisCanvas();
+    }
+
+    private void HideThisCanvas()
+    {
+        gameObject.SetActive(false);
+    }
+
+    private void ShowThisCanvas()
+    {
+        gameObject.SetActive(true); 
+    }
+
+    /*
     public void HideAllCanvas()
     {
         if (uiManagerSO.mainCanvas != null && uiManagerSO.alexCanvas != null)
@@ -34,5 +45,12 @@ public class HideUIManager : MonoBehaviour
             uiManagerSO.mainCanvas.gameObject.SetActive(true);
             uiManagerSO.alexCanvas.gameObject.SetActive(true);
         }
+    }
+    */
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.OnGamePaused -= GameManager_OnGamePaused;
+        GameManager.Instance.OnGameUnPaused -= GameManager_OnGameUnPaused;
     }
 }

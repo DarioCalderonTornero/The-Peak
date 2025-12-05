@@ -1,9 +1,14 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CardGameManager : MonoBehaviour
 {
+    public static CardGameManager Instance { get; private set; }
+
+    public event EventHandler OnInventoryHide;
+
     [Header("Referencias")]
     [SerializeField] private CardInventoryUI inventoryUI;
     [SerializeField] private CardSlotsUI slotsUI;
@@ -17,6 +22,11 @@ public class CardGameManager : MonoBehaviour
 
     // Mazo de cartas disponibles para sacar
     private List<CardData> availableDeck = new List<CardData>();
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -58,6 +68,8 @@ public class CardGameManager : MonoBehaviour
 
     private void StartMatch()
     {
+        OnInventoryHide?.Invoke(this,EventArgs.Empty);
+
         inventoryUI.HideInventory();
 
         slotsUI.ClearCards();
@@ -130,7 +142,7 @@ public class CardGameManager : MonoBehaviour
     {
         for (int i = 0; i < list.Count; i++)
         {
-            int rnd = Random.Range(i, list.Count);
+            int rnd = UnityEngine.Random.Range(i, list.Count);
             T temp = list[i];
             list[i] = list[rnd];
             list[rnd] = temp;

@@ -1,5 +1,6 @@
 using Unity.Cinemachine;
 using UnityEngine;
+using System.Collections;
 
 public class CameraOrbitRightClick : MonoBehaviour
 {
@@ -14,10 +15,12 @@ public class CameraOrbitRightClick : MonoBehaviour
         QualitySettings.vSyncCount = 0;
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         axisController.enabled = false;
         canMoveCamera = false;
+
+        yield return new WaitUntil(() => CardGameManager.Instance != null);
         CardGameManager.Instance.OnInventoryHide += CardGameManager_OnInventoryHide;
     }
 
@@ -37,4 +40,13 @@ public class CameraOrbitRightClick : MonoBehaviour
 
         axisController.enabled = rightClickHeld;
     }
+
+    private void OnDestroy()
+    {
+        if (CardGameManager.Instance != null)
+        {
+            CardGameManager.Instance.OnInventoryHide -= CardGameManager_OnInventoryHide;
+        }
+    }
+        
 }

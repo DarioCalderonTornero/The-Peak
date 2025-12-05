@@ -19,7 +19,7 @@ public class GamePauseUI : MonoBehaviour
 
         backToMenuButton.onClick.AddListener(() =>
         {
-            Debug.Log("Main menu Scene");
+            SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
         });
     }
 

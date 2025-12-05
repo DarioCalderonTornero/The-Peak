@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using System.Collections;
 
 public class CameraZoomPivotFocus : MonoBehaviour
 {
@@ -73,9 +74,11 @@ public class CameraZoomPivotFocus : MonoBehaviour
             currentZoom = orbitalFollow.RadialAxis.Value;
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         canZoom = false;
+
+        yield return new WaitUntil(() => CardGameManager.Instance != null);
         CardGameManager.Instance.OnInventoryHide += CardGameManager_OnInventoryHide;
     }
 

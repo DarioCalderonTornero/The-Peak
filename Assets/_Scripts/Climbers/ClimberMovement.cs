@@ -29,6 +29,11 @@ public class ClimberMovement : MonoBehaviour
     [Tooltip("Penalización extra de peso por CADA visita previa a un campamento.")]
     [SerializeField] private float revisitPenaltyPerVisit = 5f;
 
+    // --- NUEVO: Variable para morir si se repite mucho ---
+    [Tooltip("Número de veces que puede visitar un mismo campamento antes de morir por cansancio mental/aburrimiento.")]
+    [SerializeField] private int maxVisitsToDie = 3;
+    // ----------------------------------------------------
+
     [Header("Penalización por alejarse de la cima")]
     [Tooltip("Metros de alejamiento de la cima permitidos sin penalización.")]
     [SerializeField] private float backtrackTolerance = 2f;
@@ -129,7 +134,6 @@ public class ClimberMovement : MonoBehaviour
         isAtCamp = false;
         reachedSummit = false;
 
-        // Si el turno de escaladores ya está en marcha cuando aparece este escalador
         if (TurnManager.Instance != null && TurnManager.Instance.IsClimberTurn())
         {
             HandleClimberTurnStart();
@@ -144,7 +148,6 @@ public class ClimberMovement : MonoBehaviour
         if (!agent.enabled || !agent.isOnNavMesh)
             return;
 
-        // 1) Cálculo de distancia recorrida y pendiente para gasto de estamina
         Vector3 currentPos = transform.position;
         float frameDistance = Vector3.Distance(currentPos, lastFramePosition);
         float frameHeight = currentPos.y;
@@ -166,7 +169,6 @@ public class ClimberMovement : MonoBehaviour
             lastFrameHeight = frameHeight;
         }
 
-        // 2) Sin estamina → destruido (por ahora)
         if (currentStamina <= 0f)
         {
             isActiveThisTurn = false;
@@ -175,10 +177,8 @@ public class ClimberMovement : MonoBehaviour
             return;
         }
 
-        // 3) Aplicar multiplicador de velocidad externo
         agent.speed = originalSpeed * externalSpeedMultiplier;
 
-        // 4) Comprobar llegada al destino actual
         if (!agent.pathPending)
         {
             if (agent.remainingDistance <= agent.stoppingDistance + reachedThreshold)
@@ -195,15 +195,12 @@ public class ClimberMovement : MonoBehaviour
         if (reachedSummit || agent == null)
             return;
 
-        // Si alguna defensa nos ha marcado como "done", este escalador no actúa este turno.
         if (externallyForcedDone)
             return;
 
         hasStartedThisTurn = true;
-
         hasEatenThisTurn = false;
 
-        // Recalcular obstáculos del grafo antes de decidir
         if (campGraph != null)
             campGraph.RecalculateObstaclesOnEdges();
 
@@ -270,12 +267,22 @@ public class ClimberMovement : MonoBehaviour
         lastFrameHeight = transform.position.y;
     }
 
-    /// <summary>
-    /// Elige el siguiente camino basándose en una HEURÍSTICA LINEAL:
-    /// Score = PesoEfectivo + (PasosRestantes * stepConversionFactor).
-    /// </summary>
+    // --------------------------------------------------------------------------------------
+    // ESTE ES EL MÉTODO MODIFICADO SEGÚN TUS INSTRUCCIONES
+    // --------------------------------------------------------------------------------------
     private void ChooseNextCampAndMove()
     {
+        // 1. CHEQUEO DE MUERTE POR REPETICIÓN
+        // Si ya hemos estado en este nodo muchas veces, morimos.
+        if (currentNode != null && nodeVisitCount.ContainsKey(currentNode.id))
+        {
+            if (nodeVisitCount[currentNode.id] >= maxVisitsToDie)
+            {
+                Destroy(gameObject);
+                return;
+            }
+        }
+
         if (currentNode == null)
         {
             isAtCamp = true;
@@ -291,50 +298,39 @@ public class ClimberMovement : MonoBehaviour
         }
 
         CampGraphBuilder.CampEdge bestAffordable = null;
-        float bestAffordableScore = float.PositiveInfinity; // Usamos Score, no Weight
+        float bestAffordableScore = float.PositiveInfinity;
 
         CampGraphBuilder.CampEdge bestUnaffordable = null;
-        float bestUnaffordableScore = float.PositiveInfinity; // Usamos Score, no Weight
+        float bestUnaffordableScore = float.PositiveInfinity;
 
         foreach (var edge in currentNode.neighbors)
         {
-            bool canPassObstacle = true;
+            // --- CAMBIO: ELIMINAMOS EL BLOQUEO ---
+            // Ya no hacemos 'continue' si hay obstáculo. Siempre se evalúa el camino.
+            // Simplemente comprobamos si tenemos la herramienta para saber si descontamos peso o no.
+            bool hasTool = !edge.hasObstacle || (loadout != null && loadout.CanHandleObstacle(edge.obstacleType));
 
-            // Si hay obstáculo y NO tengo equipo → descarto el camino
-            if (edge.hasObstacle && edge.obstacleType != ObstacleType.None)
-            {
-                canPassObstacle = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
-
-                if (!canPassObstacle)
-                    continue;
-            }
-
-            // --- 1) CÁLCULO DEL PESO FÍSICO (Effective Weight) ---
+            // --- CÁLCULO DEL PESO ---
             float effectiveWeight = edge.weight;
 
-            // Si hay obstáculos y tengo equipo, resto el peso de esos obstáculos
-            if (edge.hasObstacle && canPassObstacle && campGraph != null)
+            // Si hay obstáculo y TENEMOS herramienta, restamos la penalización del grafo.
+            // Si NO tenemos herramienta, no restamos nada (se queda el peso alto del grafo), pero PODEMOS PASAR.
+            if (edge.hasObstacle && hasTool && campGraph != null)
             {
                 float obstaclesWeight = campGraph.obstaclePenalty * edge.obstacleCount;
                 effectiveWeight -= obstaclesWeight;
             }
 
-            // --------------------------------------------------------------------------
-            // 2) MEMORIA PROPIA (Contador x Multiplicador)
-            // --------------------------------------------------------------------------
-            // Usamos ContainsKey para obtener 0 si es la primera vez, o el valor si ya pasó.
+            // Memoria propia
             int myVisits = nodeVisitCount.ContainsKey(edge.to.id) ? nodeVisitCount[edge.to.id] : 0;
-
-            // Multiplicamos el contador por la penalización
             effectiveWeight += myVisits * revisitPenaltyPerVisit;
-            // --------------------------------------------------------------------------
 
-            // Penalización por alejarse de la cima (backtrack)
+            // Backtracking
             if (summit != null && currentNode != null && edge.to != null)
             {
                 float distNow = Vector3.Distance(currentNode.position, summit.position);
                 float distNext = Vector3.Distance(edge.to.position, summit.position);
-                float approach = distNow - distNext; // >0 = me acerco, <0 = me alejo
+                float approach = distNow - distNext;
 
                 if (approach < -backtrackTolerance)
                 {
@@ -344,25 +340,18 @@ public class ClimberMovement : MonoBehaviour
                 }
             }
 
-            // Evitar pesos negativos o 0 para cálculos seguros
             effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
 
-
-            // --- 3) CÁLCULO DE LA PUNTUACIÓN (SCORE) CON PASOS ---
-            // Nota: stepsToSummit debe existir en CampNode (en CampGraphBuilder.cs)
+            // Heurística con Pasos
             int steps = (edge.to != null) ? edge.to.stepsToSummit : 999;
-
-            // FÓRMULA LINEAL: Score = Peso + (Pasos * K)
             float finalScore = effectiveWeight + (steps * stepConversionFactor);
 
-
-            // --- 4) COMPROBACIÓN DE ESTAMINA ---
+            // Estamina
             float staminaCost = CalculateStaminaCost(edge);
             bool affordable = staminaCost <= currentStamina;
 
             if (affordable)
             {
-                // Buscamos el MENOR Score posible
                 if (finalScore < bestAffordableScore)
                 {
                     bestAffordableScore = finalScore;
@@ -371,10 +360,7 @@ public class ClimberMovement : MonoBehaviour
             }
             else
             {
-                // Si no podemos pagarlo, le sumamos un valor grande para que sea última opción
-                // pero seguimos comparando entre los impagables cuál es "menos malo"
                 float penaltyScore = finalScore + 10000f;
-
                 if (penaltyScore < bestUnaffordableScore)
                 {
                     bestUnaffordableScore = penaltyScore;
@@ -383,13 +369,10 @@ public class ClimberMovement : MonoBehaviour
             }
         }
 
-        // Preferimos el camino con mejor Score que podamos pagar.
-        CampGraphBuilder.CampEdge chosen =
-            bestAffordable != null ? bestAffordable : bestUnaffordable;
+        CampGraphBuilder.CampEdge chosen = bestAffordable != null ? bestAffordable : bestUnaffordable;
 
         if (chosen == null)
         {
-            // No hay caminos válidos
             isAtCamp = true;
             isActiveThisTurn = false;
             return;
@@ -405,6 +388,7 @@ public class ClimberMovement : MonoBehaviour
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
     }
+    // --------------------------------------------------------------------------------------
 
     private float CalculateStaminaCost(CampGraphBuilder.CampEdge edge)
     {
@@ -423,11 +407,8 @@ public class ClimberMovement : MonoBehaviour
         return cost;
     }
 
-    // ============= LLEGADA A CAMPAMENTO / CIMA =============
-
     private void HandleReachedCamp()
     {
-        // Llegada a un punto intermedio (campamento)
         if (targetNode != null)
         {
             currentNode = targetNode;
@@ -444,7 +425,6 @@ public class ClimberMovement : MonoBehaviour
             lastFrameHeight = transform.position.y;
         }
 
-        // Registrar visita a este campamento (memoria interna)
         if (currentNode != null)
         {
             if (!nodeVisitCount.ContainsKey(currentNode.id))
@@ -453,18 +433,15 @@ public class ClimberMovement : MonoBehaviour
             nodeVisitCount[currentNode.id]++;
         }
 
-        // Si era el primer campamento, a partir de ahora trabajamos solo con el grafo
         if (isGoingToFirstCamp)
         {
             isGoingToFirstCamp = false;
         }
 
-        // Recargar estamina al llegar a campamento
         currentStamina = maxStamina;
         if (agent != null)
             agent.speed = originalSpeed;
 
-        // ¿Hemos llegado a la cima?
         if (campGraph != null &&
             currentNode != null &&
             currentNode.id == campGraph.finalDestinationNodeId)
@@ -482,12 +459,8 @@ public class ClimberMovement : MonoBehaviour
         if (agent != null)
             agent.isStopped = true;
 
-        // Aquí podrías notificar al GameManager / TurnManager
-
         Destroy(gameObject);
     }
-
-    // ============= UTILIDADES =============
 
     public void SetExternalSpeedMultiplier(float multiplier)
     {
@@ -503,7 +476,6 @@ public class ClimberMovement : MonoBehaviour
         if (agent == null || node == null)
             return;
 
-        // Queremos que a partir de ahora funcione como si ya estuviera “en el grafo”
         isGoingToFirstCamp = false;
         isAtCamp = false;
         isActiveThisTurn = true;
@@ -514,7 +486,6 @@ public class ClimberMovement : MonoBehaviour
         agent.isStopped = false;
         agent.SetDestination(node.position);
 
-        // Reset de referencias para el cálculo de estamina
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
     }
@@ -523,7 +494,6 @@ public class ClimberMovement : MonoBehaviour
     {
         externallyForcedDone = value;
 
-        // Por seguridad, si lo marcamos como "done", paramos el agent
         if (value && agent != null)
         {
             agent.isStopped = true;

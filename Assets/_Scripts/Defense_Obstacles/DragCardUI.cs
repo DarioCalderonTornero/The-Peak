@@ -256,6 +256,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             {
                 GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition, finalRotation);
 
+                CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.25f);
+
                 if (placed != null && DefensePlacementManager.Instance != null)
                     DefensePlacementManager.Instance.RegisterPlaced(placed);
 

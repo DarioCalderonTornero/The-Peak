@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using System;
+using System.Collections; // Necesario para IEnumerator
 using System.Collections.Generic;
 
 public class ClimberMovement : MonoBehaviour
@@ -29,10 +30,8 @@ public class ClimberMovement : MonoBehaviour
     [Tooltip("Penalización extra de peso por CADA visita previa a un campamento.")]
     [SerializeField] private float revisitPenaltyPerVisit = 5f;
 
-    // --- NUEVO: Variable para morir si se repite mucho ---
-    [Tooltip("Número de veces que puede visitar un mismo campamento antes de morir por cansancio mental/aburrimiento.")]
+    [Tooltip("Si el escalador visita un mismo campamento esta cantidad de veces o más, muere.")]
     [SerializeField] private int maxVisitsToDie = 3;
-    // ----------------------------------------------------
 
     [Header("Penalización por alejarse de la cima")]
     [Tooltip("Metros de alejamiento de la cima permitidos sin penalización.")]
@@ -44,6 +43,10 @@ public class ClimberMovement : MonoBehaviour
     [Header("Estrategia IA")]
     [Tooltip("Factor de Conversión (K): Cuánta estamina (peso) vale 1 paso. Recomendado: 15-25.")]
     [SerializeField] private float stepConversionFactor = 20f;
+
+    // --- NUEVO: Variable estática para coordinar la salida escalonada ---
+    private static float _globalNextMoveTime = 0f;
+    // ------------------------------------------------------------------
 
     // Estado de estamina
     [SerializeField] private float currentStamina;
@@ -64,8 +67,7 @@ public class ClimberMovement : MonoBehaviour
     private bool reachedSummit = false;
     private bool hasStartedThisTurn = false;
 
-    // Memoria interna: cuántas veces he pasado por cada campamento
-    // key = nodeId, value = visitas
+    // Memoria interna
     private Dictionary<int, int> nodeVisitCount = new Dictionary<int, int>();
 
     private bool externallyForcedDone = false;
@@ -134,6 +136,17 @@ public class ClimberMovement : MonoBehaviour
         isAtCamp = false;
         reachedSummit = false;
 
+        // --- MODIFICADO: Solución para que se muevan nada más empezar ---
+        // Iniciamos una corutina que espera un frame. Esto asegura que el 
+        // CampGraphBuilder haya terminado su Start() y el grafo exista.
+        StartCoroutine(StartLateCheck());
+    }
+
+    private IEnumerator StartLateCheck()
+    {
+        // Esperamos al final del frame para asegurar que todos los Start() han corrido
+        yield return new WaitForEndOfFrame();
+
         if (TurnManager.Instance != null && TurnManager.Instance.IsClimberTurn())
         {
             HandleClimberTurnStart();
@@ -192,17 +205,44 @@ public class ClimberMovement : MonoBehaviour
 
     private void HandleClimberTurnStart()
     {
-        if (reachedSummit || agent == null)
-            return;
-
-        if (externallyForcedDone)
-            return;
+        if (reachedSummit || agent == null) return;
+        if (externallyForcedDone) return;
 
         hasStartedThisTurn = true;
         hasEatenThisTurn = false;
 
         if (campGraph != null)
             campGraph.RecalculateObstaclesOnEdges();
+
+        // --- NUEVO: Lógica de salida escalonada (0.75s) ---
+        float now = Time.time;
+        float delay = 0f;
+
+        // Si el "tiempo del siguiente" quedó en el pasado, lo traemos al presente
+        if (_globalNextMoveTime < now)
+        {
+            _globalNextMoveTime = now;
+        }
+
+        // Mi retraso es la diferencia entre el turno global y ahora
+        delay = _globalNextMoveTime - now;
+
+        // Empujamos el turno global 0.75s hacia el futuro para el siguiente escalador
+        _globalNextMoveTime += 0.75f;
+
+        // Iniciamos la decisión con ese retraso
+        StartCoroutine(ExecuteTurnDecisionWithDelay(delay));
+    }
+
+    // Corutina para esperar el turno de salida
+    private IEnumerator ExecuteTurnDecisionWithDelay(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        // Verificamos que sigo vivo/activo tras la espera
+        if (this == null || externallyForcedDone || reachedSummit)
+            yield break;
 
         if (isGoingToFirstCamp || currentNode == null)
         {
@@ -227,9 +267,14 @@ public class ClimberMovement : MonoBehaviour
     {
         if (campGraph == null || campGraph.nodes == null || campGraph.nodes.Count == 0)
         {
-            isAtCamp = true;
-            isActiveThisTurn = false;
-            return;
+            // Intentamos buscar el grafo de nuevo por si acaso
+            campGraph = FindObjectOfType<CampGraphBuilder>();
+            if (campGraph == null || campGraph.nodes == null || campGraph.nodes.Count == 0)
+            {
+                isAtCamp = true;
+                isActiveThisTurn = false;
+                return;
+            }
         }
 
         float bestDist = float.PositiveInfinity;
@@ -267,13 +312,9 @@ public class ClimberMovement : MonoBehaviour
         lastFrameHeight = transform.position.y;
     }
 
-    // --------------------------------------------------------------------------------------
-    // ESTE ES EL MÉTODO MODIFICADO SEGÚN TUS INSTRUCCIONES
-    // --------------------------------------------------------------------------------------
     private void ChooseNextCampAndMove()
     {
-        // 1. CHEQUEO DE MUERTE POR REPETICIÓN
-        // Si ya hemos estado en este nodo muchas veces, morimos.
+        // 1. COMPROBACIÓN DE MUERTE POR REPETICIÓN
         if (currentNode != null && nodeVisitCount.ContainsKey(currentNode.id))
         {
             if (nodeVisitCount[currentNode.id] >= maxVisitsToDie)
@@ -283,14 +324,7 @@ public class ClimberMovement : MonoBehaviour
             }
         }
 
-        if (currentNode == null)
-        {
-            isAtCamp = true;
-            isActiveThisTurn = false;
-            return;
-        }
-
-        if (currentNode.neighbors == null || currentNode.neighbors.Count == 0)
+        if (currentNode == null || currentNode.neighbors == null || currentNode.neighbors.Count == 0)
         {
             isAtCamp = true;
             isActiveThisTurn = false;
@@ -305,27 +339,28 @@ public class ClimberMovement : MonoBehaviour
 
         foreach (var edge in currentNode.neighbors)
         {
-            // --- CAMBIO: ELIMINAMOS EL BLOQUEO ---
-            // Ya no hacemos 'continue' si hay obstáculo. Siempre se evalúa el camino.
-            // Simplemente comprobamos si tenemos la herramienta para saber si descontamos peso o no.
-            bool hasTool = !edge.hasObstacle || (loadout != null && loadout.CanHandleObstacle(edge.obstacleType));
+            // 2. OBSTÁCULOS (No bloquean, solo se consultan para el peso)
+            bool canPassObstacle = true;
+            if (edge.hasObstacle && edge.obstacleType != ObstacleType.None)
+            {
+                canPassObstacle = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
+            }
 
-            // --- CÁLCULO DEL PESO ---
+            // Cálculo de Peso
             float effectiveWeight = edge.weight;
 
-            // Si hay obstáculo y TENEMOS herramienta, restamos la penalización del grafo.
-            // Si NO tenemos herramienta, no restamos nada (se queda el peso alto del grafo), pero PODEMOS PASAR.
-            if (edge.hasObstacle && hasTool && campGraph != null)
+            // Si tengo equipo, descuento el peso del obstáculo. Si no, me lo como.
+            if (edge.hasObstacle && canPassObstacle && campGraph != null)
             {
                 float obstaclesWeight = campGraph.obstaclePenalty * edge.obstacleCount;
                 effectiveWeight -= obstaclesWeight;
             }
 
-            // Memoria propia
+            // Memoria Propia
             int myVisits = nodeVisitCount.ContainsKey(edge.to.id) ? nodeVisitCount[edge.to.id] : 0;
             effectiveWeight += myVisits * revisitPenaltyPerVisit;
 
-            // Backtracking
+            // Penalización Backtrack
             if (summit != null && currentNode != null && edge.to != null)
             {
                 float distNow = Vector3.Distance(currentNode.position, summit.position);
@@ -388,32 +423,21 @@ public class ClimberMovement : MonoBehaviour
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
     }
-    // --------------------------------------------------------------------------------------
 
     private float CalculateStaminaCost(CampGraphBuilder.CampEdge edge)
     {
-        if (edge == null)
-            return 0f;
-
+        if (edge == null) return 0f;
         float distance = edge.pathLength;
-        if (distance <= 0.01f)
-            return minStaminaCost;
-
+        if (distance <= 0.01f) return minStaminaCost;
         float climb = Mathf.Max(edge.heightDelta, 0f);
         float slope = climb / distance;
-
         float cost = distance * baseCostPerMeter * (1f + slope * uphillExtraCostFactor);
-        cost = Mathf.Max(cost, minStaminaCost);
-        return cost;
+        return Mathf.Max(cost, minStaminaCost);
     }
 
     private void HandleReachedCamp()
     {
-        if (targetNode != null)
-        {
-            currentNode = targetNode;
-            targetNode = null;
-        }
+        if (targetNode != null) { currentNode = targetNode; targetNode = null; }
 
         isActiveThisTurn = false;
         isAtCamp = true;
@@ -427,24 +451,15 @@ public class ClimberMovement : MonoBehaviour
 
         if (currentNode != null)
         {
-            if (!nodeVisitCount.ContainsKey(currentNode.id))
-                nodeVisitCount[currentNode.id] = 0;
-
+            if (!nodeVisitCount.ContainsKey(currentNode.id)) nodeVisitCount[currentNode.id] = 0;
             nodeVisitCount[currentNode.id]++;
         }
 
-        if (isGoingToFirstCamp)
-        {
-            isGoingToFirstCamp = false;
-        }
-
+        if (isGoingToFirstCamp) isGoingToFirstCamp = false;
         currentStamina = maxStamina;
-        if (agent != null)
-            agent.speed = originalSpeed;
+        if (agent != null) agent.speed = originalSpeed;
 
-        if (campGraph != null &&
-            currentNode != null &&
-            currentNode.id == campGraph.finalDestinationNodeId)
+        if (campGraph != null && currentNode != null && currentNode.id == campGraph.finalDestinationNodeId)
         {
             HandleReachedGoal();
         }
@@ -455,37 +470,25 @@ public class ClimberMovement : MonoBehaviour
         reachedSummit = true;
         isActiveThisTurn = false;
         isAtCamp = false;
-
-        if (agent != null)
-            agent.isStopped = true;
-
+        if (agent != null) agent.isStopped = true;
         Destroy(gameObject);
     }
 
-    public void SetExternalSpeedMultiplier(float multiplier)
-    {
-        externalSpeedMultiplier = Mathf.Max(0f, multiplier);
-    }
-
+    public void SetExternalSpeedMultiplier(float multiplier) { externalSpeedMultiplier = Mathf.Max(0f, multiplier); }
     public float GetCurrentStamina() => currentStamina;
     public void SetCurrentStamina(float value) => currentStamina = Mathf.Clamp(value, 0f, maxStamina);
     public float GetMaxStamina() => maxStamina;
 
     public void ForceMoveToCampNode(CampGraphBuilder.CampNode node)
     {
-        if (agent == null || node == null)
-            return;
-
+        if (agent == null || node == null) return;
         isGoingToFirstCamp = false;
         isAtCamp = false;
         isActiveThisTurn = true;
         reachedSummit = false;
-
         targetNode = node;
-
         agent.isStopped = false;
         agent.SetDestination(node.position);
-
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
     }
@@ -493,11 +496,7 @@ public class ClimberMovement : MonoBehaviour
     public void SetExternallyDoneThisTurn(bool value)
     {
         externallyForcedDone = value;
-
-        if (value && agent != null)
-        {
-            agent.isStopped = true;
-        }
+        if (value && agent != null) agent.isStopped = true;
     }
 
     public void AddMaxStamina(float amount)

@@ -274,7 +274,7 @@ MonoBehaviour:
     invertFade: 0
     distanceFadeStart: 10000
     distanceFadeEnd: 10000
-    textureOffset: {x: -7.158774, y: -0, z: -2.8635097}
+    textureOffset: {x: 0, y: 0, z: 0}
     falloffMode: 0
     maskMode: 0
     materialMask: {fileID: 0}
@@ -639,7 +639,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &572999821
 Transform:
   m_ObjectHideFlags: 0
@@ -1103,7 +1103,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1065733345
 Transform:
   m_ObjectHideFlags: 0
@@ -1224,8 +1224,9 @@ MonoBehaviour:
   dayDurationInSeconds: 120
   nightStartHour: 20
   nightEndHour: 6
-  minExposure: 10
-  maxExposure: 15
+  dayMidExposure: 10
+  dayEdgeExposure: 13
+  nightMidExposure: 15
   daySunIntensity: 5000
   nightSunIntensity: 0.1
   currentHour: 12

@@ -13,15 +13,23 @@ public class ClimberLoadout : MonoBehaviour
     [Header("DEBUG – Equipo visible en Inspector (no tocar)")]
     [SerializeField] private string[] debugEquippedItemNames;
 
-    private Renderer climberRenderer;
-
+    [SerializeField] private Renderer helmetRenderer;
     public IReadOnlyList<EquipmentInstance> EquippedItems => equippedItems;
 
     private void Awake()
     {
-        climberRenderer = GetComponent<Renderer>();
+        if (helmetRenderer == null)
+        {
+            var helmetTransform = transform.Find("EscaladorMontaña/Casco");
+            if (helmetTransform != null)
+            {
+                helmetRenderer = helmetTransform.GetComponent<Renderer>();
+            }
+        }
+
         InitializeRandomLoadout();
     }
+
 
     private void InitializeRandomLoadout()
     {
@@ -70,9 +78,9 @@ public class ClimberLoadout : MonoBehaviour
 
     private void ChangeClimberColorBasedOnEquipment(EquipmentDefinitionSO equipment)
     {
-        if (climberRenderer != null && equipment != null && equipment.color != null)
+        if (helmetRenderer != null && equipment != null && equipment.color != null)
         {
-            climberRenderer.material.color = equipment.color;
+            helmetRenderer.material.color = equipment.color;
         }
     }
 

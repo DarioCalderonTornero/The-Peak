@@ -22,6 +22,11 @@ public class BaseObstacle : MonoBehaviour
             return;
 
         loadout.TryHandleObstacle(obstacleType);
+
+        if (loadout.CanHandleObstacle(obstacleType))
+        {
+            Destroy(this.gameObject);   
+        }
     }
 
     protected virtual void OnTriggerExit(Collider other)

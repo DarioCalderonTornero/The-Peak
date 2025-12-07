@@ -13,7 +13,7 @@ public class ClimberLoadout : MonoBehaviour
     [Header("DEBUG – Equipo visible en Inspector (no tocar)")]
     [SerializeField] private string[] debugEquippedItemNames;
 
-    private Renderer climberRenderer; 
+    private Renderer climberRenderer;
 
     public IReadOnlyList<EquipmentInstance> EquippedItems => equippedItems;
 
@@ -57,6 +57,8 @@ public class ClimberLoadout : MonoBehaviour
             var instance = CreateEquipmentInstance(chosenDef);
             if (instance != null)
             {
+                instance.SetupOwner(this);
+
                 instance.Initialize(chosenDef.equipmentName);
                 equippedItems.Add(instance);
                 ChangeClimberColorBasedOnEquipment(chosenDef);
@@ -68,10 +70,9 @@ public class ClimberLoadout : MonoBehaviour
 
     private void ChangeClimberColorBasedOnEquipment(EquipmentDefinitionSO equipment)
     {
-        
         if (climberRenderer != null && equipment != null && equipment.color != null)
         {
-            climberRenderer.material.color = equipment.color;  
+            climberRenderer.material.color = equipment.color;
         }
     }
 
@@ -128,7 +129,6 @@ public class ClimberLoadout : MonoBehaviour
         foreach (var eq in equippedItems)
             eq?.OnExitObstacle(obstacleType);
     }
-
 
     public bool CanHandleObstacle(ObstacleType obstacleType)
     {

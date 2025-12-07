@@ -4,6 +4,37 @@ public abstract class EquipmentInstance
 {
     protected string equipmentName;
 
+    // Dueño del equipo
+    protected ClimberLoadout ownerLoadout;
+    protected ClimberMovement ownerClimber;
+    protected Animator ownerAnimator;
+
+    /// <summary>
+    /// Se llama desde ClimberLoadout justo después de crear la instancia.
+    /// Sirve para que el equipo sepa a qué escalador pertenece.
+    /// </summary>
+    public virtual void SetupOwner(ClimberLoadout loadout)
+    {
+        ownerLoadout = loadout;
+
+        if (ownerLoadout != null)
+        {
+            var go = ownerLoadout.gameObject;
+
+            ownerClimber = go.GetComponent<ClimberMovement>();
+            ownerAnimator = go.GetComponentInChildren<Animator>();
+        }
+        else
+        {
+            ownerClimber = null;
+            ownerAnimator = null;
+        }
+    }
+
+    // Getters opcionales por si los quieres usar desde fuera
+    public ClimberLoadout OwnerLoadout => ownerLoadout;
+    public ClimberMovement OwnerClimber => ownerClimber;
+
     public virtual void Initialize(string name)
     {
         equipmentName = name;

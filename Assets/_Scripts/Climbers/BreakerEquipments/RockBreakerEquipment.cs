@@ -1,7 +1,17 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class RockBreakerEquipment : EquipmentInstance
 {
+    private ClimberMovement climberMovement;
+
+    private float maxTime = 3f;
+
+    private void Awake()
+    {
+        //climberMovement = <ClimberMovement>();
+    }
+
     public override void Initialize(string name)
     {
         base.Initialize(name);
@@ -14,16 +24,26 @@ public class RockBreakerEquipment : EquipmentInstance
 
         if (obstacleType == ObstacleType.Rock)
         {
+            Debug.Log("RockEncounterWithAxe");
             OnCounterSuccess(obstacleType);
         }
         else
         {
+            Debug.Log("RockEncounterNonAxe");
             OnCounterFail(obstacleType);
         }
     }
 
     public override void OnCounterSuccess(ObstacleType type)
     {
+        base.OnCounterSuccess(type);
+
+        if (ownerClimber == null)
+            return;
+
+        ownerClimber.StopForSeconds(3);
+
+
         Debug.Log($"<color=green>[RockBreakerEquipment]</color> Successfully countered {type}! (Would break it here)");
     }
 

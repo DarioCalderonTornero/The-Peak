@@ -80,6 +80,10 @@ public class ClimberMovement : MonoBehaviour
     public Vector3 originalDestination;
     [HideInInspector] public bool hasEatenThisTurn = false;
 
+    [Header("Equipment related")]
+    private Coroutine temporaryStopRoutine;
+
+
     private void Awake()
     {
         if (Instance == null)
@@ -503,5 +507,35 @@ public class ClimberMovement : MonoBehaviour
     {
         maxStamina += amount;
         currentStamina = maxStamina;
+    }
+
+    public void StopForSeconds(float duration)
+    {
+        if (!gameObject.activeInHierarchy)
+            return;
+
+        if (temporaryStopRoutine != null)
+        {
+            StopCoroutine(temporaryStopRoutine);
+        }
+
+        temporaryStopRoutine = StartCoroutine(StopForSecondsRoutine(duration));
+    }
+
+    private IEnumerator StopForSecondsRoutine(float duration)
+    {
+        float previousMultiplier = externalSpeedMultiplier;
+
+        SetExternalSpeedMultiplier(0f);
+        if (agent != null)
+            agent.isStopped = true;
+
+        yield return new WaitForSeconds(duration);
+
+        SetExternalSpeedMultiplier(previousMultiplier);
+        if (agent != null)
+            agent.isStopped = false;
+
+        temporaryStopRoutine = null;
     }
 }

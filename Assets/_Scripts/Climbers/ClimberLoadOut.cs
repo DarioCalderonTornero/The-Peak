@@ -20,11 +20,7 @@ public class ClimberLoadout : MonoBehaviour
     {
         if (helmetRenderer == null)
         {
-            var helmetTransform = transform.Find("EscaladorMontaña/Casco");
-            if (helmetTransform != null)
-            {
-                helmetRenderer = helmetTransform.GetComponent<Renderer>();
-            }
+            Debug.LogWarning("No helmet renderer");
         }
 
         InitializeRandomLoadout();

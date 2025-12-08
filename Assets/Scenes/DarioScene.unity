@@ -302,7 +302,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &273578518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -318,7 +318,6 @@ MonoBehaviour:
   scenesToLoadAdditive:
   - AlexScene
   - MRScene
-  - JuanScene
 --- !u!4 &273578519
 Transform:
   m_ObjectHideFlags: 0

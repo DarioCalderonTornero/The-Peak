@@ -4,7 +4,6 @@ public abstract class EquipmentInstance
 {
     protected string equipmentName;
 
-    // Dueño del equipo
     protected ClimberLoadout ownerLoadout;
     protected ClimberMovement ownerClimber;
     protected Animator ownerAnimator;
@@ -31,7 +30,6 @@ public abstract class EquipmentInstance
         }
     }
 
-    // Getters opcionales por si los quieres usar desde fuera
     public ClimberLoadout OwnerLoadout => ownerLoadout;
     public ClimberMovement OwnerClimber => ownerClimber;
 

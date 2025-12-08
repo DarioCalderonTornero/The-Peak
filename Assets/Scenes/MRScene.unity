@@ -421,6 +421,7 @@ MonoBehaviour:
   heightWeight: 40
   obstaclePenalty: 100
   drawEdgeWeights: 1
+  debugDrawStepsToSummit: 0
   finalDestinationNodeId: -1
 --- !u!1 &1278379734 stripped
 GameObject:

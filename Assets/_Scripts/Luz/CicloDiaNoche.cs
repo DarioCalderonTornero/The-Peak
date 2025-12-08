@@ -5,7 +5,7 @@ using UnityEngine.Rendering.HighDefinition;
 public class CicloDiaNocheHDRP : MonoBehaviour
 {
     [Header("Referencias HDRP")]
-    [Tooltip("Volume global que contiene HDRI Sky + Exposure")]
+    [Tooltip("Volume global que contiene HDRI Sky + Exposure + Indirect Lighting Controller")]
     public Volume skyVolume;
 
     [Tooltip("Luz direccional que hace de sol (y/o luna)")]
@@ -13,6 +13,7 @@ public class CicloDiaNocheHDRP : MonoBehaviour
 
     private HDRISky _hdriSky;
     private Exposure _exposure;
+    private IndirectLightingController _indirectLighting;
 
     [Header("Cubemaps de cielo")]
     [Tooltip("HDRI/Cubemap para el cielo de día (handpainted)")]
@@ -43,8 +44,30 @@ public class CicloDiaNocheHDRP : MonoBehaviour
     [Header("Sol (intensidad)")]
     [Tooltip("Intensidad del sol al mediodía")]
     public float daySunIntensity = 5000f;
-    [Tooltip("Intensidad mínima del sol durante la noche")]
-    public float nightSunIntensity = 0.1f;
+
+    [Tooltip("Intensidad del sol durante la noche")]
+    public float nightSunIntensity = 1000f; // como pediste
+
+    [Header("Sol (temperatura de color)")]
+    [Tooltip("Temperatura del sol al mediodía (luz blanca)")]
+    public float daySunTemperature = 6500f;   // Kelvin
+
+    [Tooltip("Temperatura del sol en amanecer/atardecer (luz cálida)")]
+    public float twilightSunTemperature = 3500f; // más naranja
+
+    [Tooltip("Temperatura del sol durante la noche (luz muy fría/azulada)")]
+    public float nightSunTemperature = 9000f; // azulada
+
+    [Header("Indirect Lighting")]
+    [Tooltip("Diffuse de día (sin fade, valor fijo)")]
+    public float dayIndirectDiffuse = 1f;
+    [Tooltip("Diffuse de noche (sin fade, valor fijo)")]
+    public float nightIndirectDiffuse = 50f;
+
+    [Tooltip("Reflection de día (se usará en el inicio del fade)")]
+    public float dayReflection = 5f;
+    [Tooltip("Reflection de noche (fin del fade)")]
+    public float nightReflection = 50f;
 
     [Header("Debug")]
     [Tooltip("Hora actual del juego (0–24). Puedes cambiarla en el inspector para probar.")]
@@ -71,6 +94,9 @@ public class CicloDiaNocheHDRP : MonoBehaviour
         {
             Debug.LogError("[CicloDiaNocheHDRP] El Volume no tiene override de Exposure.");
         }
+
+        // Indirect Lighting Controller (puede ser opcional)
+        skyVolume.profile.TryGet(out _indirectLighting);
     }
 
     private void Start()
@@ -91,7 +117,6 @@ public class CicloDiaNocheHDRP : MonoBehaviour
         _elapsedTime += Time.deltaTime;
 
         float dayProgress = (_elapsedTime / dayDurationInSeconds) % 1f;
-
         currentHour = dayProgress * 24f;
 
         ApplySkyAndLighting();
@@ -133,6 +158,89 @@ public class CicloDiaNocheHDRP : MonoBehaviour
 
             sunLight.intensity = sunIntensity;
         }
+
+        // --- Indirect Lighting (Diffuse fijo, Reflection con fade suave) ---
+        UpdateIndirectLighting(isNight);
+
+        // --- Temperatura del sol (fade día/amanecer/noche) ---
+        UpdateSunTemperature(currentHour, isNight);
+    }
+
+    private void UpdateIndirectLighting(bool isNight)
+    {
+        if (_indirectLighting == null) return;
+
+        // Diffuse: sin fade, solo día vs noche
+        _indirectLighting.indirectDiffuseLightingMultiplier.value =
+            isNight ? nightIndirectDiffuse : dayIndirectDiffuse;
+
+        // Reflection: sí hace fade en amanecer/atardecer
+        float nightFactor = GetNightFactor(currentHour); // 0 día puro, 1 noche pura
+        float refl = Mathf.Lerp(dayReflection, nightReflection, nightFactor);
+        _indirectLighting.reflectionLightingMultiplier.value = refl;
+    }
+
+    private void UpdateSunTemperature(float hour, bool isNight)
+    {
+        if (sunLight == null) return;
+
+        float targetTemp;
+
+        // Tramos:
+        //  6–8  : Noche -> Amanecer -> Día
+        //  8–18 : Día
+        // 18–20 : Día -> Atardecer -> Noche
+        // Resto : Noche
+
+        if (hour >= 6f && hour < 8f)
+        {
+            // Amanecer: noche -> twilight -> día
+            float t = Mathf.InverseLerp(6f, 8f, hour); // 6->0, 8->1
+
+            if (t < 0.5f)
+            {
+                // 6–7: noche -> twilight
+                float tt = t / 0.5f;
+                targetTemp = Mathf.Lerp(nightSunTemperature, twilightSunTemperature, tt);
+            }
+            else
+            {
+                // 7–8: twilight -> día
+                float tt = (t - 0.5f) / 0.5f;
+                targetTemp = Mathf.Lerp(twilightSunTemperature, daySunTemperature, tt);
+            }
+        }
+        else if (hour >= 18f && hour < 20f)
+        {
+            // Atardecer: día -> twilight -> noche
+            float t = Mathf.InverseLerp(18f, 20f, hour); // 18->0, 20->1
+
+            if (t < 0.5f)
+            {
+                // 18–19: día -> twilight
+                float tt = t / 0.5f;
+                targetTemp = Mathf.Lerp(daySunTemperature, twilightSunTemperature, tt);
+            }
+            else
+            {
+                // 19–20: twilight -> noche
+                float tt = (t - 0.5f) / 0.5f;
+                targetTemp = Mathf.Lerp(twilightSunTemperature, nightSunTemperature, tt);
+            }
+        }
+        else if (isNight)
+        {
+            // Noche pura
+            targetTemp = nightSunTemperature;
+        }
+        else
+        {
+            // Día puro (8–18)
+            targetTemp = daySunTemperature;
+        }
+
+        sunLight.useColorTemperature = true;
+        sunLight.colorTemperature = targetTemp;
     }
 
     private bool IsNight(float hour)
@@ -145,42 +253,25 @@ public class CicloDiaNocheHDRP : MonoBehaviour
         return hour >= nightStartHour || hour < nightEndHour;
     }
 
-    /// <summary>
-    /// DÍA: 
-    ///  - 6h  -> 13 (dayEdgeExposure, más oscuro)
-    ///  - 12–13h -> 10 (dayMidExposure, más claro)
-    ///  - 20h -> 13 (dayEdgeExposure, más oscuro)
-    /// Fuera 6–20h no debería usarse (es noche).
-    /// </summary>
     private float GetDayExposure(float hour)
     {
-        // Seguridad: si está fuera del día, usa el borde del día
         if (hour <= 6f) return dayEdgeExposure;
         if (hour >= 20f) return dayEdgeExposure;
 
-        // 6 -> 12 : 13 -> 10 (oscuro -> claro)
         if (hour <= 12f)
         {
-            float t = Mathf.InverseLerp(6f, 12f, hour); // 6 -> 0, 12 -> 1
+            float t = Mathf.InverseLerp(6f, 12f, hour);
             return Mathf.Lerp(dayEdgeExposure, dayMidExposure, t);
         }
-        // 12 -> 20 : 10 -> 13 (claro -> oscuro)
         else
         {
-            float t = Mathf.InverseLerp(12f, 20f, hour); // 12 -> 0, 20 -> 1
+            float t = Mathf.InverseLerp(12f, 20f, hour);
             return Mathf.Lerp(dayMidExposure, dayEdgeExposure, t);
         }
     }
 
-    /// <summary>
-    /// NOCHE (20–6, cruzando medianoche):
-    ///  - 20h -> 13 (borde atardecer)
-    ///  - ~1h -> 15 (nightMidExposure, más oscuro)
-    ///  - 6h  -> 13 (borde amanecer)
-    /// </summary>
     private float GetNightExposure(float hour)
     {
-        // Mapeo 20–6 a 0–10
         float nightTime;
         if (hour >= 20f)
         {
@@ -191,19 +282,13 @@ public class CicloDiaNocheHDRP : MonoBehaviour
             nightTime = hour + 4f;  // 0–6  => 4–10
         }
 
-        // 0 -> 20:00   (borde)
-        // 5 -> 1:00    (noche profunda)
-        // 10 -> 6:00   (borde)
-
         if (nightTime <= 5f)
         {
-            // 0–5: 13 -> 15 (borde -> más oscuro)
             float t = nightTime / 5f;
             return Mathf.Lerp(dayEdgeExposure, nightMidExposure, t);
         }
         else
         {
-            // 5–10: 15 -> 13 (más oscuro -> borde)
             float t = (nightTime - 5f) / 5f;
             return Mathf.Lerp(nightMidExposure, dayEdgeExposure, t);
         }
@@ -248,6 +333,34 @@ public class CicloDiaNocheHDRP : MonoBehaviour
         {
             return 0f;
         }
+    }
+
+    /// <summary>
+    /// 0 = día puro, 1 = noche pura, valores intermedios sólo en 6–8 y 18–20.
+    /// </summary>
+    private float GetNightFactor(float hour)
+    {
+        // 18–20: día -> noche (atardecer)
+        if (hour >= 18f && hour < 20f)
+        {
+            return Mathf.InverseLerp(18f, 20f, hour); // 18->0, 20->1
+        }
+
+        // 20–6: noche pura
+        if (hour >= 20f || hour < 6f)
+        {
+            return 1f;
+        }
+
+        // 6–8: noche -> día (amanecer)
+        if (hour >= 6f && hour < 8f)
+        {
+            float t = Mathf.InverseLerp(6f, 8f, hour); // 6->0, 8->1
+            return 1f - t; // 6->1, 8->0
+        }
+
+        // 8–18: día puro
+        return 0f;
     }
 
     public void PauseCycle() => _isPaused = true;

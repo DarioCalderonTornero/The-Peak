@@ -1103,7 +1103,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1065733345
 Transform:
   m_ObjectHideFlags: 0
@@ -1228,7 +1228,14 @@ MonoBehaviour:
   dayEdgeExposure: 13
   nightMidExposure: 15
   daySunIntensity: 5000
-  nightSunIntensity: 0.1
+  nightSunIntensity: 1000
+  daySunTemperature: 6500
+  twilightSunTemperature: 3500
+  nightSunTemperature: 9000
+  dayIndirectDiffuse: 1
+  nightIndirectDiffuse: 25
+  dayReflection: 5
+  nightReflection: 25
   currentHour: 12
 --- !u!1 &1351471117
 GameObject:

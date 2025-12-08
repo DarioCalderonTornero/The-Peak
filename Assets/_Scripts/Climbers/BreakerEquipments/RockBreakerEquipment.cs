@@ -41,7 +41,7 @@ public class RockBreakerEquipment : EquipmentInstance
         if (ownerClimber == null)
             return;
 
-        ownerClimber.StopForSeconds(3);
+        ownerClimber.StopForSeconds(2.2f);
         ownerAnimator.SetTrigger("canPick");
 
 

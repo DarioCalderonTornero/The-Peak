@@ -25,7 +25,10 @@ public class BaseObstacle : MonoBehaviour
 
         if (loadout.CanHandleObstacle(obstacleType))
         {
-            Destroy(this.gameObject);   
+            if (obstacleType == ObstacleType.Rock)
+            {
+                Destroy(this.gameObject, 2f);
+            }
         }
     }
 

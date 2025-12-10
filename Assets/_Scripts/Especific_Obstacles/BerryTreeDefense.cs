@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,56 +12,75 @@ public class BerryTreeDefense : BaseDefense
     private bool badBerryAlive = false;
 
     [Header("Turnos")]
-    public int turnsToGrow = 2;
+    [Tooltip("Turnos de escaladores para el primer crecimiento de ambas bayas.")]
+    public int turnsToFirstGrow = 2;
+
+    [Tooltip("Turnos de escaladores que tarda cada baya en volver a crecer tras ser comida.")]
     public int turnsToRespawn = 2;
 
-    private int growCounter = 0;
+    private int initialGrowCounter = 0;
+    private bool initialGrowDone = false;
 
     [Header("Detección")]
     public float detectionRadius = 5f;
     public LayerMask climberLayer;
 
-    [Header("Probabilidades")]
-    [Range(0f, 1f)] public float eatProbability = 0.15f;
-
-    [Header("Punto al que van a comer")]
+    [Header("Punto al que van a comer (opcional)")]
     public Transform eatPoint;
-
-    public Vector3 lastDestination;
 
     private void OnEnable()
     {
-        TurnManager.Instance.OnClimberTurnEnd += OnClimberTurnEnd;
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.OnClimberTurnEnd += HandleGlobalClimberTurnEnd;
+        }
     }
 
     private void OnDisable()
     {
         if (TurnManager.Instance != null)
-            TurnManager.Instance.OnClimberTurnEnd -= OnClimberTurnEnd;
+        {
+            TurnManager.Instance.OnClimberTurnEnd -= HandleGlobalClimberTurnEnd;
+        }
     }
 
     private void Start()
     {
-        if (goodBerry != null) goodBerry.SetActive(false);
-        if (badBerry != null) badBerry.SetActive(false);
+        // Siempre empezamos SIN bayas visibles
+        if (goodBerry != null)
+        {
+            goodBerry.SetActive(false);
+            goodBerryAlive = false;
+        }
+
+        if (badBerry != null)
+        {
+            badBerry.SetActive(false);
+            badBerryAlive = false;
+        }
+
+        initialGrowCounter = 0;
+        initialGrowDone = false;
     }
 
-    private void OnClimberTurnEnd()
+    // ================== Primer crecimiento de ambas bayas ==================
+
+    private void HandleGlobalClimberTurnEnd()
     {
-        if (!goodBerryAlive && !badBerryAlive)
+        if (initialGrowDone)
+            return;
+
+        initialGrowCounter++;
+
+        if (initialGrowCounter >= turnsToFirstGrow)
         {
-            growCounter++;
-            if (growCounter >= turnsToGrow)
-            {
-                SpawnBothBerries();
-            }
+            SpawnBothBerriesFirstTime();
+            initialGrowDone = true;
         }
     }
 
-    private void SpawnBothBerries()
+    private void SpawnBothBerriesFirstTime()
     {
-        growCounter = 0;
-
         if (goodBerry != null)
         {
             goodBerry.SetActive(true);
@@ -75,12 +93,15 @@ public class BerryTreeDefense : BaseDefense
             badBerryAlive = true;
         }
 
-        Debug.Log("🌱 Han aparecido la baya buena y la mala.");
+        Debug.Log("🌱 Primer crecimiento: han aparecido la baya buena y la mala.");
     }
+
+    // ================== Lógica por frame ==================
 
     private void Update()
     {
-        if (!TurnManager.Instance.IsClimberTurn())
+        // Solo funcionan en turno de escaladores
+        if (TurnManager.Instance == null || !TurnManager.Instance.IsClimberTurn())
             return;
 
         // Si no hay ninguna baya disponible, no hacemos nada
@@ -95,46 +116,67 @@ public class BerryTreeDefense : BaseDefense
             if (climber == null) continue;
 
             // Si el escalador ya está comiendo o ya ha comido este turno, lo saltamos
-            if (climber.isEating || climber.hasEatenThisTurn) continue;
+            if (climber.isEating || climber.hasEatenThisTurn)
+                continue;
 
-            // Solo intentamos comer con la probabilidad definida
-            if (Random.value <= eatProbability)
-            {
-                // Elegimos la baya disponible más cercana
-                GameObject berryToEat = null;
-                if (goodBerryAlive) berryToEat = goodBerry;
-                else if (badBerryAlive) berryToEat = badBerry;
+            GameObject berryToEat = ChooseBerryToEat();
+            if (berryToEat == null)
+                continue;
 
-                if (berryToEat == null) continue;
+            climber.hasEatenThisTurn = true; // este turno solo come una vez
 
-                climber.hasEatenThisTurn = true; // marca que comerá solo 1
-                SendClimberToEat(climber, berryToEat);
-            }
+            SendClimberToEat(climber, berryToEat);
         }
     }
 
+    private GameObject ChooseBerryToEat()
+    {
+        if (goodBerryAlive && !badBerryAlive)
+            return goodBerry;
+
+        if (!goodBerryAlive && badBerryAlive)
+            return badBerry;
+
+        if (goodBerryAlive && badBerryAlive)
+        {
+            // 50% de cada una
+            return (Random.value < 0.5f) ? goodBerry : badBerry;
+        }
+
+        return null;
+    }
+
+    // ================== Enviar escalador a la baya ==================
+
     private void SendClimberToEat(ClimberMovement climber, GameObject berry)
     {
+        if (climber == null || berry == null)
+            return;
+
         NavMeshAgent agent = climber.GetComponent<NavMeshAgent>();
-        if (agent == null || !agent.isOnNavMesh) return;
+        if (agent == null || !agent.isOnNavMesh)
+            return;
 
-        // Guardamos el destino original para volver
-        climber.originalDestination = agent.destination;
-
+        // YA NO tocamos climber.originalDestination: ese es el campamento que él ya tenía calculado.
         climber.isEating = true;
 
-        agent.SetDestination(berry.transform.position);
+        Vector3 targetPos = berry.transform.position;
+        if (eatPoint != null)
+            targetPos = eatPoint.position;
+
         agent.isStopped = false;
+        agent.SetDestination(targetPos);
 
         StartCoroutine(WaitForArrival(climber, berry));
     }
 
     private IEnumerator WaitForArrival(ClimberMovement climber, GameObject berry)
     {
-        NavMeshAgent agent = climber.GetComponent<NavMeshAgent>();
-        if (agent == null)
+        NavMeshAgent agent = climber != null ? climber.GetComponent<NavMeshAgent>() : null;
+
+        if (climber == null || agent == null)
         {
-            climber.isEating = false;
+            if (climber != null) climber.isEating = false;
             yield break;
         }
 
@@ -149,34 +191,38 @@ public class BerryTreeDefense : BaseDefense
         }
     }
 
-
     private void ResolveBerry(ClimberMovement climber, GameObject berry)
     {
-        if (berry == goodBerry) EatGoodBerry(climber);
-        else if (berry == badBerry) EatBadBerry(climber);
-
-        climber.isEating = false;
+        if (berry == goodBerry)
+            EatGoodBerry(climber);
+        else if (berry == badBerry)
+            EatBadBerry(climber);
+        else
+            climber.isEating = false;
     }
+
+    // ================== Efectos de cada baya ==================
 
     private void EatGoodBerry(ClimberMovement climber)
     {
-        goodBerry.SetActive(false);
+        if (goodBerry != null)
+            goodBerry.SetActive(false);
+
         goodBerryAlive = false;
 
+        // Efecto positivo
         climber.AddMaxStamina(200f);
         climber.isEating = false;
 
-        // Restauramos el destino original
+        // Restauramos el destino original para que siga su ruta
         NavMeshAgent agent = climber.GetComponent<NavMeshAgent>();
         if (agent != null && agent.isOnNavMesh)
         {
-            agent.SetDestination(climber.originalDestination);
             agent.isStopped = false;
+            agent.SetDestination(climber.originalDestination);
         }
 
-        // Activamos el escalador para que Update() siga moviéndolo
-        climber.SetExternallyDoneThisTurn(false);
-
+        // Respawn individual tras X turnos de escaladores
         StartCoroutine(RespawnBerryAfterTurns(true));
 
         Debug.Log("✅ Baya BUENA comida: +200 MaxStamina y sigue su camino.");
@@ -184,11 +230,15 @@ public class BerryTreeDefense : BaseDefense
 
     private void EatBadBerry(ClimberMovement climber)
     {
-        badBerry.SetActive(false);
+        if (badBerry != null)
+            badBerry.SetActive(false);
+
         badBerryAlive = false;
 
+        // Mata al escalador
         Destroy(climber.gameObject);
 
+        // Respawn individual tras X turnos de escaladores
         StartCoroutine(RespawnBerryAfterTurns(false));
         Debug.Log("💀 Baya MALA comida: escalador destruido");
     }
@@ -198,38 +248,49 @@ public class BerryTreeDefense : BaseDefense
     {
         int counter = 0;
 
-        void OnTurn()
+        if (TurnManager.Instance == null)
+            yield break;
+
+        void OnClimberTurnEnd()
         {
             counter++;
         }
 
-        TurnManager.Instance.OnClimberTurnEnd += OnTurn;
+        TurnManager.Instance.OnClimberTurnEnd += OnClimberTurnEnd;
 
         while (counter < turnsToRespawn)
             yield return null;
 
-        TurnManager.Instance.OnClimberTurnEnd -= OnTurn;
+        TurnManager.Instance.OnClimberTurnEnd -= OnClimberTurnEnd;
 
-        if (good && goodBerry != null)
+        if (good)
         {
-            goodBerry.SetActive(true);
-            goodBerryAlive = true;
+            if (goodBerry != null)
+            {
+                goodBerry.SetActive(true);
+                goodBerryAlive = true;
+            }
         }
-        else if (!good && badBerry != null)
+        else
         {
-            badBerry.SetActive(true);
-            badBerryAlive = true;
+            if (badBerry != null)
+            {
+                badBerry.SetActive(true);
+                badBerryAlive = true;
+            }
         }
 
         Debug.Log("🔁 Una baya ha vuelto a crecer.");
     }
 
+    // ================== Gizmos ==================
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(0.3f, 0.9f, 0.3f, 0.25f);
         Gizmos.DrawSphere(transform.position, detectionRadius);
+
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
     }
 }
-

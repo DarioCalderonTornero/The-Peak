@@ -22,6 +22,6 @@ MonoBehaviour:
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}
   requireFullSupport: 1
   supportCheckExtents: {x: 6, y: 4}
-  supportRayDistance: 2.06
+  supportRayDistance: 4.13
   supportYOffset: 2.14
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}

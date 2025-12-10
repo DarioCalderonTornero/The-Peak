@@ -52,7 +52,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5360695673246543767}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -124,9 +124,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slowFactor: 0.2
-  spawnDuration: 0.25
-  shakeMagnitude: 0.05
-  shakeSpeed: 25
+  spawnDuration: 0.5
+  spawnAnimSpeed: 0.6
+  shakeMagnitude: 0.03
+  shakeSpeed: 0.002
+  shakeRadiusAroundClimber: 4
+  bramblePrefab: {fileID: 8874467261720253175, guid: bd10a0003305a92499c340e8c21f5da4, type: 3}
+  minClumps: 45
+  maxClumps: 60
+  randomScaleRange: {x: 0.4, y: 0.8}
+  globalScaleMultiplier: 1
+  zScaleMultiplier: 2
 --- !u!54 &6126965442273955557
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -312,6 +312,8 @@ public class ClimberMovement : MonoBehaviour
         agent.isStopped = false;
         agent.SetDestination(targetNode.position);
 
+        originalDestination = targetNode.position;
+
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
     }
@@ -424,6 +426,8 @@ public class ClimberMovement : MonoBehaviour
         agent.isStopped = false;
         agent.SetDestination(targetNode.position);
 
+        originalDestination = targetNode.position;
+
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
     }
@@ -493,6 +497,10 @@ public class ClimberMovement : MonoBehaviour
         targetNode = node;
         agent.isStopped = false;
         agent.SetDestination(node.position);
+
+        // 🔹 NUEVO:
+        originalDestination = node.position;
+
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
     }

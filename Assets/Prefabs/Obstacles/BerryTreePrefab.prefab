@@ -121,6 +121,7 @@ GameObject:
   - component: {fileID: 2548686063686118375}
   - component: {fileID: 6975452773875413910}
   - component: {fileID: 5463760412436678507}
+  - component: {fileID: -7947508892654658605}
   m_Layer: 0
   m_Name: BerryTreePrefab
   m_TagString: Untagged
@@ -243,6 +244,20 @@ MonoBehaviour:
     m_Bits: 4294967295
   eatProbability: 0.8
   eatPoint: {fileID: 3662976519798038772}
+  lastDestination: {x: 0, y: 0, z: 0}
+--- !u!114 &-7947508892654658605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5185131529581212778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97a96f72894c20429c31f3cf6833f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleType: 5
 --- !u!1 &7890185268248385885
 GameObject:
   m_ObjectHideFlags: 0

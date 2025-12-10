@@ -31,6 +31,9 @@ public class GameManager : MonoBehaviour
     public bool autoStartGame = true;
     public bool logStateChanges = true;
 
+    [Header("UI")]
+    [SerializeField] private GamePauseUI gamePauseUI;
+
     private bool gamePaused = false;
 
     private void Awake()
@@ -42,7 +45,7 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);  
+        DontDestroyOnLoad(gameObject);
 
         AutoAssignManagers();
 
@@ -53,6 +56,24 @@ public class GameManager : MonoBehaviour
     {
         if (autoStartGame)
             StartGame();
+
+        // Nos suscribimos al input de pausa
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnGamePauseInput += HandleGamePauseInput;
+        }
+        else
+        {
+            Debug.LogWarning("[GameManager] InputManager.Instance es null en Start.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnGamePauseInput -= HandleGamePauseInput;
+        }
     }
 
     private void AutoAssignManagers()
@@ -99,17 +120,42 @@ public class GameManager : MonoBehaviour
         currentState = newState;
 
         OnStateChanged?.Invoke(previous, currentState);
+
+        if (logStateChanges)
+            Debug.Log($"[GameManager] State: {previous} -> {currentState}");
     }
 
     public void PauseGame()
     {
-        OnGamePaused?.Invoke(this, EventArgs.Empty);    
+        gamePaused = true;
+        OnGamePaused?.Invoke(this, EventArgs.Empty);
         Time.timeScale = 0f;
+        SetState(GameState.GamePause);
     }
 
     public void UnPauseGame()
     {
+        gamePaused = false;
         Time.timeScale = 1.0f;
         OnGameUnPaused?.Invoke(this, EventArgs.Empty);
+        SetState(GameState.Playing);
+    }
+
+    private void HandleGamePauseInput(object sender, EventArgs e)
+    {
+        if (gamePauseUI == null)
+        {
+            Debug.LogWarning("[GameManager] GamePauseUI no asignado en el inspector.");
+            return;
+        }
+
+        // Si el GameObject del menú está desactivado, lo activamos
+        if (!gamePauseUI.gameObject.activeSelf)
+        {
+            gamePauseUI.gameObject.SetActive(true);
+        }
+
+        // Y delegamos la lógica de mostrar/ocultar en el propio menú
+        gamePauseUI.TogglePauseMenu();
     }
 }

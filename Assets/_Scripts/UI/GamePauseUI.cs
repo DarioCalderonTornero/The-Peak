@@ -22,34 +22,21 @@ public class GamePauseUI : MonoBehaviour
             Time.timeScale = 1.0f;
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
         });
-    }
 
-    private void Start()
-    {
         Hide();
-
-        InputManager.Instance.OnGamePauseInput += InputManager_OnGamePauseInput;
     }
 
-    private void InputManager_OnGamePauseInput(object sender, System.EventArgs e)
-    {
-        TogglePauseMenu();
-    }
-
-    private void TogglePauseMenu()
+    public void TogglePauseMenu()
     {
         if (!isGamePaused)
         {
             Show();
             GameManager.Instance.PauseGame();
-            //HideUIManager.Instance.HideAllCanvas();
         }
-
-        else if (isGamePaused)
+        else
         {
             Hide();
             GameManager.Instance.UnPauseGame();
-            //HideUIManager.Instance.ShowAllCanvas();
         }
 
         isGamePaused = !isGamePaused;
@@ -60,7 +47,7 @@ public class GamePauseUI : MonoBehaviour
         backgroundImage.gameObject.SetActive(true);
         resumeButton.gameObject.SetActive(true);
         settingsButton.gameObject.SetActive(true);
-        backToMenuButton.gameObject.SetActive(true);    
+        backToMenuButton.gameObject.SetActive(true);
     }
 
     private void Hide()
@@ -69,10 +56,5 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
-    }
-
-    private void OnDestroy()
-    {
-        InputManager.Instance.OnGamePauseInput -= InputManager_OnGamePauseInput;
     }
 }

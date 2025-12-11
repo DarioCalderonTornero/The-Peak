@@ -60,9 +60,23 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         SetupCardUI();
         UpdateInteractable();
         PointsManager.Instance.OnPointsChanged += HandlePointsChanged;
+        InputManager.Instance.OnRotateCardInput += InputManager_OnRotateCardInput;
 
         // Esperar un frame para que el VerticalLayoutGroup haya hecho su trabajo
         StartCoroutine(InitializeOriginalPosition());
+
+    }
+
+    private void InputManager_OnRotateCardInput(object sender, System.EventArgs e)
+    {
+        {
+            if (!inPlacementMode || useFixedPosition || previewInstance == null)
+                return;
+
+            currentRotationDegrees += 45f;
+            if (currentRotationDegrees >= 360f)
+                currentRotationDegrees -= 360f;
+        }
     }
 
     private IEnumerator InitializeOriginalPosition()
@@ -85,24 +99,17 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         UpdateInteractable();
     }
 
-    // 🔹 ROTACIÓN CON R DEL PREVIEW
     private void Update()
     {
         if (inPlacementMode && !useFixedPosition && previewInstance != null)
         {
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                currentRotationDegrees += 45f;
-                if (currentRotationDegrees >= 360f)
-                    currentRotationDegrees -= 360f;
-            }
-
             Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
             Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
 
             previewInstance.transform.rotation = extraRot * baseRot;
         }
     }
+
 
     public void OnBeginDrag(PointerEventData eventData)
     {
@@ -486,5 +493,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         if (PointsManager.Instance != null)
             PointsManager.Instance.OnPointsChanged -= HandlePointsChanged;
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnRotateCardInput += InputManager_OnRotateCardInput;
     }
 }

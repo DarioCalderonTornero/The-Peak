@@ -745,7 +745,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1124537431
 Transform:
   m_ObjectHideFlags: 0
@@ -773,8 +773,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 581eb2fb6965097449b62735e6920d33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  musicSource: {fileID: 0}
-  musicPlayList: []
+  musicSource: {fileID: 1124537433}
+  musicPlayList:
+  - {fileID: 8300000, guid: 41da79e3bafc14f4eba8a607d0933c84, type: 3}
+  - {fileID: 8300000, guid: 16dd7390f3684b1408124cf443eeb206, type: 3}
+  - {fileID: 8300000, guid: a941e480f3aa40c438d1914c0b1ce607, type: 3}
 --- !u!82 &1124537433
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1142,7 +1145,7 @@ MonoBehaviour:
   maxZoom: 1.25
   requireRightMouseButton: 1
   onlyOnZoomIn: 1
-  mouseMoveThresholdPixels: 100
+  mouseMoveThresholdPixels: 120
   resetDuration: 0.3
   resetCurve:
     serializedVersion: 2
@@ -1168,6 +1171,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  refocusDistanceThreshold: 0.1
+  refocusZoomLerpSpeed: 5
+  refocusPivotSpeedMultiplier: 3
 --- !u!114 &1299652167
 MonoBehaviour:
   m_ObjectHideFlags: 0

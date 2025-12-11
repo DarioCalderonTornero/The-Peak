@@ -191,6 +191,10 @@ MonoBehaviour:
   backtrackTolerance: 2
   backtrackPenaltyPerMeter: 5
   stepConversionFactor: 20
+  rotationSpeed: 10
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
   currentStamina: 0
   isEating: 0
   originalDestination: {x: 0, y: 0, z: 0}
@@ -479,15 +483,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8415481058121038073, guid: 2cc1b58e8a6b0fc49b74baca995ad3dd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.41
+      value: 0.538
       objectReference: {fileID: 0}
     - target: {fileID: 8415481058121038073, guid: 2cc1b58e8a6b0fc49b74baca995ad3dd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.48
+      value: -0.479
       objectReference: {fileID: 0}
     - target: {fileID: 8415481058121038073, guid: 2cc1b58e8a6b0fc49b74baca995ad3dd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.423
+      value: 0.527
       objectReference: {fileID: 0}
     - target: {fileID: 8415481058121038073, guid: 2cc1b58e8a6b0fc49b74baca995ad3dd, type: 3}
       propertyPath: m_LocalRotation.w

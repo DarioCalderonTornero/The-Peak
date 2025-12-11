@@ -59,7 +59,8 @@ public class Temporal_Sound_Music : MonoBehaviour
         //  ARREGLO BUG #8: Chequeo de nulos y longitud antes de acceder al array
         if (musicPlayList != null && musicPlayList.Length > 0)
         {
-            PlayMusic(musicPlayList[0]);
+            currentTrackIndex = 0;
+            PlayMusic(musicPlayList[currentTrackIndex]);
         }
     }
 

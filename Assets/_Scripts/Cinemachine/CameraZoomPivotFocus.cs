@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Cinemachine;
 using System.Collections;
 
@@ -27,14 +27,20 @@ public class CameraZoomPivotFocus : MonoBehaviour
     [SerializeField] private bool requireRightMouseButton = true;
     [SerializeField] private bool onlyOnZoomIn = true;
 
-    [Header("Cambio de foco por movimiento de rat�n")]
+    [Header("Cambio de foco por movimiento de ratón")]
     [SerializeField] private float mouseMoveThresholdPixels = 30f;
 
-    [Header("Reset de c�mara")]
+    [Header("Reset de cámara")]
     [SerializeField] private float resetDuration = 0.3f;
     [SerializeField]
     private AnimationCurve resetCurve =
         AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    // Refocus
+    [Header("Refocus")]
+    [SerializeField] private float refocusDistanceThreshold = 0.5f;   // distancia para dar por completado el refocus
+    [SerializeField] private float refocusZoomLerpSpeed = 5f;         // (ahora mismo no cambiará mucho el zoom)
+    [SerializeField] private float refocusPivotSpeedMultiplier = 3f;  // pivote más rápido durante refocus
 
     private Vector3 targetPivotPos;
     private Vector3 focalPoint;
@@ -51,6 +57,10 @@ public class CameraZoomPivotFocus : MonoBehaviour
     private bool initialStateCaptured = false;
 
     private Coroutine resetRoutine;
+
+    // Estado de refocus
+    private bool isRefocusing = false;
+    private float desiredRefocusZoom;
 
     private void Reset()
     {
@@ -86,7 +96,7 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (orbitalFollow != null)
         {
             currentZoom = orbitalFollow.RadialAxis.Value;
-            // Valores actuales de �rbita (los usaremos como base)
+            // Valores actuales de órbita (los usaremos como base)
             initialHorizontal = orbitalFollow.HorizontalAxis.Value;
             initialVertical = orbitalFollow.VerticalAxis.Value;
         }
@@ -130,6 +140,9 @@ public class CameraZoomPivotFocus : MonoBehaviour
     {
         if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
             return;
+
+        // Si estaba refocuseando, lo cancelamos y reseteamos del tirón
+        isRefocusing = false;
 
         if (resetRoutine != null)
             StopCoroutine(resetRoutine);
@@ -189,6 +202,10 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (mainCamera == null || pivotTransform == null || orbitalFollow == null || !canZoom)
             return;
 
+        // Mientras estamos en refocus, ignoramos el scroll de zoom.
+        if (isRefocusing)
+            return;
+
         float scroll = Input.mouseScrollDelta.y;
 
         if (Mathf.Abs(scroll) < 0.01f)
@@ -238,6 +255,15 @@ public class CameraZoomPivotFocus : MonoBehaviour
 
             focalPoint = hit.point;
             targetPivotPos = focalPoint;
+
+            // ⬇️ CAMBIO IMPORTANTE:
+            // mantenemos el zoom actual; no lo reajustamos según la distancia al hit.
+            // Queremos deslizarnos a otra zona con el MISMO zoom.
+            desiredRefocusZoom = currentZoom;
+
+            // Entramos en modo refocus: bloqueamos zoom en Update
+            // y solo movemos pivot (y, en este caso, dejamos el zoom tal cual).
+            isRefocusing = true;
         }
         else
         {
@@ -250,17 +276,44 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (pivotTransform == null)
             return;
 
+        // Movimiento del pivot
         if (smoothMovement)
         {
+            // Durante refocus, usamos un lerp más rápido
+            float speed = pivotMoveSpeed;
+            if (isRefocusing)
+                speed *= refocusPivotSpeedMultiplier;
+
             pivotTransform.position = Vector3.Lerp(
                 pivotTransform.position,
                 targetPivotPos,
-                pivotMoveSpeed * Time.deltaTime
+                speed * Time.deltaTime
             );
         }
         else
         {
             pivotTransform.position = targetPivotPos;
+        }
+
+        // Durante el refocus interpolamos el zoom hacia desiredRefocusZoom,
+        // pero como ahora desiredRefocusZoom == currentZoom, no habrá "deszoom".
+        if (isRefocusing)
+        {
+            currentZoom = Mathf.MoveTowards(
+                currentZoom,
+                desiredRefocusZoom,
+                refocusZoomLerpSpeed * Time.deltaTime
+            );
+            orbitalFollow.RadialAxis.Value = currentZoom;
+
+            // ¿Pivot suficientemente cerca del nuevo foco?
+            float distToTarget = Vector3.Distance(pivotTransform.position, targetPivotPos);
+            if (distToTarget <= refocusDistanceThreshold)
+            {
+                // Encajamos pivot en el punto final (dentro del umbral) y salimos de refocus
+                pivotTransform.position = targetPivotPos;
+                isRefocusing = false;
+            }
         }
     }
 

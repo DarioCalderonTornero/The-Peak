@@ -7,6 +7,7 @@ public abstract class EquipmentInstance
     protected ClimberLoadout ownerLoadout;
     protected ClimberMovement ownerClimber;
     protected Animator ownerAnimator;
+    
 
     /// <summary>
     /// Se llama desde ClimberLoadout justo después de crear la instancia.

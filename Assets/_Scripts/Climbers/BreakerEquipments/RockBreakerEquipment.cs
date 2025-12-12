@@ -44,7 +44,6 @@ public class RockBreakerEquipment : EquipmentInstance
         ownerClimber.StopForSeconds(2.2f);
         ownerAnimator.SetTrigger("canPick");
 
-
         Debug.Log($"<color=green>[RockBreakerEquipment]</color> Successfully countered {type}! (Would break it here)");
     }
 

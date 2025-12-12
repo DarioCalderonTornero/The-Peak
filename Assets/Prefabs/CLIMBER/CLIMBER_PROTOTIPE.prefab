@@ -191,10 +191,6 @@ MonoBehaviour:
   backtrackTolerance: 2
   backtrackPenaltyPerMeter: 5
   stepConversionFactor: 20
-  rotationSpeed: 10
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
   currentStamina: 0
   isEating: 0
   originalDestination: {x: 0, y: 0, z: 0}
@@ -236,6 +232,7 @@ MonoBehaviour:
   archetype: {fileID: 11400000, guid: 6aaf054321ad4ce4eaf3e210c9254163, type: 2}
   debugEquippedItemNames: []
   helmetRenderer: {fileID: 4366637161274366234}
+  pickaxeAudioClip: {fileID: 8300000, guid: b8d18d9d5b744cd4aa384d6dfe047182, type: 3}
 --- !u!95 &7752139572246176441
 Animator:
   serializedVersion: 7

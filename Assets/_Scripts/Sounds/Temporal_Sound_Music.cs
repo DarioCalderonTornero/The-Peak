@@ -93,7 +93,7 @@ public class Temporal_Sound_Music : MonoBehaviour
         AudioSource.PlayClipAtPoint(clip, camPos, volume * masterVolume * effectsVolume);
     }
 
-    public void PlayMusic(AudioClip musicClip, float volume = 0.05f)
+    public void PlayMusic(AudioClip musicClip, float volume = 0.5f)
     {
         if (musicClip == null || musicSource == null) return;
         if (musicSource.clip == musicClip) return;

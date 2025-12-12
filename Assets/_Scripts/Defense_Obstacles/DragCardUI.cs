@@ -36,12 +36,14 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public event System.Action<DragCardUI> OnCardUsed;
 
     [Header("Placement")]
-    [SerializeField] private LayerMask placementMask;     // aquí pondrás la capa Mountain
-    [SerializeField] private LayerMask defenseMask;       // capa o máscaras donde están las defensas
+    [SerializeField] private LayerMask placementMask;    
+    [SerializeField] private LayerMask defenseMask;
+    [SerializeField] private AudioClip defensePlacementAudioClip;
 
-    // 🔹 ROTACIÓN DEL PREVIEW
     private float currentRotationDegrees = 0f;
     private Vector3 lastHitNormal = Vector3.up;
+
+
 
     private void Awake()
     {
@@ -203,7 +205,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (useFixedPosition)
             {
                 finalPosition = fixedPlacementPosition;
-                finalNormal = Vector3.up; // o la normal que quieras para posiciones fijas
+                finalNormal = Vector3.up; 
                 valid = true;
             }
             else
@@ -220,7 +222,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             }
 
             if (valid)
-            {
+            { 
+
                 // Un pelín separado de la montaña en la normal
                 Vector3 checkCenter = finalPosition + finalNormal * 0.1f;
 
@@ -263,7 +266,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             {
                 GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition, finalRotation);
 
-                CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.25f);
+                //Sound Manager audioClip ref
+                Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
+                CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.2f);
 
                 if (placed != null && DefensePlacementManager.Instance != null)
                     DefensePlacementManager.Instance.RegisterPlaced(placed);

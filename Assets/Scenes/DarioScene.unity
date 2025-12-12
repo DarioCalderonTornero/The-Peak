@@ -592,7 +592,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -1203,6 +1203,7 @@ GameObject:
   - component: {fileID: 1534971996}
   - component: {fileID: 1534971995}
   - component: {fileID: 1534971994}
+  - component: {fileID: 1534971997}
   m_Layer: 5
   m_Name: NextTurnButton
   m_TagString: Untagged
@@ -1312,6 +1313,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1534971992}
   m_CullTransparentMesh: 1
+--- !u!114 &1534971997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534971992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bceab1ae4ffa2f4b977249992136b70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popScale: 0.85
+  popSpeed: 30
 --- !u!1 &1540668716
 GameObject:
   m_ObjectHideFlags: 0
@@ -1470,6 +1485,7 @@ GameObject:
   - component: {fileID: 1611408027}
   - component: {fileID: 1611408026}
   - component: {fileID: 1611408025}
+  - component: {fileID: 1611408028}
   m_Layer: 5
   m_Name: AccelerateTimeButtonX2
   m_TagString: Untagged
@@ -1579,6 +1595,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1611408023}
   m_CullTransparentMesh: 1
+--- !u!114 &1611408028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1611408023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bceab1ae4ffa2f4b977249992136b70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popScale: 0.85
+  popSpeed: 30
 --- !u!1 &1620822227
 GameObject:
   m_ObjectHideFlags: 0
@@ -1591,6 +1621,7 @@ GameObject:
   - component: {fileID: 1620822231}
   - component: {fileID: 1620822230}
   - component: {fileID: 1620822229}
+  - component: {fileID: 1620822232}
   m_Layer: 5
   m_Name: AccelerateTimeButtonX4
   m_TagString: Untagged
@@ -1700,6 +1731,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1620822227}
   m_CullTransparentMesh: 1
+--- !u!114 &1620822232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620822227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bceab1ae4ffa2f4b977249992136b70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popScale: 0.85
+  popSpeed: 30
 --- !u!1 &1730901957
 GameObject:
   m_ObjectHideFlags: 0
@@ -2573,6 +2618,7 @@ GameObject:
   - component: {fileID: 2100247595}
   - component: {fileID: 2100247594}
   - component: {fileID: 2100247593}
+  - component: {fileID: 2100247596}
   m_Layer: 5
   m_Name: AccelerateTimeButtonX1
   m_TagString: Untagged
@@ -2682,6 +2728,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2100247591}
   m_CullTransparentMesh: 1
+--- !u!114 &2100247596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100247591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bceab1ae4ffa2f4b977249992136b70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popScale: 0.85
+  popSpeed: 30
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

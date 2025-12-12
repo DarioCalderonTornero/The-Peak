@@ -16,6 +16,9 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private Renderer helmetRenderer;
     public IReadOnlyList<EquipmentInstance> EquippedItems => equippedItems;
 
+    //Getters
+    [SerializeField] private AudioClip pickaxeAudioClip;
+
     private void Awake()
     {
         if (helmetRenderer == null)
@@ -62,7 +65,6 @@ public class ClimberLoadout : MonoBehaviour
             if (instance != null)
             {
                 instance.SetupOwner(this);
-
                 instance.Initialize(chosenDef.equipmentName);
                 equippedItems.Add(instance);
                 ChangeClimberColorBasedOnEquipment(chosenDef);
@@ -146,5 +148,12 @@ public class ClimberLoadout : MonoBehaviour
         }
 
         return false;
+    }
+
+
+    ///GETTERS
+    public void PickAxeSound()
+    {
+        Temporal_Sound_Music.Instance.PlaySound(pickaxeAudioClip, 1.0f);
     }
 }

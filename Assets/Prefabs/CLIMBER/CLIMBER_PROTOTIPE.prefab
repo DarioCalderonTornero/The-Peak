@@ -191,6 +191,7 @@ MonoBehaviour:
   backtrackTolerance: 2
   backtrackPenaltyPerMeter: 5
   stepConversionFactor: 20
+  noiseRange: 75
   currentStamina: 0
   isEating: 0
   originalDestination: {x: 0, y: 0, z: 0}

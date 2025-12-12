@@ -44,6 +44,8 @@ public class ClimberMovement : MonoBehaviour
     [Tooltip("Factor de Conversión (K): Cuánta estamina (peso) vale 1 paso. Recomendado: 15-25.")]
     [SerializeField] private float stepConversionFactor = 20f;
 
+    [SerializeField] private float noiseRange = 50f;
+
     // --- NUEVO: Variable estática para coordinar la salida escalonada ---
     private static float _globalNextMoveTime = 0f;
     // ------------------------------------------------------------------
@@ -352,7 +354,7 @@ public class ClimberMovement : MonoBehaviour
                 canPassObstacle = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
             }
 
-            // Cálculo de Peso
+            // Cálculo de Peso Base
             float effectiveWeight = edge.weight;
 
             // Si tengo equipo, descuento el peso del obstáculo. Si no, me lo como.
@@ -381,13 +383,30 @@ public class ClimberMovement : MonoBehaviour
                 }
             }
 
+            // Aseguramos que el peso base sea positivo
             effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
 
+
+            // Generamos el valor aleatorio (positivo o negativo)
+            float randomNoise = UnityEngine.Random.Range(-noiseRange, noiseRange);
+
+            // El peso percibido es la realidad + su confusión
+            float perceivedWeight = effectiveWeight + randomNoise;
+
+            // SEGURIDAD: Evitar que el peso sea 0 o negativo, lo cual rompería la IA
+            perceivedWeight = Mathf.Max(perceivedWeight, 0.1f);
+
+            // =================================================================
+
             // Heurística con Pasos
+            // [CAMBIO]: Usamos 'perceivedWeight' en lugar de 'effectiveWeight' para el cálculo
             int steps = (edge.to != null) ? edge.to.stepsToSummit : 999;
-            float finalScore = effectiveWeight + (steps * stepConversionFactor);
+
+            float finalScore = perceivedWeight + (steps * stepConversionFactor);
 
             // Estamina
+            // [IMPORTANTE]: La estamina se calcula con la realidad física (edge), no con la percepción.
+            // Así no intentan entrar en caminos que físicamente no pueden pagar.
             float staminaCost = CalculateStaminaCost(edge);
             bool affordable = staminaCost <= currentStamina;
 

@@ -25,10 +25,7 @@ public class BaseObstacle : MonoBehaviour
 
         if (loadout.CanHandleObstacle(obstacleType))
         {
-            if (obstacleType == ObstacleType.Rock)
-            {
-                Destroy(this.gameObject, 2f);
-            }
+            OnHandleBy(loadout);
         }
     }
 
@@ -41,4 +38,8 @@ public class BaseObstacle : MonoBehaviour
         loadout.TryHandleObstacleExit(obstacleType);
     }
 
+    protected virtual void OnHandleBy(ClimberLoadout loadout)
+    {
+
+    }
 }

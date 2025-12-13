@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using System;
-using System.Collections; // Necesario para IEnumerator
+using System.Collections;
 using System.Collections.Generic;
 
 public class ClimberMovement : MonoBehaviour
@@ -85,6 +85,10 @@ public class ClimberMovement : MonoBehaviour
     [Header("Equipment related")]
     private Coroutine temporaryStopRoutine;
 
+    // ----------------- NUEVO (StopForSeconds robusto) -----------------
+    private float _resumeTime = -1f;
+    private float _cachedMultiplierBeforeStop = 1f;
+    // -----------------------------------------------------------------
 
     private void Awake()
     {
@@ -142,15 +146,11 @@ public class ClimberMovement : MonoBehaviour
         isAtCamp = false;
         reachedSummit = false;
 
-        // --- MODIFICADO: Solución para que se muevan nada más empezar ---
-        // Iniciamos una corutina que espera un frame. Esto asegura que el 
-        // CampGraphBuilder haya terminado su Start() y el grafo exista.
         StartCoroutine(StartLateCheck());
     }
 
     private IEnumerator StartLateCheck()
     {
-        // Esperamos al final del frame para asegurar que todos los Start() han corrido
         yield return new WaitForEndOfFrame();
 
         if (TurnManager.Instance != null && TurnManager.Instance.IsClimberTurn())
@@ -220,33 +220,25 @@ public class ClimberMovement : MonoBehaviour
         if (campGraph != null)
             campGraph.RecalculateObstaclesOnEdges();
 
-        // --- NUEVO: Lógica de salida escalonada (0.75s) ---
         float now = Time.time;
         float delay = 0f;
 
-        // Si el "tiempo del siguiente" quedó en el pasado, lo traemos al presente
         if (_globalNextMoveTime < now)
         {
             _globalNextMoveTime = now;
         }
 
-        // Mi retraso es la diferencia entre el turno global y ahora
         delay = _globalNextMoveTime - now;
-
-        // Empujamos el turno global 0.75s hacia el futuro para el siguiente escalador
         _globalNextMoveTime += 0.75f;
 
-        // Iniciamos la decisión con ese retraso
         StartCoroutine(ExecuteTurnDecisionWithDelay(delay));
     }
 
-    // Corutina para esperar el turno de salida
     private IEnumerator ExecuteTurnDecisionWithDelay(float delay)
     {
         if (delay > 0f)
             yield return new WaitForSeconds(delay);
 
-        // Verificamos que sigo vivo/activo tras la espera
         if (this == null || externallyForcedDone || reachedSummit)
             yield break;
 
@@ -273,7 +265,6 @@ public class ClimberMovement : MonoBehaviour
     {
         if (campGraph == null || campGraph.nodes == null || campGraph.nodes.Count == 0)
         {
-            // Intentamos buscar el grafo de nuevo por si acaso
             campGraph = FindObjectOfType<CampGraphBuilder>();
             if (campGraph == null || campGraph.nodes == null || campGraph.nodes.Count == 0)
             {
@@ -322,7 +313,6 @@ public class ClimberMovement : MonoBehaviour
 
     private void ChooseNextCampAndMove()
     {
-        // 1. COMPROBACIÓN DE MUERTE POR REPETICIÓN
         if (currentNode != null && nodeVisitCount.ContainsKey(currentNode.id))
         {
             if (nodeVisitCount[currentNode.id] >= maxVisitsToDie)
@@ -347,28 +337,23 @@ public class ClimberMovement : MonoBehaviour
 
         foreach (var edge in currentNode.neighbors)
         {
-            // 2. OBSTÁCULOS (No bloquean, solo se consultan para el peso)
             bool canPassObstacle = true;
             if (edge.hasObstacle && edge.obstacleType != ObstacleType.None)
             {
                 canPassObstacle = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
             }
 
-            // Cálculo de Peso Base
             float effectiveWeight = edge.weight;
 
-            // Si tengo equipo, descuento el peso del obstáculo. Si no, me lo como.
             if (edge.hasObstacle && canPassObstacle && campGraph != null)
             {
                 float obstaclesWeight = campGraph.obstaclePenalty * edge.obstacleCount;
                 effectiveWeight -= obstaclesWeight;
             }
 
-            // Memoria Propia
             int myVisits = nodeVisitCount.ContainsKey(edge.to.id) ? nodeVisitCount[edge.to.id] : 0;
             effectiveWeight += myVisits * revisitPenaltyPerVisit;
 
-            // Penalización Backtrack
             if (summit != null && currentNode != null && edge.to != null)
             {
                 float distNow = Vector3.Distance(currentNode.position, summit.position);
@@ -383,30 +368,15 @@ public class ClimberMovement : MonoBehaviour
                 }
             }
 
-            // Aseguramos que el peso base sea positivo
             effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
 
-
-            // Generamos el valor aleatorio (positivo o negativo)
             float randomNoise = UnityEngine.Random.Range(-noiseRange, noiseRange);
-
-            // El peso percibido es la realidad + su confusión
             float perceivedWeight = effectiveWeight + randomNoise;
-
-            // SEGURIDAD: Evitar que el peso sea 0 o negativo, lo cual rompería la IA
             perceivedWeight = Mathf.Max(perceivedWeight, 0.1f);
 
-            // =================================================================
-
-            // Heurística con Pasos
-            // [CAMBIO]: Usamos 'perceivedWeight' en lugar de 'effectiveWeight' para el cálculo
             int steps = (edge.to != null) ? edge.to.stepsToSummit : 999;
-
             float finalScore = perceivedWeight + (steps * stepConversionFactor);
 
-            // Estamina
-            // [IMPORTANTE]: La estamina se calcula con la realidad física (edge), no con la percepción.
-            // Así no intentan entrar en caminos que físicamente no pueden pagar.
             float staminaCost = CalculateStaminaCost(edge);
             bool affordable = staminaCost <= currentStamina;
 
@@ -517,7 +487,6 @@ public class ClimberMovement : MonoBehaviour
         agent.isStopped = false;
         agent.SetDestination(node.position);
 
-        // 🔹 NUEVO:
         originalDestination = node.position;
 
         lastFramePosition = transform.position;
@@ -536,33 +505,41 @@ public class ClimberMovement : MonoBehaviour
         currentStamina = maxStamina;
     }
 
+    // ================= STOP ROBUSTO (FIX) =================
+
     public void StopForSeconds(float duration)
     {
         if (!gameObject.activeInHierarchy)
             return;
 
-        if (temporaryStopRoutine != null)
+        // Si NO estaba parado aún, guardo el multiplier actual para restaurarlo luego
+        if (temporaryStopRoutine == null)
         {
-            StopCoroutine(temporaryStopRoutine);
+            _cachedMultiplierBeforeStop = externalSpeedMultiplier;
         }
 
-        temporaryStopRoutine = StartCoroutine(StopForSecondsRoutine(duration));
+        // Extiendo el tiempo total de parada (si lo llaman otra vez, se alarga)
+        _resumeTime = Mathf.Max(_resumeTime, Time.time + duration);
+
+        // Si no hay corutina, la creo
+        if (temporaryStopRoutine == null)
+            temporaryStopRoutine = StartCoroutine(StopLoop());
     }
 
-    private IEnumerator StopForSecondsRoutine(float duration)
+    private IEnumerator StopLoop()
     {
-        float previousMultiplier = externalSpeedMultiplier;
-
         SetExternalSpeedMultiplier(0f);
         if (agent != null)
             agent.isStopped = true;
 
-        yield return new WaitForSeconds(duration);
+        while (Time.time < _resumeTime)
+            yield return null;
 
-        SetExternalSpeedMultiplier(previousMultiplier);
+        SetExternalSpeedMultiplier(_cachedMultiplierBeforeStop);
         if (agent != null)
             agent.isStopped = false;
 
         temporaryStopRoutine = null;
+        _resumeTime = -1f;
     }
 }

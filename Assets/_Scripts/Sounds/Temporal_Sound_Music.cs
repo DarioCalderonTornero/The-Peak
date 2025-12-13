@@ -86,14 +86,12 @@ public class Temporal_Sound_Music : MonoBehaviour
     public void PlaySound(AudioClip clip, float volume = 1f)
     {
         if (clip == null) return;
-        // PlayClipAtPoint crea un objeto y lo destruye, pero para sonidos 2D/Globales es "aceptable" si no son muchos.
-        // Lo ideal sería usar también el pool aquí, pero PlayClipAtPoint es estático.
-        // Lo dejaremos así para no complicar en exceso, el crítico es Play3DSound.
+
         Vector3 camPos = Camera.main != null ? Camera.main.transform.position : Vector3.zero;
         AudioSource.PlayClipAtPoint(clip, camPos, volume * masterVolume * effectsVolume);
     }
 
-    public void PlayMusic(AudioClip musicClip, float volume = 0.5f)
+    public void PlayMusic(AudioClip musicClip, float volume = 0.35f)
     {
         if (musicClip == null || musicSource == null) return;
         if (musicSource.clip == musicClip) return;

@@ -8,6 +8,9 @@ public class GamePauseUI : MonoBehaviour
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button backToMenuButton;
 
+    [SerializeField] private AudioClip stopGameAudioClip;
+    [SerializeField] private float volume;
+
     private bool isGamePaused = false;
 
     private void Awake()
@@ -26,8 +29,14 @@ public class GamePauseUI : MonoBehaviour
         Hide();
     }
 
+    private void Start()
+    {
+    }
+
     public void TogglePauseMenu()
     {
+        Temporal_Sound_Music.Instance.PlaySound(stopGameAudioClip, volume);
+
         if (!isGamePaused)
         {
             Show();

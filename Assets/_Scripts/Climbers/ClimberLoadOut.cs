@@ -16,7 +16,7 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private Renderer helmetRenderer;
     public IReadOnlyList<EquipmentInstance> EquippedItems => equippedItems;
 
-    //Getters
+    [Header("Climber Getters")]
     [SerializeField] private AudioClip pickaxeAudioClip;
 
     private void Awake()

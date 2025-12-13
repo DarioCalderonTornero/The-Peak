@@ -26,6 +26,11 @@ public class BrambleDefense : BaseDefense
     [SerializeField] private float globalScaleMultiplier = 0.5f; // hace todas las zarzas más pequeñas
     [SerializeField] private float zScaleMultiplier = 2f;        // Z será 2x X/Y
 
+    [Header("Bramble Sound")]
+    [SerializeField] private AudioSource brambleAudioSource;
+    [SerializeField] private AudioClip brambleClip;
+    private int insideCount = 0;
+
     private Vector3 originalLocalPosition;
 
     private Coroutine spawnRoutine;
@@ -263,6 +268,13 @@ public class BrambleDefense : BaseDefense
         var loadout = other.GetComponent<ClimberLoadout>();
         bool isImmuneToBramble = false;
 
+        insideCount++;
+
+        if (!brambleAudioSource.isPlaying)
+        {
+            brambleAudioSource.Play();
+        }
+
         if (loadout != null)
         {
             loadout.TryHandleObstacle(ObstacleType.Bramble);
@@ -273,6 +285,9 @@ public class BrambleDefense : BaseDefense
             return;
 
         climber.SetExternalSpeedMultiplier(slowFactor);
+
+        
+
         Debug.Log($"[BrambleDefense] {other.name} ha entrado en zarza");
 
         if (!climbersInside.Contains(climber))
@@ -284,6 +299,13 @@ public class BrambleDefense : BaseDefense
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
+        insideCount = Mathf.Max(0, insideCount - 1);
+
+        if (insideCount == 0)
+        {
+            brambleAudioSource.Stop();
+        }
+
         var loadout = other.GetComponent<ClimberLoadout>();
         if (loadout != null)
         {
@@ -291,6 +313,9 @@ public class BrambleDefense : BaseDefense
         }
 
         climber.SetExternalSpeedMultiplier(1f);
+
+        
+
         Debug.Log($"[BrambleDefense] {other.name} ha salido de zarza");
 
         climbersInside.Remove(climber);

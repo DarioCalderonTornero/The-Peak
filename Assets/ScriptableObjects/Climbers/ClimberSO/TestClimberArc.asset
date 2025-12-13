@@ -16,5 +16,6 @@ MonoBehaviour:
   rarity: 0
   equipmentPool:
   - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
+  - {fileID: 11400000, guid: f20865c9945b6864dadbeff59303e58d, type: 2}
   minRandomItems: 1
   maxRandomItems: 1

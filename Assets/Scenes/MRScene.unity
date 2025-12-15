@@ -144,7 +144,7 @@ Transform:
   m_GameObject: {fileID: 283015346}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -46.9, y: 160.4, z: 100.56}
+  m_LocalPosition: {x: -46.9, y: 160, z: -162}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -291,12 +291,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxSlope: 10
   minTrianglesPerZone: 2
-  minZoneArea: 100
-  minZoneWidth: 5
-  minZoneDepth: 5
-  minCompactness: 0.202
+  minZoneArea: 80
+  minZoneWidth: 4
+  minZoneDepth: 4
+  minCompactness: 0
   minAltitude: 20
-  mergeProximity: 25
+  mergeProximity: 15
   mergeHeightThreshold: 2
   drawDebug: 1
   gizmoRadius: 0.75
@@ -336,7 +336,7 @@ MonoBehaviour:
   drawObstacleEdges: 1
   obstacleEdgeColor: {r: 1, g: 0, b: 0, a: 1}
   lengthWeight: 1
-  slopeWeight: 2
+  slopeWeight: 1
   heightWeight: 40
   obstaclePenalty: 100
   drawEdgeWeights: 1

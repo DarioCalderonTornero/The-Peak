@@ -365,6 +365,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   defensePlacementAudioClip: {fileID: 8300000, guid: f940afd3a5f69ae4e9b0faad03ce64dc, type: 3}
+  previewValidMaterial: {fileID: 2100000, guid: e0dff9f766b27cb4eb098c913e86ac4b, type: 2}
+  previewInvalidMaterial: {fileID: 2100000, guid: d2a6bf9422f31f643a8fab253028fd07, type: 2}
 --- !u!225 &2838217454017087479
 CanvasGroup:
   m_ObjectHideFlags: 0

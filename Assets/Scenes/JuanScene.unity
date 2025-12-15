@@ -261,7 +261,7 @@ MonoBehaviour:
     priority: 0
     anisotropy: 0
     volumeMask: {fileID: 11700000, guid: 7e1cc774c55df914f8f38903f032d2cb, type: 3}
-    textureScrollingSpeed: {x: 0.5, y: 0, z: 0.2}
+    textureScrollingSpeed: {x: 0.1, y: 0, z: 0.05}
     textureTiling: {x: 6, y: 2, z: 6}
     positiveFade: {x: 0, y: 0.13162501, z: 0}
     negativeFade: {x: 0, y: 0.00086850027, z: 0}
@@ -274,7 +274,7 @@ MonoBehaviour:
     invertFade: 0
     distanceFadeStart: 10000
     distanceFadeEnd: 10000
-    textureOffset: {x: 0, y: 0, z: 0}
+    textureOffset: {x: -0, y: -0, z: -0}
     falloffMode: 0
     maskMode: 0
     materialMask: {fileID: 0}
@@ -639,7 +639,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &572999821
 Transform:
   m_ObjectHideFlags: 0

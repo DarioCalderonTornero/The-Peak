@@ -153,6 +153,10 @@ MonoBehaviour:
   sinkSpeed: 0.2
   maxSinkDepth: 5.5
   centerLerpSpeed: 6
+  rescueRadius: 12
+  climberLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
   spawnDuration: 0.25
 --- !u!114 &7911203287003337470
 MonoBehaviour:

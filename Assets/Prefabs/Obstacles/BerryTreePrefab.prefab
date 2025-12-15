@@ -236,15 +236,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   goodBerry: {fileID: 1668762237322044633}
   badBerry: {fileID: 7890185268248385885}
-  turnsToGrow: 2
-  turnsToRespawn: 2
-  detectionRadius: 27
+  turnsToFirstGrow: 2
+  turnsToRespawn: 3
+  detectionRadius: 10
   climberLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  eatProbability: 0.8
-  eatPoint: {fileID: 3662976519798038772}
-  lastDestination: {x: 0, y: 0, z: 0}
+  eatStopDuration: 1
 --- !u!114 &-7947508892654658605
 MonoBehaviour:
   m_ObjectHideFlags: 0

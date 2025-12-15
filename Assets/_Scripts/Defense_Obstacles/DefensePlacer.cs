@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 public class DefensePlacer : MonoBehaviour
 {
@@ -6,27 +7,29 @@ public class DefensePlacer : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
-        }
+        if (Instance != null && Instance != this) Destroy(this);
+        else Instance = this;
     }
 
     // Versión antigua (por si algún código la usa todavía)
-    // Usa rotación identidad por defecto
     public GameObject PlaceDefense(GameObject prefab, Vector3 position)
     {
         return PlaceDefense(prefab, position, Quaternion.identity);
     }
 
-    // NUEVA: recibe la rotación YA calculada (por ejemplo desde DragCardUI)
+    // NUEVA: recibe la rotación YA calculada
     public GameObject PlaceDefense(GameObject prefab, Vector3 position, Quaternion rotation)
     {
+        return PlaceDefense(prefab, position, rotation, null);
+    }
+
+    // ✅ NUEVA: permite configurar la instancia ANTES de Initialize()
+    public GameObject PlaceDefense(GameObject prefab, Vector3 position, Quaternion rotation, Action<GameObject> beforeInitialize)
+    {
         GameObject instance = Instantiate(prefab, position, rotation);
+
+        // 👇 aquí metes el seed / flags / lo que quieras ANTES de Initialize
+        beforeInitialize?.Invoke(instance);
 
         var defense = instance.GetComponent<BaseDefense>();
         if (defense != null)
@@ -34,8 +37,7 @@ public class DefensePlacer : MonoBehaviour
             defense.Initialize();
         }
 
-        // Si esta defensa tiene un EdgeObstacleMarker, solo recalculamos obstáculos en el grafo,
-        // NO reconstruimos todo el grafo para no invalidar las referencias de los escaladores.
+        // Recalcular obstáculos en aristas si procede
         var marker = instance.GetComponent<EdgeObstacleMarker>();
         if (marker != null)
         {

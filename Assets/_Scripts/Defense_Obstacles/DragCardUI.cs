@@ -45,6 +45,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private int bramblePreviewSeed = 0;
 
+    [Header("Preview Materials")]
+    [SerializeField] private Material previewValidMaterial;   // verde
+    [SerializeField] private Material previewInvalidMaterial; // rojo
+
+    private bool currentPreviewIsValid = false;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -78,6 +84,56 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             currentRotationDegrees += 45f;
             if (currentRotationDegrees >= 360f)
                 currentRotationDegrees -= 360f;
+        }
+    }
+
+    private bool CheckPlacementValidity(
+    Vector3 position,
+    Vector3 normal,
+    Quaternion rotation)
+    {
+        // 1. Check solapamiento con otras defensas
+        Vector3 checkCenter = position + normal * 0.1f;
+
+        Vector3 halfExtents =
+            (cardData != null && cardData.placementCheckExtents != Vector3.zero)
+            ? cardData.placementCheckExtents
+            : new Vector3(0.5f, 0.5f, 0.5f);
+
+        bool overlapsDefense = Physics.CheckBox(
+            checkCenter,
+            halfExtents,
+            rotation,
+            defenseMask
+        );
+
+        if (overlapsDefense)
+            return false;
+
+        // 2. Check soporte completo si la carta lo exige
+        if (cardData != null && cardData.requireFullSupport)
+        {
+            if (!HasFullSupport(position, rotation))
+                return false;
+        }
+
+        return true;
+    }
+
+    private void ApplyPreviewMaterial(bool valid)
+    {
+        if (previewInstance == null)
+            return;
+
+        var renderers = previewInstance.GetComponentsInChildren<Renderer>(true);
+        Material mat = valid ? previewValidMaterial : previewInvalidMaterial;
+
+        foreach (var r in renderers)
+        {
+            var mats = r.materials;
+            for (int i = 0; i < mats.Length; i++)
+                mats[i] = mat;
+            r.materials = mats;
         }
     }
 
@@ -191,6 +247,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
                 // 🔹 guardamos la normal actual para la orientación del preview y del colocado
                 lastHitNormal = hit.normal;
+
+                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, hit.normal);
+                Quaternion finalRotation = extraRot * baseRot;
+
+                bool isValid = CheckPlacementValidity(hit.point, hit.normal, finalRotation);
+
+                if (isValid != currentPreviewIsValid)
+                {
+                    currentPreviewIsValid = isValid;
+                    ApplyPreviewMaterial(isValid);
+                }
             }
         }
     }
@@ -213,14 +281,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (useFixedPosition)
             {
                 finalPosition = fixedPlacementPosition;
-                finalNormal = Vector3.up; 
+                finalNormal = Vector3.up;
                 valid = true;
             }
             else
             {
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-                // solo montaña
                 if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
                 {
                     finalPosition = hit.point;
@@ -229,46 +296,26 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 }
             }
 
-            if (valid)
-            { 
-
-                // Un pelín separado de la montaña en la normal
-                Vector3 checkCenter = finalPosition + finalNormal * 0.1f;
-
-                // Mitades del cubo desde CardData
-                Vector3 halfExtents =
-                    (cardData != null && cardData.placementCheckExtents != Vector3.zero)
-                    ? cardData.placementCheckExtents
-                    : new Vector3(0.5f, 0.5f, 0.5f);
-
-                // Rotación del cubo igual que la defensa final
-                Quaternion cubeRotation = Quaternion.FromToRotation(Vector3.up, finalNormal);
-                cubeRotation = Quaternion.AngleAxis(currentRotationDegrees, finalNormal) * cubeRotation;
-
-                bool overlapsDefense = Physics.CheckBox(checkCenter, halfExtents, cubeRotation, defenseMask);
-                if (overlapsDefense)
-                {
-                    valid = false;
-                    StartCoroutine(ShakeCard());
-                    Debug.Log("[DragCardUI] No se puede colocar: ya hay una defensa en ese sitio (cubo).");
-                }
-            }
-
             // 🔹 Calculamos la rotación final tal como hacemos con el preview (base + extra)
             Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
             Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
             Quaternion finalRotation = extraRot * baseRot;
 
-            // 🔹 Chequeo de soporte completo, solo si la carta lo exige
-            if (valid && cardData != null && cardData.requireFullSupport)
+            // ✅ AQUÍ: si durante el drag era rojo, NO colocamos
+            // (y si no tienes currentPreviewIsValid, usa valid y recalcula)
+            if (!currentPreviewIsValid)
             {
-                if (!HasFullSupport(finalPosition, finalRotation))
-                {
-                    valid = false;
-                    StartCoroutine(ShakeCard());
-                    Debug.Log("[DragCardUI] No se puede colocar: quedaría flotando.");
-                }
+                StartCoroutine(ShakeCard());
+                if (previewInstance != null)
+                    Destroy(previewInstance);
+
+                inPlacementMode = false;
+                useFixedPosition = false;
+                return;
             }
+
+            // (Opcional recomendado) Si quieres estar 100% seguro aunque haya cambiado algo en el último frame:
+            // valid = valid && CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
@@ -300,6 +347,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         inPlacementMode = false;
         useFixedPosition = false;
     }
+
 
     private void EnterPlacementMode()
     {

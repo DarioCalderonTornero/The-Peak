@@ -219,9 +219,9 @@ public class NavMeshCampZoneFinder : MonoBehaviour
                 Color c = new Color(Random.value, Random.value, Random.value);
                 foreach (var t in zone)
                 {
-                    Debug.DrawLine(t.v0, t.v1, c, 5f);
-                    Debug.DrawLine(t.v1, t.v2, c, 5f);
-                    Debug.DrawLine(t.v2, t.v0, c, 5f);
+                    Debug.DrawLine(t.v0, t.v1, c, 500f);
+                    Debug.DrawLine(t.v1, t.v2, c, 500f);
+                    Debug.DrawLine(t.v2, t.v0, c, 500f);
                 }
             }
         }

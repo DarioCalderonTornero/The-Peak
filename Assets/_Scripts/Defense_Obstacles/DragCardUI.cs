@@ -43,7 +43,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private float currentRotationDegrees = 0f;
     private Vector3 lastHitNormal = Vector3.up;
 
-
+    private int bramblePreviewSeed = 0;
 
     private void Awake()
     {
@@ -161,6 +161,14 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     previewInstance = Instantiate(cardData.defensePrefab);
                     DisablePreviewLogic(previewInstance);
 
+                    bramblePreviewSeed = Random.Range(int.MinValue, int.MaxValue);
+
+                    var bramble = previewInstance.GetComponent<BrambleDefense>();
+                    if (bramble != null)
+                    {
+                        bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
+                    }
+
                     // Gizmo de soporte (cuadrado + rayos), si procede
                     if (cardData.requireFullSupport)
                     {
@@ -264,9 +272,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
             {
-                GameObject placed = DefensePlacer.Instance.PlaceDefense(cardData.defensePrefab, finalPosition, finalRotation);
+                GameObject placed = DefensePlacer.Instance.PlaceDefense(
+                    cardData.defensePrefab,
+                    finalPosition,
+                    finalRotation,
+                    (go) =>
+                    {
+                        var bramble = go.GetComponent<BrambleDefense>();
+                        if (bramble != null)
+                            bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
+                    }
+                );
 
-                //Sound Manager audioClip ref
                 Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
                 CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.2f);
 
@@ -332,6 +349,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (b == null) continue;
             if (b is BlockFaceOnPlacement) continue;
             if (b is RockDefense) continue;
+            if (b is BrambleDefense) continue;
             Destroy(b);
         }
 

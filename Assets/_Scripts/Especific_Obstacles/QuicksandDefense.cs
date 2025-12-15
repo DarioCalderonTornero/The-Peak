@@ -11,6 +11,10 @@ public class QuicksandDefense : BaseDefense
     [Header("Centrado del escalador")]
     [SerializeField] private float centerLerpSpeed = 6f;    // Qué rápido se desplaza al centro (XZ)
 
+    [Header("Rescate")]
+    [SerializeField] private float rescueRadius = 1.5f;     // 👉 radio para que otro escalador pueda rescatar
+    [SerializeField] private LayerMask climberLayer;        // 👉 capa de escaladores (para el overlap)
+
     [Header("Animación de aparición")]
     [SerializeField] private float spawnDuration = 0.25f;
 
@@ -28,10 +32,8 @@ public class QuicksandDefense : BaseDefense
 
     private void Awake()
     {
-        // Guardamos escala original del prefab
         originalLocalScale = transform.localScale;
 
-        // Aseguramos trigger
         triggerCol = GetComponent<Collider>();
         if (triggerCol != null)
             triggerCol.isTrigger = true;
@@ -41,8 +43,6 @@ public class QuicksandDefense : BaseDefense
     {
         base.Initialize();
 
-        // Animación de aparecer SOLO en la instancia colocada,
-        // no en el preview (el preview no llama a Initialize).
         if (spawnRoutine != null)
             StopCoroutine(spawnRoutine);
         spawnRoutine = StartCoroutine(SpawnFromGround());
@@ -50,7 +50,6 @@ public class QuicksandDefense : BaseDefense
 
     private IEnumerator SpawnFromGround()
     {
-        // Arranca desde escala 0
         transform.localScale = Vector3.zero;
 
         float elapsed = 0f;
@@ -59,7 +58,6 @@ public class QuicksandDefense : BaseDefense
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / spawnDuration);
 
-            // smoothstep
             float eased = t * t * (3f - 2f * t);
             transform.localScale = originalLocalScale * eased;
 
@@ -72,28 +70,19 @@ public class QuicksandDefense : BaseDefense
 
     private void OnTriggerEnter(Collider other)
     {
-        // 🔹 Pasamos por el sistema de equipamiento
+        // 🔹 Equipamiento
         var loadout = other.GetComponent<ClimberLoadout>();
-        bool isImmuneToMud = false;
+        bool isImmuneToQuickSand = false;
 
         if (loadout != null)
         {
-            // Lanza OnEncounterObstacle en todos los equipos
             loadout.TryHandleObstacle(ObstacleType.QuickSand);
-
-            // Preguntamos si alguno puede manejar el lodo (tiene equipamiento anti-lodo)
-            isImmuneToMud = loadout.CanHandleObstacle(ObstacleType.QuickSand);
+            isImmuneToQuickSand = loadout.CanHandleObstacle(ObstacleType.QuickSand);
         }
 
-        // Si TIENE equipamiento que maneja el lodo → no aplicamos efecto
-        if (isImmuneToMud)
-        {
-            // Opcional: debug
-            // Debug.Log("[LodoDefense] Climber inmune al lodo.");
+        if (isImmuneToQuickSand)
             return;
-        }
 
-        // 2) Si no tiene equipo (o no puede manejar QuickSand), aplicamos la lógica normal
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
@@ -112,22 +101,20 @@ public class QuicksandDefense : BaseDefense
                 absorbedAgent.updateRotation = false;
             }
 
-            // Este escalador se considera "done" a efectos de turno
             absorbedClimber.SetExternallyDoneThisTurn(true);
             return;
         }
 
-        // Si ya había uno dentro y entra OTRO escalador → rescate
+        // Si entra otro escalador y ya hay uno dentro → intentamos rescate (por si coincide)
         if (climber != absorbedClimber)
         {
-            RescueClimber();
+            TryRescueWithClimber(climber);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        // No dejamos que escape una vez “pillado”:
-        // sólo se puede salir mediante rescate o muerte.
+        // No dejamos que escape “normalmente”
     }
 
     private void Update()
@@ -135,7 +122,6 @@ public class QuicksandDefense : BaseDefense
         if (absorbedClimber == null)
             return;
 
-        // Si el escalador ha sido destruido por otra cosa
         if (absorbedClimber.gameObject == null)
         {
             absorbedClimber = null;
@@ -143,26 +129,67 @@ public class QuicksandDefense : BaseDefense
             return;
         }
 
+        // 0) Comprobar rescate por proximidad (esto hace que el gizmo sea real)
+        CheckRescueByRadius();
+
+        // Si ya se rescató en este frame
+        if (absorbedClimber == null)
+            return;
+
         Transform t = absorbedClimber.transform;
         Vector3 pos = t.position;
 
-        // 1) Moverlo SUAVEMENTE al centro de las arenas (solo en XZ)
+        // 1) Moverlo SUAVEMENTE al centro (XZ)
         Vector3 targetXZ = new Vector3(transform.position.x, pos.y, transform.position.z);
         pos = Vector3.Lerp(pos, targetXZ, Time.deltaTime * centerLerpSpeed);
         t.position = pos;
 
-        // Registrar la altura inicial UNA sola vez
         if (!hasRecordedInitialY)
         {
             initialY = t.position.y;
             hasRecordedInitialY = true;
         }
 
-        // 2) Solo hundimos durante el turno de escaladores
+        // 2) Solo hundimos durante turno de escaladores
         if (TurnManager.Instance == null || !TurnManager.Instance.IsClimberTurn())
             return;
 
         AbsorbStep();
+    }
+
+    private void CheckRescueByRadius()
+    {
+        if (rescueRadius <= 0f) return;
+        if (climberLayer.value == 0) return; // por si no lo asignas
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, rescueRadius, climberLayer);
+        foreach (var hit in hits)
+        {
+            var c = hit.GetComponent<ClimberMovement>();
+            if (c == null) continue;
+            if (c == absorbedClimber) continue;
+
+            // Si este escalador es inmune a quicksand, no lo usamos para rescatar
+            var loadout = c.GetComponent<ClimberLoadout>();
+            if (loadout != null && loadout.CanHandleObstacle(ObstacleType.QuickSand))
+                continue;
+
+            TryRescueWithClimber(c);
+            break;
+        }
+    }
+
+    private void TryRescueWithClimber(ClimberMovement rescuer)
+    {
+        if (absorbedClimber == null) return;
+        if (rescuer == null) return;
+
+        // Si está dentro del radio, rescata
+        float d = Vector3.Distance(rescuer.transform.position, transform.position);
+        if (d <= rescueRadius)
+        {
+            RescueClimber();
+        }
     }
 
     private void AbsorbStep()
@@ -173,12 +200,10 @@ public class QuicksandDefense : BaseDefense
         Transform t = absorbedClimber.transform;
         Vector3 pos = t.position;
 
-        // Hundir verticalmente
         pos.y -= sinkSpeed * Time.deltaTime;
         t.position = pos;
 
         float sunkAmount = initialY - pos.y;
-
         if (sunkAmount >= maxSinkDepth)
         {
             KillClimber();
@@ -192,7 +217,6 @@ public class QuicksandDefense : BaseDefense
             Destroy(absorbedClimber.gameObject);
         }
 
-        // Las arenas desaparecen tras “comerse” al escalador
         Destroy(gameObject);
     }
 
@@ -202,11 +226,9 @@ public class QuicksandDefense : BaseDefense
         {
             Transform t = absorbedClimber.transform;
 
-            // 1) Lo sacamos un poco hacia arriba en el centro de la arena
             Vector3 safePos = transform.position + Vector3.up * 0.3f;
             t.position = safePos;
 
-            // 2) Reactivamos el control normal del NavMeshAgent
             if (absorbedAgent == null)
                 absorbedAgent = absorbedClimber.GetComponent<NavMeshAgent>();
 
@@ -217,10 +239,8 @@ public class QuicksandDefense : BaseDefense
                 absorbedAgent.isStopped = false;
             }
 
-            // Volvemos a dejar que su lógica de turnos sea normal
             absorbedClimber.SetExternallyDoneThisTurn(false);
 
-            // 3) Mandarlo al campamento más cercano
             CampGraphBuilder.CampNode nearest = GetNearestCamp(safePos);
             if (nearest != null)
             {
@@ -232,7 +252,6 @@ public class QuicksandDefense : BaseDefense
             }
         }
 
-        // 4) Las arenas desaparecen tras el rescate
         Destroy(gameObject);
     }
 
@@ -260,5 +279,15 @@ public class QuicksandDefense : BaseDefense
         }
 
         return best;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Área de rescate
+        Gizmos.color = new Color(1f, 0.85f, 0.15f, 0.2f);
+        Gizmos.DrawSphere(transform.position, rescueRadius);
+
+        Gizmos.color = new Color(1f, 0.85f, 0.15f, 1f);
+        Gizmos.DrawWireSphere(transform.position, rescueRadius);
     }
 }

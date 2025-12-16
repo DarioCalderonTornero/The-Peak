@@ -7,11 +7,14 @@ public class GamePauseUI : MonoBehaviour
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button backToMenuButton;
+    [SerializeField] private GameObject climberInfo;
 
     [SerializeField] private AudioClip stopGameAudioClip;
     [SerializeField] private float volume;
 
     private bool isGamePaused = false;
+
+    private bool hasPlayedSound = false;
 
     private void Awake()
     {
@@ -35,17 +38,22 @@ public class GamePauseUI : MonoBehaviour
 
     public void TogglePauseMenu()
     {
-        Temporal_Sound_Music.Instance.PlaySound(stopGameAudioClip, volume);
+        if (!hasPlayedSound)
+        {
+            hasPlayedSound = true;  
+        }
 
         if (!isGamePaused)
         {
             Show();
+            Temporal_Sound_Music.Instance.PlaySound(stopGameAudioClip, volume);
             GameManager.Instance.PauseGame();
         }
         else
         {
             Hide();
             GameManager.Instance.UnPauseGame();
+            Temporal_Sound_Music.Instance.PlaySound(stopGameAudioClip, volume);
         }
 
         isGamePaused = !isGamePaused;
@@ -53,17 +61,23 @@ public class GamePauseUI : MonoBehaviour
 
     private void Show()
     {
+        hasPlayedSound = false;
+
         backgroundImage.gameObject.SetActive(true);
         resumeButton.gameObject.SetActive(true);
         settingsButton.gameObject.SetActive(true);
         backToMenuButton.gameObject.SetActive(true);
+        climberInfo.SetActive(true);
     }
 
     private void Hide()
     {
+        hasPlayedSound = false;
+
         backgroundImage.gameObject.SetActive(false);
         resumeButton.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
+        climberInfo.SetActive(false);
     }
 }

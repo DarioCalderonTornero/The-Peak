@@ -149,13 +149,11 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Si el GameObject del menú está desactivado, lo activamos
         if (!gamePauseUI.gameObject.activeSelf)
         {
             gamePauseUI.gameObject.SetActive(true);
         }
 
-        // Y delegamos la lógica de mostrar/ocultar en el propio menú
         gamePauseUI.TogglePauseMenu();
     }
 }

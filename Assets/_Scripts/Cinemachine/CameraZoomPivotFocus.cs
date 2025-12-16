@@ -32,9 +32,7 @@ public class CameraZoomPivotFocus : MonoBehaviour
 
     [Header("Reset de cámara")]
     [SerializeField] private float resetDuration = 0.3f;
-    [SerializeField]
-    private AnimationCurve resetCurve =
-        AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [SerializeField] private AnimationCurve resetCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     // Refocus
     [Header("Refocus")]
@@ -61,6 +59,10 @@ public class CameraZoomPivotFocus : MonoBehaviour
     // Estado de refocus
     private bool isRefocusing = false;
     private float desiredRefocusZoom;
+
+    // Añadido para gestionar las posiciones de la cámara (izquierda, derecha, atrás)
+    private enum CameraPosition { Default, Left, Right, Back }
+    private CameraPosition currentCameraPosition = CameraPosition.Default;
 
     private void Reset()
     {
@@ -109,10 +111,61 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (InputManager.Instance != null)
         {
             InputManager.Instance.OnResetCameraInput += InputManager_OnResetCameraInput;
+            InputManager.Instance.OnResetLeftCameraInput += InputManager_OnResetLeftCameraInput;
+            InputManager.Instance.OnResetRightCameraInput += InputManager_OnResetRightCameraInput;
+            InputManager.Instance.OnResetBackCameraInput += InputManager_OnResetBackCameraInput;
         }
 
         yield return new WaitUntil(() => CardGameManager.Instance != null);
         CardGameManager.Instance.OnInventoryHide += CardGameManager_OnInventoryHide;
+    }
+
+    private void InputManager_OnResetBackCameraInput(object sender, System.EventArgs e)
+    {
+        if (currentCameraPosition == CameraPosition.Back)
+            return; // Ya está en la posición de atrás, no hacer nada.
+
+        if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
+            return;
+
+        isRefocusing = false;
+
+        if (resetRoutine != null)
+            StopCoroutine(resetRoutine);
+
+        resetRoutine = StartCoroutine(SetCameraPosition(CameraPosition.Back)); // Fija la cámara en la posición de atrás
+    }
+
+    private void InputManager_OnResetRightCameraInput(object sender, System.EventArgs e)
+    {
+        if (currentCameraPosition == CameraPosition.Right)
+            return; // Ya está en la posición de derecha, no hacer nada.
+
+        if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
+            return;
+
+        isRefocusing = false;
+
+        if (resetRoutine != null)
+            StopCoroutine(resetRoutine);
+
+        resetRoutine = StartCoroutine(SetCameraPosition(CameraPosition.Right)); // Fija la cámara en la posición de derecha
+    }
+
+    private void InputManager_OnResetLeftCameraInput(object sender, System.EventArgs e)
+    {
+        if (currentCameraPosition == CameraPosition.Left)
+            return; // Ya está en la posición de izquierda, no hacer nada.
+
+        if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
+            return;
+
+        isRefocusing = false;
+
+        if (resetRoutine != null)
+            StopCoroutine(resetRoutine);
+
+        resetRoutine = StartCoroutine(SetCameraPosition(CameraPosition.Left)); // Fija la cámara en la posición de izquierda
     }
 
     private void CardGameManager_OnInventoryHide(object sender, System.EventArgs e)
@@ -141,7 +194,6 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
             return;
 
-        // Si estaba refocuseando, lo cancelamos y reseteamos del tirón
         isRefocusing = false;
 
         if (resetRoutine != null)
@@ -181,7 +233,6 @@ public class CameraZoomPivotFocus : MonoBehaviour
             yield return null;
         }
 
-        // Snap final por si acaso
         pivotTransform.position = initialPivotPos;
         targetPivotPos = initialPivotPos;
 
@@ -195,6 +246,49 @@ public class CameraZoomPivotFocus : MonoBehaviour
         hasFocalPoint = true;
 
         resetRoutine = null;
+
+        currentCameraPosition = CameraPosition.Default;
+    }
+
+    private IEnumerator SetCameraPosition(CameraPosition targetPosition)
+    {
+        // Comprobamos si ya estamos en la posición deseada
+        if (currentCameraPosition == targetPosition)
+            yield break; // No hacer nada si ya estamos en la posición correcta
+
+        float targetHorizontal = 0f;
+        switch (targetPosition)
+        {
+            case CameraPosition.Left:
+                targetHorizontal = 0;
+                break;
+            case CameraPosition.Right:
+                targetHorizontal = 270;   
+                break;
+            case CameraPosition.Back:
+                targetHorizontal = 180f; 
+                break;
+        }
+
+
+        // Interpolamos de manera directa para asegurarnos de que no se acumula rotación
+        float startHorizontal = orbitalFollow.HorizontalAxis.Value;
+        float t = 0f;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime / resetDuration;
+            float easedT = resetCurve != null ? resetCurve.Evaluate(t) : t;
+
+            float newHorizontal = Mathf.LerpAngle(startHorizontal, targetHorizontal, easedT);
+            orbitalFollow.HorizontalAxis.Value = newHorizontal;
+
+            yield return null;
+        }
+
+        orbitalFollow.HorizontalAxis.Value = targetHorizontal;
+
+        currentCameraPosition = targetPosition;
     }
 
     private void Update()
@@ -202,7 +296,6 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (mainCamera == null || pivotTransform == null || orbitalFollow == null || !canZoom)
             return;
 
-        // Mientras estamos en refocus, ignoramos el scroll de zoom.
         if (isRefocusing)
             return;
 
@@ -256,13 +349,8 @@ public class CameraZoomPivotFocus : MonoBehaviour
             focalPoint = hit.point;
             targetPivotPos = focalPoint;
 
-            // ⬇️ CAMBIO IMPORTANTE:
-            // mantenemos el zoom actual; no lo reajustamos según la distancia al hit.
-            // Queremos deslizarnos a otra zona con el MISMO zoom.
             desiredRefocusZoom = currentZoom;
 
-            // Entramos en modo refocus: bloqueamos zoom en Update
-            // y solo movemos pivot (y, en este caso, dejamos el zoom tal cual).
             isRefocusing = true;
         }
         else
@@ -276,10 +364,8 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (pivotTransform == null)
             return;
 
-        // Movimiento del pivot
         if (smoothMovement)
         {
-            // Durante refocus, usamos un lerp más rápido
             float speed = pivotMoveSpeed;
             if (isRefocusing)
                 speed *= refocusPivotSpeedMultiplier;
@@ -295,8 +381,6 @@ public class CameraZoomPivotFocus : MonoBehaviour
             pivotTransform.position = targetPivotPos;
         }
 
-        // Durante el refocus interpolamos el zoom hacia desiredRefocusZoom,
-        // pero como ahora desiredRefocusZoom == currentZoom, no habrá "deszoom".
         if (isRefocusing)
         {
             currentZoom = Mathf.MoveTowards(
@@ -306,11 +390,9 @@ public class CameraZoomPivotFocus : MonoBehaviour
             );
             orbitalFollow.RadialAxis.Value = currentZoom;
 
-            // ¿Pivot suficientemente cerca del nuevo foco?
             float distToTarget = Vector3.Distance(pivotTransform.position, targetPivotPos);
             if (distToTarget <= refocusDistanceThreshold)
             {
-                // Encajamos pivot en el punto final (dentro del umbral) y salimos de refocus
                 pivotTransform.position = targetPivotPos;
                 isRefocusing = false;
             }

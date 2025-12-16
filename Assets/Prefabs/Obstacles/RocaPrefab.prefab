@@ -64,14 +64,30 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -8086355168625487346, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -6253193246804936450, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: -5726851214756889488, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: b1fbacf12ad2814449fb1be4ea640aa9, type: 2}
+    - target: {fileID: -5354539378316571920, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: -2567903155718310744, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: b1fbacf12ad2814449fb1be4ea640aa9, type: 2}
+    - target: {fileID: -187257906027538264, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 611922109010202400, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -84,6 +100,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RocaPrefab
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 4531320697821892319, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -92,6 +112,14 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: b1fbacf12ad2814449fb1be4ea640aa9, type: 2}
+    - target: {fileID: 8215759016829890566, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 9125023482482357366, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

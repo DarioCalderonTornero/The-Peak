@@ -342,6 +342,8 @@ MonoBehaviour:
   drawEdgeWeights: 1
   debugDrawStepsToSummit: 0
   finalDestinationNodeId: -1
+  campLayerName: Camp
+  campCollisionRadius: 6
 --- !u!1 &1352073221
 GameObject:
   m_ObjectHideFlags: 0

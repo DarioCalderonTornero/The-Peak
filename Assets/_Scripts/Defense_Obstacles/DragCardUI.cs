@@ -38,6 +38,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [Header("Placement")]
     [SerializeField] private LayerMask placementMask;    
     [SerializeField] private LayerMask defenseMask;
+    [SerializeField] private LayerMask campMask;
     [SerializeField] private AudioClip defensePlacementAudioClip;
 
     private float currentRotationDegrees = 0f;
@@ -131,37 +132,29 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         previewInstance.transform.rotation = extraY * freeRotateBaseRotation;
     }
 
-    private bool CheckPlacementValidity(
-    Vector3 position,
-    Vector3 normal,
-    Quaternion rotation)
+    private string CheckPlacementValidity(Vector3 position, Vector3 normal, Quaternion rotation)
     {
-        // 1. Check solapamiento con otras defensas
         Vector3 checkCenter = position + normal * 0.1f;
-
-        Vector3 halfExtents =
-            (cardData != null && cardData.placementCheckExtents != Vector3.zero)
+        Vector3 halfExtents = (cardData != null && cardData.placementCheckExtents != Vector3.zero)
             ? cardData.placementCheckExtents
             : new Vector3(0.5f, 0.5f, 0.5f);
 
-        bool overlapsDefense = Physics.CheckBox(
-            checkCenter,
-            halfExtents,
-            rotation,
-            defenseMask
-        );
+        // Defensas
+        if (Physics.CheckBox(checkCenter, halfExtents, rotation, defenseMask))
+            return "Demasiado cerca de otro obstáculo";
 
-        if (overlapsDefense)
-            return false;
+        // Campamentos
+        if (Physics.CheckBox(checkCenter, halfExtents, rotation, campMask))
+            return "Demasiado cerca de un campamento";
 
-        // 2. Check soporte completo si la carta lo exige
+        // Soporte completo
         if (cardData != null && cardData.requireFullSupport)
         {
             if (!HasFullSupport(position, rotation))
-                return false;
+                return "Quedaría flotando";
         }
 
-        return true;
+        return "Válido";
     }
 
     private void ApplyPreviewMaterial(bool valid)
@@ -325,7 +318,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
                 // Para la rotación en CheckPlacementValidity, usa la rotación actual del preview
                 Quaternion previewRotation = previewInstance.transform.rotation;
-                bool isValid = CheckPlacementValidity(checkPosition, lastHitNormal, previewRotation);
+
+                string validityReason = CheckPlacementValidity(checkPosition, lastHitNormal, previewRotation);
+                bool isValid = validityReason == "Válido";
 
                 if (isValid != currentPreviewIsValid)
                 {
@@ -354,7 +349,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canvasGroup.alpha = 1f;
         rectTransform.anchoredPosition = new Vector2(originalPosition.x, rectTransform.anchoredPosition.y);
 
-        // 🔹 Si soltamos sobre UI, cancelar todo
         if (IsPointerOverUI())
         {
             CleanupPreview();
@@ -362,14 +356,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return;
         }
 
-        // 🔹 Si NO estamos en placement mode, solo resetear
         if (!inPlacementMode)
         {
             ResetAllStates();
             return;
         }
 
-        // 🔹 Determinar posición y rotación final
+        // Determinar posición final [TU CÓDIGO EXACTO]
         Vector3 finalPosition;
         Quaternion finalRotation;
         Vector3 finalNormal = Vector3.up;
@@ -382,28 +375,23 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         else if (isFreeRotating && previewInstance != null)
         {
-            // 🔹 Rotación libre: usar posición fija Y rotación actual del preview
             finalPosition = freeRotatePivot;
             finalNormal = lastHitNormal;
-            finalRotation = previewInstance.transform.rotation;  // Ya tiene solo Y rotada
+            finalRotation = previewInstance.transform.rotation;
         }
         else
         {
-            // 🔹 Modo normal: raycast final
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
             {
                 finalPosition = hit.point;
                 finalNormal = hit.normal;
-
-                // Rotación clásica (base + extra)
                 Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
                 Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
                 finalRotation = extraRot * baseRot;
             }
             else
             {
-                // No hay hit válido
                 StartCoroutine(ShakeCard());
                 CleanupPreview();
                 ResetAllStates();
@@ -411,16 +399,22 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             }
         }
 
-        // 🔹 Si no es válida la colocación
-        if (!currentPreviewIsValid)
+        // 🔹 CHECKEO FINAL CON MOTIVO
+        string placementReason = CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
+        if (placementReason != "Válido")
         {
+            // 🎯 MOSTRAR TEXTO SOLO AL SOLTAR
+            PlacementFeedbackUI feedback = FindObjectOfType<PlacementFeedbackUI>();
+            if (feedback != null)
+                feedback.ShowMessage(placementReason);
+
             StartCoroutine(ShakeCard());
             CleanupPreview();
             ResetAllStates();
             return;
         }
 
-        // 🔹 COLOCAR defensa
+        // COLOCAR (tu código exacto)
         if (PointsManager.Instance.SpendPoints(cardData.cost))
         {
             GameObject placed = DefensePlacer.Instance.PlaceDefense(

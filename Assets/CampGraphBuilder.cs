@@ -215,8 +215,56 @@ public class CampGraphBuilder : MonoBehaviour
         // --- 6) NUEVO: Calcular pasos hasta la cima ---
         CalculateStepsToSummit();
 
+        CreateCampCollisionObjects();
+
         Debug.Log("[CampGraphBuilder] Grafo completado. (Nodos totales: " + nodes.Count +
                   ", Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
+    }
+
+    [Header("🔹 Camp Collision (para DragCardUI)")]
+    [SerializeField] private string campLayerName = "Campamentos";
+    [SerializeField] private float campCollisionRadius = 2f;
+
+    private readonly List<GameObject> campCollisionObjects = new List<GameObject>();
+
+    private void CreateCampCollisionObjects()
+    {
+        ClearCampCollisionObjects();
+
+        int campLayer = LayerMask.NameToLayer(campLayerName);
+        if (campLayer == -1)
+        {
+            Debug.LogWarning($"[CampGraphBuilder] Crea layer '{campLayerName}' en Project Settings");
+            return;
+        }
+
+        foreach (var node in nodes)
+        {
+            // Solo para campamentos reales (no cima)
+            if (node.id == finalDestinationNodeId) continue;
+
+            GameObject campObj = new GameObject("Camp_INVISIBLE");
+            campObj.transform.position = node.position;
+            campObj.layer = campLayer;
+
+            SphereCollider col = campObj.AddComponent<SphereCollider>();
+            col.isTrigger = false;
+            col.radius = campCollisionRadius;
+
+            campCollisionObjects.Add(campObj);
+        }
+    }
+
+    private void ClearCampCollisionObjects()
+    {
+        foreach (var go in campCollisionObjects)
+            if (go != null) Destroy(go);
+        campCollisionObjects.Clear();
+    }
+
+    void OnDestroy()
+    {
+        ClearCampCollisionObjects();
     }
 
     // --- NUEVA FUNCIÓN: BFS para calcular pasos ---

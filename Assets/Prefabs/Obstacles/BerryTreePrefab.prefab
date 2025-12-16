@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4693532816928518059}
   - component: {fileID: 6266364307627371193}
   - component: {fileID: 5340395315847745313}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GoodBerry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 6975452773875413910}
   - component: {fileID: 5463760412436678507}
   - component: {fileID: -7947508892654658605}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BerryTreePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -268,7 +268,7 @@ GameObject:
   - component: {fileID: 366955686533229646}
   - component: {fileID: 4947283168452479253}
   - component: {fileID: 5353692235025762978}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BadBerry
   m_TagString: Untagged
   m_Icon: {fileID: 0}

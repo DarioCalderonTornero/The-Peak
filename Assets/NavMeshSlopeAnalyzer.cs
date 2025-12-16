@@ -1,15 +1,15 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
 [ExecuteAlways]
 public class NavMeshCampZoneFinder : MonoBehaviour
 {
-    [Header("DetecciÛn de zonas planas")]
+    [Header("Detecci√≥n de zonas planas")]
     public float maxSlope = 5f;
     public int minTrianglesPerZone = 10;
 
-    [Header("TamaÒo mÌnimo de campamento")]
+    [Header("Tama√±o m√≠nimo de campamento")]
     public float minZoneArea = 10f;
     public float minZoneWidth = 3f;
     public float minZoneDepth = 3f;
@@ -19,10 +19,10 @@ public class NavMeshCampZoneFinder : MonoBehaviour
     [Header("Restricciones y Agrupamiento")]
     public float minAltitude = 0.5f;
 
-    [Tooltip("Distancia m·xima entre cualquier vÈrtice de dos zonas para considerarlas 'conectadas'")]
+    [Tooltip("Distancia m√°xima entre cualquier v√©rtice de dos zonas para considerarlas 'conectadas'")]
     public float mergeProximity = 5.0f;
 
-    [Tooltip("Diferencia m·xima de altura entre vÈrtices cercanos para fusionar")]
+    [Tooltip("Diferencia m√°xima de altura entre v√©rtices cercanos para fusionar")]
     public float mergeHeightThreshold = 1.5f;
 
     [Header("Debug")]
@@ -56,7 +56,7 @@ public class NavMeshCampZoneFinder : MonoBehaviour
         int triCount = data.indices.Length / 3;
         Triangle[] tris = new Triangle[triCount];
 
-        // 1. Procesar Tri·ngulos
+        // 1. Procesar Tri√°ngulos
         for (int i = 0; i < triCount; i++)
         {
             Vector3 v0 = data.vertices[data.indices[i * 3]];
@@ -81,15 +81,15 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             };
         }
 
-        // 2. Buscar Vecinos (TopologÌa)
+        // 2. Buscar Vecinos (Topolog√≠a)
         for (int i = 0; i < triCount; i++)
         {
             for (int j = i + 1; j < triCount; j++)
             {
                 int shared = 0;
                 if (IsSameVert(tris[i].v0, tris[j]) || IsSameVert(tris[i].v1, tris[j]) || IsSameVert(tris[i].v2, tris[j])) shared++;
-                // Nota: SimplifiquÈ la lÛgica de vecinos para rendimiento, asumiendo que comparten al menos 2 vertices
-                // Pero mantendremos la lÛgica robusta si prefieres:
+                // Nota: Simplifiqu√© la l√≥gica de vecinos para rendimiento, asumiendo que comparten al menos 2 vertices
+                // Pero mantendremos la l√≥gica robusta si prefieres:
                 int sharedV = 0;
                 if (ApproximatelyEqual(tris[i].v0, tris[j].v0) || ApproximatelyEqual(tris[i].v0, tris[j].v1) || ApproximatelyEqual(tris[i].v0, tris[j].v2)) sharedV++;
                 if (ApproximatelyEqual(tris[i].v1, tris[j].v0) || ApproximatelyEqual(tris[i].v1, tris[j].v1) || ApproximatelyEqual(tris[i].v1, tris[j].v2)) sharedV++;
@@ -131,14 +131,14 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             if (zone.Count > 0) potentialZones.Add(zone);
         }
 
-        // 4. Filtrar zonas inv·lidas (·rea, forma, altura mÌnima)
+        // 4. Filtrar zonas inv√°lidas (√°rea, forma, altura m√≠nima)
         List<List<Triangle>> validZones = new List<List<Triangle>>();
         foreach (var zone in potentialZones)
         {
             if (zone.Count < minTrianglesPerZone) continue;
 
             float totalArea = 0f;
-            Bounds bounds = GetZoneBounds(zone); // Usamos Bounds de Unity para facilitar c·lculos
+            Bounds bounds = GetZoneBounds(zone); // Usamos Bounds de Unity para facilitar c√°lculos
             float minY = float.PositiveInfinity;
 
             foreach (var t in zone)
@@ -165,11 +165,11 @@ public class NavMeshCampZoneFinder : MonoBehaviour
         }
 
         // ---------------------------------------------------------
-        // 5. NUEVA FASE DE FUSI”N (CLUSTERING POR V…RTICES)
+        // 5. NUEVA FASE DE FUSI√ìN (CLUSTERING POR V√âRTICES)
         // ---------------------------------------------------------
 
         bool mergedAny = true;
-        // Repetimos el proceso hasta que no se puedan fusionar m·s zonas
+        // Repetimos el proceso hasta que no se puedan fusionar m√°s zonas
         while (mergedAny)
         {
             mergedAny = false;
@@ -177,7 +177,7 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             {
                 for (int j = i + 1; j < validZones.Count; j++)
                 {
-                    // Comprobamos si la Zona A y la Zona B tienen vÈrtices cercanos
+                    // Comprobamos si la Zona A y la Zona B tienen v√©rtices cercanos
                     if (AreZonesConnectable(validZones[i], validZones[j]))
                     {
                         // Fusionar B dentro de A
@@ -205,7 +205,7 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             foreach (var t in zone) avg += t.center;
             avg /= zone.Count;
 
-            // Encontrar el punto m·s cercano al promedio que sea v·lido
+            // Encontrar el punto m√°s cercano al promedio que sea v√°lido
             float bestDist = float.MaxValue;
             Vector3 bestCenter = avg;
 
@@ -219,7 +219,7 @@ public class NavMeshCampZoneFinder : MonoBehaviour
                 }
             }
 
-            // Muestrear NavMesh para asegurar posiciÛn v·lida
+            // Muestrear NavMesh para asegurar posici√≥n v√°lida
             NavMeshHit hit;
             if (NavMesh.SamplePosition(bestCenter, out hit, 10f, NavMesh.AllAreas))
             {
@@ -246,10 +246,10 @@ public class NavMeshCampZoneFinder : MonoBehaviour
 
     // --- FUNCIONES AUXILIARES ---
 
-    // Comprueba si dos zonas deben unirse bas·ndose en sus vÈrtices
+    // Comprueba si dos zonas deben unirse bas√°ndose en sus v√©rtices
     bool AreZonesConnectable(List<Triangle> zoneA, List<Triangle> zoneB)
     {
-        // 1. OptimizaciÛn con Bounds: Si las cajas delimitadoras est·n lejos, ni miramos los vÈrtices
+        // 1. Optimizaci√≥n con Bounds: Si las cajas delimitadoras est√°n lejos, ni miramos los v√©rtices
         Bounds bA = GetZoneBounds(zoneA);
         Bounds bB = GetZoneBounds(zoneB);
 
@@ -257,9 +257,9 @@ public class NavMeshCampZoneFinder : MonoBehaviour
         bA.Expand(mergeProximity * 2);
         if (!bA.Intersects(bB)) return false;
 
-        // 2. ComprobaciÛn detallada de vÈrtices
-        // Buscamos SI EXISTE al menos UN par de vÈrtices (uno de A y uno de B)
-        // que cumplan la condiciÛn de distancia y altura.
+        // 2. Comprobaci√≥n detallada de v√©rtices
+        // Buscamos SI EXISTE al menos UN par de v√©rtices (uno de A y uno de B)
+        // que cumplan la condici√≥n de distancia y altura.
 
         float distSq = mergeProximity * mergeProximity;
 
@@ -269,10 +269,10 @@ public class NavMeshCampZoneFinder : MonoBehaviour
         {
             foreach (var tB in zoneB)
             {
-                // Comparamos centros de triangulos primero (r·pido)
+                // Comparamos centros de triangulos primero (r√°pido)
                 if ((tA.center - tB.center).sqrMagnitude < distSq * 4) // *4 para dar margen
                 {
-                    // Si los tri·ngulos est·n cerca, miramos sus vÈrtices
+                    // Si los tri√°ngulos est√°n cerca, miramos sus v√©rtices
                     if (CheckVerts(tA.v0, tB) || CheckVerts(tA.v1, tB) || CheckVerts(tA.v2, tB))
                         return true;
                 }

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4289226677948554762}
   - component: {fileID: 2235839593858769813}
   - component: {fileID: 7911203287003337470}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: QuicksandPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}

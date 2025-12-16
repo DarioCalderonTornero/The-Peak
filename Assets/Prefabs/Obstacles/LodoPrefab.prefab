@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 8655148108267118100}
   - component: {fileID: 1851972778595047772}
   - component: {fileID: -232483701889047724}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LodoPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}

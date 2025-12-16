@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Storm
   m_EditorClassIdentifier: 
   cardName: Storm
-  description: 
+  description: Tormenta tormenta
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 8310934270780480791, guid: 57914672c04f7cb42ad16c4e389279fe, type: 3}
   cost: 5

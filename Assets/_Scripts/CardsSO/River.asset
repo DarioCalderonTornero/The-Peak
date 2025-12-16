@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: River
   m_EditorClassIdentifier: 
   cardName: River
-  description: 
+  description: Rio rio
   icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 8310934270780480791, guid: 57914672c04f7cb42ad16c4e389279fe, type: 3}
   cost: 3

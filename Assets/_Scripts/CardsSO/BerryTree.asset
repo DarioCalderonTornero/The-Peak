@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: BerryTree
   m_EditorClassIdentifier: 
   cardName: Berry Tree
-  description: 
+  description: "Los escaladores que pasen por su lado se comer\xE1n una baya. La
+    buena les otorga 200 de energ\xEDa m\xE1xima extra, la mala los ejecuta, es aleatorio."
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 5185131529581212778, guid: 06f5878d1abbe7e45bddb145ac073d90, type: 3}
   cost: 15

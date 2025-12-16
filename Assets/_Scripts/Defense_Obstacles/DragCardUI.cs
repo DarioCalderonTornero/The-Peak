@@ -62,7 +62,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private Quaternion freeRotateBaseRotation;
 
-
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -569,6 +568,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        // Si hay replacement callback
         if (replacementCallback != null)
         {
             replacementCallback.Invoke(this);

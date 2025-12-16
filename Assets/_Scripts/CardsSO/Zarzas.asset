@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Zarzas
   m_EditorClassIdentifier: 
   cardName: Zarzas
-  description: 
+  description: Ralentizan a los enemigos un 40%.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 5360695673246543767, guid: b561ed8ee1500494abe41d4f4abee8f6, type: 3}
   cost: 10

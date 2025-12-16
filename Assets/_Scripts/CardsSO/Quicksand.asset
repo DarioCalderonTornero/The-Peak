@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Quicksand
   m_EditorClassIdentifier: 
   cardName: Quicksand
-  description: 
+  description: Atrapa a un enemigo que va engullendo poco a poco hasta cubrirlopor
+    completo y eliminarlo. Si otro escalador pasa cerca, lo salva.
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 3112691383206151712, guid: b948289b0c5fed44c924adb101a0391e, type: 3}
   cost: 20

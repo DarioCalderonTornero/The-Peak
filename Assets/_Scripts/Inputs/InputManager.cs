@@ -16,6 +16,7 @@ public class InputManager : MonoBehaviour
 
     //UI Inputs
     public event EventHandler OnRotateCardInput;
+    public event EventHandler OnHideStaminaUI;
 
     private void Awake()
     {
@@ -45,6 +46,12 @@ public class InputManager : MonoBehaviour
 
         //UI Actions performed
         inputActions.UI.RotateCard.performed += RotateCard_performed;
+        inputActions.UI.HideClimberStaminaUI.performed += HideClimberStaminaUI_performed;
+    }
+
+    private void HideClimberStaminaUI_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        OnHideStaminaUI?.Invoke(this, EventArgs.Empty);
     }
 
     private void CameraBack_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)

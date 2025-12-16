@@ -23,6 +23,7 @@ public class CardsProve : MonoBehaviour
             cardReplacementController.StartReplacement();
         }
 
+        /*
         // Eliminar una carta especfica segn nero
         if (Input.GetKeyDown(KeyCode.Alpha1))
             RemoveCardAtIndex(0);
@@ -32,6 +33,7 @@ public class CardsProve : MonoBehaviour
             RemoveCardAtIndex(2);
         if (Input.GetKeyDown(KeyCode.Alpha4))
             RemoveCardAtIndex(3);
+        */
     }
 
     private void AddCard()

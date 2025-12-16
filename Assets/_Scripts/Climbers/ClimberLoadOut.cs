@@ -18,6 +18,7 @@ public class ClimberLoadout : MonoBehaviour
 
     [Header("Climber Getters")]
     [SerializeField] private AudioClip pickaxeAudioClip;
+    [SerializeField] private AudioClip rockDestroyAudioClip;
 
     private void Awake()
     {
@@ -155,5 +156,10 @@ public class ClimberLoadout : MonoBehaviour
     public void PickAxeSound()
     {
         Temporal_Sound_Music.Instance.PlaySound(pickaxeAudioClip, 1.0f);
+    }
+
+    public void RockDestroySound()
+    {
+        Temporal_Sound_Music.Instance.PlaySound(rockDestroyAudioClip, 0.25f);
     }
 }

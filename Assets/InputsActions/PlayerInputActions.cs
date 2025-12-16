@@ -208,6 +208,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""HideClimberStaminaUI"",
+                    ""type"": ""Button"",
+                    ""id"": ""576fbffe-e0b7-477f-a08f-46268e984074"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -219,6 +228,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""RotateCard"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""915ae4c5-2cab-4936-a0f9-ef0f20743963"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""HideClimberStaminaUI"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -237,6 +257,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_RotateCard = m_UI.FindAction("RotateCard", throwIfNotFound: true);
+        m_UI_HideClimberStaminaUI = m_UI.FindAction("HideClimberStaminaUI", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -459,6 +480,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_UI;
     private List<IUIActions> m_UIActionsCallbackInterfaces = new List<IUIActions>();
     private readonly InputAction m_UI_RotateCard;
+    private readonly InputAction m_UI_HideClimberStaminaUI;
     /// <summary>
     /// Provides access to input actions defined in input action map "UI".
     /// </summary>
@@ -474,6 +496,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "UI/RotateCard".
         /// </summary>
         public InputAction @RotateCard => m_Wrapper.m_UI_RotateCard;
+        /// <summary>
+        /// Provides access to the underlying input action "UI/HideClimberStaminaUI".
+        /// </summary>
+        public InputAction @HideClimberStaminaUI => m_Wrapper.m_UI_HideClimberStaminaUI;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -503,6 +529,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @RotateCard.started += instance.OnRotateCard;
             @RotateCard.performed += instance.OnRotateCard;
             @RotateCard.canceled += instance.OnRotateCard;
+            @HideClimberStaminaUI.started += instance.OnHideClimberStaminaUI;
+            @HideClimberStaminaUI.performed += instance.OnHideClimberStaminaUI;
+            @HideClimberStaminaUI.canceled += instance.OnHideClimberStaminaUI;
         }
 
         /// <summary>
@@ -517,6 +546,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @RotateCard.started -= instance.OnRotateCard;
             @RotateCard.performed -= instance.OnRotateCard;
             @RotateCard.canceled -= instance.OnRotateCard;
+            @HideClimberStaminaUI.started -= instance.OnHideClimberStaminaUI;
+            @HideClimberStaminaUI.performed -= instance.OnHideClimberStaminaUI;
+            @HideClimberStaminaUI.canceled -= instance.OnHideClimberStaminaUI;
         }
 
         /// <summary>
@@ -607,5 +639,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnRotateCard(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "HideClimberStaminaUI" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnHideClimberStaminaUI(InputAction.CallbackContext context);
     }
 }

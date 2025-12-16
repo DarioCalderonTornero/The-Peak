@@ -120,7 +120,7 @@ public class BrambleDefense : BaseDefense
             {
                 if (inst.transform == null) continue;
                 inst.transform.localScale = inst.targetScale;
-                inst.transform.rotation = inst.endRotation;
+                inst.transform.localRotation = inst.endRotation;  // 🔹 LOCAL
                 inst.originalLocalPos = inst.transform.localPosition;
             }
             spawnRoutine = null;
@@ -138,8 +138,8 @@ public class BrambleDefense : BaseDefense
             foreach (var inst in spawnedInstances)
             {
                 if (inst.transform == null) continue;
-                inst.transform.localScale = inst.targetScale * eased;
-                inst.transform.rotation = Quaternion.Slerp(inst.startRotation, inst.endRotation, eased);
+                inst.transform.localScale = inst.targetScale * eased;           // 🔹 LOCAL
+                inst.transform.localRotation = Quaternion.Slerp(inst.startRotation, inst.endRotation, eased);  // 🔹 LOCAL
             }
 
             yield return null;
@@ -149,7 +149,7 @@ public class BrambleDefense : BaseDefense
         {
             if (inst.transform == null) continue;
             inst.transform.localScale = inst.targetScale;
-            inst.transform.rotation = inst.endRotation;
+            inst.transform.localRotation = inst.endRotation;                 // 🔹 LOCAL
             inst.originalLocalPos = inst.transform.localPosition;
         }
 
@@ -178,7 +178,7 @@ public class BrambleDefense : BaseDefense
 
         for (int i = 0; i < count; i++)
         {
-            Vector3 worldPos = transform.position;
+            Vector3 localPos = Vector3.zero;
 
             if (box != null)
             {
@@ -187,17 +187,21 @@ public class BrambleDefense : BaseDefense
                 float randX = RandRangeFloat(rng, -halfSize.x, halfSize.x);
                 float randZ = RandRangeFloat(rng, -halfSize.z, halfSize.z);
 
-                Vector3 localPos = new Vector3(randX, 0f, randZ) + box.center;
-                worldPos = transform.TransformPoint(localPos);
+                // 🔹 Y = 0 en el espacio local del collider (suelo local)
+                localPos = new Vector3(randX, 0f, randZ) + box.center;
             }
 
-            GameObject instance = Instantiate(bramblePrefab, worldPos, Quaternion.identity, transform);
+            // 🔹 Instanciar directamente como hijo con posición LOCAL
+            GameObject instance = Instantiate(bramblePrefab, transform);
+            instance.transform.localPosition = localPos;
 
-            // Rotación inicial X=-90 / final X=90, Z random (determinista)
-            float randomZ = RandRangeFloat(rng, 0f, 360f);
-            Quaternion startRot = Quaternion.Euler(-90f, 0f, randomZ);
-            Quaternion endRot = Quaternion.Euler(90f, 0f, randomZ);
-            instance.transform.rotation = startRot;
+            // Rotación inicial / final SOLO en eje Y local + "tumba"
+            float randomY = RandRangeFloat(rng, 0f, 360f);
+
+            Quaternion startRot = Quaternion.Euler(-90f, randomY, 0f);
+            Quaternion endRot = Quaternion.Euler(90f, randomY, 0f);
+
+            instance.transform.localRotation = startRot;  // 🔹 LOCAL
 
             // Escala determinista
             Vector3 baseScale = instance.transform.localScale;
@@ -209,10 +213,8 @@ public class BrambleDefense : BaseDefense
                 baseScale.z * randomScale * zScaleMultiplier
             );
 
-            // empezamos en 0 si hay animación; si no, se pondrá final al final
             instance.transform.localScale = Vector3.zero;
 
-            // Preview: aplicar material transparente a ESTA instancia (porque se crea después)
             if (previewMat != null)
                 ApplyMaterialToRenderers(instance, previewMat);
 
@@ -222,7 +224,7 @@ public class BrambleDefense : BaseDefense
                 targetScale = targetScale,
                 startRotation = startRot,
                 endRotation = endRot,
-                originalLocalPos = instance.transform.localPosition
+                originalLocalPos = localPos  // 🔹 Guardar la posición local calculada
             });
         }
     }

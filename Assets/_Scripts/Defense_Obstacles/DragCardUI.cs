@@ -51,6 +51,17 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private bool currentPreviewIsValid = false;
 
+    [SerializeField] private RectTransform slotsContainerRect;
+    
+    // --- Rotación libre ---
+    private bool isFreeRotating = false;
+    private Vector3 freeRotatePivot;      // punto fijo donde se queda el preview al pulsar R
+    private Vector3 freeRotateForward;    // dirección base para la rotación
+    private float freeRotateStartAngle;   // ángulo al iniciar la rotación libre
+
+    private Quaternion freeRotateBaseRotation;
+
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -77,14 +88,47 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private void InputManager_OnRotateCardInput(object sender, System.EventArgs e)
     {
-        {
-            if (!inPlacementMode || useFixedPosition || previewInstance == null)
-                return;
+        if (!inPlacementMode || useFixedPosition || previewInstance == null)
+            return;
 
-            currentRotationDegrees += 45f;
-            if (currentRotationDegrees >= 360f)
-                currentRotationDegrees -= 360f;
+        if (isFreeRotating)
+        {
+            // Salir de modo rotación libre si quieres toggle
+            isFreeRotating = false;
+            return;
         }
+
+        isFreeRotating = true;
+
+        // Punto fijo donde se queda el preview
+        freeRotatePivot = previewInstance.transform.position;
+
+        // 🔹 Rotación base EXACTA en el momento de pulsar R (incluye X y Z de la rampa)
+        freeRotateBaseRotation = previewInstance.transform.rotation;
+
+        // Empezamos a acumular desde 0 sobre esa base
+        currentRotationDegrees = 0f;
+    }
+
+    private void UpdateFreeRotation()
+    {
+        if (previewInstance == null) return;
+
+        // Mantener posición clavada
+        previewInstance.transform.position = freeRotatePivot;
+
+        // Acumular Y "de inspector"
+        float mouseDelta = Input.GetAxis("Mouse X") * 6.5f;
+        currentRotationDegrees += mouseDelta;
+        currentRotationDegrees = Mathf.Repeat(currentRotationDegrees, 360f);
+
+        // 🔹 Aplicar rotación final:
+        // - freeRotateBaseRotation: la inclinación original (X/Z correctos en la rampa)
+        // - AngleAxis sobre el eje up LOCAL de esa rotación (como girar Y en el inspector)
+        Vector3 localUp = freeRotateBaseRotation * Vector3.up;
+        Quaternion extraY = Quaternion.AngleAxis(currentRotationDegrees, localUp);
+
+        previewInstance.transform.rotation = extraY * freeRotateBaseRotation;
     }
 
     private bool CheckPlacementValidity(
@@ -161,10 +205,17 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         if (inPlacementMode && !useFixedPosition && previewInstance != null)
         {
-            Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
-            Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
-
-            previewInstance.transform.rotation = extraRot * baseRot;
+            if (isFreeRotating)
+            {
+                UpdateFreeRotation();
+            }
+            else
+            {
+                // Rotación clásica (45° steps)
+                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
+                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
+                previewInstance.transform.rotation = baseRot * extraRot;
+            }
         }
     }
 
@@ -183,8 +234,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         canDragThisTime = true;
 
+        // 🔹 RESET COMPLETO DE ESTADO al empezar nuevo drag
         canvasGroup.blocksRaycasts = false;
         inPlacementMode = false;
+        isFreeRotating = false;  // ← ¡RESET!
+        currentRotationDegrees = 0f;
+        previewInstance = null;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -200,16 +255,34 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         float alpha = Mathf.Clamp01(1f - (distanceToRight / placementThreshold));
         canvasGroup.alpha = alpha;
 
-        if (!inPlacementMode && distanceToRight >= placementThreshold)
+        // 🔹 si el puntero sigue sobre UI, NO entramos en placement mode
+        bool overUI = IsPointerOverUI();
+
+        if (!inPlacementMode && distanceToRight >= placementThreshold && !overUI)
         {
             EnterPlacementMode();
+        }
+
+        // 🔹 si ya estábamos en placement mode y volvemos a pasar por UI, apagamos preview y salimos
+        if (inPlacementMode && overUI)
+        {
+            if (previewInstance != null)
+            {
+                Destroy(previewInstance);
+                previewInstance = null;
+            }
+
+            inPlacementMode = false;
+            useFixedPosition = false;
+            currentPreviewIsValid = false;
+            // canvasGroup.alpha = 1f;
+            return;
         }
 
         if (inPlacementMode && !useFixedPosition)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            // Solo golpea las capas de placementMask (Mountain)
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
             {
                 if (previewInstance == null)
@@ -221,11 +294,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
                     var bramble = previewInstance.GetComponent<BrambleDefense>();
                     if (bramble != null)
-                    {
                         bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
-                    }
 
-                    // Gizmo de soporte (cuadrado + rayos), si procede
                     if (cardData.requireFullSupport)
                     {
                         var supportGiz = previewInstance.GetComponent<SupportGizmoPreview>();
@@ -235,7 +305,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                         supportGiz.debugCardData = cardData;
                     }
 
-                    // 🔹 Gizmo del cubo de colisión entre defensas (siempre que quieras verlo)
                     var overlapGiz = previewInstance.GetComponent<PlacementOverlapGizmo>();
                     if (overlapGiz == null)
                         overlapGiz = previewInstance.AddComponent<PlacementOverlapGizmo>();
@@ -243,16 +312,20 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     overlapGiz.debugCardData = cardData;
                 }
 
-                previewInstance.transform.position = hit.point;
+                // 🔹 POSICIÓN: solo si NO rotando libre
+                if (!isFreeRotating)
+                {
+                    previewInstance.transform.position = hit.point;
+                }
 
-                // 🔹 guardamos la normal actual para la orientación del preview y del colocado
                 lastHitNormal = hit.normal;
 
-                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, hit.normal);
-                Quaternion finalRotation = extraRot * baseRot;
+                // En OnDrag, dentro del bloque if (Physics.Raycast...)
+                Vector3 checkPosition = isFreeRotating ? freeRotatePivot : hit.point;
 
-                bool isValid = CheckPlacementValidity(hit.point, hit.normal, finalRotation);
+                // Para la rotación en CheckPlacementValidity, usa la rotación actual del preview
+                Quaternion previewRotation = previewInstance.transform.rotation;
+                bool isValid = CheckPlacementValidity(checkPosition, lastHitNormal, previewRotation);
 
                 if (isValid != currentPreviewIsValid)
                 {
@@ -263,6 +336,15 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
     }
 
+    private bool IsPointerOverUI()
+    {
+        // Para PC y editor (mouse)
+        if (EventSystem.current == null)
+            return false;
+
+        return EventSystem.current.IsPointerOverGameObject();
+    }
+
     public void OnEndDrag(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
@@ -270,91 +352,127 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
-        rectTransform.anchoredPosition = originalPosition;
+        rectTransform.anchoredPosition = new Vector2(originalPosition.x, rectTransform.anchoredPosition.y);
 
-        if (inPlacementMode)
+        // 🔹 Si soltamos sobre UI, cancelar todo
+        if (IsPointerOverUI())
         {
-            Vector3 finalPosition = Vector3.zero;
-            Vector3 finalNormal = Vector3.up;
-            bool valid = false;
+            CleanupPreview();
+            ResetAllStates();
+            return;
+        }
 
-            if (useFixedPosition)
+        // 🔹 Si NO estamos en placement mode, solo resetear
+        if (!inPlacementMode)
+        {
+            ResetAllStates();
+            return;
+        }
+
+        // 🔹 Determinar posición y rotación final
+        Vector3 finalPosition;
+        Quaternion finalRotation;
+        Vector3 finalNormal = Vector3.up;
+
+        if (useFixedPosition)
+        {
+            finalPosition = fixedPlacementPosition;
+            finalNormal = Vector3.up;
+            finalRotation = previewInstance ? previewInstance.transform.rotation : Quaternion.identity;
+        }
+        else if (isFreeRotating && previewInstance != null)
+        {
+            // 🔹 Rotación libre: usar posición fija Y rotación actual del preview
+            finalPosition = freeRotatePivot;
+            finalNormal = lastHitNormal;
+            finalRotation = previewInstance.transform.rotation;  // Ya tiene solo Y rotada
+        }
+        else
+        {
+            // 🔹 Modo normal: raycast final
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
             {
-                finalPosition = fixedPlacementPosition;
-                finalNormal = Vector3.up;
-                valid = true;
+                finalPosition = hit.point;
+                finalNormal = hit.normal;
+
+                // Rotación clásica (base + extra)
+                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
+                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
+                finalRotation = extraRot * baseRot;
             }
             else
             {
-                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
-                {
-                    finalPosition = hit.point;
-                    finalNormal = hit.normal;
-                    valid = true;
-                }
-            }
-
-            // 🔹 Calculamos la rotación final tal como hacemos con el preview (base + extra)
-            Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
-            Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
-            Quaternion finalRotation = extraRot * baseRot;
-
-            // ✅ AQUÍ: si durante el drag era rojo, NO colocamos
-            // (y si no tienes currentPreviewIsValid, usa valid y recalcula)
-            if (!currentPreviewIsValid)
-            {
+                // No hay hit válido
                 StartCoroutine(ShakeCard());
-                if (previewInstance != null)
-                    Destroy(previewInstance);
-
-                inPlacementMode = false;
-                useFixedPosition = false;
+                CleanupPreview();
+                ResetAllStates();
                 return;
             }
-
-            // (Opcional recomendado) Si quieres estar 100% seguro aunque haya cambiado algo en el último frame:
-            // valid = valid && CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
-
-            if (valid && PointsManager.Instance.SpendPoints(cardData.cost))
-            {
-                GameObject placed = DefensePlacer.Instance.PlaceDefense(
-                    cardData.defensePrefab,
-                    finalPosition,
-                    finalRotation,
-                    (go) =>
-                    {
-                        var bramble = go.GetComponent<BrambleDefense>();
-                        if (bramble != null)
-                            bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
-                    }
-                );
-
-                Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
-                CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.2f);
-
-                if (placed != null && DefensePlacementManager.Instance != null)
-                    DefensePlacementManager.Instance.RegisterPlaced(placed);
-
-                OnCardUsed?.Invoke(this);
-            }
-
-            if (previewInstance != null)
-                Destroy(previewInstance);
         }
 
+        // 🔹 Si no es válida la colocación
+        if (!currentPreviewIsValid)
+        {
+            StartCoroutine(ShakeCard());
+            CleanupPreview();
+            ResetAllStates();
+            return;
+        }
+
+        // 🔹 COLOCAR defensa
+        if (PointsManager.Instance.SpendPoints(cardData.cost))
+        {
+            GameObject placed = DefensePlacer.Instance.PlaceDefense(
+                cardData.defensePrefab,
+                finalPosition,
+                finalRotation,
+                (go) =>
+                {
+                    var bramble = go.GetComponent<BrambleDefense>();
+                    if (bramble != null)
+                        bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
+                }
+            );
+
+            Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
+            CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.2f);
+
+            if (placed != null && DefensePlacementManager.Instance != null)
+                DefensePlacementManager.Instance.RegisterPlaced(placed);
+
+            OnCardUsed?.Invoke(this);
+        }
+
+        CleanupPreview();
+        ResetAllStates();
+    }
+
+    private void ResetAllStates()
+    {
+        isFreeRotating = false;
+        currentRotationDegrees = 0f;
         inPlacementMode = false;
         useFixedPosition = false;
     }
 
+    private void CleanupPreview()
+    {
+        if (previewInstance != null)
+        {
+            Destroy(previewInstance);
+            previewInstance = null;
+        }
+        currentPreviewIsValid = false;
+    }
 
     private void EnterPlacementMode()
     {
         inPlacementMode = true;
+
+        // Carta completamente invisible mientras estés en placement
         canvasGroup.alpha = 0f;
 
-        // 🔹 reseteamos rotación al empezar el placement
         currentRotationDegrees = 0f;
         lastHitNormal = Vector3.up;
 

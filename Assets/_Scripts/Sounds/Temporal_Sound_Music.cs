@@ -15,14 +15,13 @@ public class Temporal_Sound_Music : MonoBehaviour
     [SerializeField] private AudioClip[] musicPlayList;
 
     private int currentTrackIndex;
-
-    //  ARREGLO BUG #7: Object Pooling para AudioSources
+    // ARREGLO BUG #7: Object Pooling para AudioSources
     private Queue<GameObject> sfxPool = new Queue<GameObject>();
     private const int INITIAL_POOL_SIZE = 10;
 
     private void Awake()
     {
-        //  ARREGLO BUG #3: Singleton seguro
+        // ARREGLO BUG #3: Singleton seguro
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -56,7 +55,7 @@ public class Temporal_Sound_Music : MonoBehaviour
 
     private void Start()
     {
-        //  ARREGLO BUG #8: Chequeo de nulos y longitud antes de acceder al array
+        // ARREGLO BUG #8: Chequeo de nulos y longitud antes de acceder al array
         if (musicPlayList != null && musicPlayList.Length > 0)
         {
             currentTrackIndex = 0;
@@ -110,7 +109,7 @@ public class Temporal_Sound_Music : MonoBehaviour
     {
         if (clip == null) return;
 
-        //  USAMOS EL POOL
+        // USAMOS EL POOL
         GameObject audioObj = null;
         if (sfxPool.Count > 0) audioObj = sfxPool.Dequeue();
         else audioObj = CreateNewPoolObject(); // Expandir si es necesario
@@ -159,5 +158,15 @@ public class Temporal_Sound_Music : MonoBehaviour
         masterVolume = PlayerPrefs.GetFloat("MasterVolume", 1.0f);
         effectsVolume = PlayerPrefs.GetFloat("EffectsVolume", 1.0f);
         musicVolume = PlayerPrefs.GetFloat("MusicVolume", 1.0f);
+    }
+
+    public float GetMusicVolume()
+    {
+        return musicVolume;
+    }
+
+    public float GetSoundVolume()
+    {
+        return effectsVolume;
     }
 }

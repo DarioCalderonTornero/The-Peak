@@ -12,6 +12,8 @@ public class GamePauseUI : MonoBehaviour
     [SerializeField] private AudioClip stopGameAudioClip;
     [SerializeField] private float volume;
 
+    [SerializeField] private SettingsUI settingsUI;
+
     private bool isGamePaused = false;
 
     private bool hasPlayedSound = false;
@@ -21,6 +23,12 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.onClick.AddListener(() =>
         {
             TogglePauseMenu();
+        });
+
+        settingsButton.onClick.AddListener(() =>
+        {
+            Hide();
+            settingsUI.gameObject.SetActive(true);
         });
 
         backToMenuButton.onClick.AddListener(() =>
@@ -34,6 +42,12 @@ public class GamePauseUI : MonoBehaviour
 
     private void Start()
     {
+        settingsUI.OnSettingsClose += SettingsUI_OnSettingsClose;
+    }
+
+    private void SettingsUI_OnSettingsClose(object sender, System.EventArgs e)
+    {
+        Show();
     }
 
     public void TogglePauseMenu()
@@ -79,5 +93,8 @@ public class GamePauseUI : MonoBehaviour
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
         climberInfo.SetActive(false);
+
+        //Hide settings
+        settingsUI.gameObject.SetActive(false);
     }
 }

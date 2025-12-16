@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class HideUIManager : MonoBehaviour
@@ -6,6 +7,26 @@ public class HideUIManager : MonoBehaviour
     {
         GameManager.Instance.OnGamePaused += GameManager_OnGamePaused;
         GameManager.Instance.OnGameUnPaused += GameManager_OnGameUnPaused;
+
+        if (ClimberMovement.Instance != null)
+        {
+            ClimberMovement.Instance.OnReachedGoal += ClimberMovement_OnReachedGoal;
+        }
+        else
+        {
+            StartCoroutine(WaitForClimberMovement());
+        }
+    }
+
+    private IEnumerator WaitForClimberMovement()
+    {
+        yield return new WaitUntil(() => ClimberMovement.Instance != null);
+        ClimberMovement.Instance.OnReachedGoal += ClimberMovement_OnReachedGoal;
+    }
+
+    private void ClimberMovement_OnReachedGoal(object sender, System.EventArgs e)
+    {
+        HideThisCanvas();
     }
 
     private void GameManager_OnGameUnPaused(object sender, System.EventArgs e)

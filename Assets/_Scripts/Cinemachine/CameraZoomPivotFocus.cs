@@ -122,9 +122,7 @@ public class CameraZoomPivotFocus : MonoBehaviour
 
     private void InputManager_OnResetBackCameraInput(object sender, System.EventArgs e)
     {
-        if (currentCameraPosition == CameraPosition.Back)
-            return; // Ya está en la posición de atrás, no hacer nada.
-
+        // Resetear la posición y el zoom como lo hace el OnResetCameraInput
         if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
             return;
 
@@ -133,14 +131,13 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (resetRoutine != null)
             StopCoroutine(resetRoutine);
 
-        resetRoutine = StartCoroutine(SetCameraPosition(CameraPosition.Back)); // Fija la cámara en la posición de atrás
+        // Ahora también reseteamos el pivote y zoom al mismo tiempo que la rotación
+        resetRoutine = StartCoroutine(ResetCameraRoutine(CameraPosition.Back)); // Fija la cámara en la posición de atrás
     }
 
     private void InputManager_OnResetRightCameraInput(object sender, System.EventArgs e)
     {
-        if (currentCameraPosition == CameraPosition.Right)
-            return; // Ya está en la posición de derecha, no hacer nada.
-
+        // Resetear la posición y el zoom como lo hace el OnResetCameraInput
         if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
             return;
 
@@ -149,14 +146,13 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (resetRoutine != null)
             StopCoroutine(resetRoutine);
 
-        resetRoutine = StartCoroutine(SetCameraPosition(CameraPosition.Right)); // Fija la cámara en la posición de derecha
+        // Ahora también reseteamos el pivote y zoom al mismo tiempo que la rotación
+        resetRoutine = StartCoroutine(ResetCameraRoutine(CameraPosition.Right)); // Fija la cámara en la posición de derecha
     }
 
     private void InputManager_OnResetLeftCameraInput(object sender, System.EventArgs e)
     {
-        if (currentCameraPosition == CameraPosition.Left)
-            return; // Ya está en la posición de izquierda, no hacer nada.
-
+        // Resetear la posición y el zoom como lo hace el OnResetCameraInput
         if (!canZoom || !initialStateCaptured || pivotTransform == null || orbitalFollow == null)
             return;
 
@@ -165,7 +161,18 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (resetRoutine != null)
             StopCoroutine(resetRoutine);
 
-        resetRoutine = StartCoroutine(SetCameraPosition(CameraPosition.Left)); // Fija la cámara en la posición de izquierda
+        // Ahora también reseteamos el pivote y zoom al mismo tiempo que la rotación
+        resetRoutine = StartCoroutine(ResetCameraRoutine(CameraPosition.Left)); // Fija la cámara en la posición de izquierda
+    }
+
+
+    private void ResetZoom()
+    {
+        if (orbitalFollow != null)
+        {
+            currentZoom = initialZoom;
+            orbitalFollow.RadialAxis.Value = initialZoom;
+        }
     }
 
     private void CardGameManager_OnInventoryHide(object sender, System.EventArgs e)
@@ -250,46 +257,79 @@ public class CameraZoomPivotFocus : MonoBehaviour
         currentCameraPosition = CameraPosition.Default;
     }
 
-    private IEnumerator SetCameraPosition(CameraPosition targetPosition)
+    private void ResetPivotPosition()
     {
-        // Comprobamos si ya estamos en la posición deseada
-        if (currentCameraPosition == targetPosition)
-            yield break; // No hacer nada si ya estamos en la posición correcta
+        if (pivotTransform != null)
+        {
+            targetPivotPos = initialPivotPos;
+            pivotTransform.position = initialPivotPos;
+        }
+    }
+
+    private IEnumerator ResetCameraRoutine(CameraPosition targetPosition)
+    {
+        Vector3 startPivot = pivotTransform.position;
+        float startZoom = currentZoom;
+
+        float startHorizontal = orbitalFollow.HorizontalAxis.Value;
+        float startVertical = orbitalFollow.VerticalAxis.Value;
 
         float targetHorizontal = 0f;
         switch (targetPosition)
         {
             case CameraPosition.Left:
-                targetHorizontal = 0;
+                targetHorizontal = 0f; // Izquierda
                 break;
             case CameraPosition.Right:
-                targetHorizontal = 270;   
+                targetHorizontal = 270f; // Derecha
                 break;
             case CameraPosition.Back:
-                targetHorizontal = 180f; 
+                targetHorizontal = 180f; // Atrás
                 break;
         }
 
-
-        // Interpolamos de manera directa para asegurarnos de que no se acumula rotación
-        float startHorizontal = orbitalFollow.HorizontalAxis.Value;
         float t = 0f;
-
         while (t < 1f)
         {
             t += Time.deltaTime / resetDuration;
             float easedT = resetCurve != null ? resetCurve.Evaluate(t) : t;
 
+            // Interpolación del pivote
+            Vector3 newPivot = Vector3.Lerp(startPivot, initialPivotPos, easedT);
+            pivotTransform.position = newPivot;
+            targetPivotPos = newPivot;
+
+            // Interpolación del zoom
+            float newZoom = Mathf.Lerp(startZoom, initialZoom, easedT);
+            currentZoom = newZoom;
+            orbitalFollow.RadialAxis.Value = currentZoom;
+
+            // Suavizamos la interpolación de la rotación horizontal
             float newHorizontal = Mathf.LerpAngle(startHorizontal, targetHorizontal, easedT);
             orbitalFollow.HorizontalAxis.Value = newHorizontal;
 
             yield return null;
         }
 
+        // Aseguramos que se ajusten al valor final
+        pivotTransform.position = initialPivotPos;
+        targetPivotPos = initialPivotPos;
+
+        currentZoom = initialZoom;
+        orbitalFollow.RadialAxis.Value = currentZoom;
+
         orbitalFollow.HorizontalAxis.Value = targetHorizontal;
+        orbitalFollow.VerticalAxis.Value = initialVertical;
+
+        focalPoint = initialPivotPos;
+        hasFocalPoint = true;
+
+        resetRoutine = null;
 
         currentCameraPosition = targetPosition;
     }
+
+
 
     private void Update()
     {

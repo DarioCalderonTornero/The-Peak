@@ -51,8 +51,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   climberMovement: {fileID: 8195220715332458517}
-  currentStaminaImage: {fileID: 3781494971540577329}
   backgroundImage: {fileID: 4111351097297200726}
+  currentStaminaImage: {fileID: 3781494971540577329}
 --- !u!1 &2593647052347586041
 GameObject:
   m_ObjectHideFlags: 0
@@ -328,7 +328,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3171478204300591317
 RectTransform:
   m_ObjectHideFlags: 0

@@ -8,6 +8,8 @@ public class ClimberMovement : MonoBehaviour
 {
     public static ClimberMovement Instance { get; private set; }
 
+    public event EventHandler OnReachedGoal;
+
     [Header("Referencias")]
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private CampGraphBuilder campGraph;
@@ -468,7 +470,9 @@ public class ClimberMovement : MonoBehaviour
         isActiveThisTurn = false;
         isAtCamp = false;
         if (agent != null) agent.isStopped = true;
-        Destroy(gameObject);
+        OnReachedGoal?.Invoke(this, EventArgs.Empty);
+        Debug.Log("Cima alcanzada");
+        //Destroy(gameObject);
     }
 
     public void SetExternalSpeedMultiplier(float multiplier) { externalSpeedMultiplier = Mathf.Max(0f, multiplier); }

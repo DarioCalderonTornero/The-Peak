@@ -8,7 +8,6 @@ public class ClimberMovement : MonoBehaviour
 {
     public static ClimberMovement Instance { get; private set; }
 
-    public event EventHandler OnReachedGoal;
 
     [Header("Referencias")]
     [SerializeField] private NavMeshAgent agent;
@@ -470,7 +469,7 @@ public class ClimberMovement : MonoBehaviour
         isActiveThisTurn = false;
         isAtCamp = false;
         if (agent != null) agent.isStopped = true;
-        OnReachedGoal?.Invoke(this, EventArgs.Empty);
+        GameOverManager.Instance.SetGameOverCamer();
         Debug.Log("Cima alcanzada");
         //Destroy(gameObject);
     }

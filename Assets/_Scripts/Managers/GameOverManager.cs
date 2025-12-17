@@ -1,37 +1,50 @@
 using Unity.Cinemachine;
 using UnityEngine;
 using System.Collections;
+using Unity.VisualScripting.Antlr3.Runtime;
+using System;
 
 public class GameOverManager : MonoBehaviour
 {
+    public static GameOverManager Instance { get; private set; }
+
+    public event EventHandler OnGameOver;
+
     [SerializeField] private CinemachineCamera gameOverCinemachineCam;
+    [SerializeField] private AudioClip gameOverClimberSound;
 
     private void Awake()
     {
-        gameOverCinemachineCam.Priority = 0;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
-        if (ClimberMovement.Instance != null)
-        {
-            ClimberMovement.Instance.OnReachedGoal += ClimberMovement_OnReachedGoal;
-        }
-        else
-        {
-            StartCoroutine(WaitForClimberMovement());
-        }
+        gameOverCinemachineCam.Priority = 0;
     }
 
-    private IEnumerator WaitForClimberMovement()
+    public void SetGameOverCamer()
     {
-        yield return new WaitUntil(() => ClimberMovement.Instance != null);
-        ClimberMovement.Instance.OnReachedGoal += ClimberMovement_OnReachedGoal;
-    }
-
-    private void ClimberMovement_OnReachedGoal(object sender, System.EventArgs e)
-    {
+        OnGameOver?.Invoke(this, EventArgs.Empty);
+        //StartCoroutine(GetClimberSound());
+        //Climber
         ClimberMovement.Instance.SetExternalSpeedMultiplier(0f);
+        //Camera
         gameOverCinemachineCam.Priority = 100;
+        //Effects
+        Time.timeScale = 1f;
+    }
+
+    private IEnumerator GetClimberSound()
+    {
+        yield return new WaitForSeconds(5);
+        Temporal_Sound_Music.Instance.PlaySound(gameOverClimberSound, 1.0f);
     }
 }

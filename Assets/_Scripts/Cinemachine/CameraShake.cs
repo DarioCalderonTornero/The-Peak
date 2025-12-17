@@ -5,7 +5,6 @@ public class CameraShake : MonoBehaviour
 {
     public static CameraShake Instance { get; private set; }
 
-    [SerializeField] private CinemachineCamera virtualCam;
     [SerializeField] private CinemachineBasicMultiChannelPerlin noise;
 
     private float shakeDuration;

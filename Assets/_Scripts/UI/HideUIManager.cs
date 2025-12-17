@@ -7,24 +7,10 @@ public class HideUIManager : MonoBehaviour
     {
         GameManager.Instance.OnGamePaused += GameManager_OnGamePaused;
         GameManager.Instance.OnGameUnPaused += GameManager_OnGameUnPaused;
-
-        if (ClimberMovement.Instance != null)
-        {
-            ClimberMovement.Instance.OnReachedGoal += ClimberMovement_OnReachedGoal;
-        }
-        else
-        {
-            StartCoroutine(WaitForClimberMovement());
-        }
+        GameOverManager.Instance.OnGameOver += GameOverManager_OnGameOver;
     }
 
-    private IEnumerator WaitForClimberMovement()
-    {
-        yield return new WaitUntil(() => ClimberMovement.Instance != null);
-        ClimberMovement.Instance.OnReachedGoal += ClimberMovement_OnReachedGoal;
-    }
-
-    private void ClimberMovement_OnReachedGoal(object sender, System.EventArgs e)
+    private void GameOverManager_OnGameOver(object sender, System.EventArgs e)
     {
         HideThisCanvas();
     }

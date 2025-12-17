@@ -5,6 +5,11 @@ using UnityEngine.AI;
 [ExecuteAlways]
 public class NavMeshCampZoneFinder : MonoBehaviour
 {
+    [Header("Instanciación (Visual)")] // <<< NUEVO >>>
+    public GameObject flagPrefab;      // <<< NUEVO: Arrastra tu prefab de bandera aquí
+    public Transform flagsContainer;   // <<< NUEVO: Opcional, para organizar la jerarquía
+    private List<GameObject> spawnedFlags = new List<GameObject>(); // <<< NUEVO: Lista para control
+
     [Header("Detección de zonas planas")]
     public float maxSlope = 5f;
     public int minTrianglesPerZone = 10;
@@ -32,7 +37,6 @@ public class NavMeshCampZoneFinder : MonoBehaviour
     [SerializeField, HideInInspector]
     public List<Vector3> campZones = new List<Vector3>();
 
-    // Estructura para guardar datos extra de cada triangulo
     struct Triangle
     {
         public Vector3 v0, v1, v2;
@@ -50,7 +54,8 @@ public class NavMeshCampZoneFinder : MonoBehaviour
         }
     }
 
-    void FindCampZones()
+    // Método público por si quieres llamarlo desde un botón de inspector custom
+    public void FindCampZones()
     {
         NavMeshTriangulation data = NavMesh.CalculateTriangulation();
         int triCount = data.indices.Length / 3;
@@ -81,15 +86,11 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             };
         }
 
-        // 2. Buscar Vecinos (Topología)
+        // 2. Buscar Vecinos
         for (int i = 0; i < triCount; i++)
         {
             for (int j = i + 1; j < triCount; j++)
             {
-                int shared = 0;
-                if (IsSameVert(tris[i].v0, tris[j]) || IsSameVert(tris[i].v1, tris[j]) || IsSameVert(tris[i].v2, tris[j])) shared++;
-                // Nota: Simplifiqué la lógica de vecinos para rendimiento, asumiendo que comparten al menos 2 vertices
-                // Pero mantendremos la lógica robusta si prefieres:
                 int sharedV = 0;
                 if (ApproximatelyEqual(tris[i].v0, tris[j].v0) || ApproximatelyEqual(tris[i].v0, tris[j].v1) || ApproximatelyEqual(tris[i].v0, tris[j].v2)) sharedV++;
                 if (ApproximatelyEqual(tris[i].v1, tris[j].v0) || ApproximatelyEqual(tris[i].v1, tris[j].v1) || ApproximatelyEqual(tris[i].v1, tris[j].v2)) sharedV++;
@@ -131,14 +132,14 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             if (zone.Count > 0) potentialZones.Add(zone);
         }
 
-        // 4. Filtrar zonas inválidas (área, forma, altura mínima)
+        // 4. Filtrar zonas inválidas
         List<List<Triangle>> validZones = new List<List<Triangle>>();
         foreach (var zone in potentialZones)
         {
             if (zone.Count < minTrianglesPerZone) continue;
 
             float totalArea = 0f;
-            Bounds bounds = GetZoneBounds(zone); // Usamos Bounds de Unity para facilitar cálculos
+            Bounds bounds = GetZoneBounds(zone);
             float minY = float.PositiveInfinity;
 
             foreach (var t in zone)
@@ -147,7 +148,7 @@ public class NavMeshCampZoneFinder : MonoBehaviour
                 minY = Mathf.Min(minY, t.v0.y, t.v1.y, t.v2.y);
             }
 
-            if (minY <= minAltitude) continue; // Filtro suelo base
+            if (minY <= minAltitude) continue;
 
             float width = bounds.size.x;
             float depth = bounds.size.z;
@@ -164,12 +165,8 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             validZones.Add(zone);
         }
 
-        // ---------------------------------------------------------
-        // 5. NUEVA FASE DE FUSIÓN (CLUSTERING POR VÉRTICES)
-        // ---------------------------------------------------------
-
+        // 5. Fusión (Clustering)
         bool mergedAny = true;
-        // Repetimos el proceso hasta que no se puedan fusionar más zonas
         while (mergedAny)
         {
             mergedAny = false;
@@ -177,16 +174,10 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             {
                 for (int j = i + 1; j < validZones.Count; j++)
                 {
-                    // Comprobamos si la Zona A y la Zona B tienen vértices cercanos
                     if (AreZonesConnectable(validZones[i], validZones[j]))
                     {
-                        // Fusionar B dentro de A
                         validZones[i].AddRange(validZones[j]);
-
-                        // Eliminar B
                         validZones.RemoveAt(j);
-
-                        // Reiniciar bucles porque la lista ha cambiado
                         mergedAny = true;
                         break;
                     }
@@ -200,12 +191,10 @@ public class NavMeshCampZoneFinder : MonoBehaviour
 
         foreach (var zone in validZones)
         {
-            // Calcular centroide de la zona fusionada
             Vector3 avg = Vector3.zero;
             foreach (var t in zone) avg += t.center;
             avg /= zone.Count;
 
-            // Encontrar el punto más cercano al promedio que sea válido
             float bestDist = float.MaxValue;
             Vector3 bestCenter = avg;
 
@@ -219,7 +208,6 @@ public class NavMeshCampZoneFinder : MonoBehaviour
                 }
             }
 
-            // Muestrear NavMesh para asegurar posición válida
             NavMeshHit hit;
             if (NavMesh.SamplePosition(bestCenter, out hit, 10f, NavMesh.AllAreas))
             {
@@ -229,50 +217,76 @@ public class NavMeshCampZoneFinder : MonoBehaviour
             {
                 campZones.Add(bestCenter);
             }
+        }
 
-            // Debug visual
-            if (drawDebug && Application.isPlaying)
+        // <<< NUEVO: Instanciar las banderas al terminar el cálculo >>>
+        SpawnFlags();
+    }
+
+    // --- LÓGICA DE INSTANCIACIÓN --- // <<< NUEVO >>>
+    void SpawnFlags()
+    {
+        // 1. Limpiar banderas antiguas
+        if (spawnedFlags == null) spawnedFlags = new List<GameObject>();
+
+        // Eliminamos objetos nulos de la lista por seguridad
+        for (int i = spawnedFlags.Count - 1; i >= 0; i--)
+        {
+            if (spawnedFlags[i] != null)
             {
-                Color c = new Color(Random.value, Random.value, Random.value);
-                foreach (var t in zone)
-                {
-                    Debug.DrawLine(t.v0, t.v1, c, 500f);
-                    Debug.DrawLine(t.v1, t.v2, c, 500f);
-                    Debug.DrawLine(t.v2, t.v0, c, 500f);
-                }
+                if (Application.isPlaying) Destroy(spawnedFlags[i]);
+                else DestroyImmediate(spawnedFlags[i]);
             }
+        }
+        spawnedFlags.Clear();
+
+        // 2. Si no hay prefab asignado, salir
+        if (flagPrefab == null)
+        {
+            Debug.LogWarning("NavMeshCampZoneFinder: No has asignado el 'Flag Prefab'.");
+            return;
+        }
+
+        // 3. Crear contenedor si no existe (para no ensuciar la jerarquía)
+        if (flagsContainer == null)
+        {
+            GameObject container = GameObject.Find("CampFlags_Container");
+            if (container == null) container = new GameObject("CampFlags_Container");
+            flagsContainer = container.transform;
+        }
+
+        // 4. Instanciar nuevas banderas
+        foreach (Vector3 pos in campZones)
+        {
+            GameObject newFlag = Instantiate(flagPrefab, pos, Quaternion.identity);
+
+            // Asignar padre
+            newFlag.transform.SetParent(flagsContainer);
+
+            // Opcional: Alinear con la normal del terreno si quieres que no estén rectas
+            // Raycast abajo para detectar pendiente si fuera necesario, pero Identity suele ir bien.
+
+            spawnedFlags.Add(newFlag);
         }
     }
 
     // --- FUNCIONES AUXILIARES ---
 
-    // Comprueba si dos zonas deben unirse basándose en sus vértices
     bool AreZonesConnectable(List<Triangle> zoneA, List<Triangle> zoneB)
     {
-        // 1. Optimización con Bounds: Si las cajas delimitadoras están lejos, ni miramos los vértices
         Bounds bA = GetZoneBounds(zoneA);
         Bounds bB = GetZoneBounds(zoneB);
-
-        // Expandimos una caja por la distancia de merge para ver si intersecta
         bA.Expand(mergeProximity * 2);
         if (!bA.Intersects(bB)) return false;
 
-        // 2. Comprobación detallada de vértices
-        // Buscamos SI EXISTE al menos UN par de vértices (uno de A y uno de B)
-        // que cumplan la condición de distancia y altura.
-
         float distSq = mergeProximity * mergeProximity;
 
-        // Para optimizar, no comparamos todos contra todos si son muchos,
-        // pero para NavMesh zones suele ser aceptable.
         foreach (var tA in zoneA)
         {
             foreach (var tB in zoneB)
             {
-                // Comparamos centros de triangulos primero (rápido)
-                if ((tA.center - tB.center).sqrMagnitude < distSq * 4) // *4 para dar margen
+                if ((tA.center - tB.center).sqrMagnitude < distSq * 4)
                 {
-                    // Si los triángulos están cerca, miramos sus vértices
                     if (CheckVerts(tA.v0, tB) || CheckVerts(tA.v1, tB) || CheckVerts(tA.v2, tB))
                         return true;
                 }
@@ -283,7 +297,6 @@ public class NavMeshCampZoneFinder : MonoBehaviour
 
     bool CheckVerts(Vector3 pA, Triangle tB)
     {
-        // Compara un punto A con los 3 puntos de B
         if (IsNear(pA, tB.v0)) return true;
         if (IsNear(pA, tB.v1)) return true;
         if (IsNear(pA, tB.v2)) return true;
@@ -293,7 +306,7 @@ public class NavMeshCampZoneFinder : MonoBehaviour
     bool IsNear(Vector3 a, Vector3 b)
     {
         float hDiff = Mathf.Abs(a.y - b.y);
-        if (hDiff > mergeHeightThreshold) return false; // Diferencia de altura excesiva
+        if (hDiff > mergeHeightThreshold) return false;
 
         float dSq = (a.x - b.x) * (a.x - b.x) + (a.z - b.z) * (a.z - b.z);
         return dSq < (mergeProximity * mergeProximity);
@@ -318,11 +331,6 @@ public class NavMeshCampZoneFinder : MonoBehaviour
     bool ApproximatelyEqual(Vector3 a, Vector3 b)
     {
         return Vector3.SqrMagnitude(a - b) < 0.0001f;
-    }
-
-    bool IsSameVert(Vector3 v, Triangle t)
-    {
-        return ApproximatelyEqual(v, t.v0) || ApproximatelyEqual(v, t.v1) || ApproximatelyEqual(v, t.v2);
     }
 
     void OnDrawGizmos()

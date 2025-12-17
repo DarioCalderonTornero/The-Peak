@@ -265,7 +265,7 @@ GameObject:
   m_Component:
   - component: {fileID: 48561401}
   m_Layer: 0
-  m_Name: Spawnpoint5
+  m_Name: Spawnpoint6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -686,6 +686,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3d124b10ef688c40a805762bb11db27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &926235596
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 926235597}
+  m_Layer: 0
+  m_Name: 'Spawnpoint4 '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &926235597
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 926235596}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 143.73, y: 1, z: 480}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1681812316}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1089094619
 GameObject:
   m_ObjectHideFlags: 0
@@ -834,6 +865,7 @@ MonoBehaviour:
   - {fileID: 1598986384}
   - {fileID: 2062071831}
   - {fileID: 1830511198}
+  - {fileID: 926235597}
   - {fileID: 1843107134}
   - {fileID: 48561401}
   - {fileID: 230477813}
@@ -2266,6 +2298,7 @@ Transform:
   - {fileID: 1598986384}
   - {fileID: 2062071831}
   - {fileID: 1830511198}
+  - {fileID: 926235597}
   - {fileID: 1843107134}
   - {fileID: 48561401}
   - {fileID: 230477813}
@@ -2741,7 +2774,7 @@ Transform:
   m_GameObject: {fileID: 1830511197}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.27000427, y: 0, z: 476}
+  m_LocalPosition: {x: 7.7299957, y: 1, z: 459}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2757,7 +2790,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1843107134}
   m_Layer: 0
-  m_Name: Spawnpoint4
+  m_Name: Spawnpoint5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2772,7 +2805,7 @@ Transform:
   m_GameObject: {fileID: 1843107133}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 262.72998, y: 0, z: 482}
+  m_LocalPosition: {x: 248.73, y: 1, z: 453}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3342,7 +3375,7 @@ Transform:
   m_GameObject: {fileID: 2062071830}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -47.270004, y: 0, z: 429}
+  m_LocalPosition: {x: -41.270004, y: 1, z: 376}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

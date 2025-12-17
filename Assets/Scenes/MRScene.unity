@@ -338,7 +338,7 @@ MonoBehaviour:
   lengthWeight: 1
   slopeWeight: 1
   heightWeight: 40
-  obstaclePenalty: 100
+  obstaclePenalty: 100000
   drawEdgeWeights: 1
   debugDrawStepsToSummit: 0
   finalDestinationNodeId: -1

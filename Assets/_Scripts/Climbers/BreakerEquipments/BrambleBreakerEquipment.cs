@@ -24,6 +24,11 @@ public class BrambleBreakerEquipment : EquipmentInstance
 
     public override void OnCounterSuccess(ObstacleType type)
     {
+        if (ownerClimber == null)
+            return;
+
+        ownerClimber.StopForSeconds(1.5f);
+        ownerAnimator.SetTrigger("canMachete");
         Debug.Log($"<color=green>[BrambleBreakerEquipment]</color> Successfully countered {type}! (Would break it here)");
     }
 

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6126965442273955557}
   - component: {fileID: 6441749572881417741}
   - component: {fileID: 1976803635178634957}
+  - component: {fileID: 8404436473192671512}
   m_Layer: 7
   m_Name: BramblePrefab
   m_TagString: Untagged
@@ -138,6 +139,9 @@ MonoBehaviour:
   zScaleMultiplier: 2
   brambleAudioSource: {fileID: 1976803635178634957}
   brambleClip: {fileID: 8300000, guid: 5fcff88d241dc84449d0f834d35e0964, type: 3}
+  isPreview: 0
+  layoutSeed: 0
+  previewMaterialOverride: {fileID: 0}
 --- !u!54 &6126965442273955557
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -275,3 +279,16 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &8404436473192671512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5360695673246543767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65735de1037af6244b6e09744865c7cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleType: 3

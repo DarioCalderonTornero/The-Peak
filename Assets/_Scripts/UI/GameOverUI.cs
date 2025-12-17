@@ -10,7 +10,7 @@ public class GameOverUI : MonoBehaviour
     {
         retryButton.onClick.AddListener(() =>
         {
-            SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
+            SceneLoader.LoadScene(SceneLoader.Scene.DarioScene);
         });
     }
 
@@ -23,6 +23,7 @@ public class GameOverUI : MonoBehaviour
     private void GameOverManager_OnGameOver(object sender, System.EventArgs e)
     {
         StartCoroutine(SetRetryButtonActive());
+
     }
 
     private IEnumerator SetRetryButtonActive()

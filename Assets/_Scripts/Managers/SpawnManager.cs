@@ -5,22 +5,22 @@ public class SpawnManager : MonoBehaviour
 {
     public static SpawnManager Instance { get; private set; }
 
-    [Header("Spawning")]
+    [Header("Spawning Shape")]
+    [Tooltip("Arrastra aquí los Transforms en orden para dibujar la forma del spawn.")]
+    [SerializeField] private List<Transform> spawnPathPoints = new List<Transform>();
+
+    [Header("Spawning Settings")]
     [SerializeField] private GameObject prefab;
-    [SerializeField] private Transform startPoint;
-    [SerializeField] private Transform endPoint;
     [SerializeField] private int amountToSpawn = 2;
     [SerializeField] private float spawnCooldown = 2f;
     [SerializeField] private float minDistance = 2f;
-
-    [Header("Tipos de escalador")]
-    [Tooltip("Lista de arquetipos posibles. Ej: sin pico, con pico, etc.")]
 
     [Header("Estado interno (debug)")]
     [SerializeField] private float spawnCooldownTimer = 0f;
     [SerializeField] private int spawnedCount = 0;
     [SerializeField] public bool isMaxCount = false;
 
+    // Lista para guardar posiciones y evitar solapamientos
     private readonly List<Vector3> spawnedPositions = new List<Vector3>();
 
     private void Awake()
@@ -35,9 +35,18 @@ public class SpawnManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    private void Update()
+    {
+        // Aseguramos que el cooldown corra siempre, o puedes llamarlo desde un Manager externo
+        if (!isMaxCount)
+        {
+            SpawnClimbers();
+        }
+    }
+
     public void SpawnClimbers()
     {
-        if (isMaxCount)
+        if (isMaxCount || spawnPathPoints.Count < 2)
             return;
 
         spawnCooldownTimer += Time.deltaTime;
@@ -45,17 +54,18 @@ public class SpawnManager : MonoBehaviour
         if (spawnCooldownTimer < spawnCooldown)
             return;
 
-        Vector3 spawnPos;
+        Vector3 spawnPos = Vector3.zero;
         bool validPosition = false;
         int maxAttempts = 20;
         int attempts = 0;
 
         do
         {
-            float t = Random.Range(0f, 1f);
-            spawnPos = Vector3.Lerp(startPoint.position, endPoint.position, t);
-            validPosition = true;
+            // OBTENER PUNTO ALEATORIO EN LA FORMA
+            spawnPos = GetRandomPointOnMultiSegmentPath();
 
+            // VALIDAR DISTANCIA
+            validPosition = true;
             foreach (var pos in spawnedPositions)
             {
                 if (Vector3.Distance(spawnPos, pos) < minDistance)
@@ -64,7 +74,6 @@ public class SpawnManager : MonoBehaviour
                     break;
                 }
             }
-
             attempts++;
         }
         while (!validPosition && attempts < maxAttempts);
@@ -75,23 +84,6 @@ public class SpawnManager : MonoBehaviour
             spawnedPositions.Add(spawnPos);
             spawnedCount++;
             spawnCooldownTimer = 0f;
-
-            /*
-            //Elegir arquetipo aleatorio (si hay)
-            var config = obj.GetComponent<ClimberConfig>();
-            if (config != null && possibleArchetypes != null && possibleArchetypes.Length > 0)
-            {
-                ClimberArchetypeSO chosen = possibleArchetypes[Random.Range(0, possibleArchetypes.Length)];
-                if (chosen != null)
-                {
-                    config.ApplyArchetype(chosen);
-                }
-            }
-            else if (config == null)
-            {
-                //Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberConfig.");
-            }
-            */
 
             var climber = obj.GetComponent<ClimberMovement>();
             if (climber == null)
@@ -105,6 +97,43 @@ public class SpawnManager : MonoBehaviour
             isMaxCount = true;
             spawnCooldownTimer = 0f;
         }
+    }
+
+    // --- LÓGICA MATEMÁTICA PARA MÚLTIPLES PUNTOS ---
+    private Vector3 GetRandomPointOnMultiSegmentPath()
+    {
+        // 1. Calcular la longitud total de la "serpiente" o forma
+        float totalLength = 0f;
+        for (int i = 0; i < spawnPathPoints.Count - 1; i++)
+        {
+            if (spawnPathPoints[i] != null && spawnPathPoints[i + 1] != null)
+                totalLength += Vector3.Distance(spawnPathPoints[i].position, spawnPathPoints[i + 1].position);
+        }
+
+        // 2. Elegir un punto aleatorio en esa longitud total
+        float randomDist = Random.Range(0f, totalLength);
+
+        // 3. Encontrar en qué segmento cae esa distancia
+        for (int i = 0; i < spawnPathPoints.Count - 1; i++)
+        {
+            if (spawnPathPoints[i] == null || spawnPathPoints[i + 1] == null) continue;
+
+            float segmentLength = Vector3.Distance(spawnPathPoints[i].position, spawnPathPoints[i + 1].position);
+
+            // Si el punto aleatorio cae en este segmento
+            if (randomDist <= segmentLength)
+            {
+                // Normalizamos la distancia para hacer el Lerp en este segmento específico
+                float t = randomDist / segmentLength;
+                return Vector3.Lerp(spawnPathPoints[i].position, spawnPathPoints[i + 1].position, t);
+            }
+
+            // Si no, restamos la longitud de este segmento y pasamos al siguiente
+            randomDist -= segmentLength;
+        }
+
+        // Fallback (por errores de redondeo float): devolver el último punto
+        return spawnPathPoints[spawnPathPoints.Count - 1].position;
     }
 
     public void ResetSpawner()
@@ -122,9 +151,25 @@ public class SpawnManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Instance == this)
+        if (Instance == this) Instance = null;
+    }
+
+    // --- VISUALIZACIÓN EN EDITOR ---
+    private void OnDrawGizmos()
+    {
+        if (spawnPathPoints == null || spawnPathPoints.Count < 2) return;
+
+        Gizmos.color = Color.cyan;
+        for (int i = 0; i < spawnPathPoints.Count - 1; i++)
         {
-            Instance = null;
+            if (spawnPathPoints[i] != null && spawnPathPoints[i + 1] != null)
+            {
+                Gizmos.DrawLine(spawnPathPoints[i].position, spawnPathPoints[i + 1].position);
+                Gizmos.DrawSphere(spawnPathPoints[i].position, 0.3f);
+            }
         }
+        // Dibujar el último punto
+        if (spawnPathPoints[spawnPathPoints.Count - 1] != null)
+            Gizmos.DrawSphere(spawnPathPoints[spawnPathPoints.Count - 1].position, 0.3f);
     }
 }

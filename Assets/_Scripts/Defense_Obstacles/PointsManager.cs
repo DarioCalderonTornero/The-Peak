@@ -7,11 +7,13 @@ public class PointsManager : MonoBehaviour
 {
     public static PointsManager Instance { get; private set; }
 
-    public int startingPoints = 10;
+    public int maxPoints = 10;
     private int currentPoints;
 
     public TextMeshProUGUI pointsText;
     public event Action<int> OnPointsChanged;
+
+    [SerializeField] private AudioClip audioClip;
 
     private void Awake()
     {
@@ -27,7 +29,7 @@ public class PointsManager : MonoBehaviour
 
     private void Start()
     {
-        currentPoints = startingPoints;
+        currentPoints = maxPoints;
         UpdateUI();
     }
 
@@ -49,9 +51,12 @@ public class PointsManager : MonoBehaviour
 
     public void AddPoints(int amount)
     {
+        //Temporal_Sound_Music.Instance.PlaySound(audioClip, 0.5f);
         currentPoints += amount;
         UpdateUI();
     }
+
+    
 
     private void UpdateUI()
     {

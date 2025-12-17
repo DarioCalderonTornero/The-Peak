@@ -33,7 +33,7 @@ public class GameOverManager : MonoBehaviour
     public void SetGameOverCamer()
     {
         OnGameOver?.Invoke(this, EventArgs.Empty);
-        //StartCoroutine(GetClimberSound());
+        StartCoroutine(GetClimberSound());
         //Climber
         ClimberMovement.Instance.SetExternalSpeedMultiplier(0f);
         //Camera
@@ -44,7 +44,7 @@ public class GameOverManager : MonoBehaviour
 
     private IEnumerator GetClimberSound()
     {
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(3);
         Temporal_Sound_Music.Instance.PlaySound(gameOverClimberSound, 1.0f);
     }
 }

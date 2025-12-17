@@ -32,7 +32,10 @@ public class WorldClimberUI : MonoBehaviour
             currentStaminaImage.gameObject.SetActive(false);
         }
         
-        gameOverClimberText.gameObject.SetActive(true);
+        if (gameOverClimberText != null)
+        {
+            gameOverClimberText.gameObject.SetActive(true);
+        }
     }
 
     private void InputManager_OnHideStaminaUI(object sender, System.EventArgs e)

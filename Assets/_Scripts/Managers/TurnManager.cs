@@ -152,6 +152,8 @@ public class TurnManager : MonoBehaviour
         currentTurnNumber++;
         OnTurnNumberChanged?.Invoke(currentTurnNumber);
 
+        PointsManager.Instance.AddPoints(20);
+
         if (CardSlotsUI.Instance != null)
         {
             CardSlotsUI.Instance.ShowSlotContainer();

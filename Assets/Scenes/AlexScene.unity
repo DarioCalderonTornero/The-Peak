@@ -724,8 +724,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b66a1428e982e574898d43cbc2317363, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingPoints: 2000000
+  maxPoints: 100
   pointsText: {fileID: 1410541747}
+  audioClip: {fileID: 8300000, guid: 405a8a024d503a04c81462523227d9b5, type: 3}
 --- !u!114 &281424686
 MonoBehaviour:
   m_ObjectHideFlags: 0

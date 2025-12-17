@@ -191,6 +191,7 @@ public class ClimberMovement : MonoBehaviour
 
         if (currentStamina <= 0f)
         {
+            PointsManager.Instance.AddPoints(10);
             isActiveThisTurn = false;
             isAtCamp = false;
             Destroy(gameObject);

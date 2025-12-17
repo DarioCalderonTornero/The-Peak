@@ -733,7 +733,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -2382,7 +2382,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverCinemachineCam: {fileID: 1358668566}
-  gameOverClimberSound: {fileID: 0}
+  gameOverClimberSound: {fileID: 8300000, guid: ff49baa560675ad43b482f06a36f3777, type: 3}
 --- !u!1 &1709219933
 GameObject:
   m_ObjectHideFlags: 0

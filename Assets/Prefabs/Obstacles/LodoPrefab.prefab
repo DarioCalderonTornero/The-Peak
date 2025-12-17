@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slowFactor: 0.2
-  staminaMultiplier: 1.5
+  staminaMultiplier: 2
   deathThresholdPercent: 0.2
   spawnDuration: 0.25
   idleSinkSpeed: 0.2

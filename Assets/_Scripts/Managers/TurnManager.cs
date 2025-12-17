@@ -222,7 +222,7 @@ public class TurnManager : MonoBehaviour
 
         if (!pointsAddedThisTurn)
         {
-            PointsManager.Instance.AddPoints(3);
+            PointsManager.Instance.AddPoints(5);
             pointsAddedThisTurn = true;
         }
 

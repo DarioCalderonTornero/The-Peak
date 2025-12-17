@@ -18,6 +18,7 @@ MonoBehaviour:
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 5185131529581212778, guid: 06f5878d1abbe7e45bddb145ac073d90, type: 3}
   cost: 15
+  worldSprite: {fileID: 21300000, guid: 7dfd8864c07caee459563783dbcce377, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 0}

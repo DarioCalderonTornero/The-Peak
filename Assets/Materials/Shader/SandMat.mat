@@ -122,8 +122,8 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - _Arena1: {r: 0.9245283, g: 0.8429455, b: 0.5189569, a: 0}
-    - _Arena2: {r: 0.7264151, g: 0.36825207, b: 0.20216265, a: 0}
+    - _Arena1: {r: 1, g: 1, b: 1, a: 0}
+    - _Arena2: {r: 0.6734603, g: 0.8867924, b: 0.882436, a: 1}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

@@ -7,6 +7,9 @@ public class BrambleDefense : BaseDefense
     [Header("Ralentización")]
     [SerializeField] private float slowFactor = 0.7f;
 
+    [Header("Stamina extra en zarzas")]
+    [SerializeField] private float staminaMultiplier = 2f;
+
     [Header("Aparición")]
     [SerializeField] private float spawnDuration = 0.25f;
     [SerializeField] private float spawnAnimSpeed = 1f;
@@ -41,6 +44,15 @@ public class BrambleDefense : BaseDefense
 
     // Escaladores dentro del área de la zarza
     private readonly List<ClimberMovement> climbersInside = new List<ClimberMovement>();
+
+    private class BrambleClimberData
+    {
+        public float lastStamina;
+        public bool inside;
+    }
+
+    private readonly Dictionary<ClimberMovement, BrambleClimberData> staminaTracked =
+        new Dictionary<ClimberMovement, BrambleClimberData>();
 
     private class BrambleInstance
     {
@@ -263,54 +275,60 @@ public class BrambleDefense : BaseDefense
         if (isPreview) return;
         if (spawnedInstances.Count == 0) return;
 
+        // Limpieza de lista visual (ya la tienes)
         for (int i = climbersInside.Count - 1; i >= 0; i--)
         {
             if (climbersInside[i] == null)
                 climbersInside.RemoveAt(i);
         }
 
-        if (climbersInside.Count == 0)
-        {
-            foreach (var inst in spawnedInstances)
-            {
-                if (inst.transform == null) continue;
-                inst.transform.localPosition = Vector3.Lerp(inst.transform.localPosition, inst.originalLocalPos, Time.deltaTime * 10f);
-            }
+        // --- SHAKE VISUAL (tal cual lo tienes) ---
+        // ...
+
+        // --- NUEVO: stamina extra + posible muerte por zarza ---
+        if (staminaTracked.Count == 0)
             return;
-        }
 
-        float radiusSqr = shakeRadiusAroundClimber * shakeRadiusAroundClimber;
+        var keys = new List<ClimberMovement>(staminaTracked.Keys);
 
-        foreach (var inst in spawnedInstances)
+        foreach (var climber in keys)
         {
-            if (inst.transform == null) continue;
-
-            bool shouldShake = false;
-
-            foreach (var climber in climbersInside)
+            if (climber == null)
             {
-                if (climber == null) continue;
-
-                Vector3 delta = inst.transform.position - climber.transform.position;
-                delta.y = 0f;
-
-                if (delta.sqrMagnitude <= radiusSqr)
-                {
-                    shouldShake = true;
-                    break;
-                }
+                staminaTracked.Remove(climber);
+                continue;
             }
 
-            if (shouldShake)
+            if (!staminaTracked.TryGetValue(climber, out BrambleClimberData data))
+                continue;
+
+            if (!data.inside)
+                continue;
+
+            float prev = data.lastStamina;
+            float current = climber.GetCurrentStamina();
+            float max = climber.GetMaxStamina();
+
+            // Gasto base que ha ocurrido este frame (por caminar, habilidades, etc.)
+            float delta = Mathf.Max(0f, prev - current);
+
+            if (delta > 0f && staminaMultiplier > 1f)
             {
-                Vector3 offset = Random.insideUnitSphere * shakeMagnitude;
-                offset.y = 0f;
-                inst.transform.localPosition = inst.originalLocalPos + offset;
+                // Igual que en el lodo: compensamos el slow para que el coste total
+                // sea delta * staminaMultiplier aunque vaya más lento.
+                float effectiveFactor = staminaMultiplier;
+
+                if (slowFactor > 0f)
+                    effectiveFactor = staminaMultiplier / slowFactor;
+
+                float extra = delta * (effectiveFactor - 1f);
+                float newStamina = Mathf.Max(0f, current - extra);
+
+                climber.SetCurrentStamina(newStamina);
+                current = newStamina;
             }
-            else
-            {
-                inst.transform.localPosition = Vector3.Lerp(inst.transform.localPosition, inst.originalLocalPos, Time.deltaTime * 10f);
-            }
+
+            data.lastStamina = current;
         }
     }
 
@@ -342,6 +360,16 @@ public class BrambleDefense : BaseDefense
 
         if (!climbersInside.Contains(climber))
             climbersInside.Add(climber);
+
+        // 🔹 NUEVO: registrar stamina mientras esté dentro
+        if (!staminaTracked.TryGetValue(climber, out BrambleClimberData data))
+        {
+            data = new BrambleClimberData();
+            staminaTracked[climber] = data;
+        }
+
+        data.inside = true;
+        data.lastStamina = climber.GetCurrentStamina();
     }
 
     private void OnTriggerExit(Collider other)
@@ -361,5 +389,12 @@ public class BrambleDefense : BaseDefense
 
         climber.SetExternalSpeedMultiplier(1f);
         climbersInside.Remove(climber);
+
+        // 🔹 NUEVO: dejar de trackear stamina
+        if (staminaTracked.TryGetValue(climber, out BrambleClimberData data))
+        {
+            data.inside = false;
+            // si quieres, también puedes hacer: staminaTracked.Remove(climber);
+        }
     }
 }

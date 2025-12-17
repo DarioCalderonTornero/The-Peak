@@ -10,10 +10,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public CardData cardData;
 
     public Camera mainCamera;
-    public Image cardImage;
+    // public Image cardImage;
     public Image iconImage;
     public TextMeshProUGUI costText;
     public TextMeshProUGUI nameText;
+
+    public Image worldSpriteImage;
 
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
@@ -186,6 +188,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (iconImage != null) iconImage.sprite = cardData.icon;
         if (costText != null) costText.text = cardData.cost.ToString();
         if (nameText != null) nameText.text = cardData.cardName;
+
+        if (worldSpriteImage != null && cardData.worldSprite != null)
+            worldSpriteImage.sprite = cardData.worldSprite;
     }
 
     private void HandlePointsChanged(int points)
@@ -560,8 +565,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (this == null || canvasGroup == null) return;
         bool canUse = PointsManager.Instance != null && PointsManager.Instance.CanAfford(cardData.cost);
 
-        if (cardImage != null)
-            cardImage.color = canUse ? Color.white : Color.gray;
+        // if (cardImage != null)
+            // cardImage.color = canUse ? Color.white : Color.gray;
 
         canvasGroup.interactable = canUse;
     }

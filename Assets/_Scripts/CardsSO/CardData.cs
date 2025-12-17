@@ -8,6 +8,9 @@ public class CardData : ScriptableObject
     public Sprite icon;
     public GameObject defensePrefab;
     public int cost;
+    
+    [Header("Sprite extra")]
+    public Sprite worldSprite;
 
     public bool hasFixedPlacement = false;
     public Vector3 fixedPosition;

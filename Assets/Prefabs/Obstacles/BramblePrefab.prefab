@@ -126,6 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slowFactor: 0.2
+  staminaMultiplier: 1.25
   spawnDuration: 0.5
   spawnAnimSpeed: 0.6
   shakeMagnitude: 0.03

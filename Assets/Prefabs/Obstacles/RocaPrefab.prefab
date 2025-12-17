@@ -139,6 +139,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4415755617574020918}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5205821062603298929}
   m_SourcePrefab: {fileID: 100100000, guid: f41877b2b310d7143baedf71c7c7b680, type: 3}
 --- !u!1 &8310934270780480791 stripped
 GameObject:
@@ -237,3 +240,17 @@ MonoBehaviour:
   obstacleType: 1
   breakRockPrefab: {fileID: 6481499901940509601, guid: 70a9b849608a05f4580b498f89608ae6, type: 3}
   delayAfterSpawn: 2
+--- !u!114 &5205821062603298929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8310934270780480791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bdcc574b18f7a542900218b1d45fd87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnVfxPrefab: {fileID: 820992894342637723, guid: 98049565b43c56942ac8fbba6c4003d1, type: 3}
+  spawnVfxDuration: 2

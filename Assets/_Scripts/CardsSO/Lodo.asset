@@ -17,7 +17,7 @@ MonoBehaviour:
     cuando tienen un 20% o menos, y el lodo desaparece."
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 9104421247320485007, guid: 0dbdca6d3e6eed34e88e34ae5bf25089, type: 3}
-  cost: 15
+  cost: 4
   worldSprite: {fileID: 21300000, guid: af486b109c49d404fa91fe790c30e4ee, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

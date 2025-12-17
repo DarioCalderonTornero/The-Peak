@@ -17,7 +17,7 @@ MonoBehaviour:
     completo y eliminarlo. Si otro escalador pasa cerca, lo salva.
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 3112691383206151712, guid: b948289b0c5fed44c924adb101a0391e, type: 3}
-  cost: 20
+  cost: 6
   worldSprite: {fileID: 21300000, guid: 69fc6e192c9e58f469ed781db1fdb5fd, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

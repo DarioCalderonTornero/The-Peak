@@ -237,9 +237,9 @@ MonoBehaviour:
   summit: {fileID: 0}
   loadout: {fileID: 8495448889631796368}
   reachedThreshold: 0.2
-  maxStamina: 300
+  maxStamina: 250
   baseCostPerMeter: 1
-  uphillExtraCostFactor: 2
+  uphillExtraCostFactor: 1
   minStaminaCost: 0.1
   externalSpeedMultiplier: 1
   revisitPenaltyPerVisit: 200
@@ -247,7 +247,7 @@ MonoBehaviour:
   backtrackTolerance: 2
   backtrackPenaltyPerMeter: 5
   stepConversionFactor: 20
-  noiseRange: 75
+  noiseRange: 0
   currentStamina: 0
   isEating: 0
   originalDestination: {x: 0, y: 0, z: 0}

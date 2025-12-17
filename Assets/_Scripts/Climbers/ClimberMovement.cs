@@ -91,6 +91,8 @@ public class ClimberMovement : MonoBehaviour
     private float _cachedMultiplierBeforeStop = 1f;
     // -----------------------------------------------------------------
 
+    private bool pointsAddedThisTurn = false;
+
     private void Awake()
     {
         if (Instance == null)
@@ -189,11 +191,12 @@ public class ClimberMovement : MonoBehaviour
             lastFrameHeight = frameHeight;
         }
 
-        if (currentStamina <= 0f)
+        if (currentStamina <= 0f && !pointsAddedThisTurn)
         {
-            PointsManager.Instance.AddPoints(10);
+            PointsManager.Instance.AddPoints(5);
             isActiveThisTurn = false;
             isAtCamp = false;
+            pointsAddedThisTurn = true;
             Destroy(gameObject);
             return;
         }

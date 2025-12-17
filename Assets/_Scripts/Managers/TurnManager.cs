@@ -7,6 +7,9 @@ public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance { get; private set; }
 
+    [Header("UI References")]
+    [SerializeField] private PlayerTurnsUI playerTurnsUI;
+
     public enum TurnState
     {
         Idle,
@@ -56,6 +59,8 @@ public class TurnManager : MonoBehaviour
     private SpawnManager spawnManager;
     private DefensePlacementManager defenseManager;
 
+
+    private bool pointsAddedThisTurn = false;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -148,11 +153,10 @@ public class TurnManager : MonoBehaviour
 
     private void StartPlayerTurn()
     {
+        pointsAddedThisTurn = false; 
         CurrentTurnState = TurnState.PlayerTurn;
         currentTurnNumber++;
         OnTurnNumberChanged?.Invoke(currentTurnNumber);
-
-        PointsManager.Instance.AddPoints(20);
 
         if (CardSlotsUI.Instance != null)
         {
@@ -161,7 +165,6 @@ public class TurnManager : MonoBehaviour
 
         OnPlayerTurnStart?.Invoke();
 
-        // Turno del jugador: botón "end turn" activo
         if (nextTurnButton != null)
         {
             nextTurnButton.interactable = true;
@@ -216,6 +219,18 @@ public class TurnManager : MonoBehaviour
     {
         if (CurrentTurnState != TurnState.ClimberTurn)
             return;
+
+        if (!pointsAddedThisTurn)
+        {
+            PointsManager.Instance.AddPoints(3);
+            pointsAddedThisTurn = true;
+        }
+
+        // Actualizamos el contador de turnos en el UI
+        if (playerTurnsUI != null)
+        {
+            playerTurnsUI.currentTurns.text = (currentTurnNumber).ToString(); 
+        }
 
         OnClimberTurnEnd?.Invoke();
         StartPlayerTurn();

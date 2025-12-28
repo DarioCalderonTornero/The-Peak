@@ -282,6 +282,19 @@ public class BrambleDefense : BaseDefense
                 climbersInside.RemoveAt(i);
         }
 
+        // ✅ FIX: si se destruyen dentro, no hay OnTriggerExit -> aquí forzamos el Stop
+        if (climbersInside.Count == 0)
+        {
+            insideCount = 0;
+            if (brambleAudioSource != null && brambleAudioSource.isPlaying)
+                brambleAudioSource.Stop();
+        }
+        else
+        {
+            if (brambleAudioSource != null && !brambleAudioSource.isPlaying)
+                brambleAudioSource.Play();
+        }
+
         // --- SHAKE VISUAL (tal cual lo tienes) ---
         // ...
 
@@ -307,7 +320,6 @@ public class BrambleDefense : BaseDefense
 
             float prev = data.lastStamina;
             float current = climber.GetCurrentStamina();
-            float max = climber.GetMaxStamina();
 
             // Gasto base que ha ocurrido este frame (por caminar, habilidades, etc.)
             float delta = Mathf.Max(0f, prev - current);
@@ -331,6 +343,7 @@ public class BrambleDefense : BaseDefense
             data.lastStamina = current;
         }
     }
+
 
     private void OnTriggerEnter(Collider other)
     {

@@ -8,6 +8,6 @@ public class PlayerTurnsUI : MonoBehaviour
 
     private void Start()
     {
-        currentTurns.text = "1";
+        currentTurns.text = "0";
     }
 }

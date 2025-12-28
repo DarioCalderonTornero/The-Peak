@@ -625,7 +625,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerTurnsUI: {fileID: 584625723}
   currentTurnState: 1
-  currentTurnNumber: 0
+  currentTurnNumber: 1
   logTurnChanges: 1
   nextTurnButton: {fileID: 1534971994}
   accelarateTimeButtonX1: {fileID: 2100247593}

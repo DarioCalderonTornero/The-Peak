@@ -136,7 +136,7 @@ public class TurnManager : MonoBehaviour
 
     public void StartGame()
     {
-        currentTurnNumber = 0;
+        //currentTurnNumber = 0;
         StartPlayerTurn();
         if (logTurnChanges)
             Debug.Log("[TurnManager] Game started, beginning Player Turn");

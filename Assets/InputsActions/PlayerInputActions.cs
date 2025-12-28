@@ -100,42 +100,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""ResetCamera"",
-                    ""type"": ""Button"",
-                    ""id"": ""9dfb0952-c0d5-4453-ae7b-c3e5fe53c237"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""CameraLeft"",
-                    ""type"": ""Button"",
-                    ""id"": ""b5bdc715-91a3-4c38-8b02-3893a7f94ca7"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""CameraRight"",
-                    ""type"": ""Button"",
-                    ""id"": ""4dcc082a-641a-444a-9c26-0127c7072977"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""CameraBack"",
-                    ""type"": ""Button"",
-                    ""id"": ""d24772bf-9483-42ef-9544-4b8b8f264153"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -147,50 +111,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""GamePause"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""48ba6106-6ef7-4506-8910-affff0b520d2"",
-                    ""path"": ""<Keyboard>/1"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ResetCamera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""04a705b9-066d-45b3-997f-8796d2dbbca1"",
-                    ""path"": ""<Keyboard>/2"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""CameraLeft"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""c53dc5b0-ff9b-432e-8b3d-169d10a43259"",
-                    ""path"": ""<Keyboard>/3"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""CameraRight"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""de4d7f15-8f19-4a62-a1cc-103d93e0140b"",
-                    ""path"": ""<Keyboard>/4"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""CameraBack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -243,6 +163,214 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Camera"",
+            ""id"": ""cfb0e366-2f4e-451a-a350-b64b297871be"",
+            ""actions"": [
+                {
+                    ""name"": ""FrontalView"",
+                    ""type"": ""Button"",
+                    ""id"": ""ff359409-1211-41d5-8768-87d231b2ab1c"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RightView"",
+                    ""type"": ""Button"",
+                    ""id"": ""93009768-6276-4090-9f06-9dc71f12a408"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BackView"",
+                    ""type"": ""Button"",
+                    ""id"": ""f4fdb22e-ad7a-48ae-9702-36e0970c36aa"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""LeftView"",
+                    ""type"": ""Button"",
+                    ""id"": ""a3340a85-936f-4d33-8538-5b621bf02554"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""TopView"",
+                    ""type"": ""Button"",
+                    ""id"": ""60994ee0-7c5f-40bf-ad35-0407eed0377d"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CameraPanHold"",
+                    ""type"": ""Button"",
+                    ""id"": ""09fe8193-68a8-43e1-9734-3f8681b51145"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CameraPanMove"",
+                    ""type"": ""Value"",
+                    ""id"": ""8f462e7b-d083-46c5-bb82-d75eaba519c2"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CameraRotateDelta"",
+                    ""type"": ""Value"",
+                    ""id"": ""23606c4e-fd08-4628-8bb0-b1a898d2f0c3"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CameraRotateHold"",
+                    ""type"": ""Button"",
+                    ""id"": ""baa33dd7-25b2-4cc4-8c43-4e04be9caf6a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CameraZoom"",
+                    ""type"": ""Value"",
+                    ""id"": ""ebb769ba-9ab7-49d2-bbe1-8ee735e7d25f"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""6f3aa033-292e-4709-8a90-4cbfe888a166"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FrontalView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9b080e1f-ee88-4f28-930a-d51f12421ba2"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8275f50d-c105-454f-bfc3-cd3464f1ce53"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BackView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d7478283-440b-4c1f-8d82-64b83f68b9b8"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LeftView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""37ffea3d-1d68-4715-8e1c-e840a16dbd42"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""TopView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e340d8c6-1301-4f72-be91-a8c25521630d"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraPanHold"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fb6a98fe-cef0-4faf-998a-9373c75afc9c"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraPanMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2e80df40-c4c4-4a74-aa44-deb8754306ee"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraRotateDelta"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fe9cb8e0-be95-461a-902a-84be64200934"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraRotateHold"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c18b22e1-7346-48c6-a082-73fc7db4dca4"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraZoom"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -250,20 +378,29 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_GamePause = m_Player.FindAction("GamePause", throwIfNotFound: true);
-        m_Player_ResetCamera = m_Player.FindAction("ResetCamera", throwIfNotFound: true);
-        m_Player_CameraLeft = m_Player.FindAction("CameraLeft", throwIfNotFound: true);
-        m_Player_CameraRight = m_Player.FindAction("CameraRight", throwIfNotFound: true);
-        m_Player_CameraBack = m_Player.FindAction("CameraBack", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_RotateCard = m_UI.FindAction("RotateCard", throwIfNotFound: true);
         m_UI_HideClimberStaminaUI = m_UI.FindAction("HideClimberStaminaUI", throwIfNotFound: true);
+        // Camera
+        m_Camera = asset.FindActionMap("Camera", throwIfNotFound: true);
+        m_Camera_FrontalView = m_Camera.FindAction("FrontalView", throwIfNotFound: true);
+        m_Camera_RightView = m_Camera.FindAction("RightView", throwIfNotFound: true);
+        m_Camera_BackView = m_Camera.FindAction("BackView", throwIfNotFound: true);
+        m_Camera_LeftView = m_Camera.FindAction("LeftView", throwIfNotFound: true);
+        m_Camera_TopView = m_Camera.FindAction("TopView", throwIfNotFound: true);
+        m_Camera_CameraPanHold = m_Camera.FindAction("CameraPanHold", throwIfNotFound: true);
+        m_Camera_CameraPanMove = m_Camera.FindAction("CameraPanMove", throwIfNotFound: true);
+        m_Camera_CameraRotateDelta = m_Camera.FindAction("CameraRotateDelta", throwIfNotFound: true);
+        m_Camera_CameraRotateHold = m_Camera.FindAction("CameraRotateHold", throwIfNotFound: true);
+        m_Camera_CameraZoom = m_Camera.FindAction("CameraZoom", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
     {
         UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, PlayerInputActions.Player.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, PlayerInputActions.UI.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_Camera.enabled, "This will cause a leak and performance issues, PlayerInputActions.Camera.Disable() has not been called.");
     }
 
     /// <summary>
@@ -340,10 +477,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_GamePause;
-    private readonly InputAction m_Player_ResetCamera;
-    private readonly InputAction m_Player_CameraLeft;
-    private readonly InputAction m_Player_CameraRight;
-    private readonly InputAction m_Player_CameraBack;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -359,22 +492,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/GamePause".
         /// </summary>
         public InputAction @GamePause => m_Wrapper.m_Player_GamePause;
-        /// <summary>
-        /// Provides access to the underlying input action "Player/ResetCamera".
-        /// </summary>
-        public InputAction @ResetCamera => m_Wrapper.m_Player_ResetCamera;
-        /// <summary>
-        /// Provides access to the underlying input action "Player/CameraLeft".
-        /// </summary>
-        public InputAction @CameraLeft => m_Wrapper.m_Player_CameraLeft;
-        /// <summary>
-        /// Provides access to the underlying input action "Player/CameraRight".
-        /// </summary>
-        public InputAction @CameraRight => m_Wrapper.m_Player_CameraRight;
-        /// <summary>
-        /// Provides access to the underlying input action "Player/CameraBack".
-        /// </summary>
-        public InputAction @CameraBack => m_Wrapper.m_Player_CameraBack;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -404,18 +521,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @GamePause.started += instance.OnGamePause;
             @GamePause.performed += instance.OnGamePause;
             @GamePause.canceled += instance.OnGamePause;
-            @ResetCamera.started += instance.OnResetCamera;
-            @ResetCamera.performed += instance.OnResetCamera;
-            @ResetCamera.canceled += instance.OnResetCamera;
-            @CameraLeft.started += instance.OnCameraLeft;
-            @CameraLeft.performed += instance.OnCameraLeft;
-            @CameraLeft.canceled += instance.OnCameraLeft;
-            @CameraRight.started += instance.OnCameraRight;
-            @CameraRight.performed += instance.OnCameraRight;
-            @CameraRight.canceled += instance.OnCameraRight;
-            @CameraBack.started += instance.OnCameraBack;
-            @CameraBack.performed += instance.OnCameraBack;
-            @CameraBack.canceled += instance.OnCameraBack;
         }
 
         /// <summary>
@@ -430,18 +535,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @GamePause.started -= instance.OnGamePause;
             @GamePause.performed -= instance.OnGamePause;
             @GamePause.canceled -= instance.OnGamePause;
-            @ResetCamera.started -= instance.OnResetCamera;
-            @ResetCamera.performed -= instance.OnResetCamera;
-            @ResetCamera.canceled -= instance.OnResetCamera;
-            @CameraLeft.started -= instance.OnCameraLeft;
-            @CameraLeft.performed -= instance.OnCameraLeft;
-            @CameraLeft.canceled -= instance.OnCameraLeft;
-            @CameraRight.started -= instance.OnCameraRight;
-            @CameraRight.performed -= instance.OnCameraRight;
-            @CameraRight.canceled -= instance.OnCameraRight;
-            @CameraBack.started -= instance.OnCameraBack;
-            @CameraBack.performed -= instance.OnCameraBack;
-            @CameraBack.canceled -= instance.OnCameraBack;
         }
 
         /// <summary>
@@ -582,6 +675,201 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="UIActions" /> instance referencing this action map.
     /// </summary>
     public UIActions @UI => new UIActions(this);
+
+    // Camera
+    private readonly InputActionMap m_Camera;
+    private List<ICameraActions> m_CameraActionsCallbackInterfaces = new List<ICameraActions>();
+    private readonly InputAction m_Camera_FrontalView;
+    private readonly InputAction m_Camera_RightView;
+    private readonly InputAction m_Camera_BackView;
+    private readonly InputAction m_Camera_LeftView;
+    private readonly InputAction m_Camera_TopView;
+    private readonly InputAction m_Camera_CameraPanHold;
+    private readonly InputAction m_Camera_CameraPanMove;
+    private readonly InputAction m_Camera_CameraRotateDelta;
+    private readonly InputAction m_Camera_CameraRotateHold;
+    private readonly InputAction m_Camera_CameraZoom;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "Camera".
+    /// </summary>
+    public struct CameraActions
+    {
+        private @PlayerInputActions m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public CameraActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/FrontalView".
+        /// </summary>
+        public InputAction @FrontalView => m_Wrapper.m_Camera_FrontalView;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/RightView".
+        /// </summary>
+        public InputAction @RightView => m_Wrapper.m_Camera_RightView;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/BackView".
+        /// </summary>
+        public InputAction @BackView => m_Wrapper.m_Camera_BackView;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/LeftView".
+        /// </summary>
+        public InputAction @LeftView => m_Wrapper.m_Camera_LeftView;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/TopView".
+        /// </summary>
+        public InputAction @TopView => m_Wrapper.m_Camera_TopView;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraPanHold".
+        /// </summary>
+        public InputAction @CameraPanHold => m_Wrapper.m_Camera_CameraPanHold;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraPanMove".
+        /// </summary>
+        public InputAction @CameraPanMove => m_Wrapper.m_Camera_CameraPanMove;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraRotateDelta".
+        /// </summary>
+        public InputAction @CameraRotateDelta => m_Wrapper.m_Camera_CameraRotateDelta;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraRotateHold".
+        /// </summary>
+        public InputAction @CameraRotateHold => m_Wrapper.m_Camera_CameraRotateHold;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraZoom".
+        /// </summary>
+        public InputAction @CameraZoom => m_Wrapper.m_Camera_CameraZoom;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_Camera; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="CameraActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(CameraActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="CameraActions" />
+        public void AddCallbacks(ICameraActions instance)
+        {
+            if (instance == null || m_Wrapper.m_CameraActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_CameraActionsCallbackInterfaces.Add(instance);
+            @FrontalView.started += instance.OnFrontalView;
+            @FrontalView.performed += instance.OnFrontalView;
+            @FrontalView.canceled += instance.OnFrontalView;
+            @RightView.started += instance.OnRightView;
+            @RightView.performed += instance.OnRightView;
+            @RightView.canceled += instance.OnRightView;
+            @BackView.started += instance.OnBackView;
+            @BackView.performed += instance.OnBackView;
+            @BackView.canceled += instance.OnBackView;
+            @LeftView.started += instance.OnLeftView;
+            @LeftView.performed += instance.OnLeftView;
+            @LeftView.canceled += instance.OnLeftView;
+            @TopView.started += instance.OnTopView;
+            @TopView.performed += instance.OnTopView;
+            @TopView.canceled += instance.OnTopView;
+            @CameraPanHold.started += instance.OnCameraPanHold;
+            @CameraPanHold.performed += instance.OnCameraPanHold;
+            @CameraPanHold.canceled += instance.OnCameraPanHold;
+            @CameraPanMove.started += instance.OnCameraPanMove;
+            @CameraPanMove.performed += instance.OnCameraPanMove;
+            @CameraPanMove.canceled += instance.OnCameraPanMove;
+            @CameraRotateDelta.started += instance.OnCameraRotateDelta;
+            @CameraRotateDelta.performed += instance.OnCameraRotateDelta;
+            @CameraRotateDelta.canceled += instance.OnCameraRotateDelta;
+            @CameraRotateHold.started += instance.OnCameraRotateHold;
+            @CameraRotateHold.performed += instance.OnCameraRotateHold;
+            @CameraRotateHold.canceled += instance.OnCameraRotateHold;
+            @CameraZoom.started += instance.OnCameraZoom;
+            @CameraZoom.performed += instance.OnCameraZoom;
+            @CameraZoom.canceled += instance.OnCameraZoom;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="CameraActions" />
+        private void UnregisterCallbacks(ICameraActions instance)
+        {
+            @FrontalView.started -= instance.OnFrontalView;
+            @FrontalView.performed -= instance.OnFrontalView;
+            @FrontalView.canceled -= instance.OnFrontalView;
+            @RightView.started -= instance.OnRightView;
+            @RightView.performed -= instance.OnRightView;
+            @RightView.canceled -= instance.OnRightView;
+            @BackView.started -= instance.OnBackView;
+            @BackView.performed -= instance.OnBackView;
+            @BackView.canceled -= instance.OnBackView;
+            @LeftView.started -= instance.OnLeftView;
+            @LeftView.performed -= instance.OnLeftView;
+            @LeftView.canceled -= instance.OnLeftView;
+            @TopView.started -= instance.OnTopView;
+            @TopView.performed -= instance.OnTopView;
+            @TopView.canceled -= instance.OnTopView;
+            @CameraPanHold.started -= instance.OnCameraPanHold;
+            @CameraPanHold.performed -= instance.OnCameraPanHold;
+            @CameraPanHold.canceled -= instance.OnCameraPanHold;
+            @CameraPanMove.started -= instance.OnCameraPanMove;
+            @CameraPanMove.performed -= instance.OnCameraPanMove;
+            @CameraPanMove.canceled -= instance.OnCameraPanMove;
+            @CameraRotateDelta.started -= instance.OnCameraRotateDelta;
+            @CameraRotateDelta.performed -= instance.OnCameraRotateDelta;
+            @CameraRotateDelta.canceled -= instance.OnCameraRotateDelta;
+            @CameraRotateHold.started -= instance.OnCameraRotateHold;
+            @CameraRotateHold.performed -= instance.OnCameraRotateHold;
+            @CameraRotateHold.canceled -= instance.OnCameraRotateHold;
+            @CameraZoom.started -= instance.OnCameraZoom;
+            @CameraZoom.performed -= instance.OnCameraZoom;
+            @CameraZoom.canceled -= instance.OnCameraZoom;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="CameraActions.UnregisterCallbacks(ICameraActions)" />.
+        /// </summary>
+        /// <seealso cref="CameraActions.UnregisterCallbacks(ICameraActions)" />
+        public void RemoveCallbacks(ICameraActions instance)
+        {
+            if (m_Wrapper.m_CameraActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="CameraActions.AddCallbacks(ICameraActions)" />
+        /// <seealso cref="CameraActions.RemoveCallbacks(ICameraActions)" />
+        /// <seealso cref="CameraActions.UnregisterCallbacks(ICameraActions)" />
+        public void SetCallbacks(ICameraActions instance)
+        {
+            foreach (var item in m_Wrapper.m_CameraActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_CameraActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="CameraActions" /> instance referencing this action map.
+    /// </summary>
+    public CameraActions @Camera => new CameraActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Player" which allows adding and removing callbacks.
     /// </summary>
@@ -596,34 +884,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnGamePause(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "ResetCamera" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnResetCamera(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "CameraLeft" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnCameraLeft(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "CameraRight" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnCameraRight(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "CameraBack" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnCameraBack(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.
@@ -646,5 +906,83 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnHideClimberStaminaUI(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Camera" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="CameraActions.AddCallbacks(ICameraActions)" />
+    /// <seealso cref="CameraActions.RemoveCallbacks(ICameraActions)" />
+    public interface ICameraActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "FrontalView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnFrontalView(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "RightView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRightView(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "BackView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnBackView(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "LeftView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnLeftView(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "TopView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTopView(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraPanHold" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraPanHold(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraPanMove" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraPanMove(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraRotateDelta" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraRotateDelta(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraRotateHold" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraRotateHold(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraZoom" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraZoom(InputAction.CallbackContext context);
     }
 }

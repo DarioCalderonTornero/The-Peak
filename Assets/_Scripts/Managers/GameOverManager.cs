@@ -30,7 +30,7 @@ public class GameOverManager : MonoBehaviour
         gameOverCinemachineCam.Priority = 0;
     }
 
-    public void SetGameOverCamer()
+    public void SetGameOverCamera()
     {
         OnGameOver?.Invoke(this, EventArgs.Empty);
         StartCoroutine(GetClimberSound());

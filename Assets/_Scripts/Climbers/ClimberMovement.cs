@@ -473,7 +473,7 @@ public class ClimberMovement : MonoBehaviour
         isActiveThisTurn = false;
         isAtCamp = false;
         if (agent != null) agent.isStopped = true;
-        GameOverManager.Instance.SetGameOverCamer();
+        GameOverManager.Instance.SetGameOverCamera();
         Debug.Log("Cima alcanzada");
         //Destroy(gameObject);
     }

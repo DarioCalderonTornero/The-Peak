@@ -4,6 +4,7 @@ using System.Collections;
 
 public class CameraZoomPivotFocus : MonoBehaviour
 {
+    /*
     [Header("Referencias")]
     [SerializeField] private Transform pivotTransform;
     [SerializeField] private Camera mainCamera;
@@ -447,4 +448,6 @@ public class CameraZoomPivotFocus : MonoBehaviour
         if (InputManager.Instance != null)
             InputManager.Instance.OnResetCameraInput -= InputManager_OnResetCameraInput;
     }
+
+    */
 }

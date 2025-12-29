@@ -19,6 +19,7 @@ public class InputManager : MonoBehaviour
     public event EventHandler OnRightView;
     public event EventHandler OnBackView;
     public event EventHandler OnLeftView;
+    public event EventHandler OnTopView;
 
     private void Awake()
     {
@@ -52,7 +53,10 @@ public class InputManager : MonoBehaviour
         inputActions.Camera.RightView.performed += RightView_performed;
         inputActions.Camera.BackView.performed += BackView_performed;
         inputActions.Camera.LeftView.performed += LeftView_performed;
+        inputActions.Camera.TopView.performed += TopView_performed;
     }
+
+   
 
     //---CAMERA GETTERS---
     public Vector2 GetCameraPanMovement()
@@ -81,6 +85,11 @@ public class InputManager : MonoBehaviour
     }
 
     //Get Camera Faces
+    private void TopView_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        OnTopView?.Invoke(this, EventArgs.Empty);
+    }
+
     private void LeftView_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
         OnLeftView?.Invoke(this, EventArgs.Empty);

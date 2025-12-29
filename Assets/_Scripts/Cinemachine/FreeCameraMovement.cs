@@ -11,10 +11,12 @@ public class FreeCameraController : MonoBehaviour
 
     [Header("Zoom")]
     [SerializeField] private float zoomSpeed = 5f;
-    [SerializeField] private float minZoom = 5f;
-    [SerializeField] private float maxZoom = 80f;
 
-    private Vector3 zoomOrigin;
+    [Header("Zoom IN Collision (acercarse ilimitado hasta casi chocar)")]
+    [SerializeField] private string mountainTag = "Mountain";
+    [SerializeField] private float zoomInStopDistance = 1.0f;     // margen antes de chocar
+    [SerializeField] private float zoomInCastRadius = 0.25f;      // 0 = Raycast, >0 = SphereCast
+    [SerializeField] private LayerMask zoomInCollisionMask = ~0;  // puedes limitarlo a la layer de la montaña
 
     [Header("Rotate")]
     [SerializeField] private float rotateSensitivity = 0.15f;
@@ -42,13 +44,12 @@ public class FreeCameraController : MonoBehaviour
 
     private void Start()
     {
-        zoomOrigin = transform.position;
-
+        // Inicializa yaw/pitch desde la rotación actual (evita saltos)
         Vector3 currentEuler = transform.eulerAngles;
         yaw = currentEuler.y;
 
         pitch = currentEuler.x;
-        if (pitch > 180f) pitch -= 360f; 
+        if (pitch > 180f) pitch -= 360f;
 
         if (InputManager.Instance != null)
         {
@@ -95,6 +96,7 @@ public class FreeCameraController : MonoBehaviour
     {
         if (InputManager.Instance == null) return;
 
+        // --- SNAP (bloquea inputs mientras se mueve) ---
         if (isSnapping)
         {
             snapT += Time.deltaTime / Mathf.Max(0.0001f, snapDuration);
@@ -107,13 +109,12 @@ public class FreeCameraController : MonoBehaviour
             {
                 isSnapping = false;
 
+                // Resync yaw/pitch para que no pegue salto al volver a rotar
                 Vector3 euler = transform.eulerAngles;
                 yaw = euler.y;
 
                 pitch = euler.x;
                 if (pitch > 180f) pitch -= 360f;
-
-                zoomOrigin = transform.position;
             }
 
             return;
@@ -135,19 +136,59 @@ public class FreeCameraController : MonoBehaviour
             transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
         }
 
-        // --- ZOOM DOLLY ---
+        // --- ZOOM DOLLY (nuevo enfoque) ---
         Vector2 zoomDelta = InputManager.Instance.GetCameraZoom();
-
         if (Mathf.Abs(zoomDelta.y) >= 0.01f)
         {
-            Vector3 move = transform.forward * zoomDelta.y * zoomSpeed;
-            Vector3 candidatePos = transform.position + move;
+            float step = zoomDelta.y * zoomSpeed;
+            Vector3 forward = transform.forward;
 
-            float dist = Vector3.Distance(candidatePos, zoomOrigin);
-
-            if (dist >= minZoom && dist <= maxZoom)
+            // Zoom IN (step > 0): se para solo si va a chocar con montaña
+            if (step > 0f)
             {
-                transform.position = candidatePos;
+                float castDist = step + zoomInStopDistance;
+                RaycastHit hit;
+
+                bool blocked;
+                if (zoomInCastRadius > 0f)
+                {
+                    blocked = Physics.SphereCast(
+                        transform.position,
+                        zoomInCastRadius,
+                        forward,
+                        out hit,
+                        castDist,
+                        zoomInCollisionMask,
+                        QueryTriggerInteraction.Ignore
+                    );
+                }
+                else
+                {
+                    blocked = Physics.Raycast(
+                        transform.position,
+                        forward,
+                        out hit,
+                        castDist,
+                        zoomInCollisionMask,
+                        QueryTriggerInteraction.Ignore
+                    );
+                }
+
+                if (blocked && hit.collider != null && hit.collider.CompareTag(mountainTag))
+                {
+                    // Coloca la cámara justo antes del impacto (margen)
+                    float targetDist = Mathf.Max(0f, hit.distance - zoomInStopDistance);
+                    transform.position += forward * targetDist;
+                }
+                else
+                {
+                    transform.position += forward * step;
+                }
+            }
+            // Zoom OUT (step < 0): infinito (por ahora)
+            else
+            {
+                transform.position += forward * step; // step es negativo
             }
         }
 
@@ -168,10 +209,7 @@ public class FreeCameraController : MonoBehaviour
             Vector3 upAxis = panVerticalUsesWorldUp ? Vector3.up : transform.up;
 
             Vector3 move = (right * x) + (forwardOnGround * z) + (upAxis * y);
-
             transform.position += move;
-
-            zoomOrigin += move;
         }
     }
 }

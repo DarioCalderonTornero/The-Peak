@@ -1481,8 +1481,12 @@ MonoBehaviour:
   panVerticalUsesWorldUp: 0
   panVerticalMultiplier: 1
   zoomSpeed: 15
-  minZoom: 0
-  maxZoom: 150
+  mountainTag: Mountain
+  zoomInStopDistance: 30
+  zoomInCastRadius: 0
+  zoomInCollisionMask:
+    serializedVersion: 2
+    m_Bits: 64
   rotateSensitivity: 0.15
   minPitch: -80
   maxPitch: 80

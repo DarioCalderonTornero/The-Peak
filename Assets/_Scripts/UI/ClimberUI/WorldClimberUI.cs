@@ -73,6 +73,8 @@ public class WorldClimberUI : MonoBehaviour
 
     private void Update()
     {
+        
+
         float getStaminaNormalized = climberMovement.GetCurrentStamina() / climberMovement.GetMaxStamina();
         currentStaminaImage.fillAmount = getStaminaNormalized;
     }

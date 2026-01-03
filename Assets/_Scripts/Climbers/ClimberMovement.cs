@@ -140,11 +140,16 @@ public class ClimberMovement : MonoBehaviour
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
 
-        if (agent != null)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             originalSpeed = agent.speed;
             agent.isStopped = true;
         }
+        else
+        {
+            Debug.LogWarning("[ClimberMovement] Agent no está en NavMesh todavía.");
+        }
+
 
         isAtCamp = false;
         reachedSummit = false;
@@ -536,14 +541,14 @@ public class ClimberMovement : MonoBehaviour
     private IEnumerator StopLoop()
     {
         SetExternalSpeedMultiplier(0f);
-        if (agent != null)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
             agent.isStopped = true;
 
         while (Time.time < _resumeTime)
             yield return null;
 
         SetExternalSpeedMultiplier(_cachedMultiplierBeforeStop);
-        if (agent != null)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
             agent.isStopped = false;
 
         temporaryStopRoutine = null;

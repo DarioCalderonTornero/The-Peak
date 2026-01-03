@@ -8,9 +8,12 @@ public class GameManager : MonoBehaviour
     public event EventHandler OnGamePaused;
     public event EventHandler OnGameUnPaused;
 
+    public event EventHandler OnTutorial;
+
     public enum GameState
     {
         Initializing,
+        Tutorial,
         Playing,
         GamePause,
         GameOver
@@ -54,6 +57,10 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        autoStartGame = false;
+
+        Invoke("StartTutorial", 0.1f);
+
         if (autoStartGame)
             StartGame();
 
@@ -66,6 +73,11 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GameManager] InputManager.Instance es null en Start.");
         }
+    }
+
+    private void Update()
+    {
+        Debug.Log(currentState);
     }
 
     private void OnDestroy()
@@ -81,6 +93,17 @@ public class GameManager : MonoBehaviour
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
         if (spawnManager == null) spawnManager = FindFirstObjectByType<SpawnManager>();
         if (resourceManager == null) resourceManager = FindFirstObjectByType<PointsManager>();
+    }
+
+    public void StartTutorial()
+    {
+        //Debug.Log("StartTutorial");
+        SetState(GameState.Tutorial);
+
+        if (currentState == GameState.Tutorial)
+        {
+            OnTutorial?.Invoke(this, EventArgs.Empty);  
+        }
     }
 
     public void StartGame()

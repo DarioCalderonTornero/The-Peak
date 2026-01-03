@@ -1,0 +1,185 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6127685043564394425
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4619709116625638938}
+  m_Layer: 0
+  m_Name: TutorialCameraEmpty
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4619709116625638938
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6127685043564394425}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.58, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3222527948692398726}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1366885922898789456
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3623117386711300542, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: climberMovement
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 21
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.17
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2090
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: m_Name
+      value: CLIMBER_PROTOTIPE_Rock
+      objectReference: {fileID: 0}
+    - target: {fileID: 8495448889631796368, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      propertyPath: archetype
+      value: 
+      objectReference: {fileID: 11400000, guid: 32e51ecc8b7800145af374441446a199, type: 2}
+    m_RemovedComponents:
+    - {fileID: 8195220715332458517, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+    - {fileID: 948342635942547329, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+    m_RemovedGameObjects:
+    - {fileID: 1162283788347469555, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4619709116625638938}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6572251923617363192}
+    - targetCorrespondingSourceObject: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3478959192959567592}
+  m_SourcePrefab: {fileID: 100100000, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+--- !u!4 &3222527948692398726 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4485760709519042262, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+  m_PrefabInstance: {fileID: 1366885922898789456}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6239024553963950163 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+  m_PrefabInstance: {fileID: 1366885922898789456}
+  m_PrefabAsset: {fileID: 0}
+--- !u!195 &6572251923617363192
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6239024553963950163}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.2
+  m_Speed: 20
+  m_Acceleration: 80
+  avoidancePriority: 50
+  m_AngularSpeed: 360
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 0
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 1
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 0
+--- !u!114 &3478959192959567592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6239024553963950163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 811a0bcece60db84fb12bd428bcae162, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agent: {fileID: 6572251923617363192}
+  campGraph: {fileID: 0}
+  summit: {fileID: 0}
+  loadout: {fileID: 7430308540954192064}
+  reachedThreshold: 0.2
+  maxStamina: 100
+  baseCostPerMeter: 1
+  uphillExtraCostFactor: 2
+  minStaminaCost: 0.1
+  externalSpeedMultiplier: 1
+  revisitPenaltyPerVisit: 5
+  maxVisitsToDie: 3
+  backtrackTolerance: 2
+  backtrackPenaltyPerMeter: 5
+  stepConversionFactor: 20
+  noiseRange: 50
+  currentStamina: 0
+  isEating: 0
+  originalDestination: {x: 0, y: 0, z: 0}
+  hasEatenThisTurn: 0
+--- !u!114 &7430308540954192064 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8495448889631796368, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
+  m_PrefabInstance: {fileID: 1366885922898789456}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6239024553963950163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d99a1119f548548a77c89144126ea6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

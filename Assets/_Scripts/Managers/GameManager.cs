@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour
     {
         autoStartGame = false;
 
-        //Invoke("StartTutorial", 0.1f);
+        Invoke("StartTutorial", 0.1f);
 
         if (autoStartGame)
             StartGame();

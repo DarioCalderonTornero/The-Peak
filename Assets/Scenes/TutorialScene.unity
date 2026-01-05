@@ -209,6 +209,7 @@ MonoBehaviour:
   tutorialManager: {fileID: 1203854606}
   tutorialAnimator: {fileID: 8242439}
   continueClimberTutorialButton: {fileID: 491844510}
+  bootstrap: {fileID: 0}
 --- !u!1 &136806837
 GameObject:
   m_ObjectHideFlags: 0
@@ -452,7 +453,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Priority:
     Enabled: 1
-    m_Value: 101
+    m_Value: 10000
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -929,11 +930,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 455a77ae2f598b846b22fd584cc96832, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  climberTutorialAudioClip: {fileID: 8300000, guid: ff49baa560675ad43b482f06a36f3777, type: 3}
   climberTutorialVCam: {fileID: 355688814}
   followClimberTutorialVCam: {fileID: 172283907}
   fadeImage: {fileID: 1932233072}
-  tutorialAnimator: {fileID: 8242439}
-  climberTutorialAudioClip: {fileID: 8300000, guid: ff49baa560675ad43b482f06a36f3777, type: 3}
 --- !u!4 &1203854607
 Transform:
   m_ObjectHideFlags: 0

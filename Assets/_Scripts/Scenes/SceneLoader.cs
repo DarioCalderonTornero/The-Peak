@@ -9,11 +9,27 @@ public static class SceneLoader
         DarioScene,
         MRScene,
         AlexScene,
-        JuanScene
+        JuanScene,
+        TutorialScene
     }
 
     public static void LoadScene(Scene scene)
     {
         SceneManager.LoadScene(scene.ToString());
+    }
+
+    public static void RemoveScene(Scene scene)
+    {
+        string sceneName = scene.ToString();    
+
+        if (SceneManager.GetSceneByName(sceneName).isLoaded)
+        {
+            SceneManager.UnloadSceneAsync(sceneName);
+        }
+
+        else
+        {
+            Debug.LogWarning($"Scene {sceneName} was not loaded");
+        }
     }
 }

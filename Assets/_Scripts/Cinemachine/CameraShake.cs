@@ -10,6 +10,18 @@ public class CameraShake : MonoBehaviour
     private float shakeDuration;
     private float shakeTimer;
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
     private void Update()
     {
         if (shakeTimer == 0)
@@ -23,18 +35,6 @@ public class CameraShake : MonoBehaviour
                 StopShake();
             }
         }
-    }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()

@@ -8,6 +8,7 @@ using System;
 public class TutorialManager : MonoBehaviour
 {
     public event EventHandler OnShowClimberText;
+    [SerializeField] private AudioClip climberTutorialAudioClip;
 
     [Header("Cinemachine")]
     [SerializeField] private CinemachineCamera climberTutorialVCam;
@@ -15,11 +16,6 @@ public class TutorialManager : MonoBehaviour
 
     [Header("Images")]
     [SerializeField] private Image fadeImage;
-
-    [SerializeField] private Animator tutorialAnimator;
-
-    [SerializeField] private AudioClip climberTutorialAudioClip;
-
 
     private bool isFadeOutComplete = false;
 
@@ -52,11 +48,10 @@ public class TutorialManager : MonoBehaviour
             time += Time.deltaTime;
             float alpha = Mathf.Lerp(1f, 0f, time / duration);
             fadeImage.color = new Color(color.r, color.g, color.b, alpha);
-            Temporal_Sound_Music.Instance.PlaySound(climberTutorialAudioClip, 1f);
             yield return null;
         }
-
         OnShowClimberText?.Invoke(this, EventArgs.Empty);
+        Temporal_Sound_Music.Instance.PlaySound(climberTutorialAudioClip, 1f);
         fadeImage.color = new Color(color.r, color.g, color.b, 0f);
     }
 

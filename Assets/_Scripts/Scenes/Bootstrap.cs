@@ -8,7 +8,6 @@ public class Bootstrap : MonoBehaviour
 
     private void Start()
     {
-        // Cargar todas las escenas de contenido de forma additive
         foreach (var sceneName in scenesToLoadAdditive)
         {
             if (!string.IsNullOrEmpty(sceneName))

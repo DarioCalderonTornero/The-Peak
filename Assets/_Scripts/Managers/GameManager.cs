@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(currentState);
+       // Debug.Log(currentState);
     }
 
     private void OnDestroy()

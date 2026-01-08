@@ -171,9 +171,10 @@ GameObject:
   - component: {fileID: 948342635942547329}
   - component: {fileID: 8495448889631796368}
   - component: {fileID: 7752139572246176441}
+  - component: {fileID: 4822643368491554081}
   m_Layer: 0
   m_Name: CLIMBER_PROTOTIPE
-  m_TagString: Untagged
+  m_TagString: Undefined
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -313,6 +314,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4822643368491554081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4930685435348997123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecd4658af22b1ff43af09fe15ed380d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5348777657289207274
 GameObject:
   m_ObjectHideFlags: 0
@@ -777,16 +790,44 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8229982293513714002, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8229982293513714002, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e6d6d8a1345fa2c409b54c34b0d2d815, type: 2}
+    - target: {fileID: -8229982293513714002, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 62003b4dd34b8f349ad434cf050bbd41, type: 2}
+    - target: {fileID: -1680007768300103039, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -1680007768300103039, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: c67218c3b1ec7684ba899ffa5976ec64, type: 2}
+    - target: {fileID: -1680007768300103039, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 62003b4dd34b8f349ad434cf050bbd41, type: 2}
+    - target: {fileID: -1356944241255443110, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: m_TagString
+      value: Climber
+      objectReference: {fileID: 0}
+    - target: {fileID: -697502700958673069, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: m_TagString
+      value: Climber
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
       propertyPath: m_Name
       value: "EscaladorMonta\xF1a"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2420067691883901700, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: m_TagString
+      value: Climber
       objectReference: {fileID: 0}
     - target: {fileID: 4922791209537363391, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
       propertyPath: m_LocalScale.x
@@ -816,6 +857,14 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7896359039916393171, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7896359039916393171, guid: 31dea90716abfa94fa493a499e0a297c, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 62003b4dd34b8f349ad434cf050bbd41, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

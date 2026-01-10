@@ -1,3 +1,4 @@
+// ClimberLoadout.cs
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +9,7 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private ClimberArchetypeSO archetype;
 
     [Header("Equipamiento asignado en runtime (solo lectura)")]
-    private List<EquipmentInstance> equippedItems = new List<EquipmentInstance>();
+    private readonly List<EquipmentInstance> equippedItems = new List<EquipmentInstance>();
 
     [Header("DEBUG – Equipo visible en Inspector (no tocar)")]
     [SerializeField] private string[] debugEquippedItemNames;
@@ -20,6 +21,13 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private AudioClip pickaxeAudioClip;
     [SerializeField] private AudioClip rockDestroyAudioClip;
 
+    [Header("Initialization")]
+    [Tooltip("Si está activo, el loadout se inicializa automáticamente en Awake usando el archetype (modo normal). " +
+             "Si vas a forzar equipo desde el SpawnManager, puedes dejarlo activo: la clase detecta si ya fue inicializada.")]
+    [SerializeField] private bool autoInitializeOnAwake = true;
+
+    private bool _isInitialized = false;
+
     private void Awake()
     {
         if (helmetRenderer == null)
@@ -27,11 +35,64 @@ public class ClimberLoadout : MonoBehaviour
             Debug.LogWarning("No helmet renderer");
         }
 
-        InitializeRandomLoadout();
+        if (autoInitializeOnAwake)
+        {
+            // Importante: solo inicializa si nadie lo ha forzado antes (por pooling, etc.)
+            InitializeRandomLoadoutIfNeeded();
+        }
     }
 
+    /// <summary>
+    /// Inicializa el loadout de forma random según el archetype, pero solo si aún no está inicializado.
+    /// </summary>
+    public void InitializeRandomLoadoutIfNeeded()
+    {
+        if (_isInitialized) return;
+        InitializeRandomLoadout_Internal();
+        _isInitialized = true;
+    }
 
-    private void InitializeRandomLoadout()
+    /// <summary>
+    /// Fuerza que el escalador lleve EXACTAMENTE 1 equipo concreto (sin random),
+    /// y marca el loadout como inicializado.
+    /// </summary>
+    public void InitializeForcedSingleEquipment(EquipmentDefinitionSO forcedEquipment)
+    {
+        equippedItems.Clear();
+
+        if (forcedEquipment == null)
+        {
+            UpdateDebugNames();
+            _isInitialized = true;
+            return;
+        }
+
+        var instance = CreateEquipmentInstance(forcedEquipment);
+        if (instance != null)
+        {
+            instance.SetupOwner(this);
+            instance.Initialize(forcedEquipment.equipmentName);
+            equippedItems.Add(instance);
+            ChangeClimberColorBasedOnEquipment(forcedEquipment);
+        }
+
+        UpdateDebugNames();
+        _isInitialized = true;
+    }
+
+    /// <summary>
+    /// Permite re-inicializar si algún día haces pooling.
+    /// </summary>
+    public void ResetLoadoutState()
+    {
+        _isInitialized = false;
+        equippedItems.Clear();
+        UpdateDebugNames();
+    }
+
+    // ----------------- Internals -----------------
+
+    private void InitializeRandomLoadout_Internal()
     {
         equippedItems.Clear();
 
@@ -77,7 +138,7 @@ public class ClimberLoadout : MonoBehaviour
 
     private void ChangeClimberColorBasedOnEquipment(EquipmentDefinitionSO equipment)
     {
-        if (helmetRenderer != null && equipment != null && equipment.color != null)
+        if (helmetRenderer != null && equipment != null)
         {
             helmetRenderer.material.color = equipment.color;
         }
@@ -151,8 +212,7 @@ public class ClimberLoadout : MonoBehaviour
         return false;
     }
 
-
-    ///GETTERS
+    // GETTERS
     public void PickAxeSound()
     {
         Temporal_Sound_Music.Instance.PlaySound(pickaxeAudioClip, 1.0f);

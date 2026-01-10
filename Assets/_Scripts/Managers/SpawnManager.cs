@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// SpawnManager.cs
+using UnityEngine;
 using System.Collections.Generic;
 
 public class SpawnManager : MonoBehaviour
@@ -15,10 +16,17 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private float spawnCooldown = 2f;
     [SerializeField] private float minDistance = 2f;
 
+    [Header("Intro Spawn (5 tipos únicos al inicio de la partida)")]
+    [Tooltip("Estos equipos se forzarán en los primeros spawns de TODA la partida (no por turno). Orden = orden de aparición.")]
+    [SerializeField] private List<EquipmentDefinitionSO> introUniqueEquipments = new List<EquipmentDefinitionSO>();
+
     [Header("Estado interno (debug)")]
     [SerializeField] private float spawnCooldownTimer = 0f;
     [SerializeField] private int spawnedCount = 0;
     [SerializeField] public bool isMaxCount = false;
+
+    // Progreso global de la intro (NO se resetea por turno)
+    [SerializeField] private int introSpawnIndex = 0;
 
     // Lista para guardar posiciones y evitar solapamientos
     private readonly List<Vector3> spawnedPositions = new List<Vector3>();
@@ -35,14 +43,15 @@ public class SpawnManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    /*
     private void Update()
     {
-        // Aseguramos que el cooldown corra siempre, o puedes llamarlo desde un Manager externo
         if (!isMaxCount)
         {
             SpawnClimbers();
         }
     }
+    */
 
     public void SpawnClimbers()
     {
@@ -61,10 +70,8 @@ public class SpawnManager : MonoBehaviour
 
         do
         {
-            // OBTENER PUNTO ALEATORIO EN LA FORMA
             spawnPos = GetRandomPointOnMultiSegmentPath();
 
-            // VALIDAR DISTANCIA
             validPosition = true;
             foreach (var pos in spawnedPositions)
             {
@@ -85,6 +92,29 @@ public class SpawnManager : MonoBehaviour
             spawnedCount++;
             spawnCooldownTimer = 0f;
 
+            // --- NUEVO: Forzar equipamiento en los primeros spawns globales ---
+            var loadout = obj.GetComponent<ClimberLoadout>();
+            if (loadout == null)
+            {
+                Debug.LogWarning("[SpawnManager] El prefab spawneado no tiene ClimberLoadout.");
+            }
+            else
+            {
+                // Si todavía estamos en la intro y hay lista válida, forzamos equipo.
+                if (introUniqueEquipments != null &&
+                    introSpawnIndex < introUniqueEquipments.Count &&
+                    introUniqueEquipments[introSpawnIndex] != null)
+                {
+                    loadout.InitializeForcedSingleEquipment(introUniqueEquipments[introSpawnIndex]);
+                    introSpawnIndex++;
+                }
+                else
+                {
+                    // Si no hay intro o ya terminó, inicializamos normal.
+                    loadout.InitializeRandomLoadoutIfNeeded();
+                }
+            }
+
             var climber = obj.GetComponent<ClimberMovement>();
             if (climber == null)
             {
@@ -102,7 +132,6 @@ public class SpawnManager : MonoBehaviour
     // --- LÓGICA MATEMÁTICA PARA MÚLTIPLES PUNTOS ---
     private Vector3 GetRandomPointOnMultiSegmentPath()
     {
-        // 1. Calcular la longitud total de la "serpiente" o forma
         float totalLength = 0f;
         for (int i = 0; i < spawnPathPoints.Count - 1; i++)
         {
@@ -110,29 +139,23 @@ public class SpawnManager : MonoBehaviour
                 totalLength += Vector3.Distance(spawnPathPoints[i].position, spawnPathPoints[i + 1].position);
         }
 
-        // 2. Elegir un punto aleatorio en esa longitud total
         float randomDist = Random.Range(0f, totalLength);
 
-        // 3. Encontrar en qué segmento cae esa distancia
         for (int i = 0; i < spawnPathPoints.Count - 1; i++)
         {
             if (spawnPathPoints[i] == null || spawnPathPoints[i + 1] == null) continue;
 
             float segmentLength = Vector3.Distance(spawnPathPoints[i].position, spawnPathPoints[i + 1].position);
 
-            // Si el punto aleatorio cae en este segmento
             if (randomDist <= segmentLength)
             {
-                // Normalizamos la distancia para hacer el Lerp en este segmento específico
                 float t = randomDist / segmentLength;
                 return Vector3.Lerp(spawnPathPoints[i].position, spawnPathPoints[i + 1].position, t);
             }
 
-            // Si no, restamos la longitud de este segmento y pasamos al siguiente
             randomDist -= segmentLength;
         }
 
-        // Fallback (por errores de redondeo float): devolver el último punto
         return spawnPathPoints[spawnPathPoints.Count - 1].position;
     }
 
@@ -142,6 +165,14 @@ public class SpawnManager : MonoBehaviour
         spawnedCount = 0;
         isMaxCount = false;
         spawnedPositions.Clear();
+
+        // IMPORTANTE: NO reseteamos introSpawnIndex aquí, porque ResetSpawner se llama cada turno.
+    }
+
+    public void ResetIntroSequence()
+    {
+        // Llamar SOLO cuando empiece una nueva partida de verdad
+        introSpawnIndex = 0;
     }
 
     public void StopSpawning()
@@ -154,7 +185,6 @@ public class SpawnManager : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    // --- VISUALIZACIÓN EN EDITOR ---
     private void OnDrawGizmos()
     {
         if (spawnPathPoints == null || spawnPathPoints.Count < 2) return;
@@ -168,7 +198,7 @@ public class SpawnManager : MonoBehaviour
                 Gizmos.DrawSphere(spawnPathPoints[i].position, 0.3f);
             }
         }
-        // Dibujar el último punto
+
         if (spawnPathPoints[spawnPathPoints.Count - 1] != null)
             Gizmos.DrawSphere(spawnPathPoints[spawnPathPoints.Count - 1].position, 0.3f);
     }

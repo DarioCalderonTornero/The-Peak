@@ -1116,7 +1116,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -1270,9 +1270,16 @@ MonoBehaviour:
   amountToSpawn: 1
   spawnCooldown: 2
   minDistance: 20
+  introUniqueEquipments:
+  - {fileID: 11400000, guid: e1e3bc880ea646a4d8e09cda704cbac6, type: 2}
+  - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
+  - {fileID: 11400000, guid: 338103a60dc2c2141ada12844300638e, type: 2}
+  - {fileID: 11400000, guid: f20865c9945b6864dadbeff59303e58d, type: 2}
+  - {fileID: 11400000, guid: 1236b83ce39cd3d41af52823a5564cce, type: 2}
   spawnCooldownTimer: 0
   spawnedCount: 0
   isMaxCount: 0
+  introSpawnIndex: 0
 --- !u!1 &1124537430
 GameObject:
   m_ObjectHideFlags: 0

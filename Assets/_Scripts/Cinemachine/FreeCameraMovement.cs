@@ -204,6 +204,14 @@ public class FreeCameraController : MonoBehaviour
             Vector3 upAxis = panVerticalUsesWorldUp ? Vector3.up : transform.up;
 
             Vector3 move = (right * x) + (forwardOnGround * z) + (upAxis * y);
+
+            if (InputManager.Instance.isCameraPanSpeedMultiplierHold())
+            {
+                Debug.Log("PanSpeedMultiplier");
+                float panSpeedMultiplier = 2f;
+                move *= panSpeedMultiplier;
+            }
+
             transform.position += move;
         }
     }

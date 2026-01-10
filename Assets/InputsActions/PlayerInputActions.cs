@@ -257,6 +257,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CameraPanSpeedMultiplier"",
+                    ""type"": ""Button"",
+                    ""id"": ""d0549fb7-e0ca-4892-bcf9-1d8677afd6c3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -369,6 +378,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""CameraZoom"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5dee5719-ce74-4bbc-8dc9-44ee7d7cca46"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraPanSpeedMultiplier"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -394,6 +414,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Camera_CameraRotateDelta = m_Camera.FindAction("CameraRotateDelta", throwIfNotFound: true);
         m_Camera_CameraRotateHold = m_Camera.FindAction("CameraRotateHold", throwIfNotFound: true);
         m_Camera_CameraZoom = m_Camera.FindAction("CameraZoom", throwIfNotFound: true);
+        m_Camera_CameraPanSpeedMultiplier = m_Camera.FindAction("CameraPanSpeedMultiplier", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -689,6 +710,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_CameraRotateDelta;
     private readonly InputAction m_Camera_CameraRotateHold;
     private readonly InputAction m_Camera_CameraZoom;
+    private readonly InputAction m_Camera_CameraPanSpeedMultiplier;
     /// <summary>
     /// Provides access to input actions defined in input action map "Camera".
     /// </summary>
@@ -740,6 +762,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Camera/CameraZoom".
         /// </summary>
         public InputAction @CameraZoom => m_Wrapper.m_Camera_CameraZoom;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraPanSpeedMultiplier".
+        /// </summary>
+        public InputAction @CameraPanSpeedMultiplier => m_Wrapper.m_Camera_CameraPanSpeedMultiplier;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -796,6 +822,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @CameraZoom.started += instance.OnCameraZoom;
             @CameraZoom.performed += instance.OnCameraZoom;
             @CameraZoom.canceled += instance.OnCameraZoom;
+            @CameraPanSpeedMultiplier.started += instance.OnCameraPanSpeedMultiplier;
+            @CameraPanSpeedMultiplier.performed += instance.OnCameraPanSpeedMultiplier;
+            @CameraPanSpeedMultiplier.canceled += instance.OnCameraPanSpeedMultiplier;
         }
 
         /// <summary>
@@ -837,6 +866,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @CameraZoom.started -= instance.OnCameraZoom;
             @CameraZoom.performed -= instance.OnCameraZoom;
             @CameraZoom.canceled -= instance.OnCameraZoom;
+            @CameraPanSpeedMultiplier.started -= instance.OnCameraPanSpeedMultiplier;
+            @CameraPanSpeedMultiplier.performed -= instance.OnCameraPanSpeedMultiplier;
+            @CameraPanSpeedMultiplier.canceled -= instance.OnCameraPanSpeedMultiplier;
         }
 
         /// <summary>
@@ -984,5 +1016,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnCameraZoom(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraPanSpeedMultiplier" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraPanSpeedMultiplier(InputAction.CallbackContext context);
     }
 }

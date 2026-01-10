@@ -84,6 +84,11 @@ public class InputManager : MonoBehaviour
         return inputActions.Camera.CameraRotateHold.IsPressed();
     }
 
+    public bool isCameraPanSpeedMultiplierHold()
+    {
+        return inputActions.Camera.CameraPanSpeedMultiplier.IsPressed();
+    }
+
     //Get Camera Faces
     private void TopView_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {

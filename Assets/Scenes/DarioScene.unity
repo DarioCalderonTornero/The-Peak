@@ -1660,7 +1660,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49486846a7266d749ba522754fd8286d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panSpeed: 0.2
+  panSpeed: 0.15
   invertPanY: 0
   panVerticalUsesWorldUp: 0
   panVerticalMultiplier: 1

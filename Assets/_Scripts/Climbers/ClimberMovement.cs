@@ -85,6 +85,14 @@ public class ClimberMovement : MonoBehaviour
     private float _cachedMultiplierBeforeStop = 1f;
     private bool pointsAddedThisTurn = false;
 
+    [Header("Camera Targets")]
+    [SerializeField] private Transform camLookAt;
+    [SerializeField] private Transform inspectAnchor;
+
+    public Transform CamLookAt => camLookAt != null ? camLookAt : transform;
+    public Transform InspectAnchor => inspectAnchor != null ? inspectAnchor : transform;
+
+
     private void Awake()
     {
         if (Instance == null) Instance = this; // Ojo con el singleton en múltiples agentes

@@ -1116,7 +1116,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -1687,7 +1687,12 @@ MonoBehaviour:
   presetBack: {fileID: 1364131859}
   presetLeft: {fileID: 406148030}
   presetTop: {fileID: 2073679979}
-  snapDuration: 0.5
+  snapDuration: 1.5
+  keepLookingAtTargetWhileInspecting: 1
+  inspectLookAtFollowSpeed: 12
+  exitInspectOnDeselect: 1
+  cancelInspectOnAnyCameraInput: 1
+  cancelDeadzone: 0.001
 --- !u!1 &1358668564
 GameObject:
   m_ObjectHideFlags: 0
@@ -2558,6 +2563,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clickClip: {fileID: 8300000, guid: 7b2bfb16922d41f40826b42b973a5a09, type: 3}
   volume: 0.1
+--- !u!1 &1634201592
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1634201594}
+  - component: {fileID: 1634201593}
+  m_Layer: 6
+  m_Name: SelectionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1634201593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634201592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5505afbd87df89d40b7490156c1d95b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  climberLayer:
+    serializedVersion: 2
+    m_Bits: 512
+--- !u!4 &1634201594
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634201592}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1827429946}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1681812315
 GameObject:
   m_ObjectHideFlags: 0
@@ -3042,6 +3094,7 @@ Transform:
   - {fileID: 1124537431}
   - {fileID: 1089094620}
   - {fileID: 1708585714}
+  - {fileID: 1634201594}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1830511197

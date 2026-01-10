@@ -14,6 +14,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ClickClimberRoute",
+                    "type": "Button",
+                    "id": "e9edafcb-5815-467e-8c97-dae30d3b342a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -25,6 +34,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "GamePause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1a766a77-3aa0-4a30-8f79-081e99959b01",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "Tap,Hold",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ClickClimberRoute",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

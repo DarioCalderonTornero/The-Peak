@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1111838694813075332
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4816362521359077613}
+  m_Layer: 9
+  m_Name: CamTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4816362521359077613
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111838694813075332}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4485760709519042262}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1162283788347469555
 GameObject:
   m_ObjectHideFlags: 0
@@ -157,6 +188,37 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!1 &4386157030377832080
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1003129374914434366}
+  m_Layer: 9
+  m_Name: InspectCamTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1003129374914434366
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4386157030377832080}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0.00000015496286, y: 0, z: 2.999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4485760709519042262}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &4930685435348997123
 GameObject:
   m_ObjectHideFlags: 0
@@ -197,6 +259,8 @@ Transform:
   - {fileID: 6234759332527045666}
   - {fileID: 1687903988896092835}
   - {fileID: 4894738268247552564}
+  - {fileID: 4816362521359077613}
+  - {fileID: 1003129374914434366}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &4274721090101795705
@@ -240,7 +304,9 @@ MonoBehaviour:
   loadout: {fileID: 8495448889631796368}
   pathLineRenderer: {fileID: 0}
   pathColor: {r: 1, g: 0, b: 0, a: 1}
-  lineWidth: 0.15
+  lineHeightOffset: 0.5
+  animationSpeed: 2
+  textureTiling: 1
   reachedThreshold: 0.2
   maxStamina: 250
   baseCostPerMeter: 1
@@ -257,6 +323,8 @@ MonoBehaviour:
   isEating: 0
   originalDestination: {x: 0, y: 0, z: 0}
   hasEatenThisTurn: 0
+  camLookAt: {fileID: 4816362521359077613}
+  inspectAnchor: {fileID: 1003129374914434366}
 --- !u!195 &948342635942547329
 NavMeshAgent:
   m_ObjectHideFlags: 0

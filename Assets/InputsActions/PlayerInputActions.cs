@@ -100,6 +100,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ClickClimberRoute"",
+                    ""type"": ""Button"",
+                    ""id"": ""e9edafcb-5815-467e-8c97-dae30d3b342a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -111,6 +120,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""GamePause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1a766a77-3aa0-4a30-8f79-081e99959b01"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": ""Tap,Hold"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ClickClimberRoute"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -398,6 +418,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_GamePause = m_Player.FindAction("GamePause", throwIfNotFound: true);
+        m_Player_ClickClimberRoute = m_Player.FindAction("ClickClimberRoute", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_RotateCard = m_UI.FindAction("RotateCard", throwIfNotFound: true);
@@ -498,6 +519,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_GamePause;
+    private readonly InputAction m_Player_ClickClimberRoute;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -513,6 +535,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/GamePause".
         /// </summary>
         public InputAction @GamePause => m_Wrapper.m_Player_GamePause;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ClickClimberRoute".
+        /// </summary>
+        public InputAction @ClickClimberRoute => m_Wrapper.m_Player_ClickClimberRoute;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -542,6 +568,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @GamePause.started += instance.OnGamePause;
             @GamePause.performed += instance.OnGamePause;
             @GamePause.canceled += instance.OnGamePause;
+            @ClickClimberRoute.started += instance.OnClickClimberRoute;
+            @ClickClimberRoute.performed += instance.OnClickClimberRoute;
+            @ClickClimberRoute.canceled += instance.OnClickClimberRoute;
         }
 
         /// <summary>
@@ -556,6 +585,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @GamePause.started -= instance.OnGamePause;
             @GamePause.performed -= instance.OnGamePause;
             @GamePause.canceled -= instance.OnGamePause;
+            @ClickClimberRoute.started -= instance.OnClickClimberRoute;
+            @ClickClimberRoute.performed -= instance.OnClickClimberRoute;
+            @ClickClimberRoute.canceled -= instance.OnClickClimberRoute;
         }
 
         /// <summary>
@@ -916,6 +948,13 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnGamePause(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ClickClimberRoute" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnClickClimberRoute(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,82 +8,125 @@ public class SelectionManager : MonoBehaviour
 
     [Header("Configuración")]
     [SerializeField] private LayerMask climberLayer;
- 
+
+    public event Action<ClimberMovement> OnClimberSelected;
+    public event Action OnClimberDeselected;
+
+    /// <summary>
+    /// HOLD: pedir inspección (cámara + stats). IMPORTANTE: NO activa ruta.
+    /// </summary>
+    public event Action<ClimberMovement> OnClimberInspectRequested;
 
     private ClimberMovement currentSelectedClimber;
+    public ClimberMovement CurrentSelected => currentSelectedClimber;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) Destroy(gameObject);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
-    private void Update()
+    private void Start()
     {
-        // Solo detectamos Clic Izquierdo (0)
-        if (Input.GetMouseButtonDown(0))
+        if (InputManager.Instance != null)
         {
-            HandleSelection();
+            // TAP -> ruta (selección)
+            InputManager.Instance.OnClimberClickRoute += (_, __) => HandleTapSelection();
+
+            // HOLD -> inspección (sin ruta)
+            InputManager.Instance.OnClickCameraClimber += (_, __) => HandleHoldInspect();
         }
     }
 
-    private void HandleSelection()
+    private bool IsPointerOverUI()
     {
-        // 1. Si clicamos UI (botones), no hacemos nada
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+    }
 
+    private ClimberMovement RaycastClimberUnderMouse()
+    {
+        if (Camera.main == null) return null;
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        // Lanzamos rayo SOLO buscando la capa "Climber"
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, climberLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, climberLayer))
         {
-            ClimberMovement clickedClimber = hit.collider.GetComponent<ClimberMovement>();
-
-            // Buscamos en padres por si el collider está en un hijo
-            if (clickedClimber == null)
-                clickedClimber = hit.collider.GetComponentInParent<ClimberMovement>();
-
-            if (clickedClimber != null)
-            {
-                // CASO A: Hemos clicado el MISMO que ya teníamos -> Lo quitamos (Toggle)
-                if (currentSelectedClimber == clickedClimber)
-                {
-                    DeselectCurrent();
-                }
-                // CASO B: Hemos clicado uno NUEVO -> Cambiamos
-                else
-                {
-                    SelectClimber(clickedClimber);
-                }
-            }
+            return hit.collider.GetComponentInParent<ClimberMovement>();
         }
-
+        return null;
     }
-    private void SelectClimber(ClimberMovement newClimber)
+
+    // ---------------- TAP (ruta) ----------------
+
+    private void HandleTapSelection()
     {
-        // Deseleccionamos el anterior si existía
-        if (currentSelectedClimber != null)
+        if (IsPointerOverUI()) return;
+
+        ClimberMovement clicked = RaycastClimberUnderMouse();
+        if (clicked == null) return;
+
+        // Toggle selección
+        if (currentSelectedClimber == clicked)
         {
-            currentSelectedClimber.SetSelected(false);
+            DeselectCurrent();
         }
+        else
+        {
+            SelectClimber(clicked, showRoute: true);
+        }
+    }
 
-        // Seleccionamos el nuevo
+    // ---------------- HOLD (inspección) ----------------
+
+    private void HandleHoldInspect()
+    {
+        if (IsPointerOverUI()) return;
+
+        // En inspección, priorizamos lo que está bajo el ratón.
+        // Si no hay nada, usamos el seleccionado actual.
+        ClimberMovement hovered = RaycastClimberUnderMouse();
+        ClimberMovement target = hovered != null ? hovered : currentSelectedClimber;
+        if (target == null) return;
+
+        // REQUISITO: Hold NO debe activar ruta.
+        // Por tanto NO llamamos a SetSelected(true) aquí.
+        // Solo pedimos inspección del escalador objetivo.
+        OnClimberInspectRequested?.Invoke(target);
+    }
+
+    private void SelectClimber(ClimberMovement newClimber, bool showRoute)
+    {
+        if (currentSelectedClimber != null)
+            currentSelectedClimber.SetSelected(false);
+
         currentSelectedClimber = newClimber;
-        currentSelectedClimber.SetSelected(true);
 
-        Debug.Log($"[SelectionManager] Seleccionado: {newClimber.name}");
+        if (showRoute)
+            currentSelectedClimber.SetSelected(true);
+
+        OnClimberSelected?.Invoke(currentSelectedClimber);
+        Debug.Log($"[SelectionManager] Seleccionado (ruta): {newClimber.name}");
     }
 
     private void DeselectCurrent()
     {
-        if (currentSelectedClimber != null)
-        {
-            currentSelectedClimber.SetSelected(false);
-            currentSelectedClimber = null;
-            Debug.Log("[SelectionManager] Deseleccionado.");
-        }
+        if (currentSelectedClimber == null) return;
+
+        currentSelectedClimber.SetSelected(false);
+        currentSelectedClimber = null;
+
+        OnClimberDeselected?.Invoke();
+        Debug.Log("[SelectionManager] Deseleccionado.");
+    }
+
+    // Llamable desde UI / ESC si quieres salir de inspección y limpiar selección
+    public void ForceDeselect()
+    {
+        DeselectCurrent();
     }
 }

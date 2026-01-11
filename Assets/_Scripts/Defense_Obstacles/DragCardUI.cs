@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// DragCardUI.cs
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -10,7 +11,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public CardData cardData;
 
     public Camera mainCamera;
-    // public Image cardImage;
     public Image iconImage;
     public TextMeshProUGUI costText;
     public TextMeshProUGUI nameText;
@@ -38,7 +38,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public event System.Action<DragCardUI> OnCardUsed;
 
     [Header("Placement")]
-    [SerializeField] private LayerMask placementMask;    
+    [SerializeField] private LayerMask placementMask;
     [SerializeField] private LayerMask defenseMask;
     [SerializeField] private LayerMask campMask;
     [SerializeField] private AudioClip defensePlacementAudioClip;
@@ -54,15 +54,33 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private bool currentPreviewIsValid = false;
 
-    [SerializeField] private RectTransform slotsContainerRect;
-    
-    // --- Rotación libre ---
+    // --- Rotación libre (R) ---
     private bool isFreeRotating = false;
-    private Vector3 freeRotatePivot;      // punto fijo donde se queda el preview al pulsar R
-    private Vector3 freeRotateForward;    // dirección base para la rotación
-    private float freeRotateStartAngle;   // ángulo al iniciar la rotación libre
-
+    private Vector3 freeRotatePivot;
     private Quaternion freeRotateBaseRotation;
+
+    // --- Escala libre (mantener T) ---
+    [Header("Scaling")]
+    [SerializeField] private float minRelativeScale = 0.2f;
+    [SerializeField] private float maxRelativeScale = 5f;
+    [SerializeField] private float freeScaleSensitivity = 0.005f; // sensibilidad con mouse Y
+
+    private bool isFreeScaling = false;
+    private Vector3 freeScalePivot;
+    private Quaternion freeScaleLockedRotation;
+    private Vector3 freeScaleLockedNormal;
+    private float freeScaleStartMouseY;
+    private float freeScaleStartFactor;
+
+    // factor relativo sobre la escala ORIGINAL del prefab
+    private float currentScaleFactor = 1f;
+    private Vector3 originalPreviewScale;
+
+    // Valores base para este placement (no escalados)
+    private Vector2 baseSupportCheckExtents;
+    private float baseSupportRayDistance;
+    private float baseSupportYOffset;
+    private Vector3 basePlacementCheckExtents;
 
     private void Awake()
     {
@@ -72,7 +90,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         canvas = GetComponentInParent<Canvas>();
-
         cardButton = GetComponent<Button>();
     }
 
@@ -80,99 +97,14 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         SetupCardUI();
         UpdateInteractable();
-        PointsManager.Instance.OnPointsChanged += HandlePointsChanged;
-        InputManager.Instance.OnRotateCardInput += InputManager_OnRotateCardInput;
 
-        // Esperar un frame para que el VerticalLayoutGroup haya hecho su trabajo
+        if (PointsManager.Instance != null)
+            PointsManager.Instance.OnPointsChanged += HandlePointsChanged;
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnRotateCardInput += InputManager_OnRotateCardInput;
+
         StartCoroutine(InitializeOriginalPosition());
-
-    }
-
-    private void InputManager_OnRotateCardInput(object sender, System.EventArgs e)
-    {
-        if (!inPlacementMode || useFixedPosition || previewInstance == null)
-            return;
-
-        if (isFreeRotating)
-        {
-            // Salir de modo rotación libre si quieres toggle
-            isFreeRotating = false;
-            return;
-        }
-
-        isFreeRotating = true;
-
-        // Punto fijo donde se queda el preview
-        freeRotatePivot = previewInstance.transform.position;
-
-        // 🔹 Rotación base EXACTA en el momento de pulsar R (incluye X y Z de la rampa)
-        freeRotateBaseRotation = previewInstance.transform.rotation;
-
-        // Empezamos a acumular desde 0 sobre esa base
-        currentRotationDegrees = 0f;
-    }
-
-    private void UpdateFreeRotation()
-    {
-        if (previewInstance == null) return;
-
-        // Mantener posición clavada
-        previewInstance.transform.position = freeRotatePivot;
-
-        // Acumular Y "de inspector"
-        float mouseDelta = Input.GetAxis("Mouse X") * 6.5f;
-        currentRotationDegrees += mouseDelta;
-        currentRotationDegrees = Mathf.Repeat(currentRotationDegrees, 360f);
-
-        // 🔹 Aplicar rotación final:
-        // - freeRotateBaseRotation: la inclinación original (X/Z correctos en la rampa)
-        // - AngleAxis sobre el eje up LOCAL de esa rotación (como girar Y en el inspector)
-        Vector3 localUp = freeRotateBaseRotation * Vector3.up;
-        Quaternion extraY = Quaternion.AngleAxis(currentRotationDegrees, localUp);
-
-        previewInstance.transform.rotation = extraY * freeRotateBaseRotation;
-    }
-
-    private string CheckPlacementValidity(Vector3 position, Vector3 normal, Quaternion rotation)
-    {
-        Vector3 checkCenter = position + normal * 0.1f;
-        Vector3 halfExtents = (cardData != null && cardData.placementCheckExtents != Vector3.zero)
-            ? cardData.placementCheckExtents
-            : new Vector3(0.5f, 0.5f, 0.5f);
-
-        // Defensas
-        if (Physics.CheckBox(checkCenter, halfExtents, rotation, defenseMask))
-            return "Demasiado cerca de otro obstáculo";
-
-        // Campamentos
-        if (Physics.CheckBox(checkCenter, halfExtents, rotation, campMask))
-            return "Demasiado cerca de un campamento";
-
-        // Soporte completo
-        if (cardData != null && cardData.requireFullSupport)
-        {
-            if (!HasFullSupport(position, rotation))
-                return "Quedaría flotando";
-        }
-
-        return "Válido";
-    }
-
-    private void ApplyPreviewMaterial(bool valid)
-    {
-        if (previewInstance == null)
-            return;
-
-        var renderers = previewInstance.GetComponentsInChildren<Renderer>(true);
-        Material mat = valid ? previewValidMaterial : previewInvalidMaterial;
-
-        foreach (var r in renderers)
-        {
-            var mats = r.materials;
-            for (int i = 0; i < mats.Length; i++)
-                mats[i] = mat;
-            r.materials = mats;
-        }
     }
 
     private IEnumerator InitializeOriginalPosition()
@@ -193,36 +125,136 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             worldSpriteImage.sprite = cardData.worldSprite;
     }
 
-    private void HandlePointsChanged(int points)
+    private void HandlePointsChanged(int points) => UpdateInteractable();
+
+    // Toggle rotación libre con evento (R)
+    private void InputManager_OnRotateCardInput(object sender, System.EventArgs e)
     {
-        UpdateInteractable();
+        if (!inPlacementMode || useFixedPosition || previewInstance == null)
+            return;
+
+        // Si estás escalando, ignorar rotación
+        if (isFreeScaling)
+            return;
+
+        // Toggle
+        if (isFreeRotating)
+        {
+            isFreeRotating = false;
+            return;
+        }
+
+        isFreeRotating = true;
+        freeRotatePivot = previewInstance.transform.position;
+        freeRotateBaseRotation = previewInstance.transform.rotation;
+        currentRotationDegrees = 0f;
     }
 
     private void Update()
     {
-        if (inPlacementMode && !useFixedPosition && previewInstance != null)
+        if (!inPlacementMode || previewInstance == null || useFixedPosition)
+            return;
+
+        // 1) Si estamos escalando con T: NO mover ni rotar, solo escala (lo hace HandleFreeScaling)
+        HandleFreeScaling();
+        if (isFreeScaling)
+            return;
+
+        // 2) Rotación libre (R)
+        if (isFreeRotating)
         {
-            if (isFreeRotating)
-            {
-                UpdateFreeRotation();
-            }
-            else
-            {
-                // Rotación clásica (45° steps)
-                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
-                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
-                previewInstance.transform.rotation = baseRot * extraRot;
-            }
+            UpdateFreeRotation();
+        }
+        else
+        {
+            // Rotación clásica con normal + step acumulado (si lo usas)
+            Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
+            Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
+
+            // ✅ orden correcto: primero base, luego extra alrededor de la normal
+            previewInstance.transform.rotation = extraRot * baseRot;
         }
     }
 
+    private void UpdateFreeRotation()
+    {
+        if (previewInstance == null) return;
+
+        previewInstance.transform.position = freeRotatePivot;
+
+        float mouseDelta = Input.GetAxis("Mouse X") * 6.5f;
+        currentRotationDegrees += mouseDelta;
+        currentRotationDegrees = Mathf.Repeat(currentRotationDegrees, 360f);
+
+        Vector3 localUp = freeRotateBaseRotation * Vector3.up;
+        Quaternion extraY = Quaternion.AngleAxis(currentRotationDegrees, localUp);
+
+        previewInstance.transform.rotation = extraY * freeRotateBaseRotation;
+    }
+
+    // Mantener T: clava pos/rot/normal y escala con mouse Y
+    private void HandleFreeScaling()
+    {
+        if (!inPlacementMode || previewInstance == null || useFixedPosition)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            isFreeScaling = true;
+
+            // Mientras escalas, no rotas
+            isFreeRotating = false;
+
+            freeScalePivot = previewInstance.transform.position;
+            freeScaleLockedRotation = previewInstance.transform.rotation;
+            freeScaleLockedNormal = lastHitNormal;
+
+            freeScaleStartMouseY = Input.mousePosition.y;
+            freeScaleStartFactor = currentScaleFactor;
+        }
+
+        if (Input.GetKeyUp(KeyCode.T))
+        {
+            isFreeScaling = false;
+            return;
+        }
+
+        if (!isFreeScaling)
+            return;
+
+        // Clavado
+        previewInstance.transform.position = freeScalePivot;
+        previewInstance.transform.rotation = freeScaleLockedRotation;
+        lastHitNormal = freeScaleLockedNormal;
+
+        float deltaY = (Input.mousePosition.y - freeScaleStartMouseY);
+        float factor = freeScaleStartFactor * (1f + deltaY * freeScaleSensitivity);
+        currentScaleFactor = Mathf.Clamp(factor, minRelativeScale, maxRelativeScale);
+
+        ApplyScaleFactorToPreviewAndRuntimeData(currentScaleFactor);
+
+        // (Opcional) actualizar color valid/invalid mientras escalas
+        string validityReason = CheckPlacementValidity(freeScalePivot, lastHitNormal, previewInstance.transform.rotation);
+        bool isValid = validityReason == "Válido";
+        if (isValid != currentPreviewIsValid)
+        {
+            currentPreviewIsValid = isValid;
+            ApplyPreviewMaterial(isValid);
+        }
+    }
+
+    private void ApplyScaleFactorToPreviewAndRuntimeData(float factor)
+    {
+        if (previewInstance == null) return;
+        previewInstance.transform.localScale = originalPreviewScale * factor;
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
 
-        if (!PointsManager.Instance.CanAfford(cardData.cost))
+        if (PointsManager.Instance != null && !PointsManager.Instance.CanAfford(cardData.cost))
         {
             canDragThisTime = false;
             StartCoroutine(ShakeCard());
@@ -231,12 +263,21 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         canDragThisTime = true;
 
-        // 🔹 RESET COMPLETO DE ESTADO al empezar nuevo drag
         canvasGroup.blocksRaycasts = false;
+
+        // Reset
         inPlacementMode = false;
-        isFreeRotating = false;  // ← ¡RESET!
+        useFixedPosition = false;
+
+        isFreeRotating = false;
         currentRotationDegrees = 0f;
-        previewInstance = null;
+
+        isFreeScaling = false;
+        currentScaleFactor = 1f;
+
+        currentPreviewIsValid = false;
+
+        CleanupPreview();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -244,6 +285,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
             return;
 
+        // mover carta UI
         Vector2 newPos = rectTransform.anchoredPosition;
         newPos.x += eventData.delta.x / canvas.scaleFactor;
         rectTransform.anchoredPosition = newPos;
@@ -252,96 +294,77 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         float alpha = Mathf.Clamp01(1f - (distanceToRight / placementThreshold));
         canvasGroup.alpha = alpha;
 
-        // 🔹 si el puntero sigue sobre UI, NO entramos en placement mode
         bool overUI = IsPointerOverUI();
 
+        // Entrar en placement
         if (!inPlacementMode && distanceToRight >= placementThreshold && !overUI)
         {
             EnterPlacementMode();
         }
 
-        // 🔹 si ya estábamos en placement mode y volvemos a pasar por UI, apagamos preview y salimos
+        // Si vuelves a UI: salir de placement y destruir preview
         if (inPlacementMode && overUI)
         {
-            if (previewInstance != null)
-            {
-                Destroy(previewInstance);
-                previewInstance = null;
-            }
-
+            CleanupPreview();
             inPlacementMode = false;
             useFixedPosition = false;
             currentPreviewIsValid = false;
-            // canvasGroup.alpha = 1f;
+            isFreeRotating = false;
+            isFreeScaling = false;
             return;
         }
 
-        if (inPlacementMode && !useFixedPosition)
+        if (!inPlacementMode)
+            return;
+
+        // Si estás escalando con T: NO seguir raycast ni mover el preview
+        if (isFreeScaling)
+            return;
+
+        if (useFixedPosition)
+            return;
+
+        // Seguimiento por raycast
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
+            if (previewInstance == null)
             {
-                if (previewInstance == null)
-                {
-                    previewInstance = Instantiate(cardData.defensePrefab);
-                    DisablePreviewLogic(previewInstance);
+                previewInstance = Instantiate(cardData.defensePrefab);
+                DisablePreviewLogic(previewInstance);
 
-                    bramblePreviewSeed = Random.Range(int.MinValue, int.MaxValue);
+                // escala base del prefab (IMPORTANTE guardarla tras instanciar)
+                originalPreviewScale = previewInstance.transform.localScale;
 
-                    var bramble = previewInstance.GetComponent<BrambleDefense>();
-                    if (bramble != null)
-                        bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
+                // seed preview
+                bramblePreviewSeed = Random.Range(int.MinValue, int.MaxValue);
+                var bramble = previewInstance.GetComponent<BrambleDefense>();
+                if (bramble != null)
+                    bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
 
-                    if (cardData.requireFullSupport)
-                    {
-                        var supportGiz = previewInstance.GetComponent<SupportGizmoPreview>();
-                        if (supportGiz == null)
-                            supportGiz = previewInstance.AddComponent<SupportGizmoPreview>();
+                // Aplicar escala inicial
+                ApplyScaleFactorToPreviewAndRuntimeData(currentScaleFactor);
+            }
 
-                        supportGiz.debugCardData = cardData;
-                    }
+            // si no estás rotando libre, el preview sigue el ratón
+            if (!isFreeRotating)
+                previewInstance.transform.position = hit.point;
 
-                    var overlapGiz = previewInstance.GetComponent<PlacementOverlapGizmo>();
-                    if (overlapGiz == null)
-                        overlapGiz = previewInstance.AddComponent<PlacementOverlapGizmo>();
+            lastHitNormal = hit.normal;
 
-                    overlapGiz.debugCardData = cardData;
-                }
+            // Validación y material
+            Vector3 checkPos = isFreeRotating ? freeRotatePivot : hit.point;
+            Quaternion checkRot = previewInstance.transform.rotation;
 
-                // 🔹 POSICIÓN: solo si NO rotando libre
-                if (!isFreeRotating)
-                {
-                    previewInstance.transform.position = hit.point;
-                }
+            string validityReason = CheckPlacementValidity(checkPos, lastHitNormal, checkRot);
+            bool isValid = validityReason == "Válido";
 
-                lastHitNormal = hit.normal;
-
-                // En OnDrag, dentro del bloque if (Physics.Raycast...)
-                Vector3 checkPosition = isFreeRotating ? freeRotatePivot : hit.point;
-
-                // Para la rotación en CheckPlacementValidity, usa la rotación actual del preview
-                Quaternion previewRotation = previewInstance.transform.rotation;
-
-                string validityReason = CheckPlacementValidity(checkPosition, lastHitNormal, previewRotation);
-                bool isValid = validityReason == "Válido";
-
-                if (isValid != currentPreviewIsValid)
-                {
-                    currentPreviewIsValid = isValid;
-                    ApplyPreviewMaterial(isValid);
-                }
+            if (isValid != currentPreviewIsValid)
+            {
+                currentPreviewIsValid = isValid;
+                ApplyPreviewMaterial(isValid);
             }
         }
-    }
-
-    private bool IsPointerOverUI()
-    {
-        // Para PC y editor (mouse)
-        if (EventSystem.current == null)
-            return false;
-
-        return EventSystem.current.IsPointerOverGameObject();
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -351,8 +374,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
+
+        // volver a su X original
         rectTransform.anchoredPosition = new Vector2(originalPosition.x, rectTransform.anchoredPosition.y);
 
+        // Si sueltas encima de UI -> no colocar
         if (IsPointerOverUI())
         {
             CleanupPreview();
@@ -360,27 +386,33 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return;
         }
 
-        if (!inPlacementMode)
+        if (!inPlacementMode || previewInstance == null)
         {
+            CleanupPreview();
             ResetAllStates();
             return;
         }
 
-        // Determinar posición final [TU CÓDIGO EXACTO]
         Vector3 finalPosition;
         Quaternion finalRotation;
-        Vector3 finalNormal = Vector3.up;
+        Vector3 finalNormal = lastHitNormal;
 
-        if (useFixedPosition)
+        // Si estabas escalando, el preview ya está clavado
+        if (isFreeScaling)
+        {
+            finalPosition = freeScalePivot;
+            finalRotation = freeScaleLockedRotation;
+            finalNormal = freeScaleLockedNormal;
+        }
+        else if (useFixedPosition)
         {
             finalPosition = fixedPlacementPosition;
             finalNormal = Vector3.up;
-            finalRotation = previewInstance ? previewInstance.transform.rotation : Quaternion.identity;
+            finalRotation = previewInstance.transform.rotation;
         }
-        else if (isFreeRotating && previewInstance != null)
+        else if (isFreeRotating)
         {
             finalPosition = freeRotatePivot;
-            finalNormal = lastHitNormal;
             finalRotation = previewInstance.transform.rotation;
         }
         else
@@ -390,6 +422,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             {
                 finalPosition = hit.point;
                 finalNormal = hit.normal;
+
                 Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
                 Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
                 finalRotation = extraRot * baseRot;
@@ -403,33 +436,50 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             }
         }
 
-        // 🔹 CHECKEO FINAL CON MOTIVO
+        // Validación final (recalcular siempre)
         string placementReason = CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
         if (placementReason != "Válido")
         {
-            // 🎯 MOSTRAR TEXTO SOLO AL SOLTAR
-            PlacementFeedbackUI feedback = FindObjectOfType<PlacementFeedbackUI>();
-            if (feedback != null)
-                feedback.ShowMessage(placementReason);
-
             StartCoroutine(ShakeCard());
             CleanupPreview();
             ResetAllStates();
             return;
         }
 
-        // COLOCAR (tu código exacto)
-        if (PointsManager.Instance.SpendPoints(cardData.cost))
+        if (PointsManager.Instance != null && PointsManager.Instance.SpendPoints(cardData.cost))
         {
+            Vector3 finalScale = originalPreviewScale * currentScaleFactor;
+
             GameObject placed = DefensePlacer.Instance.PlaceDefense(
                 cardData.defensePrefab,
                 finalPosition,
                 finalRotation,
-                (go) =>
+                beforeInitialize: (go) =>
                 {
                     var bramble = go.GetComponent<BrambleDefense>();
                     if (bramble != null)
                         bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
+                },
+                afterInitialize: (go) =>
+                {
+                    // Caso especial: lodo
+                    var lodo = go.GetComponent<LodoDefense>();
+                    if (lodo != null)
+                    {
+                        lodo.ApplyExternalScale(finalScale);
+                        return;
+                    }
+
+                    // Si tienes ArenaDefense, haz lo mismo:
+                    var arena = go.GetComponent<QuicksandDefense>(); // nombre que uses
+                    if (arena != null)
+                    {
+                        arena.ApplyExternalScale(finalScale);
+                        return;
+                    }
+
+                    // Resto de defensas: escala normal del root
+                    go.transform.localScale = finalScale;
                 }
             );
 
@@ -441,17 +491,71 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             OnCardUsed?.Invoke(this);
         }
+        else
+        {
+            StartCoroutine(ShakeCard());
+        }
 
         CleanupPreview();
         ResetAllStates();
     }
 
+    private void EnterPlacementMode()
+    {
+        inPlacementMode = true;
+        canvasGroup.alpha = 0f;
+
+        currentRotationDegrees = 0f;
+        lastHitNormal = Vector3.up;
+
+        // Copias base (para escalar checks sin tocar SO)
+        if (cardData != null)
+        {
+            baseSupportCheckExtents = cardData.supportCheckExtents;
+            baseSupportRayDistance = cardData.supportRayDistance;
+            baseSupportYOffset = cardData.supportYOffset;
+            basePlacementCheckExtents = cardData.placementCheckExtents;
+        }
+
+        currentScaleFactor = 1f;
+        currentPreviewIsValid = false;
+
+        if (cardData != null && cardData.hasFixedPlacement)
+        {
+            useFixedPosition = true;
+            fixedPlacementPosition = cardData.fixedPosition;
+
+            if (previewInstance == null)
+            {
+                previewInstance = Instantiate(cardData.defensePrefab);
+                DisablePreviewLogic(previewInstance);
+
+                originalPreviewScale = previewInstance.transform.localScale;
+
+                bramblePreviewSeed = Random.Range(int.MinValue, int.MaxValue);
+                var bramble = previewInstance.GetComponent<BrambleDefense>();
+                if (bramble != null)
+                    bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
+
+                ApplyScaleFactorToPreviewAndRuntimeData(currentScaleFactor);
+            }
+
+            previewInstance.transform.position = fixedPlacementPosition;
+        }
+    }
+
     private void ResetAllStates()
     {
         isFreeRotating = false;
+        isFreeScaling = false;
+
         currentRotationDegrees = 0f;
+        currentScaleFactor = 1f;
+
         inPlacementMode = false;
         useFixedPosition = false;
+
+        currentPreviewIsValid = false;
     }
 
     private void CleanupPreview()
@@ -464,39 +568,87 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         currentPreviewIsValid = false;
     }
 
-    private void EnterPlacementMode()
+    private bool IsPointerOverUI()
     {
-        inPlacementMode = true;
+        if (EventSystem.current == null)
+            return false;
+        return EventSystem.current.IsPointerOverGameObject();
+    }
 
-        // Carta completamente invisible mientras estés en placement
-        canvasGroup.alpha = 0f;
+    private string CheckPlacementValidity(Vector3 position, Vector3 normal, Quaternion rotation)
+    {
+        Vector3 checkCenter = position + normal * 0.1f;
 
-        currentRotationDegrees = 0f;
-        lastHitNormal = Vector3.up;
+        // extents base escalados
+        Vector3 halfExtents =
+            (cardData != null && basePlacementCheckExtents != Vector3.zero)
+            ? basePlacementCheckExtents * currentScaleFactor
+            : new Vector3(0.5f, 0.5f, 0.5f);
 
-        if (cardData.hasFixedPlacement)
+        if (Physics.CheckBox(checkCenter, halfExtents, rotation, defenseMask))
+            return "Demasiado cerca de otro obstáculo";
+
+        if (Physics.CheckBox(checkCenter, halfExtents, rotation, campMask))
+            return "Demasiado cerca de un campamento";
+
+        if (cardData != null && cardData.requireFullSupport)
         {
-            useFixedPosition = true;
-            fixedPlacementPosition = cardData.fixedPosition;
-
-            if (previewInstance == null)
-            {
-                previewInstance = Instantiate(cardData.defensePrefab);
-                DisablePreviewLogic(previewInstance);
-            }
-
-            previewInstance.transform.position = fixedPlacementPosition;
+            if (!HasFullSupport(position, rotation))
+                return "Quedaría flotando";
         }
+
+        return "Válido";
     }
 
-    public void EnableReplacementSelection(System.Action<DragCardUI> callback)
+    private bool HasFullSupport(Vector3 center, Quaternion rotation)
     {
-        replacementCallback = callback;
+        if (cardData == null || !cardData.requireFullSupport)
+            return true;
+
+        Vector2 ext = baseSupportCheckExtents * currentScaleFactor;
+        float maxDist = baseSupportRayDistance * currentScaleFactor;
+        float yOff = baseSupportYOffset * currentScaleFactor;
+
+        Vector3 surfaceNormal = rotation * Vector3.up;
+        Vector3 supportCenter = center + surfaceNormal * yOff;
+
+        Vector3[] localOffsets =
+        {
+            Vector3.zero,
+            new Vector3( ext.x, 0f,  ext.y),
+            new Vector3(-ext.x, 0f,  ext.y),
+            new Vector3( ext.x, 0f, -ext.y),
+            new Vector3(-ext.x, 0f, -ext.y),
+        };
+
+        foreach (var local in localOffsets)
+        {
+            Vector3 worldOffset = rotation * local;
+            Vector3 origin = supportCenter + worldOffset;
+            Vector3 dir = -surfaceNormal;
+
+            if (!Physics.Raycast(origin, dir, maxDist, placementMask))
+                return false;
+        }
+
+        return true;
     }
 
-    public void DisableReplacementSelection()
+    private void ApplyPreviewMaterial(bool valid)
     {
-        replacementCallback = null;
+        if (previewInstance == null)
+            return;
+
+        var renderers = previewInstance.GetComponentsInChildren<Renderer>(true);
+        Material mat = valid ? previewValidMaterial : previewInvalidMaterial;
+
+        foreach (var r in renderers)
+        {
+            var mats = r.materials;
+            for (int i = 0; i < mats.Length; i++)
+                mats[i] = mat;
+            r.materials = mats;
+        }
     }
 
     private void DisablePreviewLogic(GameObject preview)
@@ -520,11 +672,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         foreach (var col in preview.GetComponentsInChildren<Collider>(true))
             col.enabled = false;
 
-        if (cardData.previewMaterial == null)
-        {
-            Debug.LogWarning("No preview material asignado en CardData");
+        if (cardData == null || cardData.previewMaterial == null)
             return;
-        }
+
         var renderers = preview.GetComponentsInChildren<Renderer>(true);
         foreach (var rend in renderers)
         {
@@ -564,20 +714,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         if (this == null || canvasGroup == null) return;
         bool canUse = PointsManager.Instance != null && PointsManager.Instance.CanAfford(cardData.cost);
-
-        // if (cardImage != null)
-            // cardImage.color = canUse ? Color.white : Color.gray;
-
         canvasGroup.interactable = canUse;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        // Si hay replacement callback
-        if (replacementCallback != null)
-        {
-            replacementCallback.Invoke(this);
-        }
+        replacementCallback?.Invoke(this);
     }
 
     private bool isHoveringForReplacement = false;
@@ -625,64 +767,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         rectTransform.anchoredPosition = to;
     }
 
-    /// <summary>
-    /// Comprueba que toda la "huella" de la defensa está apoyada en la montaña.
-    /// Lanza raycasts verticales hacia abajo desde el centro y las 4 esquinas
-    /// de un cuadrado definido por supportCheckExtents.
-    /// </summary>
-    private bool HasFullSupport(Vector3 center, Quaternion rotation)
-    {
-        if (cardData == null || !cardData.requireFullSupport)
-            return true;
-
-        Vector2 ext = cardData.supportCheckExtents;
-        float maxDist = cardData.supportRayDistance;
-        float yOff = cardData.supportYOffset;
-
-        // La normal de la superficie a partir de la rotación final
-        // (recuerda que rotation es la que hace que Vector3.up -> normal de la montaña)
-        Vector3 surfaceNormal = rotation * Vector3.up;
-
-        // Centro de la “huella” un poco separado en la normal
-        Vector3 supportCenter = center + surfaceNormal * yOff;
-
-        // Offsets locales en el plano XZ local de la defensa
-        Vector3[] localOffsets =
-        {
-        Vector3.zero,
-        new Vector3( ext.x, 0f,  ext.y),
-        new Vector3(-ext.x, 0f,  ext.y),
-        new Vector3( ext.x, 0f, -ext.y),
-        new Vector3(-ext.x, 0f, -ext.y),
-    };
-
-        foreach (var local in localOffsets)
-        {
-            // Pasar el offset local a mundo respetando la rotación
-            Vector3 worldOffset = rotation * local;
-
-            // Origen del raycast
-            Vector3 origin = supportCenter + worldOffset;
-
-            // Dirección “hacia la montaña”: opuesta a la normal de la superficie
-            Vector3 dir = -surfaceNormal;
-
-            if (!Physics.Raycast(origin, dir, maxDist, placementMask))
-            {
-                Debug.Log("[Support] Falta soporte en: " + origin);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private void OnDestroy()
     {
         if (PointsManager.Instance != null)
             PointsManager.Instance.OnPointsChanged -= HandlePointsChanged;
 
         if (InputManager.Instance != null)
-            InputManager.Instance.OnRotateCardInput += InputManager_OnRotateCardInput;
+            InputManager.Instance.OnRotateCardInput -= InputManager_OnRotateCardInput;
     }
 }

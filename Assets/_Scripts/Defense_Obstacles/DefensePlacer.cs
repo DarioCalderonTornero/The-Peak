@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// DefensePlacer.cs
+using UnityEngine;
 using System;
 
 public class DefensePlacer : MonoBehaviour
@@ -17,18 +18,29 @@ public class DefensePlacer : MonoBehaviour
         return PlaceDefense(prefab, position, Quaternion.identity);
     }
 
-    // NUEVA: recibe la rotación YA calculada
+    // Versión con rotación
     public GameObject PlaceDefense(GameObject prefab, Vector3 position, Quaternion rotation)
     {
-        return PlaceDefense(prefab, position, rotation, null);
+        return PlaceDefense(prefab, position, rotation, null, null);
     }
 
-    // ✅ NUEVA: permite configurar la instancia ANTES de Initialize()
+    // Mantener firma antigua "beforeInitialize"
     public GameObject PlaceDefense(GameObject prefab, Vector3 position, Quaternion rotation, Action<GameObject> beforeInitialize)
+    {
+        return PlaceDefense(prefab, position, rotation, beforeInitialize, null);
+    }
+
+    // ✅ NUEVA: hooks antes y después de Initialize()
+    public GameObject PlaceDefense(
+        GameObject prefab,
+        Vector3 position,
+        Quaternion rotation,
+        Action<GameObject> beforeInitialize,
+        Action<GameObject> afterInitialize)
     {
         GameObject instance = Instantiate(prefab, position, rotation);
 
-        // 👇 aquí metes el seed / flags / lo que quieras ANTES de Initialize
+        // 👇 aquí metes seed/flags/etc ANTES de Initialize
         beforeInitialize?.Invoke(instance);
 
         var defense = instance.GetComponent<BaseDefense>();
@@ -36,6 +48,9 @@ public class DefensePlacer : MonoBehaviour
         {
             defense.Initialize();
         }
+
+        // ✅ aquí metes cosas que NO quieres que Initialize pise (ej: escala final)
+        afterInitialize?.Invoke(instance);
 
         // Recalcular obstáculos en aristas si procede
         var marker = instance.GetComponent<EdgeObstacleMarker>();

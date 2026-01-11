@@ -11,6 +11,7 @@ public class InputManager : MonoBehaviour
 
     // Player Inputs
     public event EventHandler OnGamePauseInput;
+    public event EventHandler OnShowClimberInfo;
 
     /// <summary>
     /// TAP (click corto): mostrar ruta / seleccionar.
@@ -61,6 +62,7 @@ public class InputManager : MonoBehaviour
         // Reemplaza "ClickClimber" por el nombre exacto de tu NUEVA acción única
         // que tiene en el binding las interacciones Tap + Hold.
         inputActions.Player.ClickClimberRoute.performed += ClickClimber_performed;
+        inputActions.Player.ShowClimberInfoUI.performed += ShowClimberInfoUI_performed;
 
         // UI
         inputActions.UI.RotateCard.performed += RotateCard_performed;
@@ -74,30 +76,25 @@ public class InputManager : MonoBehaviour
         inputActions.Camera.TopView.performed += TopView_performed;
     }
 
-    // ----------------- NUEVO: TAP vs HOLD en una sola action -----------------
 
     private void ClickClimber_performed(InputAction.CallbackContext ctx)
     {
-        // HOLD -> inspección
         if (ctx.interaction is HoldInteraction)
         {
             OnClickCameraClimber?.Invoke(this, EventArgs.Empty);
             return;
         }
 
-        // TAP (por defecto) -> ruta
         if (ctx.interaction is TapInteraction || ctx.interaction == null)
         {
             OnClimberClickRoute?.Invoke(this, EventArgs.Empty);
             return;
         }
 
-        // Fallback seguro (por si añades más interacciones en el futuro)
         OnClimberClickRoute?.Invoke(this, EventArgs.Empty);
     }
 
-    // ----------------- CAMERA GETTERS (igual que antes) -----------------
-
+    //Camera Getters
     public Vector2 GetCameraPanMovement() => inputActions.Camera.CameraPanMove.ReadValue<Vector2>();
     public Vector2 GetCameraRotationDelta() => inputActions.Camera.CameraRotateDelta.ReadValue<Vector2>();
     public Vector2 GetCameraZoom() => inputActions.Camera.CameraZoom.ReadValue<Vector2>();
@@ -106,7 +103,7 @@ public class InputManager : MonoBehaviour
     public bool IsCameraRotationHold() => inputActions.Camera.CameraRotateHold.IsPressed();
     public bool isCameraPanSpeedMultiplierHold() => inputActions.Camera.CameraPanSpeedMultiplier.IsPressed();
 
-    // ----------------- PRESSETS CAMERA (igual que antes) -----------------
+    //Pressets Camera
 
     private void TopView_performed(InputAction.CallbackContext obj) => OnTopView?.Invoke(this, EventArgs.Empty);
     private void LeftView_performed(InputAction.CallbackContext obj) => OnLeftView?.Invoke(this, EventArgs.Empty);
@@ -114,14 +111,20 @@ public class InputManager : MonoBehaviour
     private void RightView_performed(InputAction.CallbackContext obj) => OnRightView?.Invoke(this, EventArgs.Empty);
     private void FrontalView_performed(InputAction.CallbackContext obj) => OnFrontalView?.Invoke(this, EventArgs.Empty);
 
-    // ----------------- UI -----------------
+   //UI
 
     private void HideClimberStaminaUI_performed(InputAction.CallbackContext obj) => OnHideStaminaUI?.Invoke(this, EventArgs.Empty);
     private void RotateCard_performed(InputAction.CallbackContext obj) => OnRotateCardInput?.Invoke(this, EventArgs.Empty);
 
-    // ----------------- PLAYER -----------------
+    //Player
 
     private void GamePause_performed(InputAction.CallbackContext obj) => OnGamePauseInput?.Invoke(this, EventArgs.Empty);
+
+
+    private void ShowClimberInfoUI_performed(InputAction.CallbackContext obj)
+    {
+        OnShowClimberInfo.Invoke(this, EventArgs.Empty);
+    }
 
     private void OnDestroy()
     {

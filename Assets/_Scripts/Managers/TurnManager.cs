@@ -83,7 +83,7 @@ public class TurnManager : MonoBehaviour
         defenseManager = DefensePlacementManager.Instance;
 
         //recordTurnNumber = 0;
-        PlayerPrefs.GetInt(RECORD_KEY, 0);
+        recordTurnNumber = PlayerPrefs.GetInt(RECORD_KEY, 0);
 
         if (nextTurnButton != null)
         {

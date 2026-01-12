@@ -16,7 +16,7 @@ public class StartFadeImage : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
 
-        float duration = 3f;
+        float duration = 2.5f;
         float time = 0f;
 
         Color color = fadeImage.color;

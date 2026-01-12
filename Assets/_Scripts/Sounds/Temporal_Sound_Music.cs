@@ -8,6 +8,8 @@ public class Temporal_Sound_Music : MonoBehaviour
 
     [SerializeField] private AudioSource musicSource;
 
+    [SerializeField] private AudioClip deathClimberClip;
+
     private float masterVolume = 1.0f;
     private float effectsVolume = 1.0f;
     private float musicVolume = 1.0f;
@@ -80,6 +82,11 @@ public class Temporal_Sound_Music : MonoBehaviour
     {
         currentTrackIndex = (currentTrackIndex + 1) % musicPlayList.Length;
         PlayMusic(musicPlayList[currentTrackIndex]);
+    }
+
+    public void PlayDeathSound()
+    {
+        PlaySound(deathClimberClip, 1f);
     }
 
     public void PlaySound(AudioClip clip, float volume = 1f)

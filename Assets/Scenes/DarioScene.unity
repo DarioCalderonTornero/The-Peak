@@ -3473,6 +3473,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   musicSource: {fileID: 1124537433}
+  deathClimberClip: {fileID: 8300000, guid: 90e4bfa79882a444b8f8b3bbe536ae00, type: 3}
   musicPlayList:
   - {fileID: 8300000, guid: 41da79e3bafc14f4eba8a607d0933c84, type: 3}
   - {fileID: 8300000, guid: 16dd7390f3684b1408124cf443eeb206, type: 3}

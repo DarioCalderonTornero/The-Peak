@@ -261,6 +261,7 @@ public class LodoDefense : BaseDefense
         {
             Destroy(climber.gameObject);
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+            Temporal_Sound_Music.Instance.PlayDeathSound();
             PointsManager.Instance.AddPoints(10);
         }
 

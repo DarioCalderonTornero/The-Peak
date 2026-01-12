@@ -24,7 +24,7 @@ RenderSettings:
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 4
+  m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
@@ -465,7 +465,7 @@ Light:
   serializedVersion: 11
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 40
+  m_Intensity: 58000
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -508,7 +508,7 @@ Light:
   m_LightShadowCasterMode: 2
   m_AreaSize: {x: 0.5, y: 0.5}
   m_BounceIntensity: 1
-  m_ColorTemperature: 5453
+  m_ColorTemperature: 4050
   m_UseColorTemperature: 1
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
@@ -1224,26 +1224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5b03b29b597cb64eaa6b4eb47140e08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skyVolume: {fileID: 1351471118}
-  sunLight: {fileID: 241634782}
-  dayCubemap: {fileID: 8900000, guid: fca5a57d63136f6428a1d31d1ab2c777, type: 3}
-  nightCubemap: {fileID: 8900000, guid: b4503954fd147c94180872808dde9eb3, type: 3}
-  dayDurationInSeconds: 120
-  nightStartHour: 20
-  nightEndHour: 6
-  dayMidExposure: 10
-  dayEdgeExposure: 13
-  nightMidExposure: 15
-  daySunIntensity: 5000
-  nightSunIntensity: 1000
-  daySunTemperature: 6500
-  twilightSunTemperature: 3500
-  nightSunTemperature: 9000
-  dayIndirectDiffuse: 1
-  nightIndirectDiffuse: 25
-  dayReflection: 5
-  nightReflection: 25
-  currentHour: 12
+  rotationSpeed: 1
 --- !u!1 &1351471117
 GameObject:
   m_ObjectHideFlags: 0
@@ -1254,6 +1235,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1351471119}
   - component: {fileID: 1351471118}
+  - component: {fileID: 1351471120}
   m_Layer: 0
   m_Name: Sky and Fog Global Volume
   m_TagString: Untagged
@@ -1293,6 +1275,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1065733345}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -10.744}
+--- !u!114 &1351471120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351471117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5b03b29b597cb64eaa6b4eb47140e08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 1
 --- !u!1 &1387292266
 GameObject:
   m_ObjectHideFlags: 0
@@ -6343,7 +6338,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Profile: {fileID: 11400000, guid: 0e7554f06cdb07e469d7011681a0b393, type: 2}
-  m_StaticLightingSkyUniqueID: 1
+  m_StaticLightingSkyUniqueID: 3
   m_StaticLightingCloudsUniqueID: 0
   m_StaticLightingVolumetricClouds: 0
   bounces: 1

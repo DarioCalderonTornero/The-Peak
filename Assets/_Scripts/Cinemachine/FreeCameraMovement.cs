@@ -84,7 +84,6 @@ public class FreeCameraController : MonoBehaviour
 
         if (SelectionManager.Instance != null)
         {
-            SelectionManager.Instance.OnClimberInspectRequested += FocusOnClimber;
             SelectionManager.Instance.OnClimberDeselected += HandleDeselected;
         }
     }
@@ -102,7 +101,6 @@ public class FreeCameraController : MonoBehaviour
 
         if (SelectionManager.Instance != null)
         {
-            SelectionManager.Instance.OnClimberInspectRequested -= FocusOnClimber;
             SelectionManager.Instance.OnClimberDeselected -= HandleDeselected;
         }
     }
@@ -141,6 +139,7 @@ public class FreeCameraController : MonoBehaviour
 
     // -------------------- INSPECT API --------------------
 
+    /*
     private void FocusOnClimber(ClimberMovement climber)
     {
         if (climber == null) return;
@@ -153,6 +152,7 @@ public class FreeCameraController : MonoBehaviour
         // Snap hacia el anchor del escalador
         StartSnap(climber.InspectAnchor);
     }
+    */
 
     private void HandleDeselected()
     {

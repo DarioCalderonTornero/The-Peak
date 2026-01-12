@@ -258,7 +258,10 @@ public class LodoDefense : BaseDefense
         }
 
         if (climber != null)
+        {
             Destroy(climber.gameObject);
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+        }
 
         Destroy(gameObject);
     }

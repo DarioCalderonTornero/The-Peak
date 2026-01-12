@@ -40,7 +40,7 @@ public class SelectionManager : MonoBehaviour
             InputManager.Instance.OnClimberClickRoute += (_, __) => HandleTapSelection();
 
             // HOLD -> inspección (sin ruta)
-            InputManager.Instance.OnClickCameraClimber += (_, __) => HandleHoldInspect();
+            //InputManager.Instance.OnClickCameraClimber += (_, __) => HandleHoldInspect();
         }
     }
 
@@ -83,8 +83,10 @@ public class SelectionManager : MonoBehaviour
 
     // ---------------- HOLD (inspección) ----------------
 
+    /*
     private void HandleHoldInspect()
     {
+        
         if (IsPointerOverUI()) return;
 
         // En inspección, priorizamos lo que está bajo el ratón.
@@ -97,7 +99,10 @@ public class SelectionManager : MonoBehaviour
         // Por tanto NO llamamos a SetSelected(true) aquí.
         // Solo pedimos inspección del escalador objetivo.
         OnClimberInspectRequested?.Invoke(target);
+        
     }
+
+    */
 
     private void SelectClimber(ClimberMovement newClimber, bool showRoute)
     {

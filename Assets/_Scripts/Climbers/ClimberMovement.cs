@@ -273,6 +273,18 @@ public class ClimberMovement : MonoBehaviour
 
     private void Update()
     {
+        if (currentStamina <= 0f && !pointsAddedThisTurn)
+        {
+            PointsManager.Instance.AddPoints(10);
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+            isActiveThisTurn = false;
+            isAtCamp = false;
+            pointsAddedThisTurn = true;
+            Debug.Log("Stamina = 0");
+            Destroy(gameObject);
+            return;
+        }
+
         // 1. Animación de la línea (Solo si está seleccionado para ahorrar recursos)
         if (isSelected && pathLineRenderer.enabled)
         {
@@ -301,15 +313,7 @@ public class ClimberMovement : MonoBehaviour
             lastFrameHeight = frameHeight;
         }
 
-        if (currentStamina <= 0f && !pointsAddedThisTurn)
-        {
-            PointsManager.Instance.AddPoints(10);
-            isActiveThisTurn = false;
-            isAtCamp = false;
-            pointsAddedThisTurn = true;
-            Destroy(gameObject);
-            return;
-        }
+        
 
         agent.speed = originalSpeed * externalSpeedMultiplier;
 
@@ -492,6 +496,7 @@ public class ClimberMovement : MonoBehaviour
         isAtCamp = false;
         if (agent != null) agent.isStopped = true;
         GameOverManager.Instance.SetGameOverCamera();
+        ShowFinalStats.Instance.Show();
         Debug.Log("Cima alcanzada");
     }
 

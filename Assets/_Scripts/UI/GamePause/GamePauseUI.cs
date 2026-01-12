@@ -7,7 +7,6 @@ public class GamePauseUI : MonoBehaviour
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button backToMenuButton;
-    [SerializeField] private GameObject climberInfo;
 
     [SerializeField] private AudioClip stopGameAudioClip;
     [SerializeField] private float volume;
@@ -81,7 +80,6 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.gameObject.SetActive(true);
         settingsButton.gameObject.SetActive(true);
         backToMenuButton.gameObject.SetActive(true);
-        climberInfo.SetActive(true);
     }
 
     private void Hide()
@@ -92,7 +90,6 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
-        climberInfo.SetActive(false);
 
         //Hide settings
         settingsUI.gameObject.SetActive(false);

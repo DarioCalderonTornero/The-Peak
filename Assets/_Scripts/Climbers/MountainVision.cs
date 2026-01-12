@@ -38,10 +38,12 @@ public class MountainVision : MonoBehaviour
     {
         isVisionActive = !isVisionActive;
 
+        /*
         if (isVisionActive) Debug.Log("[VISIÓN] -> ACTIVADA");
         else Debug.Log("[VISIÓN] -> DESACTIVADA");
-
+        */
         UpdateAllClimbers();
+        
     }
 
     void UpdateAllClimbers()

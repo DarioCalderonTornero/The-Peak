@@ -143,6 +143,10 @@ MonoBehaviour:
   isPreview: 0
   layoutSeed: 0
   previewMaterialOverride: {fileID: 0}
+  spawnVfxPrefab: {fileID: 7727105840911985212, guid: 6faaa0874a229984b970790762a70a2d, type: 3}
+  spawnVfxDuration: 1
+  spawnVfxScaleMultiplier: 1
+  vfxScaleProperty: 
 --- !u!54 &6126965442273955557
 Rigidbody:
   m_ObjectHideFlags: 0

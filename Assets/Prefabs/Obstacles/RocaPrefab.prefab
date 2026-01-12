@@ -252,5 +252,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bdcc574b18f7a542900218b1d45fd87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnVfxPrefab: {fileID: 820992894342637723, guid: 98049565b43c56942ac8fbba6c4003d1, type: 3}
+  spawnVfxPrefab: {fileID: 4169529801109918204, guid: 06a24a16d66fd474b976ed2193a6b61e, type: 3}
   spawnVfxDuration: 2

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class BrambleDefense : BaseDefense
 {
@@ -65,6 +66,10 @@ public class BrambleDefense : BaseDefense
 
     private readonly List<BrambleInstance> spawnedInstances = new List<BrambleInstance>();
 
+    [Header("Spawn VFX")]
+    [SerializeField] private VisualEffect spawnVfxPrefab;
+    [SerializeField] private float spawnVfxDuration = 1f;
+
     private void Awake()
     {
         areaCollider = GetComponent<Collider>();
@@ -88,8 +93,25 @@ public class BrambleDefense : BaseDefense
         if (layoutSeed == 0)
             layoutSeed = Random.Range(int.MinValue, int.MaxValue);
 
+        PlaySpawnVfx();
+
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
         spawnRoutine = StartCoroutine(SpawnFromGround(layoutSeed, previewMat: null, animate: true));
+    }
+
+    private void PlaySpawnVfx()
+    {
+        if (spawnVfxPrefab == null)
+            return;
+
+        VisualEffect vfx = Instantiate(
+            spawnVfxPrefab,
+            transform.position,
+            transform.rotation,
+            null // sin padre
+        );
+
+        Destroy(vfx.gameObject, spawnVfxDuration);
     }
 
     // ---------- API para Preview / Runtime ----------

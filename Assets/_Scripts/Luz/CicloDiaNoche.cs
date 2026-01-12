@@ -5,50 +5,44 @@ using UnityEngine.Rendering.HighDefinition;
 public class CicloDiaNocheHDRP : MonoBehaviour
 {
 
+    [Header("Referencias")]
+    [Tooltip("Arrastra aquí el objeto que contiene el componente Volume con el cielo.")]
+    public Volume targetVolume; // <--- Aquí asignarás tu volumen manualmente
+
     [Header("Configuración")]
     [Tooltip("Velocidad de rotación en grados por segundo.")]
     public float rotationSpeed = 1.0f;
 
-    private Volume volume;
     private HDRISky hdriSky;
 
     void Start()
     {
-        // 1. Obtenemos el componente Volume (puede estar en este objeto o ser el global)
-        volume = GetComponent<Volume>();
-
-        // 2. Verificamos si existe el Volume
-        if (volume == null)
+        // 1. Verificación de seguridad
+        if (targetVolume == null)
         {
-            Debug.LogError("No se encontró un componente 'Volume' en este objeto.");
+            Debug.LogError("¡Ojo! No has asignado el 'Target Volume' en el inspector del script HDRISkyRotator.");
+            this.enabled = false; // Desactivamos el script para evitar errores
             return;
         }
 
-        // 3. Intentamos obtener el perfil HDRISky del volumen
-        // Usamos volume.profile para crear una instancia temporal y no modificar el archivo original en disco
-        if (volume.profile.TryGet<HDRISky>(out hdriSky))
+        // 2. Buscamos el HDRI Sky dentro del volumen que tú asignaste
+        if (targetVolume.profile.TryGet<HDRISky>(out hdriSky))
         {
-            Debug.Log("HDRI Sky encontrado y listo para rotar.");
+            Debug.Log("HDRI Sky encontrado correctamente.");
         }
         else
         {
-            Debug.LogWarning("El Volumen no tiene un override de 'HDRI Sky'.");
+            Debug.LogWarning("El Volumen que asignaste no tiene el override 'HDRI Sky' añadido.");
         }
     }
 
     void Update()
     {
-        // Solo ejecutamos si encontramos el skybox
         if (hdriSky != null)
         {
-            // 4. Modificamos la rotación
-            // Accedemos a .value para cambiar el dato actual
             float currentRotation = hdriSky.rotation.value;
-
-            // Calculamos la nueva rotación y la mantenemos en el rango 0-360
             float newRotation = currentRotation + (rotationSpeed * Time.deltaTime);
-            newRotation %= 360f; // Asegura que no crezca infinitamente
-
+            newRotation %= 360f;
             hdriSky.rotation.value = newRotation;
         }
     }

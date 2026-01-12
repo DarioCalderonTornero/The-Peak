@@ -1973,7 +1973,7 @@ MonoBehaviour:
   selectedCountText: {fileID: 160356062}
   startMatchButton: {fileID: 2045821353}
   maxSelectedCards: 5
-  selectedColor: {r: 0.4, g: 1, b: 0.4, a: 1}
+  selectedColor: {r: 0, g: 1, b: 0.9184933, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   cardScale: {x: 1.74, y: 1.74, z: 1}
   hoverScaleMultiplier: 1.1

@@ -242,11 +242,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         // actualizar valid/invalid
         string validityReason = CheckPlacementValidity(freeScalePivot, lastHitNormal, previewInstance.transform.rotation);
         bool isValid = validityReason == "Válido";
-        if (isValid != currentPreviewIsValid)
-        {
-            currentPreviewIsValid = isValid;
-            ApplyPreviewMaterial(isValid);
-        }
+
+        currentPreviewIsValid = isValid;
+        ApplyPreviewMaterial(isValid);
     }
 
     private void ApplyScaleFactorToPreview(float factor)
@@ -329,6 +327,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 previewInstance = Instantiate(cardData.defensePrefab);
                 DisablePreviewLogic(previewInstance);
 
+                currentPreviewIsValid = false;
+                ApplyPreviewMaterial(false);
+
                 // escala base del prefab
                 originalPreviewScale = previewInstance.transform.localScale;
 
@@ -358,11 +359,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             string validityReason = CheckPlacementValidity(checkPos, lastHitNormal, checkRot);
             bool isValid = validityReason == "Válido";
 
-            if (isValid != currentPreviewIsValid)
-            {
-                currentPreviewIsValid = isValid;
-                ApplyPreviewMaterial(isValid);
-            }
+            currentPreviewIsValid = isValid;
+            ApplyPreviewMaterial(isValid);
         }
     }
 
@@ -660,7 +658,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         foreach (var col in preview.GetComponentsInChildren<Collider>(true))
             col.enabled = false;
 
-        if (cardData == null || cardData.previewMaterial == null)
+        /* if (cardData == null || cardData.previewMaterial == null)
             return;
 
         var renderers = preview.GetComponentsInChildren<Renderer>(true);
@@ -670,7 +668,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             for (int i = 0; i < mats.Length; i++)
                 mats[i] = cardData.previewMaterial;
             rend.materials = mats;
-        }
+        }*/
     }
 
     private bool isShaking = false;

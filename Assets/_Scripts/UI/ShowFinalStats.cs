@@ -34,7 +34,7 @@ public class ShowFinalStats : MonoBehaviour
         int record = ClimberDeathPointsManager.Instance.GetRecordDeaths();
 
         totalClimberDeathText.text = "CLIMBER DEATHS: " + current;
-        recordClimberDeathText.text = "RECORD: " + record;
+        recordClimberDeathText.text = "MAX DEATHS: " + record;
     }
 
     public void Hide()

@@ -169,7 +169,6 @@ public class BerryTreeDefense : BaseDefense
         climber.AddMaxStamina(200f);
 
         StartCoroutine(RespawnBerryAfterTurns(true));
-        Debug.Log("✅ Baya BUENA comida (+200 MaxStamina).");
     }
 
     private void EatBadBerry(ClimberMovement climber)
@@ -178,9 +177,10 @@ public class BerryTreeDefense : BaseDefense
         badBerryAlive = false;
 
         Destroy(climber.gameObject);
+        ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+        PointsManager.Instance.AddPoints(10);
 
         StartCoroutine(RespawnBerryAfterTurns(false));
-        Debug.Log("💀 Baya MALA comida (escalador muere).");
     }
 
     private IEnumerator RespawnBerryAfterTurns(bool good)

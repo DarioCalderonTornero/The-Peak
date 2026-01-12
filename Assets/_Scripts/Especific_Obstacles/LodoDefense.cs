@@ -261,6 +261,7 @@ public class LodoDefense : BaseDefense
         {
             Destroy(climber.gameObject);
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+            PointsManager.Instance.AddPoints(10);
         }
 
         Destroy(gameObject);

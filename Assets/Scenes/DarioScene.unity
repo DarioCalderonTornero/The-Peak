@@ -1676,6 +1676,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   totalClimberDeathText: {fileID: 2049422223}
   recordClimberDeathText: {fileID: 582425720}
+  totalRounds: {fileID: 814757033}
+  recordTotalRounds: {fileID: 480787519}
 --- !u!1 &639492198
 GameObject:
   m_ObjectHideFlags: 0
@@ -2020,6 +2022,7 @@ MonoBehaviour:
   playerTurnsUI: {fileID: 584625723}
   currentTurnState: 1
   currentTurnNumber: 1
+  recordTurnNumber: 0
   logTurnChanges: 1
   nextTurnButton: {fileID: 1534971994}
   accelarateTimeButtonX1: {fileID: 2100247593}
@@ -3090,7 +3093,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -3320,7 +3323,6 @@ MonoBehaviour:
   spawnCooldown: 2
   minDistance: 20
   introUniqueEquipments:
-  - {fileID: 11400000, guid: e1e3bc880ea646a4d8e09cda704cbac6, type: 2}
   - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
   - {fileID: 11400000, guid: 338103a60dc2c2141ada12844300638e, type: 2}
   - {fileID: 11400000, guid: f20865c9945b6864dadbeff59303e58d, type: 2}

@@ -201,7 +201,11 @@ public class QuicksandDefense : BaseDefense
     private void KillClimber()
     {
         if (absorbedClimber != null)
+        {
             Destroy(absorbedClimber.gameObject);
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+            PointsManager.Instance.AddPoints(10);
+        }
 
         Destroy(gameObject);
     }

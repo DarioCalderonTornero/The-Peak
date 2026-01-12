@@ -6,6 +6,8 @@ public class ShowFinalStats : MonoBehaviour
     public static ShowFinalStats Instance { get; private set; }
     [SerializeField] private TextMeshProUGUI totalClimberDeathText;
     [SerializeField] private TextMeshProUGUI recordClimberDeathText;
+    [SerializeField] public TextMeshProUGUI totalRounds;
+    [SerializeField] public TextMeshProUGUI recordTotalRounds;
 
     private void Awake()
     {

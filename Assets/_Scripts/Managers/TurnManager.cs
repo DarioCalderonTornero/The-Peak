@@ -40,6 +40,10 @@ public class TurnManager : MonoBehaviour
     public int CurrentTurnNumber => currentTurnNumber;
     public event Action<int> OnTurnNumberChanged;
 
+    public int recordTurnNumber;
+
+    private string RECORD_KEY = "RECORD_TURN_NUMBER";
+
     [Header("Configuration")]
     [SerializeField] private bool logTurnChanges = true;
 
@@ -77,6 +81,9 @@ public class TurnManager : MonoBehaviour
     {
         spawnManager = SpawnManager.Instance;
         defenseManager = DefensePlacementManager.Instance;
+
+        //recordTurnNumber = 0;
+        PlayerPrefs.GetInt(RECORD_KEY, 0);
 
         if (nextTurnButton != null)
         {
@@ -226,10 +233,19 @@ public class TurnManager : MonoBehaviour
             pointsAddedThisTurn = true;
         }
 
+        if (currentTurnNumber > recordTurnNumber)
+        {
+            recordTurnNumber = currentTurnNumber;
+            PlayerPrefs.SetInt(RECORD_KEY, recordTurnNumber);
+            PlayerPrefs.Save();
+        }
+
         // Actualizamos el contador de turnos en el UI
         if (playerTurnsUI != null)
         {
             playerTurnsUI.currentTurns.text = (currentTurnNumber).ToString(); 
+            ShowFinalStats.Instance.totalRounds.text = "TOTAL ROUNDS: " + (currentTurnNumber).ToString();  
+            ShowFinalStats.Instance.recordTotalRounds.text = "MAX ROUNDS: " + recordTurnNumber.ToString();
         }
 
         OnClimberTurnEnd?.Invoke();

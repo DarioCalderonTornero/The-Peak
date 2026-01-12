@@ -5,8 +5,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler,
-    IPointerEnterHandler, IPointerExitHandler
+public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler,
+    IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public CardData cardData;
 
@@ -14,7 +14,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public Image iconImage;
     public TextMeshProUGUI costText;
     public TextMeshProUGUI nameText;
-
     public Image worldSpriteImage;
 
     private RectTransform rectTransform;
@@ -43,9 +42,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [SerializeField] private LayerMask campMask;
     [SerializeField] private AudioClip defensePlacementAudioClip;
 
-    private float currentRotationDegrees = 0f;
-    private Vector3 lastHitNormal = Vector3.up;
+    // ✅ PERSISTENTES (se quedan aunque vuelvas a slots)
+    [Header("Persisted Transform (per-card)")]
+    [SerializeField] private float currentRotationDegrees = 0f;  // yaw relativo (se guarda)
+    [SerializeField] private float currentScaleFactor = 1f;      // factor relativo (se guarda)
 
+    private Vector3 lastHitNormal = Vector3.up;
     private int bramblePreviewSeed = 0;
 
     [Header("Preview Materials")]
@@ -72,11 +74,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private float freeScaleStartMouseY;
     private float freeScaleStartFactor;
 
-    // factor relativo sobre la escala ORIGINAL del prefab
-    private float currentScaleFactor = 1f;
+    // escala ORIGINAL del prefab instanciado en preview
     private Vector3 originalPreviewScale;
 
-    // Valores base para este placement (no escalados)
+    // Valores base para checks (no escalados)
     private Vector2 baseSupportCheckExtents;
     private float baseSupportRayDistance;
     private float baseSupportYOffset;
@@ -133,11 +134,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (!inPlacementMode || useFixedPosition || previewInstance == null)
             return;
 
-        // Si estás escalando, ignorar rotación
         if (isFreeScaling)
             return;
 
-        // Toggle
         if (isFreeRotating)
         {
             isFreeRotating = false;
@@ -147,7 +146,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         isFreeRotating = true;
         freeRotatePivot = previewInstance.transform.position;
         freeRotateBaseRotation = previewInstance.transform.rotation;
-        currentRotationDegrees = 0f;
+
+        // ✅ OJO: NO reseteamos currentRotationDegrees (persistente)
+        // Queremos seguir desde el valor acumulado.
     }
 
     private void Update()
@@ -155,31 +156,36 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (!inPlacementMode || previewInstance == null || useFixedPosition)
             return;
 
-        // 1) Si estamos escalando con T: NO mover ni rotar, solo escala (lo hace HandleFreeScaling)
+        // 1) Si estamos escalando con T: NO mover ni rotar, solo escala
         HandleFreeScaling();
         if (isFreeScaling)
             return;
 
-        // 2) Rotación libre (R)
+        // 2) Rotación libre (R) o rotación normal (ambas usan currentRotationDegrees persistente)
         if (isFreeRotating)
         {
             UpdateFreeRotation();
         }
         else
         {
-            // Rotación clásica con normal + step acumulado (si lo usas)
-            Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
-            Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
-
-            // ✅ orden correcto: primero base, luego extra alrededor de la normal
-            previewInstance.transform.rotation = extraRot * baseRot;
+            ApplyRotationFromNormalAndYaw();
         }
+    }
+
+    private void ApplyRotationFromNormalAndYaw()
+    {
+        if (previewInstance == null) return;
+
+        Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
+        Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
+        previewInstance.transform.rotation = extraRot * baseRot;
     }
 
     private void UpdateFreeRotation()
     {
         if (previewInstance == null) return;
 
+        // Mantener posición clavada
         previewInstance.transform.position = freeRotatePivot;
 
         float mouseDelta = Input.GetAxis("Mouse X") * 6.5f;
@@ -231,9 +237,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         float factor = freeScaleStartFactor * (1f + deltaY * freeScaleSensitivity);
         currentScaleFactor = Mathf.Clamp(factor, minRelativeScale, maxRelativeScale);
 
-        ApplyScaleFactorToPreviewAndRuntimeData(currentScaleFactor);
+        ApplyScaleFactorToPreview(currentScaleFactor);
 
-        // (Opcional) actualizar color valid/invalid mientras escalas
+        // actualizar valid/invalid
         string validityReason = CheckPlacementValidity(freeScalePivot, lastHitNormal, previewInstance.transform.rotation);
         bool isValid = validityReason == "Válido";
         if (isValid != currentPreviewIsValid)
@@ -243,7 +249,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
     }
 
-    private void ApplyScaleFactorToPreviewAndRuntimeData(float factor)
+    private void ApplyScaleFactorToPreview(float factor)
     {
         if (previewInstance == null) return;
         previewInstance.transform.localScale = originalPreviewScale * factor;
@@ -262,20 +268,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         canDragThisTime = true;
-
         canvasGroup.blocksRaycasts = false;
 
-        // Reset
-        inPlacementMode = false;
-        useFixedPosition = false;
-
-        isFreeRotating = false;
-        currentRotationDegrees = 0f;
-
-        isFreeScaling = false;
-        currentScaleFactor = 1f;
-
-        currentPreviewIsValid = false;
+        // ✅ Reset SOLO de estados temporales (NO tocamos scale/rot persistentes)
+        ResetTransientStates();
 
         CleanupPreview();
     }
@@ -298,26 +294,26 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         // Entrar en placement
         if (!inPlacementMode && distanceToRight >= placementThreshold && !overUI)
-        {
             EnterPlacementMode();
-        }
 
-        // Si vuelves a UI: salir de placement y destruir preview
+        // Si vuelves a UI: salir de placement y destruir preview (PERO mantener scale/rot)
         if (inPlacementMode && overUI)
         {
             CleanupPreview();
             inPlacementMode = false;
             useFixedPosition = false;
             currentPreviewIsValid = false;
+
+            // ✅ solo flags
             isFreeRotating = false;
             isFreeScaling = false;
+
             return;
         }
 
         if (!inPlacementMode)
             return;
 
-        // Si estás escalando con T: NO seguir raycast ni mover el preview
         if (isFreeScaling)
             return;
 
@@ -333,7 +329,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 previewInstance = Instantiate(cardData.defensePrefab);
                 DisablePreviewLogic(previewInstance);
 
-                // escala base del prefab (IMPORTANTE guardarla tras instanciar)
+                // escala base del prefab
                 originalPreviewScale = previewInstance.transform.localScale;
 
                 // seed preview
@@ -342,15 +338,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 if (bramble != null)
                     bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
 
-                // Aplicar escala inicial
-                ApplyScaleFactorToPreviewAndRuntimeData(currentScaleFactor);
+                // ✅ Aplicar PERSISTENTES al nacer el preview
+                ApplyScaleFactorToPreview(currentScaleFactor);
             }
 
-            // si no estás rotando libre, el preview sigue el ratón
             if (!isFreeRotating)
                 previewInstance.transform.position = hit.point;
 
             lastHitNormal = hit.normal;
+
+            // ✅ aplicar rotación persistente siempre que no estés en free-rot
+            if (!isFreeRotating)
+                ApplyRotationFromNormalAndYaw();
 
             // Validación y material
             Vector3 checkPos = isFreeRotating ? freeRotatePivot : hit.point;
@@ -375,21 +374,20 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
 
-        // volver a su X original
         rectTransform.anchoredPosition = new Vector2(originalPosition.x, rectTransform.anchoredPosition.y);
 
-        // Si sueltas encima de UI -> no colocar
+        // Si sueltas encima de UI -> no colocar (mantener scale/rot)
         if (IsPointerOverUI())
         {
             CleanupPreview();
-            ResetAllStates();
+            ResetTransientStates(); // ✅ NO resetea rot/scale
             return;
         }
 
         if (!inPlacementMode || previewInstance == null)
         {
             CleanupPreview();
-            ResetAllStates();
+            ResetTransientStates(); // ✅ NO resetea rot/scale
             return;
         }
 
@@ -397,7 +395,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         Quaternion finalRotation;
         Vector3 finalNormal = lastHitNormal;
 
-        // Si estabas escalando, el preview ya está clavado
         if (isFreeScaling)
         {
             finalPosition = freeScalePivot;
@@ -417,36 +414,22 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         else
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
-            {
-                finalPosition = hit.point;
-                finalNormal = hit.normal;
-
-                Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, finalNormal);
-                Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, finalNormal);
-                finalRotation = extraRot * baseRot;
-            }
-            else
-            {
-                StartCoroutine(ShakeCard());
-                CleanupPreview();
-                ResetAllStates();
-                return;
-            }
+            // ✅ usa la rotación persistente
+            finalPosition = previewInstance.transform.position;
+            finalRotation = previewInstance.transform.rotation;
         }
 
-        // Validación final (recalcular siempre)
         string placementReason = CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
         if (placementReason != "Válido")
         {
             StartCoroutine(ShakeCard());
             CleanupPreview();
-            ResetAllStates();
+            ResetTransientStates(); // ✅ NO resetea rot/scale
             return;
         }
 
-        if (PointsManager.Instance != null && PointsManager.Instance.SpendPoints(cardData.cost))
+        bool placedOk = PointsManager.Instance != null && PointsManager.Instance.SpendPoints(cardData.cost);
+        if (placedOk)
         {
             Vector3 finalScale = originalPreviewScale * currentScaleFactor;
 
@@ -462,7 +445,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 },
                 afterInitialize: (go) =>
                 {
-                    // Caso especial: lodo
                     var lodo = go.GetComponent<LodoDefense>();
                     if (lodo != null)
                     {
@@ -470,15 +452,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                         return;
                     }
 
-                    // Si tienes ArenaDefense, haz lo mismo:
-                    var arena = go.GetComponent<QuicksandDefense>(); // nombre que uses
+                    var arena = go.GetComponent<QuicksandDefense>();
                     if (arena != null)
                     {
                         arena.ApplyExternalScale(finalScale);
                         return;
                     }
 
-                    // Resto de defensas: escala normal del root
                     go.transform.localScale = finalScale;
                 }
             );
@@ -490,6 +470,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 DefensePlacementManager.Instance.RegisterPlaced(placed);
 
             OnCardUsed?.Invoke(this);
+
+            // ✅ AHORA SÍ: si quieres que al colocar se resetee para la próxima carta/nueva copia
+            ResetPersistentTransform(); // <-- quítalo si NO quieres resetear nunca
         }
         else
         {
@@ -497,7 +480,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         CleanupPreview();
-        ResetAllStates();
+        ResetTransientStates(); // ✅ flags a cero, pero rot/scale persisten salvo que hayas llamado ResetPersistentTransform()
     }
 
     private void EnterPlacementMode()
@@ -505,10 +488,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         inPlacementMode = true;
         canvasGroup.alpha = 0f;
 
-        currentRotationDegrees = 0f;
         lastHitNormal = Vector3.up;
+        currentPreviewIsValid = false;
 
-        // Copias base (para escalar checks sin tocar SO)
         if (cardData != null)
         {
             baseSupportCheckExtents = cardData.supportCheckExtents;
@@ -516,9 +498,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             baseSupportYOffset = cardData.supportYOffset;
             basePlacementCheckExtents = cardData.placementCheckExtents;
         }
-
-        currentScaleFactor = 1f;
-        currentPreviewIsValid = false;
 
         if (cardData != null && cardData.hasFixedPlacement)
         {
@@ -537,25 +516,35 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 if (bramble != null)
                     bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
 
-                ApplyScaleFactorToPreviewAndRuntimeData(currentScaleFactor);
+                // ✅ aplicar persistentes al crear
+                ApplyScaleFactorToPreview(currentScaleFactor);
             }
 
             previewInstance.transform.position = fixedPlacementPosition;
+
+            // ✅ aplicar rot persistente también en fixed
+            ApplyRotationFromNormalAndYaw();
         }
     }
 
-    private void ResetAllStates()
+    // ✅ Reset SOLO flags y placement state (NO rot/scale)
+    private void ResetTransientStates()
     {
         isFreeRotating = false;
         isFreeScaling = false;
-
-        currentRotationDegrees = 0f;
-        currentScaleFactor = 1f;
 
         inPlacementMode = false;
         useFixedPosition = false;
 
         currentPreviewIsValid = false;
+        lastHitNormal = Vector3.up;
+    }
+
+    // ✅ Reset de lo que quieres “olvidar” al colocar (o cuando quieras)
+    private void ResetPersistentTransform()
+    {
+        currentRotationDegrees = 0f;
+        currentScaleFactor = 1f;
     }
 
     private void CleanupPreview()
@@ -579,7 +568,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         Vector3 checkCenter = position + normal * 0.1f;
 
-        // extents base escalados
         Vector3 halfExtents =
             (cardData != null && basePlacementCheckExtents != Vector3.zero)
             ? basePlacementCheckExtents * currentScaleFactor

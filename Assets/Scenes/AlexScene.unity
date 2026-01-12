@@ -676,7 +676,6 @@ GameObject:
   - component: {fileID: 281424685}
   - component: {fileID: 281424688}
   - component: {fileID: 281424687}
-  - component: {fileID: 281424686}
   - component: {fileID: 281424689}
   m_Layer: 0
   m_Name: Managers
@@ -727,21 +726,6 @@ MonoBehaviour:
   maxPoints: 15
   pointsText: {fileID: 1410541747}
   audioClip: {fileID: 8300000, guid: 405a8a024d503a04c81462523227d9b5, type: 3}
---- !u!114 &281424686
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 281424682}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18462f0f137651b42a0c75eaf4cb5a0c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardSlotsUI: {fileID: 281424687}
-  cardToAdd: {fileID: 11400000, guid: 1fbd222a3b929814586f57caa6d90b5a, type: 2}
-  cardReplacementController: {fileID: 281424688}
 --- !u!114 &281424687
 MonoBehaviour:
   m_ObjectHideFlags: 0

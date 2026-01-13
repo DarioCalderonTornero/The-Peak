@@ -24,7 +24,6 @@ public class ClimberMovement : MonoBehaviour
     private Material lineMaterialInstance; // Para animar sin afectar a otros
     private bool isSelected = false;
 
-    // ... (El resto de tus headers siguen igual) ...
     [Header("Llegada / márgenes")]
     [SerializeField] private float reachedThreshold = 0.2f;
 
@@ -91,7 +90,6 @@ public class ClimberMovement : MonoBehaviour
 
     public Transform CamLookAt => camLookAt != null ? camLookAt : transform;
     public Transform InspectAnchor => inspectAnchor != null ? inspectAnchor : transform;
-
 
     private void Awake()
     {
@@ -200,11 +198,8 @@ public class ClimberMovement : MonoBehaviour
         Vector3 startPos = transform.position;
         Vector3 targetPos = plannedTargetNode.position;
 
-        // 1. Intentamos encontrar el punto válido en el NavMesh más cercano al inicio y al final.
-        // Esto corrige errores si el campamento está un poco hundido o el escalador flotando.
         NavMeshHit hitStart, hitEnd;
 
-        // Buscamos en un radio de 5 metros (5.0f) el punto de navegación más cercano
         bool startValid = NavMesh.SamplePosition(startPos, out hitStart, 5.0f, NavMesh.AllAreas);
         bool endValid = NavMesh.SamplePosition(targetPos, out hitEnd, 5.0f, NavMesh.AllAreas);
 
@@ -212,16 +207,13 @@ public class ClimberMovement : MonoBehaviour
 
         if (startValid && endValid)
         {
-            // Calculamos la ruta entre esos dos puntos válidos
             pathFound = NavMesh.CalculatePath(hitStart.position, hitEnd.position, NavMesh.AllAreas, path);
         }
         else
         {
-            // Si falla SamplePosition, intentamos con las posiciones originales por si acaso
             pathFound = NavMesh.CalculatePath(startPos, targetPos, NavMesh.AllAreas, path);
         }
 
-        // 2. Si encontramos ruta y es válida (o parcial, que significa "lo más cerca posible")
         if (pathFound && path.status != NavMeshPathStatus.PathInvalid)
         {
             pathLineRenderer.positionCount = path.corners.Length;
@@ -229,7 +221,6 @@ public class ClimberMovement : MonoBehaviour
             Vector3[] elevatedCorners = new Vector3[path.corners.Length];
             for (int i = 0; i < path.corners.Length; i++)
             {
-                // Elevamos cada esquina un poco (lineHeightOffset) para que la línea no atraviese la tierra
                 elevatedCorners[i] = path.corners[i] + Vector3.up * lineHeightOffset;
             }
 
@@ -237,28 +228,20 @@ public class ClimberMovement : MonoBehaviour
         }
         else
         {
-            // DEBUG: Esto te dirá en la consola por qué sale la línea recta
             Debug.LogWarning($"[Climber] Ruta fallida. StartValid: {startValid}, EndValid: {endValid}, PathStatus: {path.status}");
 
-            // Fallback: Línea recta (solo para que sepas que intentó ir ahí)
             pathLineRenderer.positionCount = 2;
             pathLineRenderer.SetPosition(0, startPos + Vector3.up * lineHeightOffset);
             pathLineRenderer.SetPosition(1, targetPos + Vector3.up * lineHeightOffset);
         }
     }
 
-    // Método para animar la línea en cada frame
     private void AnimateLine()
     {
         if (lineMaterialInstance != null)
         {
-            // Movemos la textura en el eje X (Offset) basándonos en el tiempo
-            // Esto crea el efecto de "flechas caminando" hacia el destino
             float textureOffset = Time.time * -animationSpeed;
             lineMaterialInstance.mainTextureOffset = new Vector2(textureOffset, 0);
-
-            // Ajustamos el tiling según la longitud (opcional, si TextureMode es Tile ya lo hace Unity)
-            // lineMaterialInstance.mainTextureScale = new Vector2(textureTiling, 1);
         }
     }
 
@@ -286,13 +269,11 @@ public class ClimberMovement : MonoBehaviour
             return;
         }
 
-        // 1. Animación de la línea (Solo si está seleccionado para ahorrar recursos)
         if (isSelected && pathLineRenderer.enabled)
         {
             AnimateLine();
         }
 
-        // 2. Lógica de movimiento normal
         if (!isActiveThisTurn || reachedSummit || agent == null) return;
         if (!agent.enabled || !agent.isOnNavMesh) return;
 
@@ -313,8 +294,6 @@ public class ClimberMovement : MonoBehaviour
             lastFramePosition = currentPos;
             lastFrameHeight = frameHeight;
         }
-
-        
 
         agent.speed = originalSpeed * externalSpeedMultiplier;
 
@@ -339,6 +318,9 @@ public class ClimberMovement : MonoBehaviour
 
     private void PlanNextMove()
     {
+        if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();
+        if (campGraph != null) campGraph.RecalculateObstaclesOnEdges(); // <-- FIX: asegurar obstáculos actualizados tras colocar
+
         if (isGoingToFirstCamp || currentNode == null)
         {
             plannedTargetNode = FindClosestCampNode();
@@ -371,6 +353,10 @@ public class ClimberMovement : MonoBehaviour
 
         if (this == null || externallyForcedDone || reachedSummit) yield break;
 
+        // <-- FIX: replanificar aquí (ya con defensas colocadas en el turno del jugador)
+        PlanNextMove();
+        if (isSelected) UpdatePathVisualization();
+
         if (plannedTargetNode != null)
         {
             MoveToNode(plannedTargetNode);
@@ -400,7 +386,6 @@ public class ClimberMovement : MonoBehaviour
     }
 
     // ================= HEURÍSTICA & UTILS =================
-    // (Mantengo estos métodos colapsados porque no han cambiado, pero deben estar en el script)
 
     private CampGraphBuilder.CampNode FindClosestCampNode()
     {
@@ -434,12 +419,19 @@ public class ClimberMovement : MonoBehaviour
 
         foreach (var edge in currentNode.neighbors)
         {
+            bool hasRealObstacle = edge.hasObstacle && edge.obstacleType != ObstacleType.None;
+
             bool canPassObstacle = true;
-            if (edge.hasObstacle && edge.obstacleType != ObstacleType.None)
+            if (hasRealObstacle)
                 canPassObstacle = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
 
+            // <-- FIX: si no puede manejar el obstáculo, NO considerar esta arista
+            if (hasRealObstacle && !canPassObstacle)
+                continue;
+
             float effectiveWeight = edge.weight;
-            if (edge.hasObstacle && canPassObstacle && campGraph != null)
+
+            if (hasRealObstacle && canPassObstacle && campGraph != null)
                 effectiveWeight -= (campGraph.obstaclePenalty * edge.obstacleCount);
 
             int myVisits = nodeVisitCount.ContainsKey(edge.to.id) ? nodeVisitCount[edge.to.id] : 0;

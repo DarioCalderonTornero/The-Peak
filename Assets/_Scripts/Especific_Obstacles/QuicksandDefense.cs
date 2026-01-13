@@ -4,9 +4,9 @@ using UnityEngine.AI;
 
 public class QuicksandDefense : BaseDefense
 {
-    [Header("Absorción")]
-    [SerializeField] private float sinkSpeed = 1.2f;
-    [SerializeField] private float maxSinkDepth = 1.5f;
+    [Header("Absorción por turnos")]
+    [SerializeField] private int turnsToKill = 2; // ✅ muere al terminar N turnos de escaladores
+    private int absorbedTurns = 0;
 
     [Header("Centrado del escalador")]
     [SerializeField] private float centerLerpSpeed = 6f;
@@ -19,14 +19,13 @@ public class QuicksandDefense : BaseDefense
     [SerializeField] private float spawnDuration = 0.25f;
 
     private Coroutine spawnRoutine;
-    private Vector3 spawnTargetLocalScale; // ✅ escala FINAL (ya escalada por placer)
+    private Vector3 spawnTargetLocalScale; // escala final
 
     // Sólo un escalador a la vez
     private ClimberMovement absorbedClimber = null;
     private NavMeshAgent absorbedAgent = null;
 
-    private float initialY = 0f;
-    private bool hasRecordedInitialY = false;
+    private bool subscribedToTurns = false;
 
     private void Awake()
     {
@@ -34,11 +33,13 @@ public class QuicksandDefense : BaseDefense
         if (col != null) col.isTrigger = true;
     }
 
+    private void OnDisable()
+    {
+        UnsubscribeFromTurnEvents();
+    }
+
     public override void Initialize()
     {
-        // ❌ YA NO leas transform.localScale aquí
-        // spawnTargetLocalScale = transform.localScale;  // QUITAR
-
         base.Initialize();
 
         if (spawnRoutine != null)
@@ -55,7 +56,6 @@ public class QuicksandDefense : BaseDefense
 
     private IEnumerator SpawnFromGround()
     {
-        // Siempre animamos en LOCAL SCALE
         transform.localScale = Vector3.zero;
 
         float elapsed = 0f;
@@ -95,7 +95,9 @@ public class QuicksandDefense : BaseDefense
         if (absorbedClimber == null)
         {
             absorbedClimber = climber;
-            hasRecordedInitialY = false;
+            absorbedTurns = 0; // ✅ reset contador al caer
+
+            SubscribeToTurnEvents();
 
             absorbedAgent = climber.GetComponent<NavMeshAgent>();
             if (absorbedAgent != null)
@@ -125,32 +127,52 @@ public class QuicksandDefense : BaseDefense
         {
             absorbedClimber = null;
             absorbedAgent = null;
+            UnsubscribeFromTurnEvents();
             return;
         }
 
-        // 0) Rescate por proximidad
+        // Rescate por proximidad
         CheckRescueByRadius();
         if (absorbedClimber == null) return;
 
+        // Centrar XZ (solo visual/feedback)
         Transform t = absorbedClimber.transform;
         Vector3 pos = t.position;
 
-        // 1) Centrar XZ
         Vector3 targetXZ = new Vector3(transform.position.x, pos.y, transform.position.z);
         pos = Vector3.Lerp(pos, targetXZ, Time.deltaTime * centerLerpSpeed);
         t.position = pos;
+    }
 
-        if (!hasRecordedInitialY)
+    // ✅ Turn-based kill: al terminar cada turno de escaladores
+    private void HandleClimberTurnEnd()
+    {
+        if (absorbedClimber == null) return;
+
+        absorbedTurns++;
+
+        if (absorbedTurns >= turnsToKill)
         {
-            initialY = t.position.y;
-            hasRecordedInitialY = true;
+            KillClimber();
         }
+    }
 
-        // 2) Hundir SOLO durante turno de escaladores
-        if (TurnManager.Instance == null || !TurnManager.Instance.IsClimberTurn())
-            return;
+    private void SubscribeToTurnEvents()
+    {
+        if (subscribedToTurns) return;
+        if (TurnManager.Instance == null) return;
 
-        AbsorbStep();
+        TurnManager.Instance.OnClimberTurnEnd += HandleClimberTurnEnd;
+        subscribedToTurns = true;
+    }
+
+    private void UnsubscribeFromTurnEvents()
+    {
+        if (!subscribedToTurns) return;
+        if (TurnManager.Instance == null) return;
+
+        TurnManager.Instance.OnClimberTurnEnd -= HandleClimberTurnEnd;
+        subscribedToTurns = false;
     }
 
     private void CheckRescueByRadius()
@@ -183,23 +205,10 @@ public class QuicksandDefense : BaseDefense
             RescueClimber();
     }
 
-    private void AbsorbStep()
-    {
-        if (absorbedClimber == null) return;
-
-        Transform t = absorbedClimber.transform;
-        Vector3 pos = t.position;
-
-        pos.y -= sinkSpeed * Time.deltaTime;
-        t.position = pos;
-
-        float sunkAmount = initialY - pos.y;
-        if (sunkAmount >= maxSinkDepth)
-            KillClimber();
-    }
-
     private void KillClimber()
     {
+        UnsubscribeFromTurnEvents();
+
         if (absorbedClimber != null)
         {
             Destroy(absorbedClimber.gameObject);
@@ -213,6 +222,8 @@ public class QuicksandDefense : BaseDefense
 
     private void RescueClimber()
     {
+        UnsubscribeFromTurnEvents();
+
         if (absorbedClimber != null)
         {
             Vector3 safePos = transform.position + Vector3.up * 0.3f;

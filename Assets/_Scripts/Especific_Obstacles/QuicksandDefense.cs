@@ -81,8 +81,8 @@ public class QuicksandDefense : BaseDefense
 
         if (loadout != null)
         {
-            loadout.TryHandleObstacle(ObstacleType.QuickSand);
-            isImmune = loadout.CanHandleObstacle(ObstacleType.QuickSand);
+            loadout.TryHandleObstacle(ObstacleType.Snow);
+            isImmune = loadout.CanHandleObstacle(ObstacleType.Snow);
         }
 
         if (isImmune)
@@ -188,7 +188,7 @@ public class QuicksandDefense : BaseDefense
             if (c == absorbedClimber) continue;
 
             var loadout = c.GetComponent<ClimberLoadout>();
-            if (loadout != null && loadout.CanHandleObstacle(ObstacleType.QuickSand))
+            if (loadout != null && loadout.CanHandleObstacle(ObstacleType.Snow))
                 continue;
 
             TryRescueWithClimber(c);

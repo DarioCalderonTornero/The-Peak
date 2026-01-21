@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 2235839593858769813}
   - component: {fileID: 7911203287003337470}
   m_Layer: 7
-  m_Name: QuicksandPrefab
+  m_Name: SnowPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -150,8 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 369893f3d3adf5549bed6cbbddf07c7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sinkSpeed: 0.2
-  maxSinkDepth: 5.5
+  turnsToKill: 2
   centerLerpSpeed: 6
   rescueRadius: 12
   climberLayer:

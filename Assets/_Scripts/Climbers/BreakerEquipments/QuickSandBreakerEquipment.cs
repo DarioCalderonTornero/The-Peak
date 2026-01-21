@@ -12,7 +12,7 @@ public class QuickSandBreakerEquipment : EquipmentInstance
     {
         Debug.Log($"<color=yellow>[QuickSandBreakerEquipment]</color> Encountered obstacle: {obstacleType}");
 
-        if (obstacleType == ObstacleType.QuickSand)
+        if (obstacleType == ObstacleType.Snow)
         {
             OnCounterSuccess(obstacleType);
         }
@@ -43,6 +43,6 @@ public class QuickSandBreakerEquipment : EquipmentInstance
     /// </summary>
     public override bool CanHandleObstacle(ObstacleType obstacleType)
     {
-        return obstacleType == ObstacleType.QuickSand;
+        return obstacleType == ObstacleType.Snow;
     }
 }

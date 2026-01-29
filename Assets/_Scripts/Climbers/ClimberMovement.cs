@@ -18,11 +18,14 @@ public class ClimberMovement : MonoBehaviour
     [Header("Visualización de Ruta (Vistosa)")]
     [SerializeField] private LineRenderer pathLineRenderer;
     [SerializeField] private Color pathColor = new Color(1f, 0.5f, 0f); // Naranja brillante
-    [SerializeField] private float lineHeightOffset = 0.5f; // Altura sobre el suelo para que no se oculte
     [SerializeField] private float animationSpeed = 2.0f; // Velocidad de las "hormigas"
     [SerializeField] private float textureTiling = 1.0f; // Repetición de la textura
     private Material lineMaterialInstance; // Para animar sin afectar a otros
     private bool isSelected = false;
+    [SerializeField] private LayerMask mountainLayer;
+    [SerializeField] private float raycastHeight = 8f;
+    [SerializeField] private float floatOffset = 2f;
+    [SerializeField] private int subdivisionsPerSegment = 6;
 
     [Header("Llegada / márgenes")]
     [SerializeField] private float reachedThreshold = 0.2f;
@@ -93,29 +96,37 @@ public class ClimberMovement : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this; // Ojo con el singleton en múltiples agentes
+        if (Instance == null) Instance = this;
 
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (loadout == null) loadout = GetComponent<ClimberLoadout>();
 
-        // CONFIGURACIÓN VISUAL INICIAL
-        if (pathLineRenderer == null) pathLineRenderer = GetComponent<LineRenderer>();
+        if (pathLineRenderer == null)
+            pathLineRenderer = GetComponent<LineRenderer>();
 
-        // Creamos una instancia del material para poder animarlo individualmente
         if (pathLineRenderer.material != null)
         {
-            lineMaterialInstance = pathLineRenderer.material; // Esto crea una copia automática
+            lineMaterialInstance = pathLineRenderer.material;
+
+            if (lineMaterialInstance.HasProperty("_Color"))
+                lineMaterialInstance.color = pathColor;
+            else if (lineMaterialInstance.HasProperty("_BaseColor"))
+                lineMaterialInstance.SetColor("_BaseColor", pathColor);
         }
 
-        // Configuramos colores y anchura inicial
         pathLineRenderer.startColor = pathColor;
-        pathLineRenderer.endColor = new Color(pathColor.r, pathColor.g, pathColor.b, 0.1f); // Fade out al final
+        pathLineRenderer.endColor = new Color(
+            pathColor.r,
+            pathColor.g,
+            pathColor.b,
+            0.1f
+        );
+
         pathLineRenderer.positionCount = 0;
         pathLineRenderer.enabled = false;
-
-        // Aseguramos que use modo Tile para que la animación funcione
         pathLineRenderer.textureMode = LineTextureMode.Tile;
     }
+
 
     private void OnEnable()
     {
@@ -195,45 +206,48 @@ public class ClimberMovement : MonoBehaviour
         }
 
         NavMeshPath path = new NavMeshPath();
-        Vector3 startPos = transform.position;
-        Vector3 targetPos = plannedTargetNode.position;
 
-        NavMeshHit hitStart, hitEnd;
+        Vector3 start = transform.position;
+        Vector3 end = plannedTargetNode.position;
 
-        bool startValid = NavMesh.SamplePosition(startPos, out hitStart, 5.0f, NavMesh.AllAreas);
-        bool endValid = NavMesh.SamplePosition(targetPos, out hitEnd, 5.0f, NavMesh.AllAreas);
+        NavMesh.SamplePosition(start, out NavMeshHit hitStart, 5f, NavMesh.AllAreas);
+        NavMesh.SamplePosition(end, out NavMeshHit hitEnd, 5f, NavMesh.AllAreas);
 
-        bool pathFound = false;
+        NavMesh.CalculatePath(hitStart.position, hitEnd.position, NavMesh.AllAreas, path);
 
-        if (startValid && endValid)
+        if (path.status != NavMeshPathStatus.PathComplete)
         {
-            pathFound = NavMesh.CalculatePath(hitStart.position, hitEnd.position, NavMesh.AllAreas, path);
-        }
-        else
-        {
-            pathFound = NavMesh.CalculatePath(startPos, targetPos, NavMesh.AllAreas, path);
+            pathLineRenderer.positionCount = 0;
+            return;
         }
 
-        if (pathFound && path.status != NavMeshPathStatus.PathInvalid)
-        {
-            pathLineRenderer.positionCount = path.corners.Length;
+        List<Vector3> finalPoints = new List<Vector3>();
 
-            Vector3[] elevatedCorners = new Vector3[path.corners.Length];
-            for (int i = 0; i < path.corners.Length; i++)
+        for (int i = 0; i < path.corners.Length - 1; i++)
+        {
+            Vector3 a = path.corners[i];
+            Vector3 b = path.corners[i + 1];
+
+            for (int j = 0; j <= subdivisionsPerSegment; j++)
             {
-                elevatedCorners[i] = path.corners[i] + Vector3.up * lineHeightOffset;
+                float t = j / (float)subdivisionsPerSegment;
+                Vector3 samplePoint = Vector3.Lerp(a, b, t);
+
+                Ray ray = new Ray(samplePoint + Vector3.up * raycastHeight, Vector3.down);
+                if (Physics.Raycast(ray, out RaycastHit hit, raycastHeight * 2f, mountainLayer))
+                {
+                    Vector3 floatedPoint = hit.point + hit.normal * floatOffset;
+                    finalPoints.Add(floatedPoint);
+                }
+                else
+                {
+                    finalPoints.Add(samplePoint + Vector3.up * floatOffset);
+                }
             }
-
-            pathLineRenderer.SetPositions(elevatedCorners);
         }
-        else
-        {
-            Debug.LogWarning($"[Climber] Ruta fallida. StartValid: {startValid}, EndValid: {endValid}, PathStatus: {path.status}");
 
-            pathLineRenderer.positionCount = 2;
-            pathLineRenderer.SetPosition(0, startPos + Vector3.up * lineHeightOffset);
-            pathLineRenderer.SetPosition(1, targetPos + Vector3.up * lineHeightOffset);
-        }
+        pathLineRenderer.positionCount = finalPoints.Count;
+        pathLineRenderer.SetPositions(finalPoints.ToArray());
     }
 
     private void AnimateLine()

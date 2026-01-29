@@ -304,9 +304,14 @@ MonoBehaviour:
   loadout: {fileID: 8495448889631796368}
   pathLineRenderer: {fileID: 0}
   pathColor: {r: 1, g: 0, b: 0, a: 1}
-  lineHeightOffset: 0.5
   animationSpeed: 2
   textureTiling: 1
+  mountainLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  raycastHeight: 8
+  floatOffset: 2
+  subdivisionsPerSegment: 6
   reachedThreshold: 0.2
   maxStamina: 250
   baseCostPerMeter: 1
@@ -423,7 +428,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 5cd26072d17b46e44885a38985bc16c7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -15,6 +15,7 @@ public class BaseObstacle : MonoBehaviour
         }
     }
 
+    //Trigger de entrada del jugador al area de cualquier obstaculo. Si puede con el (CanHandleBy), se llama a OnHandleBy (ya ha podido con el).
     protected virtual void OnTriggerEnter(Collider collider)
     {
         var loadout = collider.GetComponent<ClimberLoadout>();

@@ -10,13 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0581865a6448894468c747c839913835, type: 3}
-  m_Name: Storm
+  m_Name: Geyser
   m_EditorClassIdentifier: 
-  cardName: Storm
-  description: Tormenta tormenta
-  icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  defensePrefab: {fileID: 8310934270780480791, guid: 57914672c04f7cb42ad16c4e389279fe, type: 3}
-  cost: 5
+  cardName: Geyser
+  description: 
+  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  defensePrefab: {fileID: 5606444330844840924, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
+  cost: 2
+  worldSprite: {fileID: 2024314572, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}

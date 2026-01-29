@@ -1,10 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System;
 
 public class Temporal_Sound_Music : MonoBehaviour
 {
     public static Temporal_Sound_Music Instance { get; private set; }
+
+    public event EventHandler OnClimberDeath;
 
     [SerializeField] private AudioSource musicSource;
 
@@ -86,6 +89,7 @@ public class Temporal_Sound_Music : MonoBehaviour
 
     public void PlayDeathSound()
     {
+        OnClimberDeath?.Invoke(this, EventArgs.Empty);
         PlaySound(deathClimberClip, 1f);
     }
 

@@ -5,31 +5,40 @@ using TMPro;
 
 public class LevelExperienceUI : MonoBehaviour
 {
+    [Header("Bar")]
     [SerializeField] private Image levelBarImage;
     [SerializeField] private float fillSpeed = 1.5f;
+
+    [Header("Texts")]
     [SerializeField] private TextMeshProUGUI currentLevelText;
+    [SerializeField] private TextMeshProUGUI currentXpText;
+    [SerializeField] private TextMeshProUGUI xpToNextLevelText;
 
     private Coroutine fillCoroutine;
 
     private void Start()
     {
-        LevelExperienceManager.Instance.OnExperienceChanged += LevelExperienceManager_UpdateBarSmooth;
-        LevelExperienceManager.Instance.OnLevelUp += LevelExperienceManager_OnLevelUp;
+        LevelExperienceManager.Instance.OnExperienceChanged += OnExperienceChanged;
+        LevelExperienceManager.Instance.OnLevelUp += OnLevelUp;
 
-        levelBarImage.fillAmount = LevelExperienceManager.Instance.GetExperienceNormalized();
-    }
+        // Inicialización
+        levelBarImage.fillAmount =
+            LevelExperienceManager.Instance.GetExperienceNormalized();
 
-    private void LevelExperienceManager_OnLevelUp(object sender, System.EventArgs e)
-    {
-        currentLevelText.text = LevelExperienceManager.Instance.GetLevel().ToString();
+        UpdateTexts();
     }
 
     private void OnDestroy()
     {
-        LevelExperienceManager.Instance.OnExperienceChanged -= LevelExperienceManager_UpdateBarSmooth;
+        if (LevelExperienceManager.Instance == null) return;
+
+        LevelExperienceManager.Instance.OnExperienceChanged -= OnExperienceChanged;
+        LevelExperienceManager.Instance.OnLevelUp -= OnLevelUp;
     }
 
-    private void LevelExperienceManager_UpdateBarSmooth()
+    // EVENTOS ------------------------------------------------
+
+    private void OnExperienceChanged()
     {
         float targetFill =
             LevelExperienceManager.Instance.GetExperienceNormalized();
@@ -38,7 +47,16 @@ public class LevelExperienceUI : MonoBehaviour
             StopCoroutine(fillCoroutine);
 
         fillCoroutine = StartCoroutine(AnimateBar(targetFill));
+
+        UpdateTexts();
     }
+
+    private void OnLevelUp(object sender, System.EventArgs e)
+    {
+        UpdateTexts();
+    }
+
+    // UI ----------------------------------------------------
 
     private IEnumerator AnimateBar(float target)
     {
@@ -53,5 +71,17 @@ public class LevelExperienceUI : MonoBehaviour
         }
 
         levelBarImage.fillAmount = target;
+    }
+
+    private void UpdateTexts()
+    {
+        currentLevelText.text =
+            LevelExperienceManager.Instance.GetLevel().ToString();
+
+        currentXpText.text =
+            LevelExperienceManager.Instance.GetCurrentXp().ToString();
+
+        xpToNextLevelText.text = " / " +
+            LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
     }
 }

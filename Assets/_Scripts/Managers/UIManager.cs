@@ -22,7 +22,7 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         HideAll();
-        ShowOnly(UICanvasType.Alex);
+        ShowCanvas(UICanvasType.Alex);
     }
 
     public void RegisterCanvas(UICanvas canvas)
@@ -54,11 +54,25 @@ public class UIManager : MonoBehaviour
             canvas.Hide();
     }
 
+    public void ShowMultiple(params UICanvasType[] types)
+    {
+        foreach (var type in types)
+        {
+            ShowCanvas(type);
+        }
+    }
+
+    public void HideMultiple(params UICanvasType[] types)
+    {
+        foreach (var type in types)
+        {
+            HideCanvas(type);
+        }
+    }
+
     public void ShowOnly(UICanvasType type)
     {
-        foreach (var canvas in canvases.Values)
-            canvas.Hide();
-
+        HideAll();
         ShowCanvas(type);
     }
 }

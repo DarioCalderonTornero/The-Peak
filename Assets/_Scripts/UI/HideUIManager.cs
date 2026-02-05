@@ -7,13 +7,8 @@ public class HideUIManager : MonoBehaviour
     {
         GameManager.Instance.OnGamePaused += GameManager_OnGamePaused;
         GameManager.Instance.OnGameUnPaused += GameManager_OnGameUnPaused;
-        GameManager.Instance.OnTutorial += GameManager_OnTutorial;
+        //GameManager.Instance.OnTutorial += GameManager_OnTutorial;
         GameOverManager.Instance.OnGameOver += GameOverManager_OnGameOver;
-    }
-
-    private void GameManager_OnTutorial(object sender, System.EventArgs e)
-    {
-        HideThisCanvas();
     }
 
     private void GameOverManager_OnGameOver(object sender, System.EventArgs e)
@@ -69,5 +64,6 @@ public class HideUIManager : MonoBehaviour
     {
         GameManager.Instance.OnGamePaused -= GameManager_OnGamePaused;
         GameManager.Instance.OnGameUnPaused -= GameManager_OnGameUnPaused;
+        GameOverManager.Instance.OnGameOver -= GameOverManager_OnGameOver;
     }
 }

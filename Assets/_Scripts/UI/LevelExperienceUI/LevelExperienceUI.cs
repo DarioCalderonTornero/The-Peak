@@ -21,7 +21,6 @@ public class LevelExperienceUI : MonoBehaviour
         LevelExperienceManager.Instance.OnExperienceChanged += OnExperienceChanged;
         LevelExperienceManager.Instance.OnLevelUp += OnLevelUp;
 
-        // Inicialización
         levelBarImage.fillAmount =
             LevelExperienceManager.Instance.GetExperienceNormalized();
 
@@ -47,7 +46,6 @@ public class LevelExperienceUI : MonoBehaviour
             StopCoroutine(fillCoroutine);
 
         fillCoroutine = StartCoroutine(AnimateBar(targetFill));
-
         UpdateTexts();
     }
 
@@ -75,13 +73,13 @@ public class LevelExperienceUI : MonoBehaviour
 
     private void UpdateTexts()
     {
-        currentLevelText.text =
+        currentLevelText.text = 
             LevelExperienceManager.Instance.GetLevel().ToString();
 
-        currentXpText.text =
-            LevelExperienceManager.Instance.GetCurrentXp().ToString();
+        currentXpText.text = "XP: " + LevelExperienceManager.Instance.GetCurrentXp().ToString() + "/ ";
+            ;
 
-        xpToNextLevelText.text = " / " +
-            LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
+        xpToNextLevelText.text =  LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
+
     }
 }

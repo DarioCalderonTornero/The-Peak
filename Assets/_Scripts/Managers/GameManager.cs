@@ -116,6 +116,9 @@ public class GameManager : MonoBehaviour
 
         SetState(GameState.Playing);
 
+        UIManager.Instance.ShowOnly(UICanvasType.Dario);
+        //UIManager.Instance.ShowOnly(UICanvasType.Alex);
+
         turnManager.StartGame();
 
         if (logStateChanges)
@@ -134,7 +137,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
-    private void SetState(GameState newState)
+    public void SetState(GameState newState)
     {
         if (currentState == newState)
             return;
@@ -150,6 +153,7 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame()
     {
+        UIManager.Instance.ShowOnly(UICanvasType.Pause);
         gamePaused = true;
         OnGamePaused?.Invoke(this, EventArgs.Empty);
         Time.timeScale = 0f;
@@ -158,6 +162,7 @@ public class GameManager : MonoBehaviour
 
     public void UnPauseGame()
     {
+        UIManager.Instance.ShowOnly(UICanvasType.Dario);
         gamePaused = false;
         Time.timeScale = 1.0f;
         OnGameUnPaused?.Invoke(this, EventArgs.Empty);

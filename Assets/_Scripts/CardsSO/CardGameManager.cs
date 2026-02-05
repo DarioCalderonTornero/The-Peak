@@ -70,6 +70,8 @@ public class CardGameManager : MonoBehaviour
     {
         OnInventoryHide?.Invoke(this,EventArgs.Empty);
 
+        GameManager.Instance.StartGame();
+
         inventoryUI.HideInventory();
 
         slotsUI.ClearCards();

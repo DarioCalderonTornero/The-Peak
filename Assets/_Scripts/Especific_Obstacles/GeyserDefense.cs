@@ -372,23 +372,6 @@ public class GeyserDefense : BaseDefense
         }
     }
 
-
-    private IEnumerator EnableGravityLater(Rigidbody rb, float seconds)
-    {
-        if (rb == null) yield break;
-        rb.useGravity = false;
-
-        float t = 0f;
-        while (t < seconds)
-        {
-            if (rb == null) yield break;
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        if (rb != null) rb.useGravity = true;
-    }
-
     public void NotifyLanded(Transform tr)
     {
         if (tr == null) return;
@@ -424,6 +407,7 @@ public class GeyserDefense : BaseDefense
                 Destroy(key.gameObject);
                 launched.Remove(key);
                 resumeDestination.Remove(key);
+                Temporal_Sound_Music.Instance.PlayDeathSound();
                 continue;
             }
 
@@ -436,6 +420,7 @@ public class GeyserDefense : BaseDefense
                 Destroy(key.gameObject);
                 launched.Remove(key);
                 resumeDestination.Remove(key);
+                Temporal_Sound_Music.Instance.PlayDeathSound();
             }
         }
     }

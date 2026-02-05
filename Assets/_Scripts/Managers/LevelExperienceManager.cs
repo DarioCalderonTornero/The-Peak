@@ -70,6 +70,7 @@ public class LevelExperienceManager : MonoBehaviour
 
     public float GetExperienceNormalized()
     {
+        if (xpToNextLevel <= 0) return 0f;
         return (float)currentXP / xpToNextLevel;
     }
 
@@ -87,4 +88,15 @@ public class LevelExperienceManager : MonoBehaviour
     {
         return xpToNextLevel;
     }
+
+    public int GetXpToLevel()
+    {
+        return baseXPToNextLevel;
+    }
+
+    public int GetRemainingXpToNextLevel()
+    {
+        return xpToNextLevel - currentXP;
+    }
+
 }

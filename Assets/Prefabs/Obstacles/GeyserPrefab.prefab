@@ -30,8 +30,8 @@ Transform:
   m_GameObject: {fileID: 5606444330844840924}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -84.1, y: 37.76, z: 24.7}
-  m_LocalScale: {x: 8.84, y: 0.013824876, z: 8.84}
+  m_LocalPosition: {x: -84.1, y: 37.322, z: 24.7}
+  m_LocalScale: {x: 10.720175, y: 0.016765282, z: 10.720175}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7472694836027198294}
@@ -173,6 +173,9 @@ MonoBehaviour:
   landingGraceTime: 0.25
   minDownVelToCountLanding: 1
   minGroundNormalY: 0.55
+  geyserVFX: {fileID: 8349888551163216939}
+  eruptFadeSeconds: 2
+  eruptHoldSeconds: 2
 --- !u!54 &1499337497155268089
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -228,7 +231,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.002, y: 30, z: 0.004}
-  m_LocalScale: {x: 0.11312217, y: 72.333374, z: 0.11312217}
+  m_LocalScale: {x: 0.12220897, y: 78.143715, z: 0.12220897}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 997821771517726474}
@@ -251,8 +254,11 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 1
         m_Name: EruptingPower
+        m_Overridden: 1
+      - m_Value: 60
+        m_Name: VelocidadErupcion
         m_Overridden: 1
     m_Vector2f:
       m_Array: []

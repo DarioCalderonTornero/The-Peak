@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.VFX;
 
 public class GeyserDefense : BaseDefense
 {
@@ -78,6 +79,18 @@ public class GeyserDefense : BaseDefense
     [SerializeField] private float minDownVelToCountLanding = 1.0f; // debe ir bajando al menos esto
     [SerializeField] private float minGroundNormalY = 0.55f;        // suelo “bastante” hacia arriba
 
+    [Header("VFX")]
+    [SerializeField] private VisualEffect geyserVFX;
+
+    [SerializeField] private float eruptFadeSeconds = 2f;
+    [SerializeField] private float eruptHoldSeconds = 3f; 
+
+    // IDs (evita strings todo el rato)
+    private static readonly int BubblingID = Shader.PropertyToID("Bubbling");
+    private static readonly int EruptingPowerID = Shader.PropertyToID("EruptingPower");
+
+    private Coroutine eruptFadeRoutine;
+
     private struct LaunchedData
     {
         public Transform t;
@@ -92,6 +105,9 @@ public class GeyserDefense : BaseDefense
     private void OnEnable()
     {
         originalPos = transform.position;
+
+        SetBubbling(false);
+        SetEruptingPower(0f);
 
         if (TurnManager.Instance != null)
             TurnManager.Instance.OnClimberTurnEnd += OnClimberTurnEnd;
@@ -164,6 +180,8 @@ public class GeyserDefense : BaseDefense
 
         isBusy = true;
 
+        SetBubbling(true);
+
         if (holdRoutine != null) StopCoroutine(holdRoutine);
         holdRoutine = StartCoroutine(HoldThenLaunchRoutine());
     }
@@ -208,6 +226,62 @@ public class GeyserDefense : BaseDefense
         capturedClimber = null;
         capturedAgent = null;
         isBusy = false;
+
+        SetBubbling(false);
+    }
+
+    private void SetBubbling(bool value)
+    {
+        if (geyserVFX == null) return;
+        geyserVFX.SetBool(BubblingID, value);
+    }
+
+    private void SetEruptingPower(float value)
+    {
+        if (geyserVFX == null) return;
+        geyserVFX.SetFloat(EruptingPowerID, value);
+    }
+
+    private void TriggerEruptionFade()
+    {
+        if (geyserVFX == null) return;
+
+        // al erupcionar: instant a 1 y baja a 0 en 2s
+        SetEruptingPower(1f);
+
+        if (eruptFadeRoutine != null) StopCoroutine(eruptFadeRoutine);
+        eruptFadeRoutine = StartCoroutine(EruptFadeRoutine());
+    }
+
+    private IEnumerator EruptFadeRoutine()
+    {
+        // 1) Mantener erupción a tope
+        SetEruptingPower(1f);
+
+        float hold = Mathf.Max(0f, eruptHoldSeconds);
+        float tHold = 0f;
+
+        while (tHold < hold)
+        {
+            tHold += Time.deltaTime;
+            yield return null;
+        }
+
+        // 2) Fade 1 -> 0
+        float t = 0f;
+        float dur = Mathf.Max(0.01f, eruptFadeSeconds);
+
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            float n = Mathf.Clamp01(t / dur);
+
+            SetEruptingPower(Mathf.Lerp(1f, 0f, n));
+            yield return null;
+        }
+
+        SetEruptingPower(0f);
+        eruptFadeRoutine = null;
     }
 
     private IEnumerator HoldThenLaunchRoutine()
@@ -265,7 +339,11 @@ public class GeyserDefense : BaseDefense
         if (capturedClimber != null)
             capturedClimber.transform.position = capturedClimberBasePos;
 
+        SetBubbling(false);
+        TriggerEruptionFade();
+        
         LaunchAndKillCaptured();
+
 
         inCooldown = true;
         cooldownRemaining = cooldownTurns;

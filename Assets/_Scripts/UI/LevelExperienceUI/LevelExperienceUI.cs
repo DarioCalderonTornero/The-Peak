@@ -79,7 +79,7 @@ public class LevelExperienceUI : MonoBehaviour
     {
         starIconImage.fillAmount = 0f;
 
-        starIconImage.DOFillAmount(1f, starFillDuration).SetEase(Ease.OutBack);
+        starIconImage.DOFillAmount(1f, starFillDuration).SetEase(Ease.InOutBack);
     }
 
     private void UpdateTexts()

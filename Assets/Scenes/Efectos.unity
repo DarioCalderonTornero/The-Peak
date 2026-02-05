@@ -927,6 +927,9 @@ VisualEffect:
       - m_Value: 1
         m_Name: EruptingPower
         m_Overridden: 1
+      - m_Value: 60
+        m_Name: VelocidadErupcion
+        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:

@@ -117,7 +117,7 @@ public class GameManager : MonoBehaviour
         SetState(GameState.Playing);
 
         UIManager.Instance.ShowOnly(UICanvasType.Dario);
-        //UIManager.Instance.ShowOnly(UICanvasType.Alex);
+        UIManager.Instance.ShowOnly(UICanvasType.Alex);
 
         turnManager.StartGame();
 
@@ -163,6 +163,7 @@ public class GameManager : MonoBehaviour
     public void UnPauseGame()
     {
         UIManager.Instance.ShowOnly(UICanvasType.Dario);
+        UIManager.Instance.ShowOnly(UICanvasType.Alex);
         gamePaused = false;
         Time.timeScale = 1.0f;
         OnGameUnPaused?.Invoke(this, EventArgs.Empty);

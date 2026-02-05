@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using DG.Tweening; 
 
 public class LevelExperienceUI : MonoBehaviour
 {
@@ -13,6 +14,10 @@ public class LevelExperienceUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentLevelText;
     [SerializeField] private TextMeshProUGUI currentXpText;
     [SerializeField] private TextMeshProUGUI xpToNextLevelText;
+
+    [Header("Images")]
+    [SerializeField] private Image starIconImage;
+    [SerializeField] private float starFillDuration = 0.5f;
 
     private Coroutine fillCoroutine;
 
@@ -35,7 +40,6 @@ public class LevelExperienceUI : MonoBehaviour
         LevelExperienceManager.Instance.OnLevelUp -= OnLevelUp;
     }
 
-    // EVENTOS ------------------------------------------------
 
     private void OnExperienceChanged()
     {
@@ -51,10 +55,10 @@ public class LevelExperienceUI : MonoBehaviour
 
     private void OnLevelUp(object sender, System.EventArgs e)
     {
+        AnimateStarFill();
         UpdateTexts();
     }
 
-    // UI ----------------------------------------------------
 
     private IEnumerator AnimateBar(float target)
     {
@@ -71,15 +75,20 @@ public class LevelExperienceUI : MonoBehaviour
         levelBarImage.fillAmount = target;
     }
 
+    private void AnimateStarFill()
+    {
+        starIconImage.fillAmount = 0f;
+
+        starIconImage.DOFillAmount(1f, starFillDuration).SetEase(Ease.OutBack);
+    }
+
     private void UpdateTexts()
     {
-        currentLevelText.text = 
+        currentLevelText.text =
             LevelExperienceManager.Instance.GetLevel().ToString();
 
         currentXpText.text = "XP: " + LevelExperienceManager.Instance.GetCurrentXp().ToString() + "/ ";
-            ;
 
-        xpToNextLevelText.text =  LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
-
+        xpToNextLevelText.text = LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
     }
 }

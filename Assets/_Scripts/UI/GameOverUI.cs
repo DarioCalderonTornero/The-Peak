@@ -16,7 +16,7 @@ public class GameOverUI : MonoBehaviour
 
     private void Start()
     {
-        retryButton.gameObject.SetActive(false);
+        //retryButton.gameObject.SetActive(false);
         GameOverManager.Instance.OnGameOver += GameOverManager_OnGameOver;
     }
 
@@ -28,7 +28,8 @@ public class GameOverUI : MonoBehaviour
 
     private IEnumerator SetRetryButtonActive()
     {
-        yield return new WaitForSeconds(5f);
-        retryButton.gameObject.SetActive(true);
+        UIManager.Instance.HideAll();
+        yield return new WaitForSeconds(5);
+        UIManager.Instance.ShowOnly(UICanvasType.GameOver); 
     }
 }

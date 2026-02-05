@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,8 +22,13 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        HideAll();
-        ShowCanvas(UICanvasType.Alex);
+        StartCoroutine(ShowAlexCanvas());
+    }
+
+    private IEnumerator ShowAlexCanvas()
+    {
+        yield return new WaitForSeconds(0.5f);
+        ShowOnly(UICanvasType.Alex);
     }
 
     public void RegisterCanvas(UICanvas canvas)

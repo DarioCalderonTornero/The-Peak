@@ -306,6 +306,24 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CameraFlyMove"",
+                    ""type"": ""Value"",
+                    ""id"": ""77dfe3af-9901-43f2-b809-0fb2b11d14b1"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CameraFlyUpDown"",
+                    ""type"": ""Value"",
+                    ""id"": ""72a41be0-48e6-4eec-8ed4-e9bbd9507e43"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -429,6 +447,94 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""CameraPanSpeedMultiplier"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""2f8f2402-194f-48e4-bd43-65d92731859f"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyMove"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""2f456db5-b661-489c-92f4-2d46c0e69a9e"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""cbc0e627-5fb5-4551-986f-4804dc33b73b"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""93f84d17-a485-4369-8056-bc59e427a2eb"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""05918424-13f3-4ee2-a9f5-bc7f9549f0b2"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""0d8f529b-872c-459a-af88-a182fedc2bf4"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyUpDown"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""5cb82ec0-f0ca-40ad-a8a6-e0021d4977f4"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyUpDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""0ee6f025-ccbf-4da7-901a-607c34033b6e"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraFlyUpDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -457,6 +563,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Camera_CameraRotateHold = m_Camera.FindAction("CameraRotateHold", throwIfNotFound: true);
         m_Camera_CameraZoom = m_Camera.FindAction("CameraZoom", throwIfNotFound: true);
         m_Camera_CameraPanSpeedMultiplier = m_Camera.FindAction("CameraPanSpeedMultiplier", throwIfNotFound: true);
+        m_Camera_CameraFlyMove = m_Camera.FindAction("CameraFlyMove", throwIfNotFound: true);
+        m_Camera_CameraFlyUpDown = m_Camera.FindAction("CameraFlyUpDown", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -775,6 +883,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_CameraRotateHold;
     private readonly InputAction m_Camera_CameraZoom;
     private readonly InputAction m_Camera_CameraPanSpeedMultiplier;
+    private readonly InputAction m_Camera_CameraFlyMove;
+    private readonly InputAction m_Camera_CameraFlyUpDown;
     /// <summary>
     /// Provides access to input actions defined in input action map "Camera".
     /// </summary>
@@ -830,6 +940,14 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Camera/CameraPanSpeedMultiplier".
         /// </summary>
         public InputAction @CameraPanSpeedMultiplier => m_Wrapper.m_Camera_CameraPanSpeedMultiplier;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraFlyMove".
+        /// </summary>
+        public InputAction @CameraFlyMove => m_Wrapper.m_Camera_CameraFlyMove;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/CameraFlyUpDown".
+        /// </summary>
+        public InputAction @CameraFlyUpDown => m_Wrapper.m_Camera_CameraFlyUpDown;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -889,6 +1007,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @CameraPanSpeedMultiplier.started += instance.OnCameraPanSpeedMultiplier;
             @CameraPanSpeedMultiplier.performed += instance.OnCameraPanSpeedMultiplier;
             @CameraPanSpeedMultiplier.canceled += instance.OnCameraPanSpeedMultiplier;
+            @CameraFlyMove.started += instance.OnCameraFlyMove;
+            @CameraFlyMove.performed += instance.OnCameraFlyMove;
+            @CameraFlyMove.canceled += instance.OnCameraFlyMove;
+            @CameraFlyUpDown.started += instance.OnCameraFlyUpDown;
+            @CameraFlyUpDown.performed += instance.OnCameraFlyUpDown;
+            @CameraFlyUpDown.canceled += instance.OnCameraFlyUpDown;
         }
 
         /// <summary>
@@ -933,6 +1057,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @CameraPanSpeedMultiplier.started -= instance.OnCameraPanSpeedMultiplier;
             @CameraPanSpeedMultiplier.performed -= instance.OnCameraPanSpeedMultiplier;
             @CameraPanSpeedMultiplier.canceled -= instance.OnCameraPanSpeedMultiplier;
+            @CameraFlyMove.started -= instance.OnCameraFlyMove;
+            @CameraFlyMove.performed -= instance.OnCameraFlyMove;
+            @CameraFlyMove.canceled -= instance.OnCameraFlyMove;
+            @CameraFlyUpDown.started -= instance.OnCameraFlyUpDown;
+            @CameraFlyUpDown.performed -= instance.OnCameraFlyUpDown;
+            @CameraFlyUpDown.canceled -= instance.OnCameraFlyUpDown;
         }
 
         /// <summary>
@@ -1101,5 +1231,19 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnCameraPanSpeedMultiplier(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraFlyMove" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraFlyMove(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraFlyUpDown" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraFlyUpDown(InputAction.CallbackContext context);
     }
 }

@@ -103,6 +103,10 @@ public class InputManager : MonoBehaviour
     public bool IsCameraRotationHold() => inputActions.Camera.CameraRotateHold.IsPressed();
     public bool isCameraPanSpeedMultiplierHold() => inputActions.Camera.CameraPanSpeedMultiplier.IsPressed();
 
+    //Fly Camera
+    public Vector2 GetCameraFlyMovement() => inputActions.Camera.CameraFlyMove.ReadValue<Vector2>();    
+    public float GetCameraFlyUpDown() => inputActions.Camera.CameraFlyUpDown.ReadValue<float>(); 
+
     //Pressets Camera
 
     private void TopView_performed(InputAction.CallbackContext obj) => OnTopView?.Invoke(this, EventArgs.Empty);

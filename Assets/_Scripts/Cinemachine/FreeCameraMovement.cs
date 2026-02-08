@@ -3,13 +3,21 @@ using UnityEngine;
 
 public class FreeCameraController : MonoBehaviour
 {
-    [Header("Pan")]
+    // =========================================================
+    //  CONFIG
+    // =========================================================
+
+    [Header("Fly (RMB)")]
+    [Tooltip("Velocidad lineal del vuelo (WASD + Q/E) cuando holdeas RMB.")]
+    [SerializeField] private float flySpeed = 25f;
+
+    [Header("Pan (MMB)")]
     [SerializeField] private float panSpeed = 0.2f;
     [SerializeField] private bool invertPanY = false;
     [SerializeField] private bool panVerticalUsesWorldUp = true;
     [SerializeField] private float panVerticalMultiplier = 1f;
 
-    [Header("Zoom")]
+    [Header("Zoom (Always)")]
     [SerializeField] private float zoomSpeed = 5f;
 
     [Header("Zoom IN Collision (acercarse ilimitado hasta casi chocar)")]
@@ -18,7 +26,7 @@ public class FreeCameraController : MonoBehaviour
     [SerializeField] private float zoomInCastRadius = 0.25f;
     [SerializeField] private LayerMask zoomInCollisionMask = ~0;
 
-    [Header("Rotate")]
+    [Header("Rotate (RMB)")]
     [SerializeField] private float rotateSensitivity = 0.15f;
     [SerializeField] private float minPitch = -80f;
     [SerializeField] private float maxPitch = 80f;
@@ -37,32 +45,24 @@ public class FreeCameraController : MonoBehaviour
     [Header("Snap To Preset")]
     [SerializeField] private float snapDuration = 0.35f;
 
+    [Tooltip("Distancia a partir de la cual consideramos que ya hemos llegado y cortamos el snap.")]
+    [SerializeField] private float snapPositionEpsilon = 0.05f;
+
+    [Tooltip("Ángulo (grados) a partir del cual consideramos que ya hemos llegado y cortamos el snap.")]
+    [SerializeField] private float snapAngleEpsilon = 0.75f;
+
+    [Tooltip("Para evitar cortar demasiado pronto, solo permitimos corte temprano cuando el snap ya ha avanzado X%.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float snapEarlyCompleteMinT = 0.85f;
+
     private bool isSnapping;
     private float snapT;
     private Vector3 snapStartPos, snapTargetPos;
     private Quaternion snapStartRot, snapTargetRot;
 
-    // -------------------- INSPECCIÓN (climber focus) --------------------
-    [Header("Inspect Mode")]
-    [Tooltip("Durante inspección, la cámara tenderá a mirar al escalador, PERO el jugador puede seguir moviéndola libremente.")]
-    [SerializeField] private bool keepLookingAtTargetWhileInspecting = true;
-
-    [Tooltip("Velocidad a la que la cámara reorienta hacia el objetivo mientras inspecciona (solo si keepLookingAtTargetWhileInspecting está activo).")]
-    [SerializeField] private float inspectLookAtFollowSpeed = 12f;
-
-    [Tooltip("Si está activo, al deseleccionar (tap toggle) se sale también del modo inspección.")]
-    [SerializeField] private bool exitInspectOnDeselect = true;
-
-    [Header("Inspect Cancel (al tocar inputs)")]
-    [Tooltip("Si el jugador usa cualquier input de cámara (pan/rotate/zoom/presets), salimos de inspección y dejamos de mirar al escalador.")]
-    [SerializeField] private bool cancelInspectOnAnyCameraInput = true;
-
-    [Tooltip("Deadzone para considerar que el jugador ha movido el ratón/rueda/pan (evita cancelaciones por ruido).")]
-    [SerializeField] private float cancelDeadzone = 0.001f;
-
-    private bool isInspecting;
-    private Transform currentInspectLookAt;
-    // --------------------------------------------------------------------
+    // =========================================================
+    //  UNITY
+    // =========================================================
 
     private void Start()
     {
@@ -74,17 +74,11 @@ public class FreeCameraController : MonoBehaviour
 
         if (InputManager.Instance != null)
         {
-            // IMPORTANTE: mantenemos los presets (caras de la montaña)
             InputManager.Instance.OnFrontalView += InputManager_OnFrontalView;
             InputManager.Instance.OnRightView += InputManager_OnRightView;
             InputManager.Instance.OnBackView += InputManager_OnBackView;
             InputManager.Instance.OnLeftView += InputManager_OnLeftView;
             InputManager.Instance.OnTopView += InputManager_OnTopView;
-        }
-
-        if (SelectionManager.Instance != null)
-        {
-            SelectionManager.Instance.OnClimberDeselected += HandleDeselected;
         }
     }
 
@@ -98,83 +92,166 @@ public class FreeCameraController : MonoBehaviour
             InputManager.Instance.OnLeftView -= InputManager_OnLeftView;
             InputManager.Instance.OnTopView -= InputManager_OnTopView;
         }
+    }
 
-        if (SelectionManager.Instance != null)
+    private void Update()
+    {
+        if (InputManager.Instance == null) return;
+
+        // 1) Zoom siempre activo (rueda)
+        HandleZoomAlways();
+
+        // 2) Paneo (MMB hold)
+        HandlePanMMB();
+
+        // 3) Cámara libre estilo Unity (RMB hold)
+        HandleFlyRMB();
+
+        // 4) Snap a presets (si está activo, manda al final del frame)
+        HandleSnap();
+    }
+
+    // =========================================================
+    //  PRESETS
+    // =========================================================
+
+    private void InputManager_OnFrontalView(object sender, EventArgs e) => StartSnap(presetFront);
+    private void InputManager_OnRightView(object sender, EventArgs e) => StartSnap(presetRight);
+    private void InputManager_OnBackView(object sender, EventArgs e) => StartSnap(presetBack);
+    private void InputManager_OnLeftView(object sender, EventArgs e) => StartSnap(presetLeft);
+    private void InputManager_OnTopView(object sender, EventArgs e) => StartSnap(presetTop);
+
+    // =========================================================
+    //  ZOOM (SIEMPRE)
+    // =========================================================
+
+    private void HandleZoomAlways()
+    {
+        Vector2 zoomDelta = InputManager.Instance.GetCameraZoom();
+        if (Mathf.Abs(zoomDelta.y) < 0.01f) return;
+
+        float step = zoomDelta.y * zoomSpeed;
+        Vector3 forward = transform.forward;
+
+        // step > 0 => acercarse
+        if (step > 0f)
         {
-            SelectionManager.Instance.OnClimberDeselected -= HandleDeselected;
+            float castDist = step + zoomInStopDistance;
+            RaycastHit hit;
+
+            bool blocked;
+            if (zoomInCastRadius > 0f)
+            {
+                blocked = Physics.SphereCast(
+                    transform.position,
+                    zoomInCastRadius,
+                    forward,
+                    out hit,
+                    castDist,
+                    zoomInCollisionMask,
+                    QueryTriggerInteraction.Ignore
+                );
+            }
+            else
+            {
+                blocked = Physics.Raycast(
+                    transform.position,
+                    forward,
+                    out hit,
+                    castDist,
+                    zoomInCollisionMask,
+                    QueryTriggerInteraction.Ignore
+                );
+            }
+
+            if (blocked && hit.collider != null && hit.collider.CompareTag(mountainTag))
+            {
+                float targetDist = Mathf.Max(0f, hit.distance - zoomInStopDistance);
+                transform.position += forward * targetDist;
+            }
+            else
+            {
+                transform.position += forward * step;
+            }
+        }
+        else
+        {
+            // step < 0 => alejarse (sin límite)
+            transform.position += forward * step;
         }
     }
 
-    // -------------------- INPUT PRESETS (caras montaña) --------------------
+    // =========================================================
+    //  PAN (MMB)
+    // =========================================================
 
-    private void InputManager_OnFrontalView(object sender, EventArgs e)
+    private void HandlePanMMB()
     {
-        CancelInspectByUserInput();
-        StartSnap(presetFront);
+        if (!InputManager.Instance.IsCameraPanHold()) return;
+
+        Vector2 delta = InputManager.Instance.GetCameraPanMovement();
+
+        Vector3 right = transform.right;
+        Vector3 forwardOnGround = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+
+        float x = -delta.x * panSpeed;
+        float z = -delta.y * panSpeed;
+
+        float ySign = invertPanY ? 1f : -1f;
+        float y = delta.y * panSpeed * ySign * panVerticalMultiplier;
+
+        Vector3 upAxis = panVerticalUsesWorldUp ? Vector3.up : transform.up;
+
+        Vector3 move = (right * x) + (forwardOnGround * z) + (upAxis * y);
+
+        // (si mantienes Shift como multiplicador de pan en tu input actual)
+        if (InputManager.Instance.isCameraPanSpeedMultiplierHold())
+        {
+            float panSpeedMultiplier = 2f;
+            move *= panSpeedMultiplier;
+        }
+
+        transform.position += move;
     }
 
-    private void InputManager_OnRightView(object sender, EventArgs e)
+    // =========================================================
+    //  FLY + ROTATE (RMB)  -> "Unity Scene View"
+    // =========================================================
+
+    private void HandleFlyRMB()
     {
-        CancelInspectByUserInput();
-        StartSnap(presetRight);
+        if (!InputManager.Instance.IsCameraRotationHold()) return;
+
+        // --- ROTATE (mouse delta) ---
+        Vector2 delta = InputManager.Instance.GetCameraRotationDelta();
+
+        float dx = delta.x * rotateSensitivity;
+        float dy = delta.y * rotateSensitivity * (invertY ? 1f : -1f);
+
+        yaw += dx;
+        pitch += dy;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+
+        transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+
+        // --- FLY (WASD + Q/E) ---
+        Vector2 fly2D = InputManager.Instance.GetCameraFlyMovement(); // x=strife, y=forward
+        float upDown = InputManager.Instance.GetCameraFlyUpDown();    // E=+1, Q=-1
+
+        if (fly2D.sqrMagnitude < 0.000001f && Mathf.Abs(upDown) < 0.000001f)
+            return;
+
+        Vector3 move =
+            (transform.right * fly2D.x) +
+            (transform.forward * fly2D.y) +
+            (Vector3.up * upDown);
+
+        transform.position += move * (flySpeed * Time.deltaTime);
     }
 
-    private void InputManager_OnBackView(object sender, EventArgs e)
-    {
-        CancelInspectByUserInput();
-        StartSnap(presetBack);
-    }
-
-    private void InputManager_OnLeftView(object sender, EventArgs e)
-    {
-        CancelInspectByUserInput();
-        StartSnap(presetLeft);
-    }
-
-    private void InputManager_OnTopView(object sender, EventArgs e)
-    {
-        CancelInspectByUserInput();
-        StartSnap(presetTop);
-    }
-
-    // -------------------- INSPECT API --------------------
-
-    /*
-    private void FocusOnClimber(ClimberMovement climber)
-    {
-        if (climber == null) return;
-
-        isInspecting = true;
-        currentInspectLookAt = climber.CamLookAt;
-
-        Debug.Log($"[FreeCamera] Inspect: {climber.name}");
-
-        // Snap hacia el anchor del escalador
-        StartSnap(climber.InspectAnchor);
-    }
-    */
-
-    private void HandleDeselected()
-    {
-        if (exitInspectOnDeselect)
-            ExitInspect();
-    }
-
-    private void ExitInspect()
-    {
-        isInspecting = false;
-        currentInspectLookAt = null;
-    }
-
-    private void CancelInspectByUserInput()
-    {
-        if (!cancelInspectOnAnyCameraInput) return;
-        if (!isInspecting) return;
-
-        ExitInspect();
-    }
-
-    // -------------------- SNAP --------------------
+    // =========================================================
+    //  SNAP (presets)
+    // =========================================================
 
     private void StartSnap(Transform target)
     {
@@ -183,6 +260,7 @@ public class FreeCameraController : MonoBehaviour
         isSnapping = true;
         snapT = 0f;
 
+        // Start fijo: esto elimina la "cola" lenta del final.
         snapStartPos = transform.position;
         snapStartRot = transform.rotation;
 
@@ -196,211 +274,50 @@ public class FreeCameraController : MonoBehaviour
         return t * t * (3f - 2f * t);
     }
 
-    private void Update()
+    private void FinishSnap()
     {
-        if (InputManager.Instance == null) return;
+        // Clavamos exacto al objetivo para evitar drift y devolvemos control ya.
+        transform.position = snapTargetPos;
+        transform.rotation = snapTargetRot;
 
-        // ======================= DETECTAR INPUTS (para cancelar inspect) =======================
-        // Si el jugador usa cámara -> dejamos de trackear al escalador.
-        // (Los presets ya lo cancelan arriba, pero aquí cubrimos pan/rotate/zoom)
-        if (isInspecting && cancelInspectOnAnyCameraInput)
+        // Sync yaw/pitch para que el control siga suave tras el snap
+        Vector3 euler = transform.eulerAngles;
+        yaw = euler.y;
+
+        pitch = euler.x;
+        if (pitch > 180f) pitch -= 360f;
+
+        isSnapping = false;
+    }
+
+    private void HandleSnap()
+    {
+        if (!isSnapping) return;
+
+        snapT += Time.deltaTime / Mathf.Max(0.0001f, snapDuration);
+        float t01 = Mathf.Clamp01(snapT);
+        float t = Smooth01(t01);
+
+        transform.position = Vector3.Lerp(snapStartPos, snapTargetPos, t);
+        transform.rotation = Quaternion.Slerp(snapStartRot, snapTargetRot, t);
+
+        // Corte temprano cuando visualmente "ya está"
+        if (t01 >= snapEarlyCompleteMinT)
         {
-            bool anyCameraInput = false;
+            float posDist = Vector3.Distance(transform.position, snapTargetPos);
+            float angDist = Quaternion.Angle(transform.rotation, snapTargetRot);
 
-            if (InputManager.Instance.IsCameraRotationHold())
+            if (posDist <= snapPositionEpsilon && angDist <= snapAngleEpsilon)
             {
-                Vector2 rot = InputManager.Instance.GetCameraRotationDelta();
-                if (rot.sqrMagnitude > cancelDeadzone * cancelDeadzone)
-                    anyCameraInput = true;
-            }
-
-            if (InputManager.Instance.IsCameraPanHold())
-            {
-                Vector2 pan = InputManager.Instance.GetCameraPanMovement();
-                if (pan.sqrMagnitude > cancelDeadzone * cancelDeadzone)
-                    anyCameraInput = true;
-            }
-
-            Vector2 zoom = InputManager.Instance.GetCameraZoom();
-            if (Mathf.Abs(zoom.y) > cancelDeadzone)
-                anyCameraInput = true;
-
-            if (anyCameraInput)
-                CancelInspectByUserInput();
-        }
-
-        // ======================= INPUTS SIEMPRE ACTIVOS =======================
-
-        // --- ROTATE ---
-        if (InputManager.Instance.IsCameraRotationHold())
-        {
-            Vector2 delta = InputManager.Instance.GetCameraRotationDelta();
-
-            float dx = delta.x * rotateSensitivity;
-            float dy = delta.y * rotateSensitivity * (invertY ? 1f : -1f);
-
-            yaw += dx;
-            pitch += dy;
-
-            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
-
-            transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
-        }
-
-        // --- ZOOM DOLLY ---
-        Vector2 zoomDelta = InputManager.Instance.GetCameraZoom();
-        if (Mathf.Abs(zoomDelta.y) >= 0.01f)
-        {
-            float step = zoomDelta.y * zoomSpeed;
-            Vector3 forward = transform.forward;
-
-            if (step > 0f)
-            {
-                float castDist = step + zoomInStopDistance;
-                RaycastHit hit;
-
-                bool blocked;
-                if (zoomInCastRadius > 0f)
-                {
-                    blocked = Physics.SphereCast(
-                        transform.position,
-                        zoomInCastRadius,
-                        forward,
-                        out hit,
-                        castDist,
-                        zoomInCollisionMask,
-                        QueryTriggerInteraction.Ignore
-                    );
-                }
-                else
-                {
-                    blocked = Physics.Raycast(
-                        transform.position,
-                        forward,
-                        out hit,
-                        castDist,
-                        zoomInCollisionMask,
-                        QueryTriggerInteraction.Ignore
-                    );
-                }
-
-                if (blocked && hit.collider != null && hit.collider.CompareTag(mountainTag))
-                {
-                    float targetDist = Mathf.Max(0f, hit.distance - zoomInStopDistance);
-                    transform.position += forward * targetDist;
-                }
-                else
-                {
-                    transform.position += forward * step;
-                }
-            }
-            else
-            {
-                transform.position += forward * step;
+                FinishSnap();
+                return;
             }
         }
 
-        // --- PAN ---
-        if (InputManager.Instance.IsCameraPanHold())
+        // Fin normal
+        if (t01 >= 1f)
         {
-            Vector2 delta = InputManager.Instance.GetCameraPanMovement();
-
-            Vector3 right = transform.right;
-            Vector3 forwardOnGround = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
-
-            float x = -delta.x * panSpeed;
-            float z = -delta.y * panSpeed;
-
-            float ySign = invertPanY ? 1f : -1f;
-            float y = delta.y * panSpeed * ySign * panVerticalMultiplier;
-
-            Vector3 upAxis = panVerticalUsesWorldUp ? Vector3.up : transform.up;
-
-            Vector3 move = (right * x) + (forwardOnGround * z) + (upAxis * y);
-
-            if (InputManager.Instance.isCameraPanSpeedMultiplierHold())
-            {
-                float panSpeedMultiplier = 2f;
-                move *= panSpeedMultiplier;
-            }
-
-            transform.position += move;
-        }
-
-        // ======================= SNAP (SIN BLOQUEAR INPUTS) =======================
-        if (isSnapping)
-        {
-            snapT += Time.deltaTime / Mathf.Max(0.0001f, snapDuration);
-            float t01 = Mathf.Clamp01(snapT);
-            float t = Smooth01(t01);
-
-            // Adictivo: partimos desde donde esté la cámara ese frame
-            snapStartPos = transform.position;
-            snapStartRot = transform.rotation;
-
-            transform.position = Vector3.Lerp(snapStartPos, snapTargetPos, t);
-
-            // Si inspeccionas, durante el snap mira al escalador (solo si sigues inspeccionando)
-            if (isInspecting && currentInspectLookAt != null)
-            {
-                Vector3 dir = currentInspectLookAt.position - transform.position;
-                if (dir.sqrMagnitude > 0.0001f)
-                {
-                    Quaternion look = Quaternion.LookRotation(dir.normalized, Vector3.up);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, look, 0.9f);
-
-                    // sync yaw/pitch para evitar saltos
-                    Vector3 euler = transform.eulerAngles;
-                    yaw = euler.y;
-                    pitch = euler.x;
-                    if (pitch > 180f) pitch -= 360f;
-                }
-            }
-            else
-            {
-                // Snap normal hacia preset (caras montaña) o cualquier otro target
-                transform.rotation = Quaternion.Slerp(snapStartRot, snapTargetRot, t);
-
-                // sync yaw/pitch
-                Vector3 euler = transform.eulerAngles;
-                yaw = euler.y;
-                pitch = euler.x;
-                if (pitch > 180f) pitch -= 360f;
-            }
-
-            if (t01 >= 1f)
-            {
-                isSnapping = false;
-
-                Vector3 euler = transform.eulerAngles;
-                yaw = euler.y;
-
-                pitch = euler.x;
-                if (pitch > 180f) pitch -= 360f;
-            }
-        }
-
-
-        if (isInspecting && keepLookingAtTargetWhileInspecting && currentInspectLookAt != null)
-        {
-            Vector3 dir = currentInspectLookAt.position - transform.position;
-            if (dir.sqrMagnitude > 0.0001f)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
-
-                // empuje suave hacia el objetivo (pero nunca bloquea inputs)
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    targetRot,
-                    1f - Mathf.Exp(-inspectLookAtFollowSpeed * Time.deltaTime)
-                );
-
-                // sync yaw/pitch para que el control siga suave
-                Vector3 euler = transform.eulerAngles;
-                yaw = euler.y;
-                pitch = euler.x;
-                if (pitch > 180f) pitch -= 360f;
-            }
+            FinishSnap();
         }
     }
 }

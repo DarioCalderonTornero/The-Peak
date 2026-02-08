@@ -2073,7 +2073,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c38e0866c06cab478a7793de5d82a59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cinemachineBrain: {fileID: 0}
+  cinemachineBrain: {fileID: 1823688469}
 --- !u!1 &643124342
 GameObject:
   m_ObjectHideFlags: 0
@@ -4361,7 +4361,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -5067,6 +5067,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49486846a7266d749ba522754fd8286d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  flySpeed: 100
   panSpeed: 0.15
   invertPanY: 0
   panVerticalUsesWorldUp: 0
@@ -5088,11 +5089,9 @@ MonoBehaviour:
   presetLeft: {fileID: 406148030}
   presetTop: {fileID: 2073679979}
   snapDuration: 1.5
-  keepLookingAtTargetWhileInspecting: 1
-  inspectLookAtFollowSpeed: 12
-  exitInspectOnDeselect: 1
-  cancelInspectOnAnyCameraInput: 1
-  cancelDeadzone: 0.001
+  snapPositionEpsilon: 0.05
+  snapAngleEpsilon: 0.75
+  snapEarlyCompleteMinT: 0.85
 --- !u!1 &1300961564
 GameObject:
   m_ObjectHideFlags: 0

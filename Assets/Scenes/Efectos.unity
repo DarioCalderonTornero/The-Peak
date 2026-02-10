@@ -705,6 +705,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1418796099938714149, guid: 6faaa0874a229984b970790762a70a2d, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8015755565452522410, guid: 6faaa0874a229984b970790762a70a2d, type: 3}
       propertyPath: m_Name
       value: vfx_Zarzas
@@ -5618,6 +5622,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 197628016}
     m_Modifications:
+    - target: {fileID: 3196289024585426556, guid: 06a24a16d66fd474b976ed2193a6b61e, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6278449252031181647, guid: 06a24a16d66fd474b976ed2193a6b61e, type: 3}
       propertyPath: m_Name
       value: vfx_RockExplosion
@@ -10621,6 +10629,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 836705305892634516, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 997821771517726474, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 159.63
@@ -10665,6 +10677,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GeyserPrefab
       objectReference: {fileID: 0}
+    - target: {fileID: 6927222038028137417, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8349888551163216939, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_PropertySheet.m_Bool.m_Array.Array.size
       value: 3
@@ -10691,7 +10707,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8349888551163216939, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[2].m_Value
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8349888551163216939, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[2].m_Overridden

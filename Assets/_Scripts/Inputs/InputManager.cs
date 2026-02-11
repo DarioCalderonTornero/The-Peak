@@ -12,6 +12,7 @@ public class InputManager : MonoBehaviour
     // Player Inputs
     public event EventHandler OnGamePauseInput;
     public event EventHandler OnShowClimberInfo;
+    public event EventHandler OnClimberVision;
 
     /// <summary>
     /// TAP (click corto): mostrar ruta / seleccionar.
@@ -58,9 +59,8 @@ public class InputManager : MonoBehaviour
         // Player
         inputActions.Player.GamePause.performed += GamePause_performed;
 
-        // IMPORTANTE:
-        // Reemplaza "ClickClimber" por el nombre exacto de tu NUEVA acción única
-        // que tiene en el binding las interacciones Tap + Hold.
+        inputActions.Player.ClimberVision.performed += ClimberVision_performed;
+      
         inputActions.Player.ClickClimberRoute.performed += ClickClimber_performed;
         inputActions.Player.ShowClimberInfoUI.performed += ShowClimberInfoUI_performed;
 
@@ -76,6 +76,10 @@ public class InputManager : MonoBehaviour
         inputActions.Camera.TopView.performed += TopView_performed;
     }
 
+    private void ClimberVision_performed(InputAction.CallbackContext obj)
+    {
+        OnClimberVision?.Invoke(this, EventArgs.Empty); 
+    }
 
     private void ClickClimber_performed(InputAction.CallbackContext ctx)
     {

@@ -1,3 +1,4 @@
+// GameManager.cs
 using System;
 using UnityEngine;
 
@@ -7,7 +8,6 @@ public class GameManager : MonoBehaviour
 
     public event EventHandler OnGamePaused;
     public event EventHandler OnGameUnPaused;
-
     public event EventHandler OnTutorial;
 
     public enum GameState
@@ -18,6 +18,34 @@ public class GameManager : MonoBehaviour
         GamePause,
         GameOver
     }
+
+    // =========================
+    // =========================
+    public enum DeathCause
+    {
+        Unknown,
+        BadBerry,
+        Quicksand,
+        Fall,
+        Cold
+    }
+
+    [Serializable]
+    public struct DeathInfo
+    {
+        public ClimberMovement climber;
+        public Vector3 position;
+        public DeathCause cause;
+    }
+
+    public event Action<DeathInfo> OnClimberDead;
+
+    public void NotifyClimberDied(DeathInfo info)
+    {
+        OnClimberDead?.Invoke(info);
+    }
+
+    // =========================
 
     [Header("Game State")]
     [SerializeField] private GameState currentState = GameState.Initializing;
@@ -51,15 +79,12 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         AutoAssignManagers();
-
         SetState(GameState.Initializing);
     }
 
     private void Start()
     {
         autoStartGame = false;
-
-        //Invoke("StartTutorial", 0.5f);
 
         if (autoStartGame)
             StartGame();
@@ -73,11 +98,6 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GameManager] InputManager.Instance es null en Start.");
         }
-    }
-
-    private void Update()
-    {
-       // Debug.Log(currentState);
     }
 
     private void OnDestroy()
@@ -97,12 +117,11 @@ public class GameManager : MonoBehaviour
 
     public void StartTutorial()
     {
-        //Debug.Log("StartTutorial");
         SetState(GameState.Tutorial);
 
         if (currentState == GameState.Tutorial)
         {
-            OnTutorial?.Invoke(this, EventArgs.Empty);  
+            OnTutorial?.Invoke(this, EventArgs.Empty);
         }
     }
 

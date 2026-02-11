@@ -66,7 +66,15 @@ public class Temporal_Sound_Music : MonoBehaviour
             currentTrackIndex = 0;
             PlayMusic(musicPlayList[currentTrackIndex]);
         }
+
+        GameManager.Instance.OnClimberDead += GameManager_OnClimberDead;
     }
+
+    private void GameManager_OnClimberDead(GameManager.DeathInfo obj)
+    {
+        PlayDeathSound();
+    }
+
 
     private void OnDestroy()
     {
@@ -89,7 +97,6 @@ public class Temporal_Sound_Music : MonoBehaviour
 
     public void PlayDeathSound()
     {
-        OnClimberDeath?.Invoke(this, EventArgs.Empty);
         PlaySound(deathClimberClip, 1f);
     }
 

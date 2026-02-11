@@ -118,6 +118,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ClimberVision"",
+                    ""type"": ""Button"",
+                    ""id"": ""5230adc7-7747-40c5-b2fc-8b3fc8eca005"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -151,6 +160,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""ShowClimberInfoUI"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""610eb6dd-ac7c-4b54-90bd-dbe80664ebb3"",
+                    ""path"": ""<Keyboard>/v"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ClimberVision"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -546,6 +566,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_GamePause = m_Player.FindAction("GamePause", throwIfNotFound: true);
         m_Player_ClickClimberRoute = m_Player.FindAction("ClickClimberRoute", throwIfNotFound: true);
         m_Player_ShowClimberInfoUI = m_Player.FindAction("ShowClimberInfoUI", throwIfNotFound: true);
+        m_Player_ClimberVision = m_Player.FindAction("ClimberVision", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_RotateCard = m_UI.FindAction("RotateCard", throwIfNotFound: true);
@@ -650,6 +671,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_GamePause;
     private readonly InputAction m_Player_ClickClimberRoute;
     private readonly InputAction m_Player_ShowClimberInfoUI;
+    private readonly InputAction m_Player_ClimberVision;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -673,6 +695,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/ShowClimberInfoUI".
         /// </summary>
         public InputAction @ShowClimberInfoUI => m_Wrapper.m_Player_ShowClimberInfoUI;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ClimberVision".
+        /// </summary>
+        public InputAction @ClimberVision => m_Wrapper.m_Player_ClimberVision;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -708,6 +734,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @ShowClimberInfoUI.started += instance.OnShowClimberInfoUI;
             @ShowClimberInfoUI.performed += instance.OnShowClimberInfoUI;
             @ShowClimberInfoUI.canceled += instance.OnShowClimberInfoUI;
+            @ClimberVision.started += instance.OnClimberVision;
+            @ClimberVision.performed += instance.OnClimberVision;
+            @ClimberVision.canceled += instance.OnClimberVision;
         }
 
         /// <summary>
@@ -728,6 +757,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @ShowClimberInfoUI.started -= instance.OnShowClimberInfoUI;
             @ShowClimberInfoUI.performed -= instance.OnShowClimberInfoUI;
             @ShowClimberInfoUI.canceled -= instance.OnShowClimberInfoUI;
+            @ClimberVision.started -= instance.OnClimberVision;
+            @ClimberVision.performed -= instance.OnClimberVision;
+            @ClimberVision.canceled -= instance.OnClimberVision;
         }
 
         /// <summary>
@@ -1124,6 +1156,13 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnShowClimberInfoUI(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ClimberVision" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnClimberVision(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

@@ -20,18 +20,19 @@ public class MountainVision : MonoBehaviour
     }
     
     [Header("Configuración")]
-    public KeyCode visionKey = KeyCode.V;
     private string boolPropertyName = "_IsActive"; 
     private bool isVisionActive = false;
     private List<Renderer> climberRenderers = new List<Renderer>();
     private MaterialPropertyBlock propBlock;
 
-    void Update()
+    private void Start()
     {
-        if (Input.GetKeyDown(visionKey))
-        {
-            ToggleVision();
-        }
+        InputManager.Instance.OnClimberVision += InputManager_OnClimberVision;
+    }
+
+    private void InputManager_OnClimberVision(object sender, System.EventArgs e)
+    {
+        ToggleVision();
     }
 
     void ToggleVision()

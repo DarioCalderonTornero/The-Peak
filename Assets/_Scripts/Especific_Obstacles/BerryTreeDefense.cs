@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// BerryTreeDefense.cs
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -92,23 +93,17 @@ public class BerryTreeDefense : BaseDefense
             if (climber.isEating) continue;
             if (eatingRoutines.ContainsKey(climber)) continue;
 
-            // Arrancamos la secuencia (PAUSA -> COME)
             Coroutine c = StartCoroutine(EatSequence(climber));
             eatingRoutines[climber] = c;
 
-            // Opcional: solo enganchar a 1 por frame
             break;
         }
     }
 
     private IEnumerator EatSequence(ClimberMovement climber)
     {
-        if (climber == null)
-        {
-            yield break;
-        }
+        if (climber == null) yield break;
 
-        // Marcamos estado "en proceso"
         climber.isEating = true;
 
         // 1) Primero se para 1s
@@ -117,30 +112,24 @@ public class BerryTreeDefense : BaseDefense
         float tEnd = Time.time + eatStopDuration;
         while (Time.time < tEnd)
         {
-            if (climber == null)
-                yield break;
+            if (climber == null) yield break;
             yield return null;
         }
 
-        // 2) Después de la pausa, elegimos la baya disponible en ese momento
+        // 2) Elegimos baya al final de la pausa
         GameObject berry = ChooseBerryToEat();
         if (berry == null)
         {
-            // No había bayas al final de la pausa
             if (climber != null) climber.isEating = false;
             eatingRoutines.Remove(climber);
             yield break;
         }
 
-        // 3) Ahora sí: "se la come"
+        // 3) Come
         ResolveBerry(climber, berry);
 
-        // Marcamos que ya comió este turno (DESPUÉS de la pausa)
-        if (climber != null)
-            climber.hasEatenThisTurn = true;
-
-        if (climber != null)
-            climber.isEating = false;
+        if (climber != null) climber.hasEatenThisTurn = true;
+        if (climber != null) climber.isEating = false;
 
         eatingRoutines.Remove(climber);
     }
@@ -176,9 +165,20 @@ public class BerryTreeDefense : BaseDefense
         if (badBerry != null) badBerry.SetActive(false);
         badBerryAlive = false;
 
+        Vector3 pos = climber != null ? climber.transform.position : transform.position;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+            {
+                climber = climber,
+                position = pos,
+                cause = GameManager.DeathCause.BadBerry
+            });
+        }
+
         Destroy(climber.gameObject);
         ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-        Temporal_Sound_Music.Instance.PlayDeathSound();
         PointsManager.Instance.AddPoints(10);
 
         StartCoroutine(RespawnBerryAfterTurns(false));

@@ -32,13 +32,14 @@ public class LevelExperienceManager : MonoBehaviour
     private void Start()
     {
         xpToNextLevel = CalculateXPToNextLevel();
-        Temporal_Sound_Music.Instance.OnClimberDeath += Temporal_Sound_Music_OnClimberDeath;
+        GameManager.Instance.OnClimberDead += GameManager_OnClimberDead;
     }
 
-    private void Temporal_Sound_Music_OnClimberDeath(object sender, EventArgs e)
+    private void GameManager_OnClimberDead(GameManager.DeathInfo obj)
     {
         AddExperience(levelExperienceToAdd);
     }
+
 
     private void AddExperience(int amount)
     {

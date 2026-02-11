@@ -2432,6 +2432,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1540668720}
     m_Modifications:
+    - target: {fileID: 300745323638601459, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1189216971950131553, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_Colors.m_HighlightedColor.b
       value: 0.018424066
@@ -2596,12 +2600,24 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -50
       objectReference: {fileID: 0}
+    - target: {fileID: 4689611072982629624, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4715650906684309519, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4723596543205637888, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_Name
       value: GamePauseUI
       objectReference: {fileID: 0}
     - target: {fileID: 4723596543205637888, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5565059815740731199, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6014865319455139861, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
@@ -2623,6 +2639,10 @@ PrefabInstance:
     - target: {fileID: 6014865319455139861, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_Color.r
       value: 0.33490568
+      objectReference: {fileID: 0}
+    - target: {fileID: 6821966771665397115, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6935432328254073852, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_AnchorMax.y
@@ -4361,7 +4381,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -4532,7 +4552,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f4ed9bacd515574bbc2c816cec95778, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visionKey: 118
 --- !u!1 &1116203803
 GameObject:
   m_ObjectHideFlags: 0
@@ -5067,7 +5086,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49486846a7266d749ba522754fd8286d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flySpeed: 100
+  flySpeed: 125
   panSpeed: 0.15
   invertPanY: 0
   panVerticalUsesWorldUp: 0

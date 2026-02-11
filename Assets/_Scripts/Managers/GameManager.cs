@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour
         Unknown,
         BadBerry,
         Quicksand,
+        Mud,
+        Geyser,
         Fall,
         Cold
     }

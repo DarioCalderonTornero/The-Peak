@@ -274,14 +274,26 @@ public class ClimberMovement : MonoBehaviour
         {
             PointsManager.Instance.AddPoints(10);
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            Temporal_Sound_Music.Instance.PlayDeathSound();
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+                {
+                    climber = this,
+                    position = transform.position,
+                    cause = GameManager.DeathCause.Cold 
+                });
+            }
+
             isActiveThisTurn = false;
             isAtCamp = false;
             pointsAddedThisTurn = true;
             Debug.Log("Stamina = 0");
+
             Destroy(gameObject);
             return;
         }
+
 
         if (isSelected && pathLineRenderer.enabled)
         {

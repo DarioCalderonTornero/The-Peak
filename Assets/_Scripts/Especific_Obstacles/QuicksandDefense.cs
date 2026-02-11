@@ -211,13 +211,25 @@ public class QuicksandDefense : BaseDefense
 
         if (absorbedClimber != null)
         {
+            Vector3 pos = absorbedClimber.transform.position;
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+                {
+                    climber = absorbedClimber,
+                    position = pos,
+                    cause = GameManager.DeathCause.Quicksand
+                });
+            }
+
             Destroy(absorbedClimber.gameObject);
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            Temporal_Sound_Music.Instance.PlayDeathSound();
             PointsManager.Instance.AddPoints(10);
         }
 
         Destroy(gameObject);
+
     }
 
     private void RescueClimber()

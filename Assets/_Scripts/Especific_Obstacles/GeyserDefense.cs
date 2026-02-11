@@ -479,27 +479,51 @@ public class GeyserDefense : BaseDefense
 
             var d = launched[key];
 
-            // Máximo tiempo en el aire -> destruir sí o sí
             if (Time.time - d.launchedAtTime >= destroyMaxAirTime)
             {
+                var climber = key.GetComponent<ClimberMovement>();
+                Vector3 pos = key.position;
+
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+                    {
+                        climber = climber,
+                        position = pos,
+                        cause = GameManager.DeathCause.Geyser 
+                    });
+                }
+
                 Destroy(key.gameObject);
                 launched.Remove(key);
                 resumeDestination.Remove(key);
-                Temporal_Sound_Music.Instance.PlayDeathSound();
                 continue;
             }
+
 
             // Aún no ha aterrizado
             if (!d.landed) continue;
 
-            // Tras aterrizar, esperar X segundos y destruir
             if (Time.time - d.landedAtTime >= destroySecondsAfterLanding)
             {
+                var climber = key.GetComponent<ClimberMovement>();
+                Vector3 pos = key.position;
+
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+                    {
+                        climber = climber,
+                        position = pos,
+                        cause = GameManager.DeathCause.Geyser 
+                    });
+                }
+
                 Destroy(key.gameObject);
                 launched.Remove(key);
                 resumeDestination.Remove(key);
-                Temporal_Sound_Music.Instance.PlayDeathSound();
             }
+
         }
     }
 

@@ -7,8 +7,6 @@ public class Temporal_Sound_Music : MonoBehaviour
 {
     public static Temporal_Sound_Music Instance { get; private set; }
 
-    public event EventHandler OnClimberDeath;
-
     [SerializeField] private AudioSource musicSource;
 
     [SerializeField] private AudioClip deathClimberClip;
@@ -66,12 +64,24 @@ public class Temporal_Sound_Music : MonoBehaviour
             currentTrackIndex = 0;
             PlayMusic(musicPlayList[currentTrackIndex]);
         }
-
-        GameManager.Instance.OnClimberDead += GameManager_OnClimberDead;
     }
+
+    private void OnEnable()
+    {
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnClimberDead += GameManager_OnClimberDead;
+    }
+
+    private void OnDisable()
+    {
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnClimberDead -= GameManager_OnClimberDead;
+    }
+
 
     private void GameManager_OnClimberDead(GameManager.DeathInfo obj)
     {
+        Debug.Log("PlayDeathSound");
         PlayDeathSound();
     }
 

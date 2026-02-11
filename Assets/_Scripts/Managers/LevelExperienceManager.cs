@@ -32,8 +32,20 @@ public class LevelExperienceManager : MonoBehaviour
     private void Start()
     {
         xpToNextLevel = CalculateXPToNextLevel();
-        GameManager.Instance.OnClimberDead += GameManager_OnClimberDead;
     }
+
+    private void OnEnable()
+    {
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnClimberDead += GameManager_OnClimberDead;
+    }
+
+    private void OnDisable()
+    {
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnClimberDead -= GameManager_OnClimberDead;
+    }
+
 
     private void GameManager_OnClimberDead(GameManager.DeathInfo obj)
     {

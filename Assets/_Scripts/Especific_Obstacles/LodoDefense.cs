@@ -259,13 +259,25 @@ public class LodoDefense : BaseDefense
 
         if (climber != null)
         {
+            Vector3 pos = climber.transform.position;
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+                {
+                    climber = climber,
+                    position = pos,
+                    cause = GameManager.DeathCause.Mud
+                });
+            }
+
             Destroy(climber.gameObject);
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            Temporal_Sound_Music.Instance.PlayDeathSound();
             PointsManager.Instance.AddPoints(10);
         }
 
         Destroy(gameObject);
+
     }
 
     private IEnumerator RestoreBaseOffset(ClimberMovement climber, MudClimberData data)

@@ -5,5 +5,6 @@ public enum ObstacleType
     Mud = 2,
     Bramble = 3, 
     Snow = 4,
-    BerryTree = 5
+    BerryTree = 5,
+    Geyser = 6,
 }

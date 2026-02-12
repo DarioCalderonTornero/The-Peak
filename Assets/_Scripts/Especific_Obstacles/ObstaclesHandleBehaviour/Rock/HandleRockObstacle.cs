@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Rendering.UI;
 
 public class HandleRockObstacle : BaseObstacle
 {

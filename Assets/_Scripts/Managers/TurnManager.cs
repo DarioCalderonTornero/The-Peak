@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class TurnManager : MonoBehaviour
 {
-    public static TurnManager Instance { get; private set; }
+    public static TurnManager Instance { get; private set; }    
 
     [Header("UI References")]
     [SerializeField] private PlayerTurnsUI playerTurnsUI;
@@ -186,6 +187,7 @@ public class TurnManager : MonoBehaviour
             return;
         }
 
+        Debug.Log("EndPlayerTurn");
         OnPlayerTurnEnd?.Invoke();
         StartClimberTurn();
     }

@@ -153,32 +153,33 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private void Update()
     {
-        if (!inPlacementMode || previewInstance == null || useFixedPosition)
-            return;
+        if (!inPlacementMode || previewInstance == null || useFixedPosition) return;
 
-        // 1) Si estamos escalando con T: NO mover ni rotar, solo escala
-        HandleFreeScaling();
-        if (isFreeScaling)
-            return;
+        // --- ROTACIÓN POR PASOS (90 GRADOS) ---
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            currentRotationDegrees += 90f;
+            if (currentRotationDegrees >= 360f) currentRotationDegrees = 0f;
 
-        // 2) Rotación libre (R) o rotación normal (ambas usan currentRotationDegrees persistente)
-        if (isFreeRotating)
-        {
-            UpdateFreeRotation();
-        }
-        else
-        {
+            // ✅ Forzamos que se actualice la rotación con la inclinación actual
             ApplyRotationFromNormalAndYaw();
         }
+
+        // ❌ BORRA ESTA LÍNEA: previewInstance.transform.rotation = targetRotation;
     }
 
     private void ApplyRotationFromNormalAndYaw()
     {
         if (previewInstance == null) return;
 
-        Quaternion baseRot = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
-        Quaternion extraRot = Quaternion.AngleAxis(currentRotationDegrees, lastHitNormal);
-        previewInstance.transform.rotation = extraRot * baseRot;
+        // 1. Rotación de la rampa (Normal)
+        Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
+
+        // 2. Rotación del jugador (0, 90, 180...)
+        Quaternion playerRotation = Quaternion.Euler(0, currentRotationDegrees, 0);
+
+        // 3. Combinación: Primero inclinamos y luego giramos sobre esa inclinación
+        previewInstance.transform.rotation = slopeRotation * playerRotation;
     }
 
     private void UpdateFreeRotation()
@@ -250,7 +251,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private void ApplyScaleFactorToPreview(float factor)
     {
         if (previewInstance == null) return;
-        previewInstance.transform.localScale = originalPreviewScale * factor;
+
+        // Evita que el objeto desaparezca por escala 0
+        float safeFactor = Mathf.Max(factor, 0.1f);
+        previewInstance.transform.localScale = originalPreviewScale * safeFactor;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -279,7 +283,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
             return;
 
-        // mover carta UI
+        // Movimiento de la carta UI (se mantiene igual)
         Vector2 newPos = rectTransform.anchoredPosition;
         newPos.x += eventData.delta.x / canvas.scaleFactor;
         rectTransform.anchoredPosition = newPos;
@@ -290,35 +294,23 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         bool overUI = IsPointerOverUI();
 
-        // Entrar en placement
         if (!inPlacementMode && distanceToRight >= placementThreshold && !overUI)
             EnterPlacementMode();
 
-        // Si vuelves a UI: salir de placement y destruir preview (PERO mantener scale/rot)
         if (inPlacementMode && overUI)
         {
             CleanupPreview();
             inPlacementMode = false;
             useFixedPosition = false;
             currentPreviewIsValid = false;
-
-            // ✅ solo flags
             isFreeRotating = false;
             isFreeScaling = false;
-
             return;
         }
 
-        if (!inPlacementMode)
+        if (!inPlacementMode || isFreeScaling || useFixedPosition)
             return;
 
-        if (isFreeScaling)
-            return;
-
-        if (useFixedPosition)
-            return;
-
-        // Seguimiento por raycast
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
         {
@@ -327,40 +319,44 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 previewInstance = Instantiate(cardData.defensePrefab);
                 DisablePreviewLogic(previewInstance);
 
+                // 1. CAPTURAR ESCALA ORIGINAL (Vital para que no sea 0)
+                originalPreviewScale = previewInstance.transform.localScale;
+                if (originalPreviewScale.sqrMagnitude == 0) originalPreviewScale = Vector3.one;
+
+                // 2. AÑADIR VISUALIZADOR DE GRILLA
+                var visualizer = previewInstance.AddComponent<RuntimeGridVisualizer>();
+                visualizer.Setup(cardData.gridSize);
+
+                // 3. APLICAR ESCALA INICIAL
+                ApplyScaleFactorToPreview(currentScaleFactor);
+
                 currentPreviewIsValid = false;
                 ApplyPreviewMaterial(false);
 
-                // escala base del prefab
-                originalPreviewScale = previewInstance.transform.localScale;
-
-                // seed preview
-                bramblePreviewSeed = Random.Range(int.MinValue, int.MaxValue);
+                bramblePreviewSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
                 var bramble = previewInstance.GetComponent<BrambleDefense>();
                 if (bramble != null)
                     bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
-
-                // ✅ Aplicar PERSISTENTES al nacer el preview
-                ApplyScaleFactorToPreview(currentScaleFactor);
             }
 
-            if (!isFreeRotating)
-                previewInstance.transform.position = hit.point;
+            GridPlacementInfo gridInfo = GetSnappedInfoOnRampa(hit.point, cardData.gridSize.x, cardData.gridSize.y);
 
-            lastHitNormal = hit.normal;
-
-            // ✅ aplicar rotación persistente siempre que no estés en free-rot
-            if (!isFreeRotating)
+            if (gridInfo.hitFound)
+            {
+                previewInstance.transform.position = gridInfo.position;
+                lastHitNormal = gridInfo.normal;
                 ApplyRotationFromNormalAndYaw();
 
-            // Validación y material
-            Vector3 checkPos = isFreeRotating ? freeRotatePivot : hit.point;
-            Quaternion checkRot = previewInstance.transform.rotation;
+                float slopeAngle = Vector3.Angle(Vector3.up, gridInfo.normal);
+                bool angleOk = slopeAngle <= 60f;
 
-            string validityReason = CheckPlacementValidity(checkPos, lastHitNormal, checkRot);
-            bool isValid = validityReason == "Válido";
+                string validityReason = angleOk ?
+                    CheckPlacementValidity(gridInfo.position, gridInfo.normal, previewInstance.transform.rotation) :
+                    "Pendiente excesiva";
 
-            currentPreviewIsValid = isValid;
-            ApplyPreviewMaterial(isValid);
+                currentPreviewIsValid = (validityReason == "Válido");
+                ApplyPreviewMaterial(currentPreviewIsValid);
+            }
         }
     }
 
@@ -564,17 +560,30 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private string CheckPlacementValidity(Vector3 position, Vector3 normal, Quaternion rotation)
     {
-        Vector3 checkCenter = position + normal * 0.1f;
+        // 1. ✅ NUEVO: Comprobar ángulo de inclinación
+        float slopeAngle = Vector3.Angle(Vector3.up, normal);
+        if (slopeAngle > 60f)
+        {
+            return "Pendiente demasiado pronunciada";
+        }
 
-        Vector3 halfExtents =
-            (cardData != null && basePlacementCheckExtents != Vector3.zero)
-            ? basePlacementCheckExtents * currentScaleFactor
-            : new Vector3(0.5f, 0.5f, 0.5f);
+        // 2. Comprobar colisiones (Grilla)
+        // Usamos el tamaño de la grilla definido en CardData
+        Vector3 boxSize = new Vector3(
+            cardData.gridSize.x - 0.1f,
+            0.5f, // Altura de detección
+            cardData.gridSize.y - 0.1f
+        );
 
-        if (Physics.CheckBox(checkCenter, halfExtents, rotation, defenseMask))
-            return "Demasiado cerca de otro obstáculo";
+        // Levantamos un poco el centro para que la caja de colisión siga la normal de la rampa
+        Vector3 center = position + (normal * 0.25f);
 
-        if (Physics.CheckBox(checkCenter, halfExtents, rotation, campMask))
+        Vector3 halfExtents = boxSize / 2f;
+
+        if (Physics.CheckBox(center, halfExtents, rotation, defenseMask))
+            return "Casilla ocupada";
+
+        if (Physics.CheckBox(center, halfExtents, rotation, campMask))
             return "Demasiado cerca de un campamento";
 
         if (cardData != null && cardData.requireFullSupport)
@@ -630,10 +639,20 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         foreach (var r in renderers)
         {
+            // NO cambiar el material si es el visualizador de líneas
+            if (r is LineRenderer) continue;
+
             var mats = r.materials;
             for (int i = 0; i < mats.Length; i++)
                 mats[i] = mat;
             r.materials = mats;
+        }
+
+        // Sincronizar el color de la grilla de casillas
+        var visualizer = previewInstance.GetComponent<RuntimeGridVisualizer>();
+        if (visualizer != null)
+        {
+            visualizer.SetColor(valid ? Color.green : Color.red);
         }
     }
 
@@ -726,6 +745,27 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
     }
 
+    private Vector3 GetSnappedPosition(Vector3 hitPoint, int width, int height, Quaternion rotation)
+    {
+        // 1. Determinar dimensiones actuales según la rotación
+        // Si rotamos 90 o 270 grados, invertimos ancho y alto
+        bool rotated = Mathf.RoundToInt(rotation.eulerAngles.y) % 180 != 0;
+        int currentWidth = rotated ? height : width;
+        int currentHeight = rotated ? width : height;
+
+        // 2. Calcular el offset para centrar
+        // Si es par (2, 4), necesitamos offset de 0.5. Si es impar (1, 3), offset de 0.
+        float offsetX = (currentWidth % 2 == 0) ? 0.5f : 0f;
+        float offsetZ = (currentHeight % 2 == 0) ? 0.5f : 0f;
+
+        // 3. Redondear a la unidad más cercana y aplicar offset
+        float x = Mathf.Round(hitPoint.x - offsetX) + offsetX;
+        float z = Mathf.Round(hitPoint.z - offsetZ) + offsetZ;
+
+        // Mantenemos la Y del punto de impacto (o fíjalo a 0 si tu suelo es plano)
+        return new Vector3(x, hitPoint.y, z);
+    }
+
     public void OnPointerExit(PointerEventData eventData)
     {
         if (replacementCallback != null && isHoveringForReplacement)
@@ -737,6 +777,54 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             hoverRoutine = StartCoroutine(MoveCardSmooth(rectTransform.anchoredPosition, originalPosition));
         }
+    }
+
+    // Estructura para devolver posición y normal ajustadas
+    private struct GridPlacementInfo
+    {
+        public Vector3 position;
+        public Vector3 normal;
+        public bool hitFound;
+    }
+
+    private GridPlacementInfo GetSnappedInfoOnRampa(Vector3 originalHitPoint, int width, int height)
+    {
+        GridPlacementInfo result = new GridPlacementInfo();
+        result.hitFound = false;
+
+        // 1. Determinar offset según si el tamaño es Par o Impar (para centrar en grilla Unity)
+        // Si rotamos 90 grados (en Y), invertimos ancho/alto para el cálculo
+        bool rotated = Mathf.RoundToInt(currentRotationDegrees) % 180 != 0;
+        int currentWidth = rotated ? height : width;
+        int currentHeight = rotated ? width : height;
+
+        float offsetX = (currentWidth % 2 == 0) ? 0.5f : 0f;
+        float offsetZ = (currentHeight % 2 == 0) ? 0.5f : 0f;
+
+        // 2. Calcular X y Z de la grilla (sin tocar Y todavía)
+        float snappedX = Mathf.Round(originalHitPoint.x - offsetX) + offsetX;
+        float snappedZ = Mathf.Round(originalHitPoint.z - offsetZ) + offsetZ;
+
+        // 3. RE-PROYECCIÓN: Lanzar rayo desde arriba en la coordenada X/Z calculada
+        // Subimos 10 unidades desde el punto original para asegurar que estamos sobre el suelo
+        Vector3 rayOrigin = new Vector3(snappedX, originalHitPoint.y + 10f, snappedZ);
+        Ray ray = new Ray(rayOrigin, Vector3.down);
+
+        // Usamos placementMask para detectar solo el suelo válido
+        if (Physics.Raycast(ray, out RaycastHit hitInfo, 50f, placementMask))
+        {
+            result.position = hitInfo.point;
+            result.normal = hitInfo.normal;
+            result.hitFound = true;
+        }
+        else
+        {
+            // Si fallamos (ej: fuera del mapa), usamos el original redondeado plano
+            result.position = new Vector3(snappedX, originalHitPoint.y, snappedZ);
+            result.normal = Vector3.up;
+        }
+
+        return result;
     }
 
     private IEnumerator MoveCardSmooth(Vector2 from, Vector2 to)
@@ -751,6 +839,90 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         rectTransform.anchoredPosition = to;
+    }
+
+    [Header("Configuración Visual de Grilla")]
+    [SerializeField] private bool showGlobalGrid = true;
+    [SerializeField] private int gridViewRange = 6; // Radio de casillas visibles alrededor del ratón
+
+    private void OnDrawGizmos()
+    {
+        // Solo dibujamos si estamos en modo placement y el juego corre
+        if (!Application.isPlaying || !inPlacementMode || mainCamera == null) return;
+
+        // --- PARTE 1: REJILLA GLOBAL (Suelo de la montaña) ---
+        // Lanzamos un rayo desde la cámara al ratón para saber dónde centrar la rejilla global
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit centerHit, 1000f, placementMask))
+        {
+            // Guardamos la matriz original para no afectar a otros Gizmos de Unity
+            Matrix4x4 originalMatrix = Gizmos.matrix;
+
+            int centerX = Mathf.RoundToInt(centerHit.point.x);
+            int centerZ = Mathf.RoundToInt(centerHit.point.z);
+
+            for (int x = -gridViewRange; x <= gridViewRange; x++)
+            {
+                for (int z = -gridViewRange; z <= gridViewRange; z++)
+                {
+                    Vector3 cellCheckPos = new Vector3(centerX + x, centerHit.point.y + 5f, centerZ + z);
+
+                    // Solo dibujamos la casilla si hay suelo de "Mountain" debajo
+                    if (Physics.Raycast(cellCheckPos, Vector3.down, out RaycastHit cellHit, 15f, placementMask))
+                    {
+                        // Inclinamos cada casilla individualmente según la normal del terreno
+                        Gizmos.matrix = Matrix4x4.TRS(
+                            cellHit.point + (cellHit.normal * 0.005f),
+                            Quaternion.FromToRotation(Vector3.up, cellHit.normal),
+                            Vector3.one
+                        );
+
+                        Gizmos.color = new Color(1f, 1f, 1f, 0.15f); // Blanco tenue
+                        Gizmos.DrawWireCube(Vector3.zero, new Vector3(0.9f, 0f, 0.9f));
+                    }
+                }
+            }
+
+            // Restauramos la matriz antes de pasar a la siguiente parte
+            Gizmos.matrix = originalMatrix;
+        }
+
+
+        // --- PARTE 2: HUELLA DE LA DEFENSA (Lo que ocupa el objeto) ---
+        if (cardData != null && previewInstance != null)
+        {
+            // Configuramos la matriz para que siga la posición e inclinación del preview
+            Gizmos.matrix = Matrix4x4.TRS(
+                previewInstance.transform.position,
+                previewInstance.transform.rotation,
+                Vector3.one
+            );
+
+            // Color según validez (Verde si se puede, Rojo si no)
+            Gizmos.color = currentPreviewIsValid ? Color.green : Color.red;
+
+            // 1. Dibujar el marco exterior grueso
+            Vector3 totalSize = new Vector3(cardData.gridSize.x, 0.05f, cardData.gridSize.y);
+            Gizmos.DrawWireCube(Vector3.up * 0.01f, totalSize);
+
+            // 2. Dibujar las casillas internas que ocupa este objeto específico
+            Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.4f); // Más opaco que la rejilla global
+
+            float startX = -(cardData.gridSize.x / 2f) + 0.5f;
+            float startZ = -(cardData.gridSize.y / 2f) + 0.5f;
+
+            for (int x = 0; x < cardData.gridSize.x; x++)
+            {
+                for (int z = 0; z < cardData.gridSize.y; z++)
+                {
+                    Vector3 localCellPos = new Vector3(startX + x, 0.02f, startZ + z);
+                    Gizmos.DrawWireCube(localCellPos, new Vector3(0.95f, 0f, 0.95f));
+                }
+            }
+
+            // Reset final de la matriz
+            Gizmos.matrix = Matrix4x4.identity;
+        }
     }
 
     private void OnDestroy()

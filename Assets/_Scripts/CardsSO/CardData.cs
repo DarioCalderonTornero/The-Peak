@@ -32,4 +32,8 @@ public class CardData : ScriptableObject
     [Header("Colisión entre defensas")]
     // Mitad del tamaño del cubo para comprobar si hay otra defensa cerca
     public Vector3 placementCheckExtents = new Vector3(0.5f, 0.5f, 0.5f);
+
+    [Header("Configuración de Grilla")]
+    // NUEVO: Tamaño en casillas (Ej: 1x1, 2x2, 3x1)
+    public Vector2Int gridSize = new Vector2Int(1, 1);
 }

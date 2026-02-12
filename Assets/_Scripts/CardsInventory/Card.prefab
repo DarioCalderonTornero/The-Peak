@@ -300,6 +300,8 @@ MonoBehaviour:
   minRelativeScale: 0.2
   maxRelativeScale: 2.5
   freeScaleSensitivity: 0.005
+  showGlobalGrid: 1
+  gridViewRange: 20
 --- !u!225 &2838217454017087479
 CanvasGroup:
   m_ObjectHideFlags: 0

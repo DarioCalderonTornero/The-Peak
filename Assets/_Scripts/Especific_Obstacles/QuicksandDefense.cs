@@ -219,7 +219,7 @@ public class QuicksandDefense : BaseDefense
                 {
                     climber = absorbedClimber,
                     position = pos,
-                    cause = GameManager.DeathCause.Quicksand
+                    cause = DeathCause.Quicksand
                 });
             }
 

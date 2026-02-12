@@ -1,5 +1,6 @@
 // GameManager.cs
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -19,19 +20,6 @@ public class GameManager : MonoBehaviour
         GameOver
     }
 
-    // =========================
-    // =========================
-    public enum DeathCause
-    {
-        Unknown,
-        BadBerry,
-        Quicksand,
-        Mud,
-        Geyser,
-        Fall,
-        Cold
-    }
-
     [Serializable]
     public struct DeathInfo
     {
@@ -42,12 +30,11 @@ public class GameManager : MonoBehaviour
 
     public event Action<DeathInfo> OnClimberDead;
 
-    public void NotifyClimberDied(DeathInfo info)
-    {
-        OnClimberDead?.Invoke(info);
-    }
+    [Header("Death Effects Configurations")]
+    [SerializeField] private List<DeathEffectConfigSO> deathEffectConfigs;
 
-    // =========================
+    private Dictionary<DeathCause, DeathEffectConfigSO> deathEffectDictionary;
+
 
     [Header("Game State")]
     [SerializeField] private GameState currentState = GameState.Initializing;
@@ -82,6 +69,7 @@ public class GameManager : MonoBehaviour
 
         AutoAssignManagers();
         SetState(GameState.Initializing);
+        InitializeDeathEffectDictionary();
     }
 
     private void Start()
@@ -91,7 +79,6 @@ public class GameManager : MonoBehaviour
         if (autoStartGame)
             StartGame();
 
-        // Nos suscribimos al input de pausa
         if (InputManager.Instance != null)
         {
             InputManager.Instance.OnGamePauseInput += HandleGamePauseInput;
@@ -107,6 +94,55 @@ public class GameManager : MonoBehaviour
         if (InputManager.Instance != null)
         {
             InputManager.Instance.OnGamePauseInput -= HandleGamePauseInput;
+        }
+    }
+
+    private void InitializeDeathEffectDictionary()
+    {
+        deathEffectDictionary = new Dictionary<DeathCause, DeathEffectConfigSO>();
+
+        foreach (var config in deathEffectConfigs)
+        {
+            deathEffectDictionary[config.deathCause] = config;
+        }
+    }
+
+    public void NotifyClimberDied(DeathInfo info)
+    {
+        DeathEffectConfigSO deathEffectConfig = GetDeathEffectConfig(info.cause);
+        ApplyDeathEffects(info.climber, deathEffectConfig);
+        OnClimberDead?.Invoke(info);
+    }
+
+    private DeathEffectConfigSO GetDeathEffectConfig(DeathCause cause)
+    {
+        if (deathEffectDictionary.ContainsKey(cause))
+        {
+            return deathEffectDictionary[cause];
+        }
+
+        Debug.LogWarning($"No se encontró configuración para la causa de muerte: {cause}");
+        return null;
+    }
+
+    private void ApplyDeathEffects(ClimberMovement climber, DeathEffectConfigSO config)
+    {
+        if (config == null)
+        {
+            Debug.LogWarning("[GameManager] Config de efectos de muerte es null, no se aplicarán efectos visuales o sonoros.");
+            return;
+        }
+
+        Debug.Log("Funciona");
+
+        if (config.deathAudioClip != null)
+        {
+            //AudioSource.PlayClipAtPoint(config.deathAudioClip, climber.transform.position);
+        }
+
+        if (climber.GetComponent<Animator>() && config.deathAnimationClip != null)
+        {
+            //climber.GetComponent<Animator>().Play(config.deathAnimationClip.name);
         }
     }
 

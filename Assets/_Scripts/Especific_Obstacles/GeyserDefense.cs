@@ -530,7 +530,7 @@ public class GeyserDefense : BaseDefense
                     {
                         climber = climber,
                         position = pos,
-                        cause = GameManager.DeathCause.Geyser 
+                        cause = DeathCause.Geyser 
                     });
                 }
 
@@ -555,7 +555,7 @@ public class GeyserDefense : BaseDefense
                     {
                         climber = climber,
                         position = pos,
-                        cause = GameManager.DeathCause.Geyser 
+                        cause = DeathCause.Geyser 
                     });
                 }
 

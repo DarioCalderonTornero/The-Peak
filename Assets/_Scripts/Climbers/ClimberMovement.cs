@@ -281,7 +281,7 @@ public class ClimberMovement : MonoBehaviour
                 {
                     climber = this,
                     position = transform.position,
-                    cause = GameManager.DeathCause.Cold 
+                    cause = DeathCause.Cold 
                 });
             }
 

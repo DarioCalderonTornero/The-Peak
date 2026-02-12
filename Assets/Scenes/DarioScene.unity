@@ -4533,6 +4533,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14dcacd999453494487626f10248b0a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deathEffectConfigs:
+  - {fileID: 11400000, guid: 6fabd4abc922f964bb00722ea52522c5, type: 2}
   currentState: 0
   turnManager: {fileID: 675079561}
   spawnManager: {fileID: 1116203805}

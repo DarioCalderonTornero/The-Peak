@@ -18,7 +18,7 @@ public class DestroyRockAfterTime : MonoBehaviour
         turnsLeft--;
         if (turnsLeft <= 0)
         {
-            Destroy(gameObject);
+            //Destroy(gameObject);
         }
     }
 }

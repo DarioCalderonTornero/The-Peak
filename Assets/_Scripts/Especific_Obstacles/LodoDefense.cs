@@ -267,7 +267,7 @@ public class LodoDefense : BaseDefense
                 {
                     climber = climber,
                     position = pos,
-                    cause = GameManager.DeathCause.Mud
+                    cause = DeathCause.Mud
                 });
             }
 

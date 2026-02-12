@@ -5839,6 +5839,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8349888551163216939, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
+      propertyPath: m_AllowInstancing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8349888551163216939, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_PropertySheet.m_Bool.m_Array.Array.size
       value: 3
       objectReference: {fileID: 0}

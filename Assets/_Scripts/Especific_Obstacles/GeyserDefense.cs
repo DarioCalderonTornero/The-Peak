@@ -88,6 +88,11 @@ public class GeyserDefense : BaseDefense
     // IDs (evita strings todo el rato)
     private static readonly int BubblingID = Shader.PropertyToID("Bubbling");
     private static readonly int EruptingPowerID = Shader.PropertyToID("EruptingPower");
+    private static readonly int AlturaEspumaID = Shader.PropertyToID("AlturaEspuma");
+    private static readonly int EspumaArribaID = Shader.PropertyToID("EspumaArriba");
+
+    [SerializeField] private float espumaRampUpSeconds = 1.5f;
+    [SerializeField] private float espumaMaxAltura = 1f;
 
     private Coroutine eruptFadeRoutine;
 
@@ -108,6 +113,8 @@ public class GeyserDefense : BaseDefense
 
         SetBubbling(false);
         SetEruptingPower(0f);
+        SetEspumaActiva(false);
+        SetAlturaEspuma(0f);
 
         if (TurnManager.Instance != null)
             TurnManager.Instance.OnClimberTurnEnd += OnClimberTurnEnd;
@@ -228,6 +235,8 @@ public class GeyserDefense : BaseDefense
         isBusy = false;
 
         SetBubbling(false);
+        SetEspumaActiva(false);
+        SetAlturaEspuma(0f);
     }
 
     private void SetBubbling(bool value)
@@ -255,32 +264,63 @@ public class GeyserDefense : BaseDefense
 
     private IEnumerator EruptFadeRoutine()
     {
-        // 1) Mantener erupción a tope
-        SetEruptingPower(1f);
+        // Activamos la espuma, pero empezamos en 0
+        SetEspumaActiva(true);
+        SetEruptingPower(0f);
+        SetAlturaEspuma(0f);
+
+        // 1) RAMP UP solo para la espuma, pero el chorro se pone instantáneo a 1
+        SetEruptingPower(1f);  // El chorro va a 1 al instante
+        SetAlturaEspuma(0f);   // Comienza la espuma en 0
+
+        float ramp = Mathf.Max(0f, espumaRampUpSeconds); // Solo la espuma tarda en subir
+        float tr = 0f;
+
+        while (tr < ramp)
+        {
+            tr += Time.deltaTime;
+            float n = (ramp <= 0.0001f) ? 1f : Mathf.Clamp01(tr / ramp);
+
+            // Sincronizamos la espuma, pero el chorro ya está al máximo
+            SetAlturaEspuma(n * espumaMaxAltura); // Solo afecta a la espuma
+
+            yield return null;
+        }
+
+        // 2) Mantenemos el chorro al máximo y la espuma al máximo también
+        SetEruptingPower(1f);  // Aseguramos que el chorro esté a tope
+        SetAlturaEspuma(espumaMaxAltura); // Espuma al máximo
 
         float hold = Mathf.Max(0f, eruptHoldSeconds);
-        float tHold = 0f;
+        float th = 0f;
 
-        while (tHold < hold)
+        while (th < hold)
         {
-            tHold += Time.deltaTime;
+            th += Time.deltaTime;
             yield return null;
         }
 
-        // 2) Fade 1 -> 0
-        float t = 0f;
-        float dur = Mathf.Max(0.01f, eruptFadeSeconds);
+        // 3) FADE (1 -> 0) para chorro y espuma
+        float fade = Mathf.Max(0.01f, eruptFadeSeconds);
+        float tf = 0f;
 
-        while (t < dur)
+        while (tf < fade)
         {
-            t += Time.deltaTime;
-            float n = Mathf.Clamp01(t / dur);
+            tf += Time.deltaTime;
+            float n = Mathf.Clamp01(tf / fade);
 
-            SetEruptingPower(Mathf.Lerp(1f, 0f, n));
+            float v = Mathf.Lerp(1f, 0f, n);
+            SetEruptingPower(v); // disminuye el chorro
+            SetAlturaEspuma(v * espumaMaxAltura); // disminuye la espuma
+
             yield return null;
         }
 
+        // 4) Apagamos todo
         SetEruptingPower(0f);
+        SetAlturaEspuma(0f);
+        SetEspumaActiva(false);
+
         eruptFadeRoutine = null;
     }
 
@@ -572,6 +612,18 @@ public class GeyserDefense : BaseDefense
             reported = true;
             owner.NotifyLanded(transform);
         }
+    }
+
+    private void SetAlturaEspuma(float value)
+    {
+        if (geyserVFX == null) return;
+        geyserVFX.SetFloat(AlturaEspumaID, value);
+    }
+
+    private void SetEspumaActiva(bool value)
+    {
+        if (geyserVFX == null) return;
+        geyserVFX.SetBool(EspumaArribaID, value);
     }
 
 }

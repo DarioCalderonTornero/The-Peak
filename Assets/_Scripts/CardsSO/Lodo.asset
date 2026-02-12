@@ -27,4 +27,4 @@ MonoBehaviour:
   supportRayDistance: 1.94
   supportYOffset: 0.52
   placementCheckExtents: {x: 0.5, y: 2.55, z: 0.5}
-  gridSize: {x: 3, y: 2}
+  gridSize: {x: 4, y: 2}

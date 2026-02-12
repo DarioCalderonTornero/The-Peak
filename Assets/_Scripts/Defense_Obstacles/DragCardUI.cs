@@ -83,6 +83,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private float baseSupportYOffset;
     private Vector3 basePlacementCheckExtents;
 
+    [Header("Rejilla Global HDRP")]
+    private UnityEngine.Rendering.HighDefinition.DecalProjector globalDecal;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -345,6 +348,14 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             {
                 previewInstance.transform.position = gridInfo.position;
                 lastHitNormal = gridInfo.normal;
+
+                // Mover el Decal si existe
+                if (globalDecal != null)
+                {
+                    // Lo posicionamos sobre el punto de impacto
+                    globalDecal.transform.position = gridInfo.position + Vector3.up * 5f;
+                }
+
                 ApplyRotationFromNormalAndYaw();
 
                 float slopeAngle = Vector3.Angle(Vector3.up, gridInfo.normal);
@@ -356,6 +367,34 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
                 currentPreviewIsValid = (validityReason == "Válido");
                 ApplyPreviewMaterial(currentPreviewIsValid);
+            }
+
+            if (globalDecal != null)
+            {
+                // 1. Posicionamos el proyector
+                globalDecal.transform.position = gridInfo.position + Vector3.up * 5f;
+
+                // 2. Calculamos el desfase (Offset) para que la rejilla encaje siempre
+                // Si el tamaño es impar, necesitamos desplazar la textura 0.5 unidades
+                float offsetX = (cardData.gridSize.x % 2 != 0) ? 0.5f : 0f;
+                float offsetZ = (cardData.gridSize.y % 2 != 0) ? 0.5f : 0f;
+
+                // 3. Aplicamos el Tiling y el Offset al material del Decal
+                // HDRP usa el nombre de propiedad "_BaseColorMap_ST" para Tiling (x,y) y Offset (z,w)
+                Material decalMat = globalDecal.material;
+                if (decalMat != null)
+                {
+                    // Vector4( TilingX, TilingY, OffsetX, OffsetY )
+                    // Dividimos el offset por el tamaño para normalizarlo al espacio UV
+                    decalMat.SetVector("_BaseColorMap_ST", new Vector4(
+                        globalDecal.size.x,
+                        globalDecal.size.z,
+                        offsetX,
+                        offsetZ
+                    ));
+                }
+
+                if (!globalDecal.enabled) globalDecal.enabled = true;
             }
         }
     }
@@ -480,6 +519,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private void EnterPlacementMode()
     {
         inPlacementMode = true;
+        // ✅ NUEVO: Buscar el decal en la escena por su Tag
+        if (globalDecal == null)
+        {
+            GameObject decalObj = GameObject.FindWithTag("GridDecal");
+            if (decalObj != null)
+            {
+                globalDecal = decalObj.GetComponent<UnityEngine.Rendering.HighDefinition.DecalProjector>();
+            }
+        }
+
+        if (globalDecal != null)
+            globalDecal.enabled = true;
         canvasGroup.alpha = 0f;
 
         lastHitNormal = Vector3.up;
@@ -548,6 +599,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             Destroy(previewInstance);
             previewInstance = null;
         }
+        if (globalDecal != null) globalDecal.enabled = false;
         currentPreviewIsValid = false;
     }
 

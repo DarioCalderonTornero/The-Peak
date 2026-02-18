@@ -320,4 +320,26 @@ public class FreeCameraController : MonoBehaviour
             FinishSnap();
         }
     }
+
+    //GETTERS
+    public float GetCameraSpeed()
+    {
+        return flySpeed;    
+    }
+
+    public float GetCameraPan()
+    {
+        return panSpeed;
+    }
+
+    //SETTERS
+    public void SetCameraSpeed(float speed)
+{
+    flySpeed = speed;
+}
+
+public void SetCameraPan(float pan)
+{
+    panSpeed = pan;
+}
 }

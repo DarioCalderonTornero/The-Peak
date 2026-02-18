@@ -17,6 +17,7 @@ public class GamePauseUI : MonoBehaviour
 
     private bool hasPlayedSound = false;
 
+
     private void Awake()
     {
         resumeButton.onClick.AddListener(() =>
@@ -26,7 +27,8 @@ public class GamePauseUI : MonoBehaviour
 
         settingsButton.onClick.AddListener(() =>
         {
-            Hide();
+            Hide(false); 
+            settingsUI.ShowMainButtons(); 
             settingsUI.gameObject.SetActive(true);
         });
 
@@ -48,6 +50,8 @@ public class GamePauseUI : MonoBehaviour
     {
         Show();
     }
+
+    
 
     public void TogglePauseMenu()
     {
@@ -82,16 +86,20 @@ public class GamePauseUI : MonoBehaviour
         backToMenuButton.gameObject.SetActive(true);
     }
 
-    private void Hide()
+    private void Hide(bool hideBackground = true)
     {
         hasPlayedSound = false;
 
-        backgroundImage.gameObject.SetActive(false);
+        if (hideBackground)
+        {
+            backgroundImage.gameObject.SetActive(false);
+        }
+
         resumeButton.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
 
-        //Hide settings
+        // Hide settings
         settingsUI.gameObject.SetActive(false);
     }
 }

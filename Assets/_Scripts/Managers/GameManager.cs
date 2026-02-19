@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
         Tutorial,
         Playing,
         GamePause,
+        CinematicDeath,
         GameOver
     }
 

@@ -66,11 +66,16 @@ public class FreeCameraController : MonoBehaviour
 
     private void Start()
     {
+        flySpeed = PlayerPrefs.GetFloat("CameraSpeed", flySpeed);
+        panSpeed = PlayerPrefs.GetFloat("CameraPan", panSpeed);
+
         Vector3 currentEuler = transform.eulerAngles;
         yaw = currentEuler.y;
 
         pitch = currentEuler.x;
         if (pitch > 180f) pitch -= 360f;
+
+
 
         if (InputManager.Instance != null)
         {
@@ -334,12 +339,12 @@ public class FreeCameraController : MonoBehaviour
 
     //SETTERS
     public void SetCameraSpeed(float speed)
-{
-    flySpeed = speed;
-}
+    {
+        flySpeed = speed;
+    }
 
-public void SetCameraPan(float pan)
-{
-    panSpeed = pan;
-}
+    public void SetCameraPan(float pan)
+    {
+        panSpeed = pan;
+    }
 }

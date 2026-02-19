@@ -26,6 +26,11 @@ public class SettingsUI : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private FreeCameraController freeCameraController;
+
+    [Header("Panels")]
+    [SerializeField] private GameObject volumeSettingsPanel;
+    [SerializeField] private GameObject cameraSettingsPanel;
+
     private void Awake()
     {
         backToNormalGamepauseButton.onClick.AddListener(() =>
@@ -41,7 +46,7 @@ public class SettingsUI : MonoBehaviour
 
         generalSettingsButton.onClick.AddListener(() =>
         {
-            //ShowGeneralSettings();
+            ShowGeneralSettings();
         });
 
         ShowMainButtons();
@@ -65,57 +70,87 @@ public class SettingsUI : MonoBehaviour
         cameraPanText.gameObject.SetActive(false);
     }
 
-    public void ShowVolumeSettings()
+    public void ShowGeneralSettings()
     {
         volumeSettingsButton.gameObject.SetActive(false);
         generalSettingsButton.gameObject.SetActive(false);
 
-        musicSlider.gameObject.SetActive(true);
-        effectsSlider.gameObject.SetActive(true);
-        musicVolumeText.gameObject.SetActive(true);
-        effectsVolumeText.gameObject.SetActive(true);
-    }
+        if (volumeSettingsPanel != null)
+            volumeSettingsPanel.SetActive(false);
+        if (cameraSettingsPanel != null)
+            cameraSettingsPanel.SetActive(true);
 
-    /*
-    private void ShowGeneralSettings()
-    {
-        volumeSettingsButton.gameObject.SetActive(false);
-        generalSettingsButton.gameObject.SetActive(false);
         cameraSpeedSlider.gameObject.SetActive(true);
         cameraPanSlider.gameObject.SetActive(true);
         cameraSpeedText.gameObject.SetActive(true);
         cameraPanText.gameObject.SetActive(true);
 
-        cameraSpeedSlider.value = freeCameraController.GetCameraSpeed();
-        cameraPanSlider.value = freeCameraController.GetCameraPan();
+        musicSlider.gameObject.SetActive(false);
+        effectsSlider.gameObject.SetActive(false);
+        musicVolumeText.gameObject.SetActive(false);
+        effectsVolumeText.gameObject.SetActive(false);
 
         cameraSpeedSlider.onValueChanged.AddListener(value =>
         {
             freeCameraController.SetCameraSpeed(value);
-            cameraSpeedText.text = $"Camera Speed: {value:F1}";
+            PlayerPrefs.SetFloat("CameraSpeed", value);
         });
 
         cameraPanSlider.onValueChanged.AddListener(value =>
         {
             freeCameraController.SetCameraPan(value);
-            cameraPanText.text = $"Camera Pan: {value:F1}";
+            PlayerPrefs.SetFloat("CameraPan", value);
         });
+
+
+        cameraSpeedSlider.SetValueWithoutNotify(freeCameraController.GetCameraSpeed());
+        cameraPanSlider.SetValueWithoutNotify(freeCameraController.GetCameraPan());
+
     }
-    */
+
+    public void ShowVolumeSettings()
+    {
+        volumeSettingsButton.gameObject.SetActive(false);
+        generalSettingsButton.gameObject.SetActive(false);
+
+        //ShowVolumeSettingsPanel();
+
+        musicSlider.gameObject.SetActive(true);
+        effectsSlider.gameObject.SetActive(true);
+        musicVolumeText.gameObject.SetActive(true);
+        effectsVolumeText.gameObject.SetActive(true);
+
+        musicSlider.SetValueWithoutNotify
+       (
+           PlayerPrefs.GetFloat("MusicVolume", 1.0f)
+       );
+
+        effectsSlider.SetValueWithoutNotify
+        (
+            PlayerPrefs.GetFloat("EffectsVolume", 1.0f)
+        );
+
+        musicSlider.onValueChanged.AddListener(Temporal_Sound_Music.Instance.SetMusicVolume);
+        effectsSlider.onValueChanged.AddListener(Temporal_Sound_Music.Instance.SetEffectsVolume);
+    }
 
     private void HideSettings()
     {
         gameObject.SetActive(false);
 
-        // Limpiar listeners para evitar duplicados
+        cameraSpeedSlider.onValueChanged.RemoveAllListeners();
+        cameraPanSlider.onValueChanged.RemoveAllListeners();
+
         cameraSpeedSlider.onValueChanged.RemoveAllListeners();
         cameraPanSlider.onValueChanged.RemoveAllListeners();
     }
 
     private void Update()
     {
-        // Actualizar dinámicamente los textos de volumen
         musicVolumeText.text = "Music Volume: " + Temporal_Sound_Music.Instance.GetMusicVolume().ToString("F1");
         effectsVolumeText.text = "Effects Volume: " + Temporal_Sound_Music.Instance.GetSoundVolume().ToString("F1");
+
+        cameraSpeedText.text = "Camera Speed: " + freeCameraController.GetCameraSpeed().ToString("F0");
+        cameraPanText.text = "Camera Pan: " + freeCameraController.GetCameraPan().ToString("F1");
     }
 }

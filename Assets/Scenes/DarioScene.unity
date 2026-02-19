@@ -2432,14 +2432,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1540668720}
     m_Modifications:
-    - target: {fileID: 179852306990270256, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 300745323638601459, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 770480595649665059, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: freeCameraController
       value: 
@@ -2524,33 +2516,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4521185516082977045, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4689611072982629624, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4715650906684309519, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4723596543205637888, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_Name
       value: GamePauseUI
-      objectReference: {fileID: 0}
-    - target: {fileID: 5565059815740731199, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5860608475855672509, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8931963588108777376, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4216,7 +4184,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0

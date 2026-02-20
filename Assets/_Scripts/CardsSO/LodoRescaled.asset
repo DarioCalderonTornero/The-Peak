@@ -28,3 +28,4 @@ MonoBehaviour:
   supportYOffset: 0.52
   placementCheckExtents: {x: 0.5, y: 2.55, z: 0.5}
   gridSize: {x: 1, y: 1}
+  decalOffset: {x: 0.5, y: 0.5}

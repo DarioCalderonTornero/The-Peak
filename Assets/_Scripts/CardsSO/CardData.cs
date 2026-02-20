@@ -36,4 +36,7 @@ public class CardData : ScriptableObject
     [Header("Configuración de Grilla")]
     // NUEVO: Tamaño en casillas (Ej: 1x1, 2x2, 3x1)
     public Vector2Int gridSize = new Vector2Int(1, 1);
+
+    [Header("Decal Grid Offset")]
+    public Vector2 decalOffset = Vector2.zero;
 }

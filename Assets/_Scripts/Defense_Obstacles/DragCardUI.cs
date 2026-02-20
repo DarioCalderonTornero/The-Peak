@@ -371,28 +371,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (globalDecal != null)
             {
-                // 1. Posicionamos el proyector
-                globalDecal.transform.position = gridInfo.position + Vector3.up * 5f;
+                // Offset físico: si la dimensión es impar, mover 0.5 unidades en ese eje
+                float physOffsetX = (cardData.gridSize.x % 2 != 0) ? 0.5f : 0f;
+                float physOffsetZ = (cardData.gridSize.y % 2 != 0) ? 0.5f : 0f;
 
-                // 2. Calculamos el desfase (Offset) para que la rejilla encaje siempre
-                // Si el tamaño es impar, necesitamos desplazar la textura 0.5 unidades
-                float offsetX = (cardData.gridSize.x % 2 != 0) ? 0.5f : 0f;
-                float offsetZ = (cardData.gridSize.y % 2 != 0) ? 0.5f : 0f;
+                globalDecal.transform.position = new Vector3(
+                    gridInfo.position.x + physOffsetX,
+                    gridInfo.position.y + 5f,
+                    gridInfo.position.z + physOffsetZ
+                );
 
-                // 3. Aplicamos el Tiling y el Offset al material del Decal
-                // HDRP usa el nombre de propiedad "_BaseColorMap_ST" para Tiling (x,y) y Offset (z,w)
-                Material decalMat = globalDecal.material;
-                if (decalMat != null)
-                {
-                    // Vector4( TilingX, TilingY, OffsetX, OffsetY )
-                    // Dividimos el offset por el tamaño para normalizarlo al espacio UV
-                    decalMat.SetVector("_BaseColorMap_ST", new Vector4(
-                        globalDecal.size.x,
-                        globalDecal.size.z,
-                        offsetX,
-                        offsetZ
-                    ));
-                }
+                // uvBias a 0, sin tocar el material
+                globalDecal.uvBias = new Vector2(0f, 0f);
 
                 if (!globalDecal.enabled) globalDecal.enabled = true;
             }

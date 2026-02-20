@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class FreeCameraController : MonoBehaviour
+public class FreeCameraMovement : MonoBehaviour
 {
     // =========================================================
     //  CONFIG
@@ -101,6 +101,15 @@ public class FreeCameraController : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance != null &&
+           (GameManager.Instance.CurrentState == GameManager.GameState.Cinematic ||
+            GameManager.Instance.CurrentState == GameManager.GameState.GamePause ||
+            GameManager.Instance.CurrentState == GameManager.GameState.GameOver ||
+            GameManager.Instance.CurrentState == GameManager.GameState.Initializing))
+        {
+            return;
+        }
+
         if (InputManager.Instance == null) return;
 
         // 1) Zoom siempre activo (rueda)

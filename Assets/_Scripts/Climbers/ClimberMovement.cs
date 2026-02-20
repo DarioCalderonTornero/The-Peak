@@ -266,31 +266,45 @@ public class ClimberMovement : MonoBehaviour
         if (isSelected) UpdatePathVisualization();
     }
 
+    private void TriggerDeath(DeathCause cause)
+    {
+        if (pointsAddedThisTurn) return;
+
+        PointsManager.Instance.AddPoints(10);
+        ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+            {
+                climber = this,
+                position = transform.position,
+                cause = cause
+            });
+        }
+
+        isActiveThisTurn = false;
+        isAtCamp = false;
+        pointsAddedThisTurn = true;
+
+        // Detenemos por completo al escalador para que la cámara pueda enfocarlo bien
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.enabled = false;
+        }
+
+        Debug.Log($"[ClimberMovement] Escalador ha muerto por: {cause}");
+        // IMPORTANTE: Ya no hay Destroy(gameObject) aquí.
+    }
+
     // ================= UPDATE Y LÓGICA =================
 
     private void Update()
     {
         if (currentStamina <= 0f && !pointsAddedThisTurn)
         {
-            PointsManager.Instance.AddPoints(10);
-            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-                {
-                    climber = this,
-                    position = transform.position,
-                    cause = DeathCause.Cold 
-                });
-            }
-
-            isActiveThisTurn = false;
-            isAtCamp = false;
-            pointsAddedThisTurn = true;
-            Debug.Log("Stamina = 0");
-
-            Destroy(gameObject);
+            TriggerDeath(DeathCause.Stamina);
             return;
         }
 
@@ -432,7 +446,7 @@ public class ClimberMovement : MonoBehaviour
     {
         if (currentNode != null && nodeVisitCount.ContainsKey(currentNode.id) && nodeVisitCount[currentNode.id] >= maxVisitsToDie)
         {
-            Destroy(gameObject); return null;
+            TriggerDeath(DeathCause.Stamina);
         }
         if (currentNode == null || currentNode.neighbors == null || currentNode.neighbors.Count == 0) return null;
 

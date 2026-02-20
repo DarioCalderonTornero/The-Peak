@@ -9,6 +9,7 @@ public enum DeathCause
     Quicksand,
     Fall,
     Geyser,
+    Stamina,
     Cold
 }
 

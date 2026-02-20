@@ -25,7 +25,7 @@ public class SettingsUI : MonoBehaviour
     [SerializeField] private Button generalSettingsButton;
 
     [Header("References")]
-    [SerializeField] private FreeCameraController freeCameraController;
+    [SerializeField] private FreeCameraMovement freeCameraController;
 
     [Header("Panels")]
     [SerializeField] private GameObject volumeSettingsPanel;

@@ -82,7 +82,7 @@ public class Temporal_Sound_Music : MonoBehaviour
     private void GameManager_OnClimberDead(GameManager.DeathInfo obj)
     {
         //Debug.Log("PlayDeathSound");
-        PlayDeathSound();
+        //PlayDeathSound();
     }
 
 

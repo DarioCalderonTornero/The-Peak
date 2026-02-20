@@ -17,8 +17,8 @@ public class GameManager : MonoBehaviour
         Tutorial,
         Playing,
         GamePause,
-        CinematicDeath,
-        GameOver
+        GameOver,
+        Cinematic 
     }
 
     [Serializable]
@@ -35,7 +35,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private List<DeathEffectConfigSO> deathEffectConfigs;
 
     private Dictionary<DeathCause, DeathEffectConfigSO> deathEffectDictionary;
-
 
     [Header("Game State")]
     [SerializeField] private GameState currentState = GameState.Initializing;
@@ -108,44 +107,30 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // LÓGICA DE MUERTE
+    // =========================================================
+
     public void NotifyClimberDied(DeathInfo info)
     {
-        DeathEffectConfigSO deathEffectConfig = GetDeathEffectConfig(info.cause);
-        ApplyDeathEffects(info.climber, deathEffectConfig);
+        // Solo notificamos al resto del juego que ha muerto. 
+        // El DeathCinematicManager lo escuchará e iniciará la cinemática.
         OnClimberDead?.Invoke(info);
     }
 
-    private DeathEffectConfigSO GetDeathEffectConfig(DeathCause cause)
+    // AHORA ES PÚBLICO: Permite al DeathCinematicManager obtener los efectos visuales
+    public DeathEffectConfigSO GetDeathEffectConfig(DeathCause cause)
     {
         if (deathEffectDictionary.ContainsKey(cause))
         {
             return deathEffectDictionary[cause];
         }
 
-        Debug.LogWarning($"No se encontró configuración para la causa de muerte: {cause}");
+        Debug.LogWarning($"[GameManager] No se encontró configuración para la causa de muerte: {cause}");
         return null;
     }
 
-    private void ApplyDeathEffects(ClimberMovement climber, DeathEffectConfigSO config)
-    {
-        if (config == null)
-        {
-            Debug.LogWarning("[GameManager] Config de efectos de muerte es null, no se aplicarán efectos visuales o sonoros.");
-            return;
-        }
-
-        Debug.Log("Funciona");
-
-        if (config.deathAudioClip != null)
-        {
-            //AudioSource.PlayClipAtPoint(config.deathAudioClip, climber.transform.position);
-        }
-
-        if (climber.GetComponent<Animator>() && config.deathAnimationClip != null)
-        {
-            //climber.GetComponent<Animator>().Play(config.deathAnimationClip.name);
-        }
-    }
+    // =========================================================
 
     private void AutoAssignManagers()
     {

@@ -226,6 +226,22 @@ public class LodoDefense : BaseDefense
 
     private IEnumerator QuickAbsorbAndKill(ClimberMovement climber, MudClimberData data)
     {
+        // 1. AVISAMOS AL MANAGER NADA MÁS EMPEZAR (Para que la cámara venga a mirar)
+        if (climber != null && GameManager.Instance != null)
+        {
+            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+            {
+                climber = climber,
+                position = climber.transform.position,
+                cause = DeathCause.Mud
+            });
+
+            // Damos los puntos aquí también
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+            PointsManager.Instance.AddPoints(10);
+        }
+
+        // 2. HACEMOS EL HUNDIMIENTO VISUAL (La cámara lo estará grabando)
         NavMeshAgent agent = data.agent != null ? data.agent : climber.GetComponent<NavMeshAgent>();
 
         if (agent != null && data.hasInitialOffset)
@@ -257,27 +273,11 @@ public class LodoDefense : BaseDefense
             }
         }
 
-        if (climber != null)
-        {
-            Vector3 pos = climber.transform.position;
+        // 3. ELIMINAMOS EL DESTROY DEL ESCALADOR
+        // ¡Ya no hacemos Destroy(climber.gameObject)! El DeathCinematicManager lo hará luego.
 
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-                {
-                    climber = climber,
-                    position = pos,
-                    cause = DeathCause.Mud
-                });
-            }
-
-            Destroy(climber.gameObject);
-            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            PointsManager.Instance.AddPoints(10);
-        }
-
+        // Destruimos el charco de lodo (opcional: puedes ponerle un pequeño delay o animación de desaparecer si quieres)
         Destroy(gameObject);
-
     }
 
     private IEnumerator RestoreBaseOffset(ClimberMovement climber, MudClimberData data)

@@ -2079,7 +2079,7 @@ MonoBehaviour:
     m_Bits: 64
   cameraDistance: 20
   heightOffset: 20
-  sideOffset: 100
+  sideOffset: -20
   blendInTime: 2
   delayAfterAnim: 1
 --- !u!1 &639492198
@@ -4526,6 +4526,7 @@ MonoBehaviour:
   deathEffectConfigs:
   - {fileID: 11400000, guid: 6fabd4abc922f964bb00722ea52522c5, type: 2}
   - {fileID: 11400000, guid: 407b06f7624047c47ac32a7a0455d773, type: 2}
+  - {fileID: 11400000, guid: 7d6a38ea675daaf4f9ed45c48f7c844a, type: 2}
   currentState: 0
   turnManager: {fileID: 675079561}
   spawnManager: {fileID: 1116203805}
@@ -4637,12 +4638,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124537430}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1827429946}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1124537432
 MonoBehaviour:
@@ -7042,7 +7043,6 @@ Transform:
   - {fileID: 1116203804}
   - {fileID: 678668240}
   - {fileID: 329752561}
-  - {fileID: 1124537431}
   - {fileID: 1089094620}
   - {fileID: 1708585714}
   - {fileID: 1634201594}
@@ -8473,6 +8473,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1827429946}
+  - {fileID: 1124537431}
   - {fileID: 1681812316}
   - {fileID: 1540668720}
   - {fileID: 1922772673}

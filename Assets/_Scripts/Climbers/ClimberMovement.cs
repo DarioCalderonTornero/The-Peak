@@ -447,6 +447,7 @@ public class ClimberMovement : MonoBehaviour
         if (currentNode != null && nodeVisitCount.ContainsKey(currentNode.id) && nodeVisitCount[currentNode.id] >= maxVisitsToDie)
         {
             TriggerDeath(DeathCause.Stamina);
+            return null;
         }
         if (currentNode == null || currentNode.neighbors == null || currentNode.neighbors.Count == 0) return null;
 

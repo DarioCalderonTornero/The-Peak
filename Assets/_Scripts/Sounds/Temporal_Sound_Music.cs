@@ -148,13 +148,50 @@ public class Temporal_Sound_Music : MonoBehaviour
         AudioSource aSource = audioObj.GetComponent<AudioSource>();
         aSource.clip = clip;
         aSource.volume = volume * masterVolume * effectsVolume;
-        aSource.spatialBlend = 1.0f;
-        aSource.rolloffMode = AudioRolloffMode.Logarithmic;
-        aSource.maxDistance = 15f;
+
+        // --- CONFIGURACIÓN 3D ARREGLADA ---
+        aSource.spatialBlend = 1.0f; // 100% 3D
+
+        // Usamos Linear para que el volumen baje de forma suave y predecible
+        aSource.rolloffMode = AudioRolloffMode.Linear;
+
+        // Mientras la cámara esté a menos de 10 metros, se escuchará al 100% de volumen
+        aSource.minDistance = 30;
+
+        // El sonido desaparecerá por completo si la cámara se aleja a más de 50 metros
+        aSource.maxDistance = 150;
+        // ----------------------------------
+
         aSource.Play();
 
         // En lugar de Destroy, iniciamos corrutina para devolver al pool
         StartCoroutine(ReturnToPool(audioObj, clip.length));
+    }
+
+    public void Play2DSound(AudioClip clip, float volume = 1.0f)
+    {
+        if (clip == null) return;
+
+        // Usamos el Pool igual que en el 3D
+        GameObject audioObj = null;
+        if (sfxPool.Count > 0) audioObj = sfxPool.Dequeue();
+        else audioObj = CreateNewPoolObject();
+
+        audioObj.SetActive(true);
+        // ¡No importa la posición porque es 2D!
+
+        AudioSource aSource = audioObj.GetComponent<AudioSource>();
+        aSource.clip = clip;
+        aSource.volume = volume * masterVolume * effectsVolume;
+
+        // --- ESTA ES LA MAGIA DEL 2D ---
+        aSource.spatialBlend = 0f; // 0 = 100% 2D (Suena igual en todas partes)
+        // -------------------------------
+
+        aSource.Play();
+
+        // Le damos 0.2 segundos extra de margen para que la "cola" del sonido no se corte
+        StartCoroutine(ReturnToPool(audioObj, clip.length + 0.2f));
     }
 
     private IEnumerator ReturnToPool(GameObject obj, float delay)

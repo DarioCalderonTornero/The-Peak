@@ -120,16 +120,27 @@ public class DeathCinematicManager : MonoBehaviour
             // Esperamos a que la cámara llegue (Blend Time)
             yield return new WaitForSeconds(blendInTime);
 
+            if (currentDeath.climber == null)
+            {
+                Debug.LogWarning("[DeathCinematicManager] ¡Un script externo ha destruido al escalador antes de tiempo! Ignorando efectos...");
+
+                // Si es el último, devolvemos la cámara
+                if (deathQueue.Count <= 1) deathCamera.Priority = 0;
+                continue; // Saltamos a la siguiente muerte para que no crashee
+            }
+
             // --- 3. REPRODUCIR EFECTOS ---
             DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeath.cause);
-            float animDuration = 1.0f; // Duración por defecto si no hay configuración
+            float animDuration = 1.0f; // Duración por defecto
+            float audioDuration = 0f;  // Nueva variable para el audio
 
             if (config != null)
             {
-                // Reproducir Sonido
+                // Reproducir Sonido (AHORA EN 2D PURO)
                 if (config.deathAudioClip != null)
                 {
-                    Temporal_Sound_Music.Instance.PlaySound(config.deathAudioClip, 1f);
+                    audioDuration = config.deathAudioClip.length;
+                    Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
                 }
 
                 // Reproducir Animación
@@ -138,21 +149,23 @@ public class DeathCinematicManager : MonoBehaviour
                     Animator anim = currentDeath.climber.GetComponentInChildren<Animator>();
                     if (anim != null)
                     {
-                        // Le decimos al Animator que reproduzca EXACTAMENTE el nombre del clip de tu Scriptable Object
                         anim.Play(config.deathAnimationClip.name);
-
-                        // Guardamos lo que dura para que la cámara espere
                         animDuration = config.deathAnimationClip.length;
                     }
                 }
             }
 
-            // Esperamos lo que dure la animación + el tiempo de gracia
-            yield return new WaitForSeconds(animDuration + delayAfterAnim);
+            // --- NUEVO: ESPERAR DE FORMA INTELIGENTE ---
+            // Calculamos qué dura más, si la animación o el sonido
+            float timeToWait = Mathf.Max(animDuration, audioDuration);
+
+            // Esperamos ese tiempo + el tiempo de gracia
+            yield return new WaitForSeconds(timeToWait + delayAfterAnim);
 
             // --- 4. RESOLUCIÓN ---
             // AHORA SÍ, destruimos al escalador
             Destroy(currentDeath.climber.gameObject);
+            Debug.Log($"[DeathCinematicManager] Escalador {currentDeath.climber.name} destruido después de la cinemática.");
 
             // Bajamos la prioridad de la cámara para que vuelva a la vista general si es la última muerte
             // Si hay más en la cola, simplemente saltará a la siguiente

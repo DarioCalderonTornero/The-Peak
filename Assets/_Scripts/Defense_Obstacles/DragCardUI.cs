@@ -371,9 +371,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (globalDecal != null)
             {
-                // Offset físico: si la dimensión es impar, mover 0.5 unidades en ese eje
-                float physOffsetX = (cardData.gridSize.x % 2 != 0) ? 0.5f : 0f;
-                float physOffsetZ = (cardData.gridSize.y % 2 != 0) ? 0.5f : 0f;
+                int padding = 2;
+                float newSizeX = cardData.gridSize.x + padding;
+                float newSizeZ = cardData.gridSize.y + padding;
+
+                globalDecal.size = new Vector3(newSizeX, newSizeZ, globalDecal.size.z);
+                globalDecal.uvScale = new Vector2(newSizeX, newSizeZ);
+
+                // Offset físico: solo la diferencia de paridad entre el objeto y el nuevo size
+                // Si ambos son impares o ambos pares → se anulan → offset 0
+                // Si uno es par y otro impar → offset 0.5
+                float physOffsetX = (cardData.gridSize.x % 2 != newSizeX % 2) ? 0.5f : 0f;
+                float physOffsetZ = (cardData.gridSize.y % 2 != newSizeZ % 2) ? 0.5f : 0f;
 
                 globalDecal.transform.position = new Vector3(
                     gridInfo.position.x + physOffsetX,
@@ -381,7 +390,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     gridInfo.position.z + physOffsetZ
                 );
 
-                // uvBias a 0, sin tocar el material
                 globalDecal.uvBias = new Vector2(0f, 0f);
 
                 if (!globalDecal.enabled) globalDecal.enabled = true;

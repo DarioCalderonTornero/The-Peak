@@ -1,5 +1,6 @@
 ﻿// DragCardUI.cs
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -85,6 +86,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     [Header("Rejilla Global HDRP")]
     private UnityEngine.Rendering.HighDefinition.DecalProjector globalDecal;
+
+    [SerializeField] private GameObject occupiedCellMarkerPrefab;
+    [SerializeField] private int occupiedMarkerRange = 8; // radio alrededor del ratón
 
     private void Awake()
     {
@@ -308,6 +312,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             currentPreviewIsValid = false;
             isFreeRotating = false;
             isFreeScaling = false;
+            if (OccupiedCellMarkerManager.Instance != null)
+                OccupiedCellMarkerManager.Instance.HideAll();
             return;
         }
 
@@ -347,6 +353,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (gridInfo.hitFound)
             {
                 previewInstance.transform.position = gridInfo.position;
+                if (OccupiedCellMarkerManager.Instance != null)
+                    OccupiedCellMarkerManager.Instance.UpdateMarkersAround(gridInfo.position, occupiedMarkerRange, placementMask);
                 lastHitNormal = gridInfo.normal;
 
                 // Mover el Decal si existe
@@ -407,18 +415,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         rectTransform.anchoredPosition = new Vector2(originalPosition.x, rectTransform.anchoredPosition.y);
 
-        // Si sueltas encima de UI -> no colocar (mantener scale/rot)
+        // Si sueltas encima de UI -> no colocar
         if (IsPointerOverUI())
         {
             CleanupPreview();
-            ResetTransientStates(); // ✅ NO resetea rot/scale
+            ResetTransientStates();
             return;
         }
 
         if (!inPlacementMode || previewInstance == null)
         {
             CleanupPreview();
-            ResetTransientStates(); // ✅ NO resetea rot/scale
+            ResetTransientStates();
             return;
         }
 
@@ -445,73 +453,98 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         else
         {
-            // ✅ usa la rotación persistente
             finalPosition = previewInstance.transform.position;
             finalRotation = previewInstance.transform.rotation;
         }
 
+        // ✅ Validación FINAL (ya con grid occupancy)
         string placementReason = CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
         if (placementReason != "Válido")
         {
             StartCoroutine(ShakeCard());
             CleanupPreview();
-            ResetTransientStates(); // ✅ NO resetea rot/scale
+            ResetTransientStates();
             return;
         }
 
+        // ✅ Cobrar puntos
         bool placedOk = PointsManager.Instance != null && PointsManager.Instance.SpendPoints(cardData.cost);
-        if (placedOk)
-        {
-            Vector3 finalScale = originalPreviewScale * currentScaleFactor;
-
-            GameObject placed = DefensePlacer.Instance.PlaceDefense(
-                cardData.defensePrefab,
-                finalPosition,
-                finalRotation,
-                beforeInitialize: (go) =>
-                {
-                    var bramble = go.GetComponent<BrambleDefense>();
-                    if (bramble != null)
-                        bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
-                },
-                afterInitialize: (go) =>
-                {
-                    var lodo = go.GetComponent<LodoDefense>();
-                    if (lodo != null)
-                    {
-                        lodo.ApplyExternalScale(finalScale);
-                        return;
-                    }
-
-                    var arena = go.GetComponent<QuicksandDefense>();
-                    if (arena != null)
-                    {
-                        arena.ApplyExternalScale(finalScale);
-                        return;
-                    }
-
-                    go.transform.localScale = finalScale;
-                }
-            );
-
-            Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
-            CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.2f);
-
-            if (placed != null && DefensePlacementManager.Instance != null)
-                DefensePlacementManager.Instance.RegisterPlaced(placed);
-
-            OnCardUsed?.Invoke(this);
-
-            // ✅ AHORA SÍ: si quieres que al colocar se resetee para la próxima carta/nueva copia
-            ResetPersistentTransform(); // <-- quítalo si NO quieres resetear nunca
-        }
-        else
+        if (!placedOk)
         {
             StartCoroutine(ShakeCard());
+            CleanupPreview();
+            ResetTransientStates();
+            return;
         }
 
+        // ✅ Escala final
+        Vector3 finalScale = originalPreviewScale * currentScaleFactor;
+
+        GameObject placed = DefensePlacer.Instance.PlaceDefense(
+            cardData.defensePrefab,
+            finalPosition,
+            finalRotation,
+            beforeInitialize: (go) =>
+            {
+                var bramble = go.GetComponent<BrambleDefense>();
+                if (bramble != null)
+                    bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
+            },
+            afterInitialize: (go) =>
+            {
+                var lodo = go.GetComponent<LodoDefense>();
+                if (lodo != null)
+                {
+                    lodo.ApplyExternalScale(finalScale);
+                    return;
+                }
+
+                var arena = go.GetComponent<QuicksandDefense>();
+                if (arena != null)
+                {
+                    arena.ApplyExternalScale(finalScale);
+                    return;
+                }
+
+                go.transform.localScale = finalScale;
+            }
+        );
+
+        // ✅ Si por cualquier razón no se instanció, devolvemos puntos y salimos
+        if (placed == null)
+        {
+            // Si no tienes AddPoints, quita esto
+            if (PointsManager.Instance != null)
+                PointsManager.Instance.AddPoints(cardData.cost);
+
+            StartCoroutine(ShakeCard());
+            CleanupPreview();
+            ResetTransientStates();
+            return;
+        }
+
+        // ✅ REGISTRAR OCUPACIÓN POR CASILLAS (NO MESH)
+        if (GridOccupancyManager.Instance != null)
+        {
+            var cells = ComputeFootprintCells(finalPosition, finalRotation, cardData.gridSize);
+
+            var occ = placed.GetComponent<GridOccupant>();
+            if (occ == null) occ = placed.AddComponent<GridOccupant>();
+            occ.Init(cells);
+        }
+
+        Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
+        CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.2f);
+
+        if (DefensePlacementManager.Instance != null)
+            DefensePlacementManager.Instance.RegisterPlaced(placed);
+
+        OnCardUsed?.Invoke(this);
+
+        ResetPersistentTransform();
+
         CleanupPreview();
-        ResetTransientStates(); // ✅ flags a cero, pero rot/scale persisten salvo que hayas llamado ResetPersistentTransform()
+        ResetTransientStates();
     }
 
     private void EnterPlacementMode()
@@ -599,6 +632,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         if (globalDecal != null) globalDecal.enabled = false;
         currentPreviewIsValid = false;
+        if (OccupiedCellMarkerManager.Instance != null)
+            OccupiedCellMarkerManager.Instance.HideAll();
     }
 
     private bool IsPointerOverUI()
@@ -630,8 +665,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         Vector3 halfExtents = boxSize / 2f;
 
-        if (Physics.CheckBox(center, halfExtents, rotation, defenseMask))
-            return "Casilla ocupada";
+        if (GridOccupancyManager.Instance != null)
+        {
+            var footprint = ComputeFootprintCells(position, rotation, cardData.gridSize);
+            if (GridOccupancyManager.Instance.AnyOccupied(footprint))
+                return "Casilla ocupada";
+        }
 
         if (Physics.CheckBox(center, halfExtents, rotation, campMask))
             return "Demasiado cerca de un campamento";
@@ -973,6 +1012,34 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             // Reset final de la matriz
             Gizmos.matrix = Matrix4x4.identity;
         }
+    }
+
+    private List<Vector2Int> ComputeFootprintCells(Vector3 worldPos, Quaternion rotation, Vector2Int gridSize)
+    {
+        var cells = new List<Vector2Int>(gridSize.x * gridSize.y);
+
+        float startX = -(gridSize.x / 2f) + 0.5f;
+        float startZ = -(gridSize.y / 2f) + 0.5f;
+
+        for (int x = 0; x < gridSize.x; x++)
+        {
+            for (int z = 0; z < gridSize.y; z++)
+            {
+                // Centro de cada casilla local dentro del footprint
+                Vector3 local = new Vector3(startX + x, 0f, startZ + z);
+
+                // Lo llevamos a mundo siguiendo la rotación del preview (incluye giro 90º y slope)
+                Vector3 world = worldPos + rotation * local;
+
+                // Convertimos a coordenadas de casilla (centros están en enteros)
+                int cx = Mathf.RoundToInt(world.x);
+                int cz = Mathf.RoundToInt(world.z);
+
+                cells.Add(new Vector2Int(cx, cz));
+            }
+        }
+
+        return cells;
     }
 
     private void OnDestroy()

@@ -300,6 +300,8 @@ MonoBehaviour:
   minRelativeScale: 0.2
   maxRelativeScale: 2.5
   freeScaleSensitivity: 0.005
+  occupiedCellMarkerPrefab: {fileID: 3889820358834879660, guid: 0ac483a1a4c0b384bbdf3def7bfaf468, type: 3}
+  occupiedMarkerRange: 8
   showGlobalGrid: 1
   gridViewRange: 20
 --- !u!225 &2838217454017087479

@@ -652,6 +652,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return "Pendiente demasiado pronunciada";
         }
 
+        // ✅ NUEVO: exigir que TODAS las casillas del footprint tengan suelo (montaña) debajo
+        if (!HasFullFootprintGround(position, rotation, cardData.gridSize))
+            return "Fuera del suelo";
+
         // 2. Comprobar colisiones (Grilla)
         // Usamos el tamaño de la grilla definido en CardData
         Vector3 boxSize = new Vector3(
@@ -1040,6 +1044,34 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         return cells;
+    }
+
+    private bool HasFullFootprintGround(Vector3 position, Quaternion rotation, Vector2Int gridSize)
+    {
+        // Ajusta si quieres: altura de inicio y distancia máxima
+        const float rayStartHeight = 10f;
+        const float rayMaxDistance = 50f;
+
+        // Centros locales de las casillas del footprint (igual que ComputeFootprintCells)
+        float startX = -(gridSize.x / 2f) + 0.5f;
+        float startZ = -(gridSize.y / 2f) + 0.5f;
+
+        for (int x = 0; x < gridSize.x; x++)
+        {
+            for (int z = 0; z < gridSize.y; z++)
+            {
+                Vector3 local = new Vector3(startX + x, 0f, startZ + z);
+                Vector3 world = position + rotation * local;
+
+                Vector3 rayOrigin = world + Vector3.up * rayStartHeight;
+
+                // IMPORTANTE: solo placementMask (montaña)
+                if (!Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, rayMaxDistance, placementMask))
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     private void OnDestroy()

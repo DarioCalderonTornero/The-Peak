@@ -2082,6 +2082,7 @@ MonoBehaviour:
   sideOffset: -20
   blendInTime: 2
   delayAfterAnim: 1
+  useDeathCinematics: 1
 --- !u!1 &639492198
 GameObject:
   m_ObjectHideFlags: 0

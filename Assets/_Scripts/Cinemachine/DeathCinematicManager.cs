@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Cinemachine; // Importante para Cinemachine 3
 using UnityEngine;
 using UnityEngine.AI;
+using static UnityEngine.Rendering.STP;
 
 public class DeathCinematicManager : MonoBehaviour
 {
@@ -27,6 +28,10 @@ public class DeathCinematicManager : MonoBehaviour
     [SerializeField] private float blendInTime = 1.0f;
     [Tooltip("Tiempo de gracia extra después de la animación de muerte antes de volver.")]
     [SerializeField] private float delayAfterAnim = 1.0f;
+
+    [Header("Ajustes de Control")]
+    [Tooltip("Si se desactiva, no habrá cinemática y el escalador morirá instantáneamente.")]
+    [SerializeField] private bool useDeathCinematics = true;
 
     // La cola de muertes pendientes
     private Queue<GameManager.DeathInfo> deathQueue = new Queue<GameManager.DeathInfo>();
@@ -75,7 +80,18 @@ public class DeathCinematicManager : MonoBehaviour
 
     private void HandleClimberDeath(GameManager.DeathInfo deathInfo)
     {
-        // 1. Pausamos la lógica del escalador para que no se mueva (si sigue vivo por físicas)
+        if (!useDeathCinematics)
+        {
+            //DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeath.cause);
+            if (deathInfo.climber != null)
+            {
+                //Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
+                Destroy(deathInfo.climber.gameObject);
+            }
+            return;
+        }
+
+        // --- Si el sistema está activado, procedemos como antes ---
         if (deathInfo.climber != null)
         {
             deathInfo.climber.SetExternalSpeedMultiplier(0f);
@@ -83,10 +99,8 @@ public class DeathCinematicManager : MonoBehaviour
             if (agent != null) agent.enabled = false;
         }
 
-        // 2. Metemos la muerte en la cola
         deathQueue.Enqueue(deathInfo);
 
-        // 3. Si no estamos ya reproduciendo una cinemática, la iniciamos
         if (!isPlayingCinematic)
         {
             StartCoroutine(ProcessDeathQueue());
@@ -124,19 +138,17 @@ public class DeathCinematicManager : MonoBehaviour
             {
                 Debug.LogWarning("[DeathCinematicManager] ¡Un script externo ha destruido al escalador antes de tiempo! Ignorando efectos...");
 
-                // Si es el último, devolvemos la cámara
                 if (deathQueue.Count <= 1) deathCamera.Priority = 0;
                 continue; // Saltamos a la siguiente muerte para que no crashee
             }
 
             // --- 3. REPRODUCIR EFECTOS ---
             DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeath.cause);
-            float animDuration = 1.0f; // Duración por defecto
-            float audioDuration = 0f;  // Nueva variable para el audio
+            float animDuration = 1.0f; 
+            float audioDuration = 0f;  
 
             if (config != null)
             {
-                // Reproducir Sonido (AHORA EN 2D PURO)
                 if (config.deathAudioClip != null)
                 {
                     audioDuration = config.deathAudioClip.length;
@@ -156,14 +168,12 @@ public class DeathCinematicManager : MonoBehaviour
             }
 
             // --- NUEVO: ESPERAR DE FORMA INTELIGENTE ---
-            // Calculamos qué dura más, si la animación o el sonido
             float timeToWait = Mathf.Max(animDuration, audioDuration);
 
             // Esperamos ese tiempo + el tiempo de gracia
             yield return new WaitForSeconds(timeToWait + delayAfterAnim);
 
             // --- 4. RESOLUCIÓN ---
-            // AHORA SÍ, destruimos al escalador
             Destroy(currentDeath.climber.gameObject);
             Debug.Log($"[DeathCinematicManager] Escalador {currentDeath.climber.name} destruido después de la cinemática.");
 
@@ -202,7 +212,7 @@ public class DeathCinematicManager : MonoBehaviour
             // 3. Calculamos la posición final sumando todo
             safePos = climberTransform.position
                       + (outwardsDirection * cameraDistance)
-                      + (sideDirection * sideOffset); // <-- APLICAMOS EL LADO
+                      + (sideDirection * sideOffset); 
 
             safePos.y += heightOffset;
         }

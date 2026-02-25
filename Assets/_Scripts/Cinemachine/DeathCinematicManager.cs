@@ -195,36 +195,62 @@ public class DeathCinematicManager : MonoBehaviour
     /// <summary>
     /// Calcula una posición segura para la cámara basada en la normal de la montaña.
     /// </summary>
+    /// <summary>
+    /// Calcula una posición segura para la cámara evaluando colisiones laterales.
+    /// </summary>
     private void CalculateCameraAnchorPosition(Transform climberTransform)
     {
-        Vector3 origin = climberTransform.position + Vector3.up * 0.5f;
-        Vector3 safePos;
+        // 1. Definimos desde dónde mira la cámara (la cabeza/pecho del escalador)
+        Vector3 headPosition = climberTransform.position + (Vector3.up * 1.5f);
+        Vector3 baseOrigin = climberTransform.position + (Vector3.up * 0.5f);
 
-        // Lanzamos un raycast hacia abajo para detectar la pendiente exacta
-        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 5f, mountainLayer))
+        // 2. Obtenemos la normal del suelo para saber hacia dónde es "afuera" de la montaña
+        Vector3 outwardsDirection = Vector3.back; // Por defecto hacia atrás
+        if (Physics.Raycast(baseOrigin, Vector3.down, out RaycastHit groundHit, 5f, mountainLayer))
         {
-            // 1. Hacia afuera de la montaña
-            Vector3 outwardsDirection = hit.normal.normalized;
-
-            // 2. Hacia un lado (usamos la derecha del escalador)
-            Vector3 sideDirection = climberTransform.right;
-
-            // 3. Calculamos la posición final sumando todo
-            safePos = climberTransform.position
-                      + (outwardsDirection * cameraDistance)
-                      + (sideDirection * sideOffset); 
-
-            safePos.y += heightOffset;
-        }
-        else
-        {
-            // Fallback si el raycast falla
-            safePos = climberTransform.position
-                      + (Vector3.back * cameraDistance)
-                      + (climberTransform.right * sideOffset)
-                      + (Vector3.up * heightOffset);
+            outwardsDirection = groundHit.normal.normalized;
         }
 
-        cameraAnchor.position = safePos;
+        // 3. ¡LA MAGIA! Creamos una lista de direcciones a probar (Derecha -> Izquierda -> Centro)
+        Vector3[] sideDirectionsToTry = new Vector3[]
+        {
+            climberTransform.right,  // Plan A: A la derecha
+            -climberTransform.right, // Plan B: A la izquierda
+            Vector3.zero             // Plan C: Justo enfrente (sin desplazamiento lateral)
+        };
+
+        Vector3 finalSafePos = climberTransform.position;
+
+        // 4. Probamos cada dirección una por una
+        foreach (Vector3 sideDir in sideDirectionsToTry)
+        {
+            // Calculamos el punto teórico donde nos gustaría poner la cámara
+            Vector3 targetPos = climberTransform.position
+                              + (outwardsDirection * cameraDistance)
+                              + (sideDir * sideOffset)
+                              + (Vector3.up * heightOffset);
+
+            // Vector y distancia desde la cabeza hasta ese punto teórico
+            Vector3 directionToTarget = targetPos - headPosition;
+            float distanceToTarget = directionToTarget.magnitude;
+
+            // Lanzamos una "esfera gorda" (SphereCast) para ver si el camino está libre de rocas
+            // Usamos radio 0.5f para simular el volumen físico de la cámara
+            if (!Physics.SphereCast(headPosition, 0.5f, directionToTarget.normalized, out RaycastHit wallHit, distanceToTarget, mountainLayer))
+            {
+                // ¡Vía libre! No hemos chocado con nada. Este sitio es perfecto.
+                finalSafePos = targetPos;
+                break; // Salimos del bucle, ya hemos encontrado nuestro sitio
+            }
+            else
+            {
+                // Hemos chocado con una pared. 
+                // Guardamos una posición de "emergencia" pegada a la pared (por si todos los lados fallan)
+                finalSafePos = wallHit.point + (wallHit.normal * 0.5f);
+            }
+        }
+
+        // 5. Asignamos la posición ganadora al ancla
+        cameraAnchor.position = finalSafePos;
     }
 }

@@ -2077,9 +2077,9 @@ MonoBehaviour:
   mountainLayer:
     serializedVersion: 2
     m_Bits: 64
-  cameraDistance: 20
-  heightOffset: 20
-  sideOffset: -20
+  cameraDistance: 15
+  heightOffset: 35
+  sideOffset: 90
   blendInTime: 2
   delayAfterAnim: 1
   useDeathCinematics: 1
@@ -10938,7 +10938,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca7de3aefa901374ba29464584a3109a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CameraRadius: 1
+  CameraRadius: 0.2
   Decollision:
     Enabled: 1
     ObstacleLayers:
@@ -11166,7 +11166,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0

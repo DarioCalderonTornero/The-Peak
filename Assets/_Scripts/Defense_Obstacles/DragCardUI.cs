@@ -534,7 +534,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
-        CameraShake.Instance.SetCurrentStateCameraShake(4.0f, 5.5f, 0.2f);
+        CameraShake.Instance.ShakeMainCamera(4.0f, 5.5f, 0.2f);
 
         if (DefensePlacementManager.Instance != null)
             DefensePlacementManager.Instance.RegisterPlaced(placed);

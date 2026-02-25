@@ -25,9 +25,11 @@ public class DeathCinematicManager : MonoBehaviour
 
     [Header("Tiempos Cinemáticos")]
     [Tooltip("Tiempo de espera para que la cámara llegue al escalador antes de ejecutar la muerte.")]
-    [SerializeField] private float blendInTime = 1.0f;
+    [SerializeField] private float blendInTime = 2.0f;
     [Tooltip("Tiempo de gracia extra después de la animación de muerte antes de volver.")]
-    [SerializeField] private float delayAfterAnim = 1.0f;
+    [SerializeField] private float delayAfterAnim = 0.5f;
+    [Tooltip("Tiempo de espera desde que la cámara llega a la muerte hasta que salen las bandas negras")]
+    [SerializeField] private float delayAfterBlendCameras = 0.0f;
 
     [Header("Ajustes de Control")]
     [Tooltip("Si se desactiva, no habrá cinemática y el escalador morirá instantáneamente.")]
@@ -110,42 +112,66 @@ public class DeathCinematicManager : MonoBehaviour
     private IEnumerator ProcessDeathQueue()
     {
         isPlayingCinematic = true;
-
-        // Cambiamos el estado del juego para bloquear input y pausar turnos (Paso 3)
         GameManager.Instance.SetState(GameManager.GameState.Cinematic);
+
+        // 1. Apagamos la UI de golpe para limpiar la pantalla durante el vuelo
+        UIManager.Instance.HideAll();
+
+        // Variable para controlar que las bandas solo se animen en la primera muerte de la cola
+        bool barsAreShown = false;
 
         while (deathQueue.Count > 0)
         {
             GameManager.DeathInfo currentDeath = deathQueue.Dequeue();
 
-            // Si el escalador ya fue destruido por un error o bug externo, lo saltamos
             if (currentDeath.climber == null) continue;
 
-            // --- 1. CÁLCULO DE POSICIÓN DINÁMICA ---
             CalculateCameraAnchorPosition(currentDeath.climber.transform);
 
-            // --- 2. ENCUADRE DE CÁMARA ---
             deathCamera.Follow = cameraAnchor;
             deathCamera.LookAt = currentDeath.climber.transform;
-
-            // Subimos la prioridad para que Cinemachine haga el Blend hacia aquí
             deathCamera.Priority = 100;
 
-            // Esperamos a que la cámara llegue (Blend Time)
-            yield return new WaitForSeconds(blendInTime);
+            // --- EL VUELO DE LA CÁMARA (Sincronizado con las bandas) ---
+
+            // Calculamos en qué momento debemos dar la orden a las bandas.
+            // Si las bandas tardan 0.5s en animarse, lanzamos la orden 0.5s ANTES de que llegue la cámara.
+            float barsAnimationTime = 0.5f;
+            float waitBeforeBars = Mathf.Max(0f, blendInTime - barsAnimationTime);
+            float waitAfterBars = blendInTime - waitBeforeBars;
+
+            // 1. Esperamos la mayor parte del viaje de la cámara
+            yield return new WaitForSeconds(waitBeforeBars);
 
             if (currentDeath.climber == null)
             {
-                Debug.LogWarning("[DeathCinematicManager] ¡Un script externo ha destruido al escalador antes de tiempo! Ignorando efectos...");
-
+                Debug.LogWarning("[DeathCinematicManager] ¡Un script externo ha destruido al escalador antes de tiempo!");
                 if (deathQueue.Count <= 1) deathCamera.Priority = 0;
-                continue; // Saltamos a la siguiente muerte para que no crashee
+                continue;
             }
+
+            // 2. ¡AHORA SACAMOS LAS BANDAS! (Mientras la cámara da sus últimos metros de vuelo)
+            if (!barsAreShown)
+            {
+                if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
+                barsAreShown = true;
+            }
+
+            // 3. Esperamos el tiempo que le queda a la cámara para llegar a su destino
+            // Sumamos tu delayAfterBlendCameras por si quieres darle un extra de pausa
+            yield return new WaitForSeconds(waitAfterBars + delayAfterBlendCameras);
+
+            // --- 3. REPRODUCIR EFECTOS ---
 
             // --- 3. REPRODUCIR EFECTOS ---
             DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeath.cause);
             float animDuration = 1.0f; 
-            float audioDuration = 0f;  
+            float audioDuration = 0f;
+
+            if (CameraShake.Instance != null)
+            {
+                CameraShake.Instance.ShakeDeathCamera(3f, 10f, 0.2f);
+            }
 
             if (config != null)
             {
@@ -187,6 +213,10 @@ public class DeathCinematicManager : MonoBehaviour
             }
         }
 
+        if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
+
+        UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
+
         // Devolvemos el control al jugador
         GameManager.Instance.SetState(GameManager.GameState.Playing);
         isPlayingCinematic = false;
@@ -195,36 +225,61 @@ public class DeathCinematicManager : MonoBehaviour
     /// <summary>
     /// Calcula una posición segura para la cámara basada en la normal de la montaña.
     /// </summary>
+    /// <summary>
+    /// Calcula una posición segura para la cámara evaluando colisiones laterales.
+    /// </summary>
     private void CalculateCameraAnchorPosition(Transform climberTransform)
     {
-        Vector3 origin = climberTransform.position + Vector3.up * 0.5f;
-        Vector3 safePos;
+        // 1. Definimos desde dónde mira la cámara (la cabeza/pecho del escalador)
+        Vector3 headPosition = climberTransform.position + (Vector3.up * 1.5f);
+        Vector3 baseOrigin = climberTransform.position + (Vector3.up * 0.5f);
 
-        // Lanzamos un raycast hacia abajo para detectar la pendiente exacta
-        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 5f, mountainLayer))
+        // 2. Obtenemos la normal del suelo para saber hacia dónde es "afuera" de la montaña
+        Vector3 outwardsDirection = Vector3.back; // Por defecto hacia atrás
+        if (Physics.Raycast(baseOrigin, Vector3.down, out RaycastHit groundHit, 5f, mountainLayer))
         {
-            // 1. Hacia afuera de la montaña
-            Vector3 outwardsDirection = hit.normal.normalized;
-
-            // 2. Hacia un lado (usamos la derecha del escalador)
-            Vector3 sideDirection = climberTransform.right;
-
-            // 3. Calculamos la posición final sumando todo
-            safePos = climberTransform.position
-                      + (outwardsDirection * cameraDistance)
-                      + (sideDirection * sideOffset); 
-
-            safePos.y += heightOffset;
-        }
-        else
-        {
-            // Fallback si el raycast falla
-            safePos = climberTransform.position
-                      + (Vector3.back * cameraDistance)
-                      + (climberTransform.right * sideOffset)
-                      + (Vector3.up * heightOffset);
+            outwardsDirection = groundHit.normal.normalized;
         }
 
-        cameraAnchor.position = safePos;
+        Vector3[] sideDirectionsToTry = new Vector3[]
+        {
+            climberTransform.right,  
+            -climberTransform.right,
+            Vector3.zero             
+        };
+
+        Vector3 finalSafePos = climberTransform.position;
+
+        // 4. Probamos cada dirección una por una
+        foreach (Vector3 sideDir in sideDirectionsToTry)
+        {
+            // Calculamos el punto teórico donde nos gustaría poner la cámara
+            Vector3 targetPos = climberTransform.position
+                              + (outwardsDirection * cameraDistance)
+                              + (sideDir * sideOffset)
+                              + (Vector3.up * heightOffset);
+
+            // Vector y distancia desde la cabeza hasta ese punto teórico
+            Vector3 directionToTarget = targetPos - headPosition;
+            float distanceToTarget = directionToTarget.magnitude;
+
+            // Lanzamos una "esfera gorda" (SphereCast) para ver si el camino está libre de rocas
+            // Usamos radio 0.5f para simular el volumen físico de la cámara
+            if (!Physics.SphereCast(headPosition, 0.5f, directionToTarget.normalized, out RaycastHit wallHit, distanceToTarget, mountainLayer))
+            {
+                // ¡Vía libre! No hemos chocado con nada. Este sitio es perfecto.
+                finalSafePos = targetPos;
+                break; // Salimos del bucle, ya hemos encontrado nuestro sitio
+            }
+            else
+            {
+                // Hemos chocado con una pared. 
+                // Guardamos una posición de "emergencia" pegada a la pared (por si todos los lados fallan)
+                finalSafePos = wallHit.point + (wallHit.normal * 0.5f);
+            }
+        }
+
+        // 5. Asignamos la posición ganadora al ancla
+        cameraAnchor.position = finalSafePos;
     }
 }

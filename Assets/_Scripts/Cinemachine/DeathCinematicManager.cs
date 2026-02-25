@@ -25,9 +25,11 @@ public class DeathCinematicManager : MonoBehaviour
 
     [Header("Tiempos Cinemáticos")]
     [Tooltip("Tiempo de espera para que la cámara llegue al escalador antes de ejecutar la muerte.")]
-    [SerializeField] private float blendInTime = 1.0f;
+    [SerializeField] private float blendInTime = 2.0f;
     [Tooltip("Tiempo de gracia extra después de la animación de muerte antes de volver.")]
-    [SerializeField] private float delayAfterAnim = 1.0f;
+    [SerializeField] private float delayAfterAnim = 0.5f;
+    [Tooltip("Tiempo de espera desde que la cámara llega a la muerte hasta que salen las bandas negras")]
+    [SerializeField] private float delayAfterBlendCameras = 0.0f;
 
     [Header("Ajustes de Control")]
     [Tooltip("Si se desactiva, no habrá cinemática y el escalador morirá instantáneamente.")]
@@ -110,37 +112,56 @@ public class DeathCinematicManager : MonoBehaviour
     private IEnumerator ProcessDeathQueue()
     {
         isPlayingCinematic = true;
-
-        // Cambiamos el estado del juego para bloquear input y pausar turnos (Paso 3)
         GameManager.Instance.SetState(GameManager.GameState.Cinematic);
+
+        // 1. Apagamos la UI de golpe para limpiar la pantalla durante el vuelo
+        UIManager.Instance.HideAll();
+
+        // Variable para controlar que las bandas solo se animen en la primera muerte de la cola
+        bool barsAreShown = false;
 
         while (deathQueue.Count > 0)
         {
             GameManager.DeathInfo currentDeath = deathQueue.Dequeue();
 
-            // Si el escalador ya fue destruido por un error o bug externo, lo saltamos
             if (currentDeath.climber == null) continue;
 
-            // --- 1. CÁLCULO DE POSICIÓN DINÁMICA ---
             CalculateCameraAnchorPosition(currentDeath.climber.transform);
 
-            // --- 2. ENCUADRE DE CÁMARA ---
             deathCamera.Follow = cameraAnchor;
             deathCamera.LookAt = currentDeath.climber.transform;
-
-            // Subimos la prioridad para que Cinemachine haga el Blend hacia aquí
             deathCamera.Priority = 100;
 
-            // Esperamos a que la cámara llegue (Blend Time)
-            yield return new WaitForSeconds(blendInTime);
+            // --- EL VUELO DE LA CÁMARA (Sincronizado con las bandas) ---
+
+            // Calculamos en qué momento debemos dar la orden a las bandas.
+            // Si las bandas tardan 0.5s en animarse, lanzamos la orden 0.5s ANTES de que llegue la cámara.
+            float barsAnimationTime = 0.5f;
+            float waitBeforeBars = Mathf.Max(0f, blendInTime - barsAnimationTime);
+            float waitAfterBars = blendInTime - waitBeforeBars;
+
+            // 1. Esperamos la mayor parte del viaje de la cámara
+            yield return new WaitForSeconds(waitBeforeBars);
 
             if (currentDeath.climber == null)
             {
-                Debug.LogWarning("[DeathCinematicManager] ¡Un script externo ha destruido al escalador antes de tiempo! Ignorando efectos...");
-
+                Debug.LogWarning("[DeathCinematicManager] ¡Un script externo ha destruido al escalador antes de tiempo!");
                 if (deathQueue.Count <= 1) deathCamera.Priority = 0;
-                continue; // Saltamos a la siguiente muerte para que no crashee
+                continue;
             }
+
+            // 2. ¡AHORA SACAMOS LAS BANDAS! (Mientras la cámara da sus últimos metros de vuelo)
+            if (!barsAreShown)
+            {
+                if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
+                barsAreShown = true;
+            }
+
+            // 3. Esperamos el tiempo que le queda a la cámara para llegar a su destino
+            // Sumamos tu delayAfterBlendCameras por si quieres darle un extra de pausa
+            yield return new WaitForSeconds(waitAfterBars + delayAfterBlendCameras);
+
+            // --- 3. REPRODUCIR EFECTOS ---
 
             // --- 3. REPRODUCIR EFECTOS ---
             DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeath.cause);
@@ -187,6 +208,10 @@ public class DeathCinematicManager : MonoBehaviour
             }
         }
 
+        if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
+
+        UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
+
         // Devolvemos el control al jugador
         GameManager.Instance.SetState(GameManager.GameState.Playing);
         isPlayingCinematic = false;
@@ -211,12 +236,11 @@ public class DeathCinematicManager : MonoBehaviour
             outwardsDirection = groundHit.normal.normalized;
         }
 
-        // 3. ¡LA MAGIA! Creamos una lista de direcciones a probar (Derecha -> Izquierda -> Centro)
         Vector3[] sideDirectionsToTry = new Vector3[]
         {
-            climberTransform.right,  // Plan A: A la derecha
-            -climberTransform.right, // Plan B: A la izquierda
-            Vector3.zero             // Plan C: Justo enfrente (sin desplazamiento lateral)
+            climberTransform.right,  
+            -climberTransform.right,
+            Vector3.zero             
         };
 
         Vector3 finalSafePos = climberTransform.position;

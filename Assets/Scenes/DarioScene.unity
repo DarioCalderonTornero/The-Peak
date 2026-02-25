@@ -1360,7 +1360,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b46cadafb37c46b4eb8f3872b4094d23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noise: {fileID: 1299652167}
+  mainCameraNoise: {fileID: 1299652167}
+  deathCameraNoise: {fileID: 1053446992}
 --- !u!1 &337157747
 GameObject:
   m_ObjectHideFlags: 0
@@ -11175,6 +11176,7 @@ GameObject:
   - component: {fileID: 1053446991}
   - component: {fileID: 1053446990}
   - component: {fileID: 1053446988}
+  - component: {fileID: 1053446992}
   m_Layer: 0
   m_Name: DeathCinemachineCamera
   m_TagString: Untagged
@@ -11296,6 +11298,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Damping: 0
+--- !u!114 &1053446992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1053446986}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NoiseProfile: {fileID: 11400000, guid: 69ce8388f6785dd4c8c39915efece2f4, type: 2}
+  PivotOffset: {x: 0, y: 0, z: 0}
+  AmplitudeGain: 1
+  FrequencyGain: 1
+  m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &1054072325
 GameObject:
   m_ObjectHideFlags: 0

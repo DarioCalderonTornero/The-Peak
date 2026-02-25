@@ -166,7 +166,12 @@ public class DeathCinematicManager : MonoBehaviour
             // --- 3. REPRODUCIR EFECTOS ---
             DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeath.cause);
             float animDuration = 1.0f; 
-            float audioDuration = 0f;  
+            float audioDuration = 0f;
+
+            if (CameraShake.Instance != null)
+            {
+                CameraShake.Instance.ShakeDeathCamera(3f, 10f, 0.2f);
+            }
 
             if (config != null)
             {

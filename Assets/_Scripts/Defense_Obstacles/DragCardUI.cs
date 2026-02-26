@@ -92,6 +92,17 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private Vector3 lastGroundForward = Vector3.forward;
 
+
+    private RaycastHit lastPlacementHit;
+    private bool hasLastPlacementHit = false;
+
+    private SegmentGridSettings activeSegment = null;
+    private bool usingSegmentGrid = false;
+
+    // cache del último footprint real
+    private readonly List<CellKey> currentFootprintKeys = new List<CellKey>(32);
+
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -172,6 +183,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             // ✅ Forzamos que se actualice la rotación con la inclinación actual
             ApplyRotationFromNormalAndYaw();
+
+            if (hasLastPlacementHit)
+                UpdatePlacementFromHit(lastPlacementHit);
         }
 
         // ❌ BORRA ESTA LÍNEA: previewInstance.transform.rotation = targetRotation;
@@ -183,13 +197,21 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         Vector3 up = lastHitNormal;
 
-        // Rotación base: alineada con el segmento (yaw del suelo) + normal (inclinación)
-        Quaternion groundRot = Quaternion.LookRotation(lastGroundForward, up);
+        // Yaw en ejes del mundo (0/90/180/270) -> coherente con casillas
+        Quaternion yawWorld = Quaternion.Euler(0f, currentRotationDegrees, 0f);
 
-        // Tu rotación del jugador, pero girando alrededor de la normal (no del Y global)
-        Quaternion yawAroundNormal = Quaternion.AngleAxis(currentRotationDegrees, up);
+        // Forward del mundo rotado por yaw, proyectado en el plano de la normal
+        Vector3 desiredFwd = yawWorld * Vector3.forward;
+        Vector3 fwdOnPlane = Vector3.ProjectOnPlane(desiredFwd, up).normalized;
 
-        previewInstance.transform.rotation = yawAroundNormal * groundRot;
+        if (fwdOnPlane.sqrMagnitude < 0.0001f)
+        {
+            // fallback
+            desiredFwd = yawWorld * Vector3.right;
+            fwdOnPlane = Vector3.ProjectOnPlane(desiredFwd, up).normalized;
+        }
+
+        previewInstance.transform.rotation = Quaternion.LookRotation(fwdOnPlane, up);
     }
 
     private void UpdateFreeRotation()
@@ -315,6 +337,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             currentPreviewIsValid = false;
             isFreeRotating = false;
             isFreeScaling = false;
+            usingSegmentGrid = false;
+            activeSegment = null;
+            currentFootprintKeys.Clear();
+
             if (OccupiedCellMarkerManager.Instance != null)
                 OccupiedCellMarkerManager.Instance.HideAll();
             return;
@@ -324,88 +350,70 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return;
 
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
+        if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
+            return;
+
+        // Guardar último hit para re-snap si giras sin mover ratón
+        hasLastPlacementHit = true;
+        lastPlacementHit = hit;
+
+        // Crear preview si no existe
+        if (previewInstance == null)
         {
-            if (previewInstance == null)
-            {
-                previewInstance = Instantiate(cardData.defensePrefab);
-                DisablePreviewLogic(previewInstance);
+            previewInstance = Instantiate(cardData.defensePrefab);
+            DisablePreviewLogic(previewInstance);
 
-                // 1. CAPTURAR ESCALA ORIGINAL (Vital para que no sea 0)
-                originalPreviewScale = previewInstance.transform.localScale;
-                if (originalPreviewScale.sqrMagnitude == 0) originalPreviewScale = Vector3.one;
+            originalPreviewScale = previewInstance.transform.localScale;
+            if (originalPreviewScale.sqrMagnitude == 0) originalPreviewScale = Vector3.one;
 
-                // 2. AÑADIR VISUALIZADOR DE GRILLA
-                var visualizer = previewInstance.AddComponent<RuntimeGridVisualizer>();
-                visualizer.Setup(cardData.gridSize);
+            var visualizer = previewInstance.AddComponent<RuntimeGridVisualizer>();
+            visualizer.Setup(cardData.gridSize);
 
-                // 3. APLICAR ESCALA INICIAL
-                ApplyScaleFactorToPreview(currentScaleFactor);
+            ApplyScaleFactorToPreview(currentScaleFactor);
 
-                currentPreviewIsValid = false;
-                ApplyPreviewMaterial(false);
+            currentPreviewIsValid = false;
+            ApplyPreviewMaterial(false);
 
-                bramblePreviewSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-                var bramble = previewInstance.GetComponent<BrambleDefense>();
-                if (bramble != null)
-                    bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
-            }
+            bramblePreviewSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            var bramble = previewInstance.GetComponent<BrambleDefense>();
+            if (bramble != null)
+                bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
+        }
 
-            GridPlacementInfo gridInfo = GetSnappedInfoOnRampa(hit.point, cardData.gridSize.x, cardData.gridSize.y);
+        // ✅ NUEVO: colocar usando el sistema correcto (segmento o global)
+        UpdatePlacementFromHit(hit);
 
-            if (gridInfo.hitFound)
-            {
-                previewInstance.transform.position = gridInfo.position;
-                if (OccupiedCellMarkerManager.Instance != null)
-                    OccupiedCellMarkerManager.Instance.UpdateMarkersAround(gridInfo.position, occupiedMarkerRange, placementMask);
-                lastHitNormal = gridInfo.normal;
-                lastGroundForward = gridInfo.groundForward;
+        // Markers alrededor del preview (si quieres, mantenlos solo para global)
+        if (OccupiedCellMarkerManager.Instance != null)
+        {
+            if (usingSegmentGrid && activeSegment != null)
+                OccupiedCellMarkerManager.Instance.UpdateMarkersAroundSegment(activeSegment, hit.point, occupiedMarkerRange, placementMask);
+            else
+                OccupiedCellMarkerManager.Instance.UpdateMarkersAroundWorld(previewInstance.transform.position, occupiedMarkerRange, placementMask);
+        }
 
-                // Mover el Decal si existe
-                if (globalDecal != null)
-                {
-                    // Lo posicionamos sobre el punto de impacto
-                    globalDecal.transform.position = gridInfo.position + Vector3.up * 5f;
-                }
+        // Decal (lo dejamos como estaba, centrado donde esté el preview)
+        if (globalDecal != null && previewInstance != null)
+        {
+            int padding = 2;
+            float newSizeX = cardData.gridSize.x + padding;
+            float newSizeZ = cardData.gridSize.y + padding;
 
-                ApplyRotationFromNormalAndYaw();
+            globalDecal.size = new Vector3(newSizeX, newSizeZ, globalDecal.size.z);
+            globalDecal.uvScale = new Vector2(newSizeX, newSizeZ);
 
-                float slopeAngle = Vector3.Angle(Vector3.up, gridInfo.normal);
-                bool angleOk = slopeAngle <= 61f;
+            float physOffsetX = (cardData.gridSize.x % 2 != newSizeX % 2) ? 0.5f : 0f;
+            float physOffsetZ = (cardData.gridSize.y % 2 != newSizeZ % 2) ? 0.5f : 0f;
 
-                string validityReason = angleOk ?
-                    CheckPlacementValidity(gridInfo.position, gridInfo.normal, previewInstance.transform.rotation) :
-                    "Pendiente excesiva";
+            Vector3 p = previewInstance.transform.position;
+            globalDecal.transform.position = new Vector3(
+                p.x + physOffsetX,
+                p.y + 5f,
+                p.z + physOffsetZ
+            );
 
-                currentPreviewIsValid = (validityReason == "Válido");
-                ApplyPreviewMaterial(currentPreviewIsValid);
-            }
-
-            if (globalDecal != null)
-            {
-                int padding = 2;
-                float newSizeX = cardData.gridSize.x + padding;
-                float newSizeZ = cardData.gridSize.y + padding;
-
-                globalDecal.size = new Vector3(newSizeX, newSizeZ, globalDecal.size.z);
-                globalDecal.uvScale = new Vector2(newSizeX, newSizeZ);
-
-                // Offset físico: solo la diferencia de paridad entre el objeto y el nuevo size
-                // Si ambos son impares o ambos pares → se anulan → offset 0
-                // Si uno es par y otro impar → offset 0.5
-                float physOffsetX = (cardData.gridSize.x % 2 != newSizeX % 2) ? 0.5f : 0f;
-                float physOffsetZ = (cardData.gridSize.y % 2 != newSizeZ % 2) ? 0.5f : 0f;
-
-                globalDecal.transform.position = new Vector3(
-                    gridInfo.position.x + physOffsetX,
-                    gridInfo.position.y + 5f,
-                    gridInfo.position.z + physOffsetZ
-                );
-
-                globalDecal.uvBias = new Vector2(0f, 0f);
-
-                if (!globalDecal.enabled) globalDecal.enabled = true;
-            }
+            globalDecal.uvBias = Vector2.zero;
+            if (!globalDecal.enabled) globalDecal.enabled = true;
         }
     }
 
@@ -532,9 +540,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             var cells = ComputeFootprintCells(finalPosition, finalRotation, cardData.gridSize);
 
+            // currentFootprintKeys ya tiene lo real (segmento o global)
             var occ = placed.GetComponent<GridOccupant>();
             if (occ == null) occ = placed.AddComponent<GridOccupant>();
-            occ.Init(cells);
+            occ.Init(new List<CellKey>(currentFootprintKeys));
         }
 
         Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
@@ -649,40 +658,69 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private string CheckPlacementValidity(Vector3 position, Vector3 normal, Quaternion rotation)
     {
-        // 1. ✅ NUEVO: Comprobar ángulo de inclinación
+        // Pendiente
         float slopeAngle = Vector3.Angle(Vector3.up, normal);
         if (slopeAngle > 61f)
-        {
             return "Pendiente demasiado pronunciada";
-        }
 
-        // ✅ NUEVO: exigir que TODAS las casillas del footprint tengan suelo (montaña) debajo
-        if (!HasFullFootprintGround(position, rotation, cardData.gridSize))
+        // Necesitamos footprint calculado (segmento o mundo)
+        if (currentFootprintKeys == null || currentFootprintKeys.Count == 0)
             return "Fuera del suelo";
 
-        // 2. Comprobar colisiones (Grilla)
-        // Usamos el tamaño de la grilla definido en CardData
-        Vector3 boxSize = new Vector3(
-            cardData.gridSize.x - 0.1f,
-            0.5f, // Altura de detección
-            cardData.gridSize.y - 0.1f
-        );
+        // ✅ Si estamos en segmento, valida con SegmentGridSettings (no con PlacementMaskData)
+        if (usingSegmentGrid && activeSegment != null)
+        {
+            int segId = activeSegment.GetInstanceID();
 
-        // Levantamos un poco el centro para que la caja de colisión siga la normal de la rampa
-        Vector3 center = position + (normal * 0.25f);
+            for (int k = 0; k < currentFootprintKeys.Count; k++)
+            {
+                var key = currentFootprintKeys[k];
 
-        Vector3 halfExtents = boxSize / 2f;
+                // si por lo que sea llega una key de otro seg, inválido
+                if (key.segmentId != segId)
+                    return "Fuera del segmento";
 
+                if (!activeSegment.InBounds(key.x, key.y))
+                    return "Fuera del segmento";
+
+                if (activeSegment.IsBlocked(key.x, key.y))
+                    return "Zona bloqueada";
+            }
+        }
+        else
+        {
+            // GLOBAL: aquí sí usamos tu máscara global (PlacementMaskData)
+            if (PlacementMaskManager.Instance != null)
+            {
+                // convertir keys (segId=0) a Vector2Int
+                var tmp = new List<Vector2Int>(currentFootprintKeys.Count);
+                for (int i = 0; i < currentFootprintKeys.Count; i++)
+                    tmp.Add(new Vector2Int(currentFootprintKeys[i].x, currentFootprintKeys[i].y));
+
+                if (!PlacementMaskManager.Instance.AreBuildable(tmp))
+                    return "Zona bloqueada";
+            }
+
+            // Y si quieres mantener el “suelo completo” del modo global:
+            if (!HasFullFootprintGround(position, rotation, cardData.gridSize))
+                return "Fuera del suelo";
+        }
+
+        // Ocupación (segmento o mundo)
         if (GridOccupancyManager.Instance != null)
         {
-            var footprint = ComputeFootprintCells(position, rotation, cardData.gridSize);
-            if (GridOccupancyManager.Instance.AnyOccupied(footprint))
+            if (GridOccupancyManager.Instance.AnyOccupied(currentFootprintKeys))
                 return "Casilla ocupada";
         }
 
-        if (Physics.CheckBox(center, halfExtents, rotation, campMask))
+        // Campamento
+        Vector3 boxSize = new Vector3(cardData.gridSize.x - 0.1f, 0.5f, cardData.gridSize.y - 0.1f);
+        Vector3 center = position + (normal * 0.25f);
+
+        if (Physics.CheckBox(center, boxSize / 2f, rotation, campMask))
             return "Demasiado cerca de un campamento";
 
+        // Soporte completo
         if (cardData != null && cardData.requireFullSupport)
         {
             if (!HasFullSupport(position, rotation))
@@ -990,12 +1028,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                         // Forward base del segmento (del collider que has hitteado)
                         Transform seg = cellHit.collider.transform;
 
-                        // Proyectar forward en el plano para que sea tangente al suelo
-                        Vector3 fwd = Vector3.ProjectOnPlane(seg.forward, up).normalized;
-
-                        // Fallback si seg.forward es casi paralelo a la normal
+                        Vector3 fwd = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
                         if (fwd.sqrMagnitude < 0.0001f)
-                            fwd = Vector3.ProjectOnPlane(seg.right, up).normalized;
+                            fwd = Vector3.ProjectOnPlane(Vector3.right, up).normalized;
 
                         // Último fallback
                         if (fwd.sqrMagnitude < 0.0001f)
@@ -1010,7 +1045,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                             Vector3.one
                         );
 
-                        Gizmos.color = new Color(1f, 1f, 1f, 0.15f); // Blanco tenue
                         Gizmos.DrawWireCube(Vector3.zero, new Vector3(0.9f, 0f, 0.9f));
                     }
                 }
@@ -1111,6 +1145,217 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             }
         }
 
+        return true;
+    }
+
+    private void UpdatePlacementFromHit(RaycastHit hit)
+    {
+        // Detectar si estamos en un segmento con grid
+        SegmentGridSettings seg = hit.collider.GetComponentInParent<SegmentGridSettings>();
+
+        // A) SEGMENTO => grid real del segmento
+        if (seg != null)
+        {
+            activeSegment = seg;
+            usingSegmentGrid = true;
+
+            if (TrySnapOnSegmentGrid(seg, hit.point, currentRotationDegrees, cardData.gridSize,
+        out var pos, out var rot, out var nrm,
+        currentFootprintKeys, out var snapReason))
+            {
+                previewInstance.transform.SetPositionAndRotation(pos, rot);
+                lastHitNormal = nrm;
+
+                // Si el snap ya dice que es inválido (bloqueado / fuera / sin suelo),
+                // mostramos rojo sin más checks
+                if (snapReason != "Válido")
+                {
+                    currentPreviewIsValid = false;
+                    ApplyPreviewMaterial(false);
+                    return;
+                }
+
+                // Si snap es válido, ahora sí pasamos por los checks de ocupación/campamento/soporte, etc.
+                string validity = CheckPlacementValidity(pos, nrm, rot);
+                currentPreviewIsValid = (validity == "Válido");
+                ApplyPreviewMaterial(currentPreviewIsValid);
+            }
+            else
+            {
+                // No se pudo ni posicionar preview
+                currentPreviewIsValid = false;
+                ApplyPreviewMaterial(false);
+            }
+
+            return;
+        }
+
+        // B) GLOBAL => tu sistema actual
+        activeSegment = null;
+        usingSegmentGrid = false;
+        currentFootprintKeys.Clear();
+
+        GridPlacementInfo gridInfo = GetSnappedInfoOnRampa(hit.point, cardData.gridSize.x, cardData.gridSize.y);
+        if (!gridInfo.hitFound)
+        {
+            ApplyPreviewMaterial(false);
+            currentPreviewIsValid = false;
+            return;
+        }
+
+        previewInstance.transform.position = gridInfo.position;
+        lastHitNormal = gridInfo.normal;
+
+        ApplyRotationFromNormalAndYaw();
+
+        // cache footprint global en CellKey (segmentId=0)
+        var worldFoot = ComputeFootprintCells(gridInfo.position, previewInstance.transform.rotation, cardData.gridSize);
+        for (int i = 0; i < worldFoot.Count; i++)
+            currentFootprintKeys.Add(new CellKey(0, worldFoot[i].x, worldFoot[i].y));
+
+        string validityReason = CheckPlacementValidity(gridInfo.position, gridInfo.normal, previewInstance.transform.rotation);
+        currentPreviewIsValid = (validityReason == "Válido");
+        ApplyPreviewMaterial(currentPreviewIsValid);
+    }
+
+    private bool TrySnapOnSegmentGrid(
+    SegmentGridSettings seg,
+    Vector3 hitPoint,
+    float yawDegrees,
+    Vector2Int baseGridSize,
+    out Vector3 snappedPos,
+    out Quaternion snappedRot,
+    out Vector3 avgNormal,
+    List<CellKey> outFootprintKeys,
+    out string reason)
+    {
+        snappedPos = default;
+        snappedRot = default;
+        avgNormal = Vector3.up;
+        reason = "Fuera del segmento";
+
+        outFootprintKeys.Clear();
+
+        seg.EnsureMask();
+        seg.GetPlaneBasis(out Vector3 U, out Vector3 V, out Vector3 N);
+
+        float cs = Mathf.Max(0.01f, seg.cellSize);
+        Vector3 origin = seg.OriginWorld;
+
+        // rotación por pasos (0/90/180/270)
+        int step = Mathf.RoundToInt(yawDegrees / 90f) & 3;
+        bool rotated = (step % 2) != 0;
+
+        int w = rotated ? baseGridSize.y : baseGridSize.x;
+        int h = rotated ? baseGridSize.x : baseGridSize.y;
+
+        // Coordenadas en celdas (u/v) respecto al origin
+        Vector3 rel = hitPoint - origin;
+        float u = Vector3.Dot(rel, U) / cs;
+        float v = Vector3.Dot(rel, V) / cs;
+
+        // Snap del centro: impar => .5, par => entero
+        float offsetU = (w % 2 == 0) ? 0f : 0.5f;
+        float offsetV = (h % 2 == 0) ? 0f : 0.5f;
+
+        // ✅ evita problemas con .5 (AwayFromZero)
+        float centerU = (float)System.Math.Round(u - offsetU, System.MidpointRounding.AwayFromZero) + offsetU;
+        float centerV = (float)System.Math.Round(v - offsetV, System.MidpointRounding.AwayFromZero) + offsetV;
+
+        float startU = -(w / 2f) + 0.5f;
+        float startV = -(h / 2f) + 0.5f;
+
+        // Forward base según rotación 0/90/180/270 (en ejes del segmento)
+        Vector3 fwdBase = step switch
+        {
+            0 => V,
+            1 => U,
+            2 => -V,
+            _ => -U
+        };
+
+        bool anyOut = false;
+        bool anyBlocked = false;
+        bool anyNoSurface = false;
+
+        Vector3 sumPos = Vector3.zero;
+        Vector3 sumN = Vector3.zero;
+        int count = 0;
+
+        int segId = seg.GetInstanceID();
+
+        for (int ix = 0; ix < w; ix++)
+        {
+            for (int iz = 0; iz < h; iz++)
+            {
+                float cu = centerU + startU + ix;
+                float cv = centerV + startV + iz;
+
+                // ✅ IMPORTANTÍSIMO: NO RoundToInt (banker's rounding). Usa FloorToInt.
+                int i = Mathf.FloorToInt(cu);
+                int j = Mathf.FloorToInt(cv);
+
+                // Guarda siempre la key (aunque esté fuera), para que la validez sea consistente
+                outFootprintKeys.Add(new CellKey(segId, i, j));
+
+                if (!seg.InBounds(i, j))
+                {
+                    anyOut = true;
+                    continue;
+                }
+
+                if (seg.IsBlocked(i, j))
+                    anyBlocked = true;
+
+                // Raycast para colocar el preview “pegado” a la geometría, incluso si está bloqueada
+                Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
+
+                Vector3 rayOrigin = planeCenter + N * 5f;
+                if (!Physics.Raycast(rayOrigin, -N, out RaycastHit cellHit, 30f, placementMask))
+                {
+                    anyNoSurface = true;
+                    continue;
+                }
+
+                sumPos += cellHit.point;
+                sumN += cellHit.normal;
+                count++;
+            }
+        }
+
+        // Si no hemos podido samplear nada, no podemos ni colocar preview
+        if (count == 0)
+        {
+            // fallback: intenta un raycast desde el propio hitPoint
+            if (!Physics.Raycast(hitPoint + N * 5f, -N, out RaycastHit hinfo, 30f, placementMask))
+            {
+                reason = "Fuera del suelo";
+                return false;
+            }
+
+            snappedPos = hinfo.point;
+            avgNormal = hinfo.normal;
+        }
+        else
+        {
+            snappedPos = sumPos / count;
+            avgNormal = sumN.normalized;
+        }
+
+        // Rotación final: alineada al segmento y pegada a normal real
+        Vector3 fwdOnPlane = Vector3.ProjectOnPlane(fwdBase, avgNormal).normalized;
+        if (fwdOnPlane.sqrMagnitude < 0.0001f)
+            fwdOnPlane = Vector3.ProjectOnPlane(V, avgNormal).normalized;
+
+        snappedRot = Quaternion.LookRotation(fwdOnPlane, avgNormal);
+
+        // Motivo final (prioridad)
+        if (anyOut) reason = "Fuera del segmento";
+        else if (anyNoSurface) reason = "Fuera del suelo";
+        else if (anyBlocked) reason = "Zona bloqueada";
+        else reason = "Válido";
+
+        // ✅ OJO: devuelve true aunque sea inválido, porque el preview sí puede posicionarse
         return true;
     }
 

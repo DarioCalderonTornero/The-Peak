@@ -13,6 +13,7 @@ public class InputManager : MonoBehaviour
     public event EventHandler OnGamePauseInput;
     public event EventHandler OnShowClimberInfo;
     public event EventHandler OnClimberVision;
+    public event EventHandler OnSkipCinematic;
 
     /// <summary>
     /// TAP (click corto): mostrar ruta / seleccionar.
@@ -64,6 +65,8 @@ public class InputManager : MonoBehaviour
         inputActions.Player.ClickClimberRoute.performed += ClickClimber_performed;
         inputActions.Player.ShowClimberInfoUI.performed += ShowClimberInfoUI_performed;
 
+        inputActions.Player.SkipCinematic.performed += SkipCinematic_performed;
+
         // UI
         inputActions.UI.RotateCard.performed += RotateCard_performed;
         inputActions.UI.HideClimberStaminaUI.performed += HideClimberStaminaUI_performed;
@@ -74,6 +77,11 @@ public class InputManager : MonoBehaviour
         inputActions.Camera.BackView.performed += BackView_performed;
         inputActions.Camera.LeftView.performed += LeftView_performed;
         inputActions.Camera.TopView.performed += TopView_performed;
+    }
+
+    private void SkipCinematic_performed(InputAction.CallbackContext obj)
+    {
+        OnSkipCinematic?.Invoke(this, EventArgs.Empty);
     }
 
     private void ClimberVision_performed(InputAction.CallbackContext obj)

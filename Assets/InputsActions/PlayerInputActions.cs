@@ -127,6 +127,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SkipCinematic"",
+                    ""type"": ""Button"",
+                    ""id"": ""c1c8a30b-91d1-42fe-9553-0833b6e4e064"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -171,6 +180,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""ClimberVision"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""07187140-c0d3-47b9-8c1d-bd20971adc34"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SkipCinematic"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -567,6 +587,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_ClickClimberRoute = m_Player.FindAction("ClickClimberRoute", throwIfNotFound: true);
         m_Player_ShowClimberInfoUI = m_Player.FindAction("ShowClimberInfoUI", throwIfNotFound: true);
         m_Player_ClimberVision = m_Player.FindAction("ClimberVision", throwIfNotFound: true);
+        m_Player_SkipCinematic = m_Player.FindAction("SkipCinematic", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_RotateCard = m_UI.FindAction("RotateCard", throwIfNotFound: true);
@@ -672,6 +693,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_ClickClimberRoute;
     private readonly InputAction m_Player_ShowClimberInfoUI;
     private readonly InputAction m_Player_ClimberVision;
+    private readonly InputAction m_Player_SkipCinematic;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -699,6 +721,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/ClimberVision".
         /// </summary>
         public InputAction @ClimberVision => m_Wrapper.m_Player_ClimberVision;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/SkipCinematic".
+        /// </summary>
+        public InputAction @SkipCinematic => m_Wrapper.m_Player_SkipCinematic;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -737,6 +763,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @ClimberVision.started += instance.OnClimberVision;
             @ClimberVision.performed += instance.OnClimberVision;
             @ClimberVision.canceled += instance.OnClimberVision;
+            @SkipCinematic.started += instance.OnSkipCinematic;
+            @SkipCinematic.performed += instance.OnSkipCinematic;
+            @SkipCinematic.canceled += instance.OnSkipCinematic;
         }
 
         /// <summary>
@@ -760,6 +789,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @ClimberVision.started -= instance.OnClimberVision;
             @ClimberVision.performed -= instance.OnClimberVision;
             @ClimberVision.canceled -= instance.OnClimberVision;
+            @SkipCinematic.started -= instance.OnSkipCinematic;
+            @SkipCinematic.performed -= instance.OnSkipCinematic;
+            @SkipCinematic.canceled -= instance.OnSkipCinematic;
         }
 
         /// <summary>
@@ -1163,6 +1195,13 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClimberVision(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SkipCinematic" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSkipCinematic(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

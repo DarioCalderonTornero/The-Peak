@@ -7,6 +7,7 @@ public class GamePauseUI : MonoBehaviour
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button backToMenuButton;
+    [SerializeField] private Button cinematicModeToggleButton;
 
     [SerializeField] private AudioClip stopGameAudioClip;
     [SerializeField] private float volume = 1f;
@@ -36,6 +37,11 @@ public class GamePauseUI : MonoBehaviour
         {
             Time.timeScale = 1.0f;
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
+        });
+
+        cinematicModeToggleButton.onClick.AddListener(() =>
+        {
+            DeathCinematicManager.Instance.IsPlayingCinematic();
         });
 
         // Nos aseguramos de que todo esté apagado al iniciar
@@ -95,6 +101,7 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.gameObject.SetActive(true);
         settingsButton.gameObject.SetActive(true);
         backToMenuButton.gameObject.SetActive(true);
+        cinematicModeToggleButton.gameObject.SetActive(true);
 
         // MUY IMPORTANTE: Apagamos los ajustes para evitar solapamientos
         if (settingsUI != null)
@@ -113,6 +120,7 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
+        cinematicModeToggleButton.gameObject.SetActive(false);
     }
 
     private void HideAll()

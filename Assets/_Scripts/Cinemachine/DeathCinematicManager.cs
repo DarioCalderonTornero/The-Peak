@@ -36,7 +36,6 @@ public class DeathCinematicManager : MonoBehaviour
 
     [Header("Opciones de Salto")]
     [Tooltip("Tecla para saltar la cinemática de muerte.")]
-    [SerializeField] private KeyCode skipKey = KeyCode.Space;
 
     private Coroutine processQueueCoroutine;
     private GameManager.DeathInfo currentDeathInfo;
@@ -325,4 +324,7 @@ public class DeathCinematicManager : MonoBehaviour
         // 5. Asignamos la posición ganadora al ancla
         cameraAnchor.position = finalSafePos;
     }
+
+    //SETTERS
+    public void IsPlayingCinematic() => useDeathCinematics = !useDeathCinematics; 
 }

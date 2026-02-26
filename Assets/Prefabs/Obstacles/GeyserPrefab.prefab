@@ -129,7 +129,7 @@ MonoBehaviour:
     m_Bits: 512
   captureDelay: 0.2
   holdSeconds: 3
-  shakeMagnitudeStart: 0.02
+  shakeMagnitudeStart: 0.1
   shakeMagnitudeEnd: 0.3
   shakeFrequency: 25
   shakeRamp:

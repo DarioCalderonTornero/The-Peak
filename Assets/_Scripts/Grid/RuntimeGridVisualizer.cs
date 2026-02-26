@@ -1,42 +1,93 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RuntimeGridVisualizer : MonoBehaviour
 {
-    private LineRenderer lineRenderer;
+    [SerializeField] private float lineWidth = 0.08f;
+    [SerializeField] private float yOffset = 0.1f;
+
+    private readonly List<LineRenderer> lines = new List<LineRenderer>();
+    private Material lineMat;
 
     public void Setup(Vector2Int gridSize)
     {
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.startWidth = 0.08f;
-        lineRenderer.endWidth = 0.08f;
+        Clear();
 
-        // Usamos un shader que ignore la profundidad para que no se "entierre" en la rampa
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-
-        lineRenderer.loop = true;
-        lineRenderer.positionCount = 4;
-        lineRenderer.useWorldSpace = false;
+        // Material que ignore profundidad (como estabas usando)
+        lineMat = new Material(Shader.Find("Sprites/Default"));
 
         float halfW = gridSize.x / 2f;
         float halfH = gridSize.y / 2f;
 
-        // Subimos el offset a 0.1f para evitar parpadeos con el suelo
-        float yOffset = 0.1f;
+        // ----- BORDE EXTERIOR (4 lados) -----
+        AddLine(new Vector3(-halfW, yOffset, -halfH), new Vector3(halfW, yOffset, -halfH)); // abajo
+        AddLine(new Vector3(halfW, yOffset, -halfH), new Vector3(halfW, yOffset, halfH)); // derecha
+        AddLine(new Vector3(halfW, yOffset, halfH), new Vector3(-halfW, yOffset, halfH)); // arriba
+        AddLine(new Vector3(-halfW, yOffset, halfH), new Vector3(-halfW, yOffset, -halfH)); // izquierda
 
-        lineRenderer.SetPosition(0, new Vector3(-halfW, yOffset, -halfH));
-        lineRenderer.SetPosition(1, new Vector3(halfW, yOffset, -halfH));
-        lineRenderer.SetPosition(2, new Vector3(halfW, yOffset, halfH));
-        lineRenderer.SetPosition(3, new Vector3(-halfW, yOffset, halfH));
+        // ----- LÍNEAS INTERNAS -----
+        // Verticales (separan columnas): i = 1..gridSize.x-1
+        for (int i = 1; i < gridSize.x; i++)
+        {
+            float x = -halfW + i;
+            AddLine(
+                new Vector3(x, yOffset, -halfH),
+                new Vector3(x, yOffset, halfH)
+            );
+        }
+
+        // Horizontales (separan filas): j = 1..gridSize.y-1
+        for (int j = 1; j < gridSize.y; j++)
+        {
+            float z = -halfH + j;
+            AddLine(
+                new Vector3(-halfW, yOffset, z),
+                new Vector3(halfW, yOffset, z)
+            );
+        }
     }
 
     public void SetColor(Color color)
     {
-        if (lineRenderer != null)
+        color.a = 0.8f;
+        for (int i = 0; i < lines.Count; i++)
         {
-            // Aplicamos un poco de transparencia para que quede mejor
-            color.a = 0.8f;
-            lineRenderer.startColor = color;
-            lineRenderer.endColor = color;
+            if (lines[i] == null) continue;
+            lines[i].startColor = color;
+            lines[i].endColor = color;
         }
+    }
+
+    private void AddLine(Vector3 a, Vector3 b)
+    {
+        var go = new GameObject("GridLine");
+        go.transform.SetParent(transform, false);
+
+        var lr = go.AddComponent<LineRenderer>();
+        lr.material = lineMat;
+        lr.startWidth = lineWidth;
+        lr.endWidth = lineWidth;
+        lr.useWorldSpace = false;
+        lr.loop = false;
+        lr.positionCount = 2;
+        lr.SetPosition(0, a);
+        lr.SetPosition(1, b);
+
+        lines.Add(lr);
+    }
+
+    private void Clear()
+    {
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (lines[i] != null) Destroy(lines[i].gameObject);
+        }
+        lines.Clear();
+    }
+
+    private void OnDestroy()
+    {
+        // Por si acaso, evita materiales “colgados”
+        if (lineMat != null) Destroy(lineMat);
     }
 }

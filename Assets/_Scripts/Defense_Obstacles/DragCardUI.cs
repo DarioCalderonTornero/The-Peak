@@ -90,6 +90,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [SerializeField] private GameObject occupiedCellMarkerPrefab;
     [SerializeField] private int occupiedMarkerRange = 8; // radio alrededor del ratón
 
+    private Vector3 lastGroundForward = Vector3.forward;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -179,14 +181,15 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         if (previewInstance == null) return;
 
-        // 1. Rotación de la rampa (Normal)
-        Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, lastHitNormal);
+        Vector3 up = lastHitNormal;
 
-        // 2. Rotación del jugador (0, 90, 180...)
-        Quaternion playerRotation = Quaternion.Euler(0, currentRotationDegrees, 0);
+        // Rotación base: alineada con el segmento (yaw del suelo) + normal (inclinación)
+        Quaternion groundRot = Quaternion.LookRotation(lastGroundForward, up);
 
-        // 3. Combinación: Primero inclinamos y luego giramos sobre esa inclinación
-        previewInstance.transform.rotation = slopeRotation * playerRotation;
+        // Tu rotación del jugador, pero girando alrededor de la normal (no del Y global)
+        Quaternion yawAroundNormal = Quaternion.AngleAxis(currentRotationDegrees, up);
+
+        previewInstance.transform.rotation = yawAroundNormal * groundRot;
     }
 
     private void UpdateFreeRotation()
@@ -356,6 +359,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 if (OccupiedCellMarkerManager.Instance != null)
                     OccupiedCellMarkerManager.Instance.UpdateMarkersAround(gridInfo.position, occupiedMarkerRange, placementMask);
                 lastHitNormal = gridInfo.normal;
+                lastGroundForward = gridInfo.groundForward;
 
                 // Mover el Decal si existe
                 if (globalDecal != null)
@@ -367,7 +371,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 ApplyRotationFromNormalAndYaw();
 
                 float slopeAngle = Vector3.Angle(Vector3.up, gridInfo.normal);
-                bool angleOk = slopeAngle <= 60f;
+                bool angleOk = slopeAngle <= 61f;
 
                 string validityReason = angleOk ?
                     CheckPlacementValidity(gridInfo.position, gridInfo.normal, previewInstance.transform.rotation) :
@@ -647,7 +651,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         // 1. ✅ NUEVO: Comprobar ángulo de inclinación
         float slopeAngle = Vector3.Angle(Vector3.up, normal);
-        if (slopeAngle > 60f)
+        if (slopeAngle > 61f)
         {
             return "Pendiente demasiado pronunciada";
         }
@@ -745,7 +749,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         var visualizer = previewInstance.GetComponent<RuntimeGridVisualizer>();
         if (visualizer != null)
         {
-            visualizer.SetColor(valid ? Color.green : Color.red);
+            visualizer.SetColor(valid ? Color.blue : Color.red);
         }
     }
 
@@ -877,6 +881,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         public Vector3 position;
         public Vector3 normal;
+        public Vector3 groundForward;
         public bool hitFound;
     }
 
@@ -909,12 +914,28 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             result.position = hitInfo.point;
             result.normal = hitInfo.normal;
             result.hitFound = true;
+
+            // ✅ Forward del segmento golpeado (yaw base)
+            Transform seg = hitInfo.collider.transform;
+
+            // Proyectamos seg.forward sobre el plano de la normal para quitar componente vertical
+            Vector3 fwd = Vector3.ProjectOnPlane(seg.forward, hitInfo.normal).normalized;
+
+            // Fallback por si forward es casi paralelo a la normal (caso raro)
+            if (fwd.sqrMagnitude < 0.0001f)
+                fwd = Vector3.ProjectOnPlane(seg.right, hitInfo.normal).normalized;
+
+            // Último fallback
+            if (fwd.sqrMagnitude < 0.0001f)
+                fwd = Vector3.ProjectOnPlane(Vector3.forward, hitInfo.normal).normalized;
+
+            result.groundForward = fwd;
         }
         else
         {
-            // Si fallamos (ej: fuera del mapa), usamos el original redondeado plano
             result.position = new Vector3(snappedX, originalHitPoint.y, snappedZ);
             result.normal = Vector3.up;
+            result.groundForward = Vector3.forward; // <-- NUEVO
         }
 
         return result;
@@ -964,9 +985,28 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     if (Physics.Raycast(cellCheckPos, Vector3.down, out RaycastHit cellHit, 15f, placementMask))
                     {
                         // Inclinamos cada casilla individualmente según la normal del terreno
+                        Vector3 up = cellHit.normal;
+
+                        // Forward base del segmento (del collider que has hitteado)
+                        Transform seg = cellHit.collider.transform;
+
+                        // Proyectar forward en el plano para que sea tangente al suelo
+                        Vector3 fwd = Vector3.ProjectOnPlane(seg.forward, up).normalized;
+
+                        // Fallback si seg.forward es casi paralelo a la normal
+                        if (fwd.sqrMagnitude < 0.0001f)
+                            fwd = Vector3.ProjectOnPlane(seg.right, up).normalized;
+
+                        // Último fallback
+                        if (fwd.sqrMagnitude < 0.0001f)
+                            fwd = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
+
+                        // Rotación completa: yaw del segmento + inclinación por normal
+                        Quaternion rot = Quaternion.LookRotation(fwd, up);
+
                         Gizmos.matrix = Matrix4x4.TRS(
-                            cellHit.point + (cellHit.normal * 0.005f),
-                            Quaternion.FromToRotation(Vector3.up, cellHit.normal),
+                            cellHit.point + up * 0.005f,
+                            rot,
                             Vector3.one
                         );
 

@@ -255,7 +255,7 @@ public class ClimberMovement : MonoBehaviour
         if (lineMaterialInstance != null)
         {
             float textureOffset = Time.time * -animationSpeed;
-            lineMaterialInstance.mainTextureOffset = new Vector2(textureOffset, 0);
+            //lineMaterialInstance.mainTextureOffset = new Vector2(textureOffset, 0);
         }
     }
 

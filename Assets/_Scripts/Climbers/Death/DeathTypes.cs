@@ -10,6 +10,6 @@ public enum DeathCause
     Fall,
     Geyser,
     Stamina,
-    Cold
+    Snow
 }
 

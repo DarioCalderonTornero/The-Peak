@@ -213,6 +213,7 @@ public class QuicksandDefense : BaseDefense
         {
             Vector3 pos = absorbedClimber.transform.position;
 
+            // --- AHORA USAMOS EL SISTEMA CENTRALIZADO ---
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
@@ -223,13 +224,18 @@ public class QuicksandDefense : BaseDefense
                 });
             }
 
-            Destroy(absorbedClimber.gameObject);
-            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            PointsManager.Instance.AddPoints(10);
+            if (ClimberDeathPointsManager.Instance != null) ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+            if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(10);
+
+            // ❌ ELIMINADO: Destroy(absorbedClimber.gameObject); 
+            // La destrucción física ahora la hace el DeathCinematicManager cuando termine la cámara y animación
         }
 
+        // NOTA: Destruimos la trampa de arenas movedizas.
+        // Si tienes una animación de muerte donde el escalador se hunde lentamente EN la trampa, 
+        // quizá quieras cambiar este Destroy(gameObject) por un StartCoroutine que la destruya 
+        // 3 o 4 segundos más tarde para que la trampa siga visible durante la cinemática.
         Destroy(gameObject);
-
     }
 
     private void RescueClimber()

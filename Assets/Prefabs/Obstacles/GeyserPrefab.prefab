@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7003694049427134587}
   - component: {fileID: 6606182435974930363}
   - component: {fileID: 1499337497155268089}
+  - component: {fileID: 1234895806014669140}
   m_Layer: 0
   m_Name: GeyserPrefab
   m_TagString: Untagged
@@ -127,8 +128,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   captureDelay: 0.2
-  holdSeconds: 1.5
-  shakeMagnitudeStart: 0.02
+  holdSeconds: 3
+  shakeMagnitudeStart: 0.1
   shakeMagnitudeEnd: 0.3
   shakeFrequency: 25
   shakeRamp:
@@ -159,20 +160,12 @@ MonoBehaviour:
   climberShakeMultiplier: 1
   launchForce: 130
   gravity: 60
-  noGravityTime: 0
   minSpinDegPerSec: 250
   maxSpinDegPerSec: 650
-  destroySecondsAfterLanding: 2
-  destroyMaxAirTime: 10
   cooldownTurns: 3
   groundMask:
     serializedVersion: 2
     m_Bits: 64
-  returnToPathAfterLanding: 1
-  navmeshSnapRadius: 3
-  landingGraceTime: 0.25
-  minDownVelToCountLanding: 1
-  minGroundNormalY: 0.55
   geyserVFX: {fileID: 8349888551163216939}
   eruptFadeSeconds: 2
   eruptHoldSeconds: 2
@@ -205,6 +198,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
+--- !u!114 &1234895806014669140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5606444330844840924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97a96f72894c20429c31f3cf6833f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleType: 6
 --- !u!1 &6927222038028137417
 GameObject:
   m_ObjectHideFlags: 0
@@ -259,7 +265,7 @@ VisualEffect:
       - m_Value: 1
         m_Name: EruptingPower
         m_Overridden: 1
-      - m_Value: 60
+      - m_Value: 15
         m_Name: VelocidadErupcion
         m_Overridden: 1
       - m_Value: 0

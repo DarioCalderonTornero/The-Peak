@@ -1879,7 +1879,7 @@ MonoBehaviour:
   topBar: {fileID: 1807055569}
   bottomBar: {fileID: 1706797974}
   barHeight: 131
-  animationTime: 0.75
+  animationTime: 0.4
 --- !u!1 &582425718
 GameObject:
   m_ObjectHideFlags: 0
@@ -2202,10 +2202,9 @@ MonoBehaviour:
   heightOffset: 35
   sideOffset: 90
   blendInTime: 1
-  delayAfterAnim: 0.5
-  delayAfterBlendCameras: 1
-  useDeathCinematics: 0
-  skipKey: 32
+  delayAfterAnim: 0.25
+  delayAfterBlendCameras: 0.5
+  useDeathCinematics: 1
 --- !u!1 &639492198
 GameObject:
   m_ObjectHideFlags: 0
@@ -2697,6 +2696,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GamePauseUI
       objectReference: {fileID: 0}
+    - target: {fileID: 6577234822114319534, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: cinematicModeToggleButton
+      value: 
+      objectReference: {fileID: 683846220}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2707,6 +2710,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3988031752996619610, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
   m_PrefabInstance: {fileID: 683846218}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &683846220 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8766195129439210149, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+  m_PrefabInstance: {fileID: 683846218}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &688706375
 GameObject:
   m_ObjectHideFlags: 0
@@ -4495,7 +4509,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -4651,6 +4665,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6fabd4abc922f964bb00722ea52522c5, type: 2}
   - {fileID: 11400000, guid: 407b06f7624047c47ac32a7a0455d773, type: 2}
   - {fileID: 11400000, guid: 7d6a38ea675daaf4f9ed45c48f7c844a, type: 2}
+  - {fileID: 11400000, guid: 0027b24972f453e40bfd02eb327b143a, type: 2}
+  - {fileID: 11400000, guid: ae05d3a870e920b479c2b178780aad28, type: 2}
   currentState: 0
   turnManager: {fileID: 675079561}
   spawnManager: {fileID: 1116203805}
@@ -5992,7 +6008,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 100
+  m_SortingOrder: 101
   m_TargetDisplay: 0
 --- !u!224 &1540668720
 RectTransform:

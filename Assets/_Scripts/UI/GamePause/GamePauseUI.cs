@@ -7,16 +7,14 @@ public class GamePauseUI : MonoBehaviour
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button backToMenuButton;
+    [SerializeField] private Button cinematicModeToggleButton;
 
     [SerializeField] private AudioClip stopGameAudioClip;
-    [SerializeField] private float volume;
+    [SerializeField] private float volume = 1f;
 
     [SerializeField] private SettingsUI settingsUI;
 
     private bool isGamePaused = false;
-
-    private bool hasPlayedSound = false;
-
 
     private void Awake()
     {
@@ -27,8 +25,11 @@ public class GamePauseUI : MonoBehaviour
 
         settingsButton.onClick.AddListener(() =>
         {
-            Hide(false); 
-            settingsUI.ShowMainButtons(); 
+            // Ocultamos solo los botones, pero dejamos el fondo gris
+            HidePauseButtons(false);
+
+            // Mostramos los ajustes
+            settingsUI.ShowMainButtons();
             settingsUI.gameObject.SetActive(true);
         });
 
@@ -38,37 +39,52 @@ public class GamePauseUI : MonoBehaviour
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
         });
 
-        Hide();
+        cinematicModeToggleButton.onClick.AddListener(() =>
+        {
+            DeathCinematicManager.Instance.IsPlayingCinematic();
+        });
+
+        // Nos aseguramos de que todo esté apagado al iniciar
+        HideAll();
     }
 
     private void Start()
     {
-        settingsUI.OnSettingsClose += SettingsUI_OnSettingsClose;
+        // Nos suscribimos al evento de cierre de los ajustes
+        if (settingsUI != null)
+        {
+            settingsUI.OnSettingsClose += SettingsUI_OnSettingsClose;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // Buena práctica: desuscribirse de los eventos para evitar errores de memoria
+        if (settingsUI != null)
+        {
+            settingsUI.OnSettingsClose -= SettingsUI_OnSettingsClose;
+        }
     }
 
     private void SettingsUI_OnSettingsClose(object sender, System.EventArgs e)
     {
-        Show();
+        // Cuando los ajustes se cierran, volvemos a mostrar el menú de pausa principal
+        ShowPauseButtons();
     }
-
-    
 
     public void TogglePauseMenu()
     {
-        if (!hasPlayedSound)
-        {
-            hasPlayedSound = true;  
-        }
-
         if (!isGamePaused)
         {
-            Show();
+            // Pausar
+            ShowPauseButtons();
             Temporal_Sound_Music.Instance.PlaySound(stopGameAudioClip, volume);
             GameManager.Instance.PauseGame();
         }
         else
         {
-            Hide();
+            // Despausar (Ocultamos TODO, incluyendo ajustes si estuvieran abiertos)
+            HideAll();
             GameManager.Instance.UnPauseGame();
             Temporal_Sound_Music.Instance.PlaySound(stopGameAudioClip, volume);
         }
@@ -76,20 +92,26 @@ public class GamePauseUI : MonoBehaviour
         isGamePaused = !isGamePaused;
     }
 
-    private void Show()
-    {
-        hasPlayedSound = false;
+    // --- MÉTODOS DE CONTROL DE UI ---
 
+    private void ShowPauseButtons()
+    {
         backgroundImage.gameObject.SetActive(true);
+
         resumeButton.gameObject.SetActive(true);
         settingsButton.gameObject.SetActive(true);
         backToMenuButton.gameObject.SetActive(true);
+        cinematicModeToggleButton.gameObject.SetActive(true);
+
+        // MUY IMPORTANTE: Apagamos los ajustes para evitar solapamientos
+        if (settingsUI != null)
+        {
+            settingsUI.gameObject.SetActive(false);
+        }
     }
 
-    private void Hide(bool hideBackground = true)
+    private void HidePauseButtons(bool hideBackground)
     {
-        hasPlayedSound = false;
-
         if (hideBackground)
         {
             backgroundImage.gameObject.SetActive(false);
@@ -98,8 +120,18 @@ public class GamePauseUI : MonoBehaviour
         resumeButton.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
         backToMenuButton.gameObject.SetActive(false);
+        cinematicModeToggleButton.gameObject.SetActive(false);
+    }
 
-        // Hide settings
-        settingsUI.gameObject.SetActive(false);
+    private void HideAll()
+    {
+        // Oculta los botones y el fondo
+        HidePauseButtons(true);
+
+        // Oculta también el menú de ajustes por si estaba abierto
+        if (settingsUI != null)
+        {
+            settingsUI.gameObject.SetActive(false);
+        }
     }
 }

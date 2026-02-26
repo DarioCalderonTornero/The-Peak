@@ -96,7 +96,7 @@ public class BerryTreeDefense : BaseDefense
             Coroutine c = StartCoroutine(EatSequence(climber));
             eatingRoutines[climber] = c;
 
-            break;
+            break; // Solo procesa el primero que encuentre
         }
     }
 
@@ -138,6 +138,7 @@ public class BerryTreeDefense : BaseDefense
     {
         if (goodBerryAlive && !badBerryAlive) return goodBerry;
         if (!goodBerryAlive && badBerryAlive) return badBerry;
+        // La probabilidad de comer la baya buena si ambas están vivas es del 10%
         if (goodBerryAlive && badBerryAlive) return (Random.value < 0.1f) ? goodBerry : badBerry;
         return null;
     }
@@ -165,26 +166,21 @@ public class BerryTreeDefense : BaseDefense
         if (badBerry != null) badBerry.SetActive(false);
         badBerryAlive = false;
 
-        Vector3 pos = climber != null ? climber.transform.position : transform.position;
-
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
             {
                 climber = climber,
-                position = pos,
-                cause = DeathCause.BadBerry 
+                position = climber.transform.position,
+                cause = DeathCause.BadBerry
             });
-
-            Debug.Log("Un escalador ha comido una baya mala y ha muerto.");
         }
 
-        ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-        PointsManager.Instance.AddPoints(10);
+        if (ClimberDeathPointsManager.Instance != null) ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+        if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(10);
 
         StartCoroutine(RespawnBerryAfterTurns(false));
 
-        Destroy(climber.gameObject);
     }
 
 

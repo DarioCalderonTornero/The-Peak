@@ -3,557 +3,211 @@ using UnityEngine;
 using UnityEngine.AI;
 
 #if UNITY_EDITOR
-using UnityEditor; // Para Handles.Label
+using UnityEditor;
 #endif
 
 [DefaultExecutionOrder(50)]
 public class CampGraphBuilder : MonoBehaviour
 {
-    [Header("Referencia al detector de campamentos")]
     public NavMeshCampZoneFinder campZoneFinder;
-
-    [Header("Destino final como campamento")]
-    [Tooltip("Destino final (cima) que se tratará como un campamento más en el grafo.")]
     public Transform finalDestination;
-
-    [Header("Conectividad del grafo")]
-    [Tooltip("Número máximo de vecinos por campamento. Se quedará con los caminos más cortos.")]
-    [Min(1)]
-    public int maxNeighborsPerNode = 3;
-
-    [Header("Debug aristas")]
+    [Min(1)] public int maxNeighborsPerNode = 3;
     public bool drawConnections = true;
     public Color connectionColor = Color.yellow;
-
-    [Tooltip("Dibujar en rojo las aristas que tengan algún obstáculo asociado.")]
     public bool drawObstacleEdges = true;
     public Color obstacleEdgeColor = Color.red;
-
-    [Header("Pesos de aristas")]
-    [Tooltip("Factor de peso por cada metro de longitud de la arista.")]
     public float lengthWeight = 1f;
-
-    [Tooltip("Factor de peso por inclinación (solo subida).")]
     public float slopeWeight = 5f;
-
-    [Tooltip("Factor de peso según altura relativa del campamento destino (más bajo = más peso).")]
     public float heightWeight = 2f;
-
-    [Tooltip("Penalización adicional por CADA obstáculo que atraviesa la arista.")]
     public float obstaclePenalty = 10f;
-
-    [Header("Debug pesos")]
     public bool drawEdgeWeights = true;
-    [Tooltip("Si es true, muestra los 'Pasos a la Cima' en lugar del peso.")]
     public bool debugDrawStepsToSummit = false;
 
-    // Altura mínima/máxima de los nodos para normalizar
     private float minNodeHeight;
     private float maxNodeHeight;
 
-    // ----------- CLASES DEL GRAFO -----------
     public class CampNode
     {
         public int id;
         public Vector3 position;
         public float height;
-
-        // --- NUEVO: Distancia en 'saltos' hasta la cima ---
         public int stepsToSummit = 9999;
-
         public List<CampEdge> neighbors = new List<CampEdge>();
     }
 
     public class CampEdge
     {
-        public CampNode from;
-        public CampNode to;
-        public float pathLength;
-        public float heightDelta;
+        public CampNode from, to;
+        public float pathLength, heightDelta;
         public Vector3[] pathCorners;
-
         public bool hasObstacle;
         public ObstacleType obstacleType;
-
-        // Cuántos obstáculos atraviesa esta arista
         public int obstacleCount;
-
-        // Peso total de esta arista (coste)
         public float weight;
     }
 
     [HideInInspector] public List<CampNode> nodes = new List<CampNode>();
     [HideInInspector] public int finalDestinationNodeId = -1;
 
-    private void Start()
-    {
-        BuildGraph();
-    }
+    [Header("🔹 Camp Collision")]
+    [SerializeField] private string campLayerName = "Campamentos";
+    [SerializeField] private float campCollisionRadius = 2f;
+    private readonly List<GameObject> campCollisionObjects = new List<GameObject>();
+
+    private void Start() => BuildGraph();
 
     public void BuildGraph()
     {
-        nodes.Clear();
-        finalDestinationNodeId = -1;
+        nodes.Clear(); finalDestinationNodeId = -1;
+        if (campZoneFinder == null || campZoneFinder.campZones == null) return;
+        minNodeHeight = float.MaxValue; maxNodeHeight = float.MinValue;
 
-        if (campZoneFinder == null)
-        {
-            Debug.LogError("[CampGraphBuilder] campZoneFinder es NULL.");
-            return;
-        }
-
-        if (campZoneFinder.campZones == null || campZoneFinder.campZones.Count == 0)
-        {
-            Debug.LogWarning("[CampGraphBuilder] campZoneFinder.campZones está vacío.");
-            return;
-        }
-
-        int count = campZoneFinder.campZones.Count;
-        Debug.Log("[CampGraphBuilder] Construyendo grafo con " + count + " campamentos base.");
-
-        // Inicializar min/max altura
-        minNodeHeight = float.MaxValue;
-        maxNodeHeight = float.MinValue;
-
-        // 1) Crear nodos a partir de campZones
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < campZoneFinder.campZones.Count; i++)
         {
             Vector3 pos = campZoneFinder.campZones[i];
-            float h = pos.y;
-
-            CampNode node = new CampNode
-            {
-                id = i,
-                position = pos,
-                height = h
-            };
-
-            nodes.Add(node);
-
-            if (h < minNodeHeight) minNodeHeight = h;
-            if (h > maxNodeHeight) maxNodeHeight = h;
+            nodes.Add(new CampNode { id = i, position = pos, height = pos.y });
+            minNodeHeight = Mathf.Min(minNodeHeight, pos.y); maxNodeHeight = Mathf.Max(maxNodeHeight, pos.y);
         }
 
-        // 1b) Añadir cima como nodo extra
         if (finalDestination != null)
         {
-            Vector3 pos = finalDestination.position;
-            float h = pos.y;
-
-            CampNode summitNode = new CampNode
-            {
-                id = nodes.Count,
-                position = pos,
-                height = h
-            };
-
-            nodes.Add(summitNode);
-            finalDestinationNodeId = summitNode.id;
-
-            if (h < minNodeHeight) minNodeHeight = h;
-            if (h > maxNodeHeight) maxNodeHeight = h;
-
-            Debug.Log("[CampGraphBuilder] Nodo extra añadido para FinalDestination con id " + finalDestinationNodeId);
+            CampNode summit = new CampNode { id = nodes.Count, position = finalDestination.position, height = finalDestination.position.y };
+            nodes.Add(summit); finalDestinationNodeId = summit.id;
+            minNodeHeight = Mathf.Min(minNodeHeight, summit.height); maxNodeHeight = Mathf.Max(maxNodeHeight, summit.height);
         }
 
-        // 2) Conectar nodos con NavMesh
-        NavMeshPath navPath = new NavMeshPath();
-
+        NavMeshPath path = new NavMeshPath();
         for (int i = 0; i < nodes.Count; i++)
         {
             for (int j = i + 1; j < nodes.Count; j++)
             {
-                CampNode a = nodes[i];
-                CampNode b = nodes[j];
-
-                bool success = NavMesh.CalculatePath(a.position, b.position, NavMesh.AllAreas, navPath);
-
-                if (!success || navPath.status != NavMeshPathStatus.PathComplete)
-                    continue;
-
-                float length = CalculatePathLength(navPath.corners);
-                var cornersCopy = (Vector3[])navPath.corners.Clone();
-
-                // A→B
-                a.neighbors.Add(new CampEdge
+                if (NavMesh.CalculatePath(nodes[i].position, nodes[j].position, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete)
                 {
-                    from = a,
-                    to = b,
-                    pathLength = length,
-                    heightDelta = b.height - a.height,
-                    pathCorners = cornersCopy,
-                    hasObstacle = false,
-                    obstacleType = ObstacleType.None,
-                    obstacleCount = 0,
-                    weight = 0f
-                });
-
-                // B→A
-                b.neighbors.Add(new CampEdge
-                {
-                    from = b,
-                    to = a,
-                    pathLength = length,
-                    heightDelta = a.height - b.height,
-                    pathCorners = cornersCopy,
-                    hasObstacle = false,
-                    obstacleType = ObstacleType.None,
-                    obstacleCount = 0,
-                    weight = 0f
-                });
+                    float len = CalculatePathLength(path.corners);
+                    Vector3[] corners = (Vector3[])path.corners.Clone();
+                    nodes[i].neighbors.Add(new CampEdge { from = nodes[i], to = nodes[j], pathLength = len, heightDelta = nodes[j].height - nodes[i].height, pathCorners = corners });
+                    nodes[j].neighbors.Add(new CampEdge { from = nodes[j], to = nodes[i], pathLength = len, heightDelta = nodes[i].height - nodes[j].height, pathCorners = corners });
+                }
             }
         }
-
-        // 3) Limitar vecinos
         PruneNeighborsByDistance();
-
-        // 4) Asociar obstáculos
         AutoRegisterObstaclesOnEdges();
-
-        // 5) Recalcular pesos de todas las aristas
         RecalculateAllEdgeWeights();
-
-        // --- 6) NUEVO: Calcular pasos hasta la cima ---
         CalculateStepsToSummit();
-
         CreateCampCollisionObjects();
-
-        Debug.Log("[CampGraphBuilder] Grafo completado. (Nodos totales: " + nodes.Count +
-                  ", Máx vecinos por nodo: " + maxNeighborsPerNode + ")");
     }
-
-    [Header("🔹 Camp Collision (para DragCardUI)")]
-    [SerializeField] private string campLayerName = "Campamentos";
-    [SerializeField] private float campCollisionRadius = 2f;
-
-    private readonly List<GameObject> campCollisionObjects = new List<GameObject>();
 
     private void CreateCampCollisionObjects()
     {
         ClearCampCollisionObjects();
-
-        int campLayer = LayerMask.NameToLayer(campLayerName);
-        if (campLayer == -1)
-        {
-            Debug.LogWarning($"[CampGraphBuilder] Crea layer '{campLayerName}' en Project Settings");
-            return;
-        }
-
+        int layer = LayerMask.NameToLayer(campLayerName);
+        if (layer == -1) return;
         foreach (var node in nodes)
         {
-            // Solo para campamentos reales (no cima)
             if (node.id == finalDestinationNodeId) continue;
-
-            GameObject campObj = new GameObject("Camp_INVISIBLE");
-            campObj.transform.position = node.position;
-            campObj.layer = campLayer;
-
-            SphereCollider col = campObj.AddComponent<SphereCollider>();
-            col.isTrigger = false;
-            col.radius = campCollisionRadius;
-
-            campCollisionObjects.Add(campObj);
+            GameObject go = new GameObject("Camp_INVISIBLE");
+            go.transform.position = node.position;
+            go.layer = layer;
+            go.hideFlags = HideFlags.HideInHierarchy; // No se ve en jerarquía ni Gizmos de selección
+            go.AddComponent<SphereCollider>().radius = campCollisionRadius;
+            campCollisionObjects.Add(go);
         }
     }
 
     private void ClearCampCollisionObjects()
     {
-        foreach (var go in campCollisionObjects)
-            if (go != null) Destroy(go);
+        foreach (var go in campCollisionObjects) if (go != null) DestroyImmediate(go);
         campCollisionObjects.Clear();
-    }
-
-    void OnDestroy()
-    {
-        ClearCampCollisionObjects();
-    }
-
-    // --- NUEVA FUNCIÓN: BFS para calcular pasos ---
-    public void CalculateStepsToSummit()
-    {
-        if (finalDestinationNodeId == -1) return;
-
-        // Resetear a un valor alto
-        foreach (var node in nodes) node.stepsToSummit = 9999;
-
-        // Buscar nodo cima
-        CampNode summit = nodes.Find(n => n.id == finalDestinationNodeId);
-        if (summit == null) return;
-
-        // BFS inverso desde la cima
-        Queue<CampNode> queue = new Queue<CampNode>();
-        summit.stepsToSummit = 0;
-        queue.Enqueue(summit);
-
-        while (queue.Count > 0)
-        {
-            CampNode current = queue.Dequeue();
-
-            foreach (var edge in current.neighbors)
-            {
-                CampNode neighbor = edge.to;
-
-                // Si encontramos un camino más corto en número de saltos
-                if (neighbor.stepsToSummit > current.stepsToSummit + 1)
-                {
-                    neighbor.stepsToSummit = current.stepsToSummit + 1;
-                    queue.Enqueue(neighbor);
-                }
-            }
-        }
-    }
-
-    private float CalculatePathLength(Vector3[] corners)
-    {
-        if (corners == null || corners.Length < 2)
-            return 0f;
-
-        float length = 0f;
-        for (int i = 0; i < corners.Length - 1; i++)
-        {
-            length += Vector3.Distance(corners[i], corners[i + 1]);
-        }
-        return length;
-    }
-
-    private void PruneNeighborsByDistance()
-    {
-        foreach (var node in nodes)
-        {
-            if (node.neighbors == null || node.neighbors.Count <= maxNeighborsPerNode)
-                continue;
-
-            node.neighbors.Sort((a, b) => a.pathLength.CompareTo(b.pathLength));
-
-            if (node.neighbors.Count > maxNeighborsPerNode)
-            {
-                node.neighbors.RemoveRange(maxNeighborsPerNode, node.neighbors.Count - maxNeighborsPerNode);
-            }
-        }
-    }
-
-    // ================== PESOS ==================
-
-    private void RecalculateAllEdgeWeights()
-    {
-        if (nodes == null || nodes.Count == 0)
-            return;
-
-        foreach (var node in nodes)
-        {
-            foreach (var edge in node.neighbors)
-            {
-                edge.weight = CalculateEdgeWeight(edge);
-            }
-        }
-    }
-
-    private float CalculateEdgeWeight(CampEdge edge)
-    {
-        if (edge == null)
-            return 0f;
-
-        float w = 0f;
-
-        // 1) Longitud
-        w += edge.pathLength * lengthWeight;
-
-        // 2) Inclinación (solo subida)
-        float positiveSlope = 0f;
-        if (edge.pathLength > 0.01f)
-        {
-            float climb = Mathf.Max(edge.heightDelta, 0f); // solo subida
-            positiveSlope = climb / edge.pathLength;
-        }
-        w += positiveSlope * slopeWeight;
-
-        // 3) Altura relativa del nodo destino (más alto = menos peso)
-        if (maxNodeHeight > minNodeHeight + 0.01f)
-        {
-            float normalizedHeight = Mathf.InverseLerp(minNodeHeight, maxNodeHeight, edge.to.height);
-            float heightCost = 1f - normalizedHeight; // más bajo = 1, más alto = 0
-            w += heightCost * heightWeight;
-        }
-
-        // 4) Penalización por obstáculos: por cada obstáculo
-        if (edge.obstacleCount > 0)
-        {
-            w += obstaclePenalty * edge.obstacleCount;
-        }
-
-        return w;
+        GameObject[] leftovers = GameObject.FindObjectsOfType<GameObject>(true);
+        foreach (var o in leftovers) if (o.name == "Camp_INVISIBLE") DestroyImmediate(o);
     }
 
     public void RecalculateObstaclesOnEdges()
     {
-        // Limpiar todo antes
-        foreach (var node in nodes)
-        {
-            foreach (var edge in node.neighbors)
-            {
-                edge.hasObstacle = false;
-                edge.obstacleType = ObstacleType.None;
-                edge.obstacleCount = 0;
-            }
-        }
-
-        AutoRegisterObstaclesOnEdges();
-
-        // Actualizar pesos con la nueva info de obstáculos
-        RecalculateAllEdgeWeights();
-
-        // (Opcional) Podríamos recalcular pasos si los obstáculos bloquearan caminos totalmente,
-        // pero por ahora solo añaden peso.
+        foreach (var n in nodes) foreach (var e in n.neighbors) { e.hasObstacle = false; e.obstacleCount = 0; }
+        AutoRegisterObstaclesOnEdges(); RecalculateAllEdgeWeights();
     }
 
-    // ============ ASOCIAR OBSTÁCULOS CON ARISTAS ============
+    public void CalculateStepsToSummit()
+    {
+        if (finalDestinationNodeId == -1) return;
+        foreach (var n in nodes) n.stepsToSummit = 9999;
+        CampNode summit = nodes.Find(n => n.id == finalDestinationNodeId);
+        if (summit == null) return;
+        Queue<CampNode> q = new Queue<CampNode>(); summit.stepsToSummit = 0; q.Enqueue(summit);
+        while (q.Count > 0)
+        {
+            CampNode c = q.Dequeue();
+            foreach (var e in c.neighbors) if (e.to.stepsToSummit > c.stepsToSummit + 1) { e.to.stepsToSummit = c.stepsToSummit + 1; q.Enqueue(e.to); }
+        }
+    }
+
+    private float CalculatePathLength(Vector3[] c) { float l = 0; for (int i = 0; i < c.Length - 1; i++) l += Vector3.Distance(c[i], c[i + 1]); return l; }
+
+    private void PruneNeighborsByDistance()
+    {
+        foreach (var n in nodes) if (n.neighbors.Count > maxNeighborsPerNode)
+            {
+                n.neighbors.Sort((a, b) => a.pathLength.CompareTo(b.pathLength));
+                n.neighbors.RemoveRange(maxNeighborsPerNode, n.neighbors.Count - maxNeighborsPerNode);
+            }
+    }
+
+    private void RecalculateAllEdgeWeights()
+    {
+        foreach (var n in nodes) foreach (var e in n.neighbors)
+            {
+                float w = e.pathLength * lengthWeight;
+                if (e.pathLength > 0.01f) w += (Mathf.Max(e.heightDelta, 0f) / e.pathLength) * slopeWeight;
+                if (maxNodeHeight > minNodeHeight + 0.01f) w += (1f - Mathf.InverseLerp(minNodeHeight, maxNodeHeight, e.to.height)) * heightWeight;
+                w += e.obstacleCount * obstaclePenalty; e.weight = w;
+            }
+    }
 
     public void AutoRegisterObstaclesOnEdges()
     {
-        EdgeObstacleMarker[] markers = FindObjectsOfType<EdgeObstacleMarker>();
-
-        if (markers == null || markers.Length == 0)
+        EdgeObstacleMarker[] ms = FindObjectsOfType<EdgeObstacleMarker>();
+        if (ms == null) return;
+        foreach (var m in ms)
         {
-            // Debug.Log("[CampGraphBuilder] No se han encontrado EdgeObstacleMarker.");
-            return;
-        }
-
-        // ... (Tu lógica original de obstáculos se mantiene igual) ...
-        // Para abreviar aquí, he copiado tu lógica original:
-
-        foreach (var marker in markers)
-        {
-            if (marker == null || marker.Obstacle == null)
-                continue;
-
-            Vector3 obstaclePos = marker.transform.position;
-            float radius = marker.obstacleRadius;
-            ObstacleType type = marker.Obstacle.obstacleType;
-
-            float bestDistance = float.MaxValue;
-            foreach (var node in nodes)
-            {
-                foreach (var edge in node.neighbors)
+            if (m == null || m.Obstacle == null) continue;
+            foreach (var n in nodes) foreach (var e in n.neighbors)
                 {
-                    if (edge.pathCorners == null || edge.pathCorners.Length < 2) continue;
-                    float d = DistancePointToPath(obstaclePos, edge.pathCorners);
-                    if (d < bestDistance) bestDistance = d;
-                }
-            }
-
-            if (bestDistance > radius) continue;
-
-            float extraTolerance = radius * 0.3f;
-            float maxDistToMark = Mathf.Min(radius, bestDistance + extraTolerance);
-
-            foreach (var node in nodes)
-            {
-                foreach (var edge in node.neighbors)
-                {
-                    if (edge.from.id > edge.to.id) continue;
-                    if (edge.pathCorners == null || edge.pathCorners.Length < 2) continue;
-
-                    float d = DistancePointToPath(obstaclePos, edge.pathCorners);
-                    if (d <= maxDistToMark)
+                    if (e.from.id < e.to.id && e.pathCorners != null && DistancePointToPath(m.transform.position, e.pathCorners) <= m.obstacleRadius)
                     {
-                        edge.hasObstacle = true;
-                        edge.obstacleType = type;
-                        edge.obstacleCount++;
-
-                        CampEdge reverse = edge.to.neighbors.Find(e => e.to == edge.from);
-                        if (reverse != null)
-                        {
-                            reverse.hasObstacle = true;
-                            reverse.obstacleType = type;
-                            reverse.obstacleCount++;
-                        }
+                        e.hasObstacle = true; e.obstacleCount++;
+                        CampEdge rev = e.to.neighbors.Find(x => x.to == e.from);
+                        if (rev != null) { rev.hasObstacle = true; rev.obstacleCount++; }
                     }
                 }
-            }
         }
     }
 
-    private float DistancePointToPath(Vector3 point, Vector3[] corners)
+    private float DistancePointToPath(Vector3 p, Vector3[] c)
     {
-        float minDist = float.MaxValue;
-        for (int i = 0; i < corners.Length - 1; i++)
+        float min = float.MaxValue;
+        for (int i = 0; i < c.Length - 1; i++)
         {
-            float d = DistancePointToSegment(point, corners[i], corners[i + 1]);
-            if (d < minDist) minDist = d;
+            Vector3 ab = c[i + 1] - c[i];
+            float t = Mathf.Clamp01(Vector3.Dot(p - c[i], ab) / ab.sqrMagnitude);
+            min = Mathf.Min(min, Vector3.Distance(p, c[i] + ab * t));
         }
-        return minDist;
-    }
-
-    private float DistancePointToSegment(Vector3 point, Vector3 a, Vector3 b)
-    {
-        Vector3 ab = b - a;
-        float t = Vector3.Dot(point - a, ab) / ab.sqrMagnitude;
-        t = Mathf.Clamp01(t);
-        Vector3 closest = a + ab * t;
-        return Vector3.Distance(point, closest);
+        return min;
     }
 
     private void OnDrawGizmosSelected()
     {
-        if (nodes == null || nodes.Count == 0)
-            return;
-
-        // Aristas normales (sin obstáculo)
-        if (drawConnections)
-        {
-            Gizmos.color = connectionColor;
-
-            foreach (var node in nodes)
+        if (nodes == null) return;
+        foreach (var n in nodes) foreach (var e in n.neighbors)
             {
-                foreach (var edge in node.neighbors)
-                {
-                    if (drawObstacleEdges && edge.hasObstacle)
-                        continue;
-
-                    Vector3 from = edge.from.position + Vector3.up * 0.1f;
-                    Vector3 to = edge.to.position + Vector3.up * 0.1f;
-
-                    Gizmos.DrawLine(from, to);
-
+                if (e.from.id > e.to.id) continue;
+                bool isObs = e.hasObstacle && drawObstacleEdges;
+                if (!drawConnections && !isObs) continue;
+                Gizmos.color = isObs ? obstacleEdgeColor : connectionColor;
+                Gizmos.DrawLine(e.from.position + Vector3.up * 0.2f, e.to.position + Vector3.up * 0.2f);
 #if UNITY_EDITOR
-                    if (drawEdgeWeights && edge.from.id < edge.to.id)
-                    {
-                        Vector3 mid = (from + to) * 0.5f + Vector3.up * 0.2f;
-                        string label = debugDrawStepsToSummit
-                                        ? "S:" + edge.to.stepsToSummit // Muestra pasos
-                                        : edge.weight.ToString("F1");  // Muestra peso normal
-
-                        Handles.Label(mid, label);
-                    }
+                if (drawEdgeWeights) Handles.Label(Vector3.Lerp(e.from.position, e.to.position, 0.5f) + Vector3.up * 0.5f, debugDrawStepsToSummit ? $"S:{e.to.stepsToSummit}" : e.weight.ToString("F1"));
 #endif
-                }
             }
-        }
-
-        // Aristas con obstáculo (rojas)
-        if (drawObstacleEdges)
-        {
-            Gizmos.color = obstacleEdgeColor;
-
-            foreach (var node in nodes)
-            {
-                foreach (var edge in node.neighbors)
-                {
-                    if (!edge.hasObstacle)
-                        continue;
-
-                    Vector3 from = edge.from.position + Vector3.up * 0.15f;
-                    Vector3 to = edge.to.position + Vector3.up * 0.15f;
-
-                    Gizmos.DrawLine(from, to);
-#if UNITY_EDITOR
-                    if (drawEdgeWeights && edge.from.id < edge.to.id)
-                    {
-                        Vector3 mid = (from + to) * 0.5f + Vector3.up * 0.25f;
-                        Handles.Label(mid, edge.weight.ToString("F1"));
-                    }
-#endif
-                }
-            }
-        }
     }
 }

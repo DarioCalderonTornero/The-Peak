@@ -343,6 +343,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (OccupiedCellMarkerManager.Instance != null)
                 OccupiedCellMarkerManager.Instance.HideAll();
+
+            if (AvailableCellMarkerManager.Instance != null)
+                AvailableCellMarkerManager.Instance.HideAll();
             return;
         }
 
@@ -382,6 +385,17 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         // ✅ NUEVO: colocar usando el sistema correcto (segmento o global)
         UpdatePlacementFromHit(hit);
+
+        if (AvailableCellMarkerManager.Instance != null)
+        {
+            var seg = hit.collider.GetComponentInParent<SegmentGridSettings>();
+
+            if (seg != null)
+                AvailableCellMarkerManager.Instance.UpdateAvailableOnSegment(seg, hit.point, occupiedMarkerRange, placementMask);
+            else
+                AvailableCellMarkerManager.Instance.UpdateAvailableOnWorld(previewInstance.transform.position, occupiedMarkerRange, placementMask,
+                    PlacementMaskManager.Instance != null ? PlacementMaskManager.Instance.data : null);
+        }
 
         // Markers alrededor del preview (si quieres, mantenlos solo para global)
         if (OccupiedCellMarkerManager.Instance != null)
@@ -647,6 +661,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         currentPreviewIsValid = false;
         if (OccupiedCellMarkerManager.Instance != null)
             OccupiedCellMarkerManager.Instance.HideAll();
+
+        if (AvailableCellMarkerManager.Instance != null)
+            AvailableCellMarkerManager.Instance.HideAll();
     }
 
     private bool IsPointerOverUI()

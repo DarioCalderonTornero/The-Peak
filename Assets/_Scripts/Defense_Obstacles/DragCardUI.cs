@@ -386,15 +386,16 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         // ✅ NUEVO: colocar usando el sistema correcto (segmento o global)
         UpdatePlacementFromHit(hit);
 
-        if (AvailableCellMarkerManager.Instance != null)
+        if (AvailableCellMarkerManager.Instance != null && previewInstance != null)
         {
-            var seg = hit.collider.GetComponentInParent<SegmentGridSettings>();
-
-            if (seg != null)
-                AvailableCellMarkerManager.Instance.UpdateAvailableOnSegment(seg, hit.point, occupiedMarkerRange, placementMask);
-            else
-                AvailableCellMarkerManager.Instance.UpdateAvailableOnWorld(previewInstance.transform.position, occupiedMarkerRange, placementMask,
-                    PlacementMaskManager.Instance != null ? PlacementMaskManager.Instance.data : null);
+            float segRadius = occupiedMarkerRange * 2.0f; // sube/baja según quieras
+            AvailableCellMarkerManager.Instance.UpdateAvailableAround(
+                centerWorldPos: previewInstance.transform.position,
+                range: occupiedMarkerRange,
+                segmentSearchRadius: segRadius,
+                placementMask: placementMask,
+                maskData: (PlacementMaskManager.Instance != null) ? PlacementMaskManager.Instance.data : null
+            );
         }
 
         // Markers alrededor del preview (si quieres, mantenlos solo para global)

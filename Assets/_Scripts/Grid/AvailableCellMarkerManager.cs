@@ -1,3 +1,4 @@
+Ôªøusing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,12 +13,12 @@ public class AvailableCellMarkerManager : MonoBehaviour
     [SerializeField] private Vector3 markerScale = new Vector3(0.95f, 0.05f, 0.95f);
     [SerializeField] private float surfaceOffset = 0.03f;
 
-    // pool + ìmappingî por celda visible
+    [Header("Detecci√≥n")]
+    [Tooltip("M√°scara para detectar colliders de segmentos cercanos (si lo dejas en 0 usa placementMask).")]
+    [SerializeField] private LayerMask segmentDetectMask = 0;
+
     private readonly Dictionary<CellKey, GameObject> markersByKey = new();
     private readonly HashSet<CellKey> usedThisFrame = new();
-
-    // Para cumplir tu requisito: cuando cambias de GO/segmento, se limpia lo anterior
-    private int currentOwnerId = int.MinValue; // segId si segmento, 0 si mundo (o collider id si quisieras)
 
     private void Awake()
     {
@@ -25,8 +26,33 @@ public class AvailableCellMarkerManager : MonoBehaviour
         Instance = this;
     }
 
+    // ‚úÖ destruye todo (ll√°malo al salir del drag / cancelar)
     public void HideAll()
     {
+        foreach (var kvp in markersByKey)
+        {
+            if (kvp.Value == null) continue;
+
+            var anim = kvp.Value.GetComponent<OccupiedCellMarkerAnim>();
+            if (anim != null)
+            {
+                // que baje con animaci√≥n y luego se desactive
+                anim.Hide();
+            }
+            else
+            {
+                kvp.Value.SetActive(false);
+            }
+        }
+
+        // Si quieres liberar memoria igualmente, destruye despu√©s de un peque√±o delay
+        StartCoroutine(DestroyAllAfter(0.2f));
+    }
+
+    private IEnumerator DestroyAllAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
         foreach (var kvp in markersByKey)
         {
             if (kvp.Value == null) continue;
@@ -35,62 +61,108 @@ public class AvailableCellMarkerManager : MonoBehaviour
 
         markersByKey.Clear();
         usedThisFrame.Clear();
-        currentOwnerId = int.MinValue;
     }
 
-    // =========================
-    // SEGMENTO (grid real i/j)
-    // =========================
-    public void UpdateAvailableOnSegment(SegmentGridSettings seg, Vector3 hoverWorldPoint, int range, LayerMask placementMask)
+    /// <summary>
+    /// Mundo + segmentos por proximidad. Llamar cada frame durante el drag.
+    /// </summary>
+    public void UpdateAvailableAround(
+        Vector3 centerWorldPos,
+        int range,
+        float segmentSearchRadius,
+        LayerMask placementMask,
+        PlacementMaskData maskData = null)
     {
         if (availableCellMarkerPrefab == null) return;
         if (GridOccupancyManager.Instance == null) return;
-        if (seg == null) { HideAll(); return; }
-
-        int ownerId = seg.GetInstanceID();
-        if (currentOwnerId != ownerId)
-        {
-            // Cambiaste de segmento => oculta lo anterior
-            HideAll();
-            currentOwnerId = ownerId;
-        }
 
         usedThisFrame.Clear();
 
-        if (!seg.TryWorldToCell(hoverWorldPoint, out int ci, out int cj))
+        // 1) Mundo alrededor (cuadrado como siempre)
+        AddAvailableWorld_NoClear(centerWorldPos, range, placementMask, maskData);
+
+        // 2) Segmentos cercanos (aunque el rat√≥n no est√© encima)
+        int detectMask = (segmentDetectMask.value != 0) ? segmentDetectMask.value : placementMask.value;
+        Collider[] cols = Physics.OverlapSphere(centerWorldPos, segmentSearchRadius, detectMask);
+
+        if (cols != null && cols.Length > 0)
         {
-            HideUnusedThisFrame();
-            return;
+            var seen = new HashSet<SegmentGridSettings>();
+            for (int k = 0; k < cols.Length; k++)
+            {
+                var col = cols[k];
+                if (col == null) continue;
+
+                var seg = col.GetComponentInParent<SegmentGridSettings>();
+                if (seg == null) continue;
+                if (!seen.Add(seg)) continue;
+
+                AddAvailableSegment_ByProximity_NoClear(seg, centerWorldPos, range, placementMask);
+            }
         }
 
+        HideUnusedThisFrame();
+    }
+
+    // =========================
+    // SEGMENTO: por proximidad real
+    // =========================
+    private void AddAvailableSegment_ByProximity_NoClear(
+        SegmentGridSettings seg,
+        Vector3 centerWorldPos,
+        int range,
+        LayerMask placementMask)
+    {
         seg.EnsureMask();
         seg.GetPlaneBasis(out var U, out var V, out var N);
 
         float cs = Mathf.Max(0.01f, seg.cellSize);
         Vector3 origin = seg.OriginWorld;
-        int segId = ownerId;
+        int segId = seg.GetInstanceID();
 
-        for (int i = ci - range; i <= ci + range; i++)
+        // Convertimos el centro a coordenadas "flotantes" de celda en U/V
+        Vector3 rel = centerWorldPos - origin;
+        float u = Vector3.Dot(rel, U) / cs;
+        float v = Vector3.Dot(rel, V) / cs;
+
+        // Rango en √≠ndices alrededor de esa coordenada (aunque est√©s fuera del 4x4)
+        int iMin = Mathf.FloorToInt(u - range);
+        int iMax = Mathf.FloorToInt(u + range);
+        int jMin = Mathf.FloorToInt(v - range);
+        int jMax = Mathf.FloorToInt(v + range);
+
+        // Clamp a bounds del segmento
+        iMin = Mathf.Clamp(iMin, 0, seg.gridDims.x - 1);
+        iMax = Mathf.Clamp(iMax, 0, seg.gridDims.x - 1);
+        jMin = Mathf.Clamp(jMin, 0, seg.gridDims.y - 1);
+        jMax = Mathf.Clamp(jMax, 0, seg.gridDims.y - 1);
+
+        // Radio real en metros para que ‚Äúvayan apareciendo‚Äù de forma progresiva
+        float radiusWorld = (range + 0.25f) * cs;
+        float radiusSqr = radiusWorld * radiusWorld;
+
+        for (int i = iMin; i <= iMax; i++)
         {
-            for (int j = cj - range; j <= cj + range; j++)
+            for (int j = jMin; j <= jMax; j++)
             {
-                if (!seg.InBounds(i, j)) continue;
-                if (seg.IsBlocked(i, j)) continue; // <- ìquitadasî por baker/painter
+                if (seg.IsBlocked(i, j)) continue;
 
                 var key = new CellKey(segId, i, j);
-
-                if (GridOccupancyManager.Instance.IsOccupied(key)) // <- ocupada por defensa
+                if (GridOccupancyManager.Instance.IsOccupied(key))
                     continue;
 
-                // Centro de celda en plano del segmento
+                // Centro de celda en plano
                 Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
 
-                // Proyectar a la geometrÌa real
+                // ‚úÖ filtro por distancia real (esto es lo que hace que aparezcan/desaparezcan ‚Äúpor proximidad‚Äù)
+                if ((planeCenter - centerWorldPos).sqrMagnitude > radiusSqr)
+                    continue;
+
+                // Proyectar al mesh real
                 Vector3 rayOrigin = planeCenter + N * 5f;
                 if (!Physics.Raycast(rayOrigin, -N, out RaycastHit hit, 30f, placementMask))
                     continue;
 
-                // RotaciÛn: up = normal real. Forward = eje V del segmento proyectado.
                 Vector3 up = hit.normal;
                 Vector3 fwd = Vector3.ProjectOnPlane(V, up).normalized;
                 if (fwd.sqrMagnitude < 0.0001f)
@@ -100,31 +172,17 @@ public class AvailableCellMarkerManager : MonoBehaviour
                 Vector3 pos = hit.point + up * surfaceOffset;
 
                 var marker = GetOrCreate(key);
-                ApplyPose(marker, pos, rot);
+                ApplyPoseAndShow(marker, pos, rot);
                 usedThisFrame.Add(key);
             }
         }
-
-        HideUnusedThisFrame();
     }
 
     // =========================
-    // MUNDO (grid global x/z)
+    // MUNDO
     // =========================
-    public void UpdateAvailableOnWorld(Vector3 centerWorldPos, int range, LayerMask placementMask, PlacementMaskData maskData = null)
+    private void AddAvailableWorld_NoClear(Vector3 centerWorldPos, int range, LayerMask placementMask, PlacementMaskData maskData)
     {
-        if (availableCellMarkerPrefab == null) return;
-        if (GridOccupancyManager.Instance == null) return;
-
-        int ownerId = 0;
-        if (currentOwnerId != ownerId)
-        {
-            HideAll();
-            currentOwnerId = ownerId;
-        }
-
-        usedThisFrame.Clear();
-
         int cx = Mathf.RoundToInt(centerWorldPos.x);
         int cz = Mathf.RoundToInt(centerWorldPos.z);
 
@@ -134,15 +192,14 @@ public class AvailableCellMarkerManager : MonoBehaviour
             {
                 var worldCell = new Vector2Int(x, z);
 
-                // Respetar m·scara global si existe
                 if (maskData != null && maskData.IsBlocked(worldCell))
                     continue;
 
-                // Evitar dibujar ìmundoî encima de segmentos que tienen grid local real
-                Vector3 probe = new Vector3(x, centerWorldPos.y + 20f, z);
-                if (!Physics.Raycast(probe, Vector3.down, out RaycastHit hit, 60f, placementMask))
+                Vector3 probe = new Vector3(x, centerWorldPos.y + 25f, z);
+                if (!Physics.Raycast(probe, Vector3.down, out RaycastHit hit, 80f, placementMask))
                     continue;
 
+                // no pintar mundo encima de segmentos (ellos lo pintan)
                 if (hit.collider.GetComponentInParent<SegmentGridSettings>() != null)
                     continue;
 
@@ -159,12 +216,10 @@ public class AvailableCellMarkerManager : MonoBehaviour
                 Vector3 pos = hit.point + up * surfaceOffset;
 
                 var marker = GetOrCreate(key);
-                ApplyPose(marker, pos, rot);
+                ApplyPoseAndShow(marker, pos, rot);
                 usedThisFrame.Add(key);
             }
         }
-
-        HideUnusedThisFrame();
     }
 
     // ---------- helpers ----------
@@ -179,8 +234,17 @@ public class AvailableCellMarkerManager : MonoBehaviour
         return go;
     }
 
-    private void ApplyPose(GameObject go, Vector3 pos, Quaternion rot)
+    private void ApplyPoseAndShow(GameObject go, Vector3 pos, Quaternion rot)
     {
+        var anim = go.GetComponent<OccupiedCellMarkerAnim>();
+        if (anim != null)
+        {
+            anim.SetTargetPose(pos, rot);
+            go.transform.localScale = markerScale;
+            anim.Show();
+            return;
+        }
+
         go.transform.SetPositionAndRotation(pos, rot);
         go.transform.localScale = markerScale;
         if (!go.activeSelf) go.SetActive(true);
@@ -192,7 +256,10 @@ public class AvailableCellMarkerManager : MonoBehaviour
         {
             if (kvp.Value == null) continue;
             if (usedThisFrame.Contains(kvp.Key)) continue;
-            kvp.Value.SetActive(false);
+
+            var anim = kvp.Value.GetComponent<OccupiedCellMarkerAnim>();
+            if (anim != null) anim.Hide();
+            else kvp.Value.SetActive(false);
         }
     }
 }

@@ -51,6 +51,13 @@ public class ClimberMovement : MonoBehaviour
     [SerializeField] private float stepConversionFactor = 20f;
     [SerializeField] private float noiseRange = 50f;
 
+    [Header("Configuración de Acampada")]
+    [SerializeField] private GameObject tentPrefab;
+    [SerializeField] private GameObject arrivalFXPrefab;
+    [SerializeField] private float tentYOffset = 0.75f;
+    [SerializeField] private GameObject climberVisual; // El objeto hijo con el modelo 3D
+    private bool isInsideTent = false;
+
     // --- Coordinación escalonada ---
     private static float _globalNextMoveTime = 0f;
 
@@ -393,7 +400,13 @@ public class ClimberMovement : MonoBehaviour
 
         if (this == null || externallyForcedDone || reachedSummit) yield break;
 
-        // <-- FIX: replanificar aquí (ya con defensas colocadas en el turno del jugador)
+        // --- FORZAR SALIDA DE TIENDA AQUÍ ---
+        if (isInsideTent)
+        {
+            ExitTent();
+        }
+        // ------------------------------------
+
         PlanNextMove();
         if (isSelected) UpdatePathVisualization();
 
@@ -511,16 +524,69 @@ public class ClimberMovement : MonoBehaviour
         if (targetNode != null) { currentNode = targetNode; targetNode = null; }
         isActiveThisTurn = false;
         isAtCamp = true;
-        if (agent != null) { agent.isStopped = true; lastFramePosition = transform.position; lastFrameHeight = transform.position.y; }
+
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            lastFramePosition = transform.position;
+            lastFrameHeight = transform.position.y;
+        }
+
         if (currentNode != null)
         {
             if (!nodeVisitCount.ContainsKey(currentNode.id)) nodeVisitCount[currentNode.id] = 0;
             nodeVisitCount[currentNode.id]++;
+
+            // Iniciar secuencia de acampada
+            StartCoroutine(EnterTentSequence(currentNode));
         }
+
         isGoingToFirstCamp = false;
         currentStamina = maxStamina;
         if (agent != null) agent.speed = originalSpeed;
         if (campGraph != null && currentNode != null && currentNode.id == campGraph.finalDestinationNodeId) HandleReachedGoal();
+    }
+
+    private IEnumerator EnterTentSequence(CampGraphBuilder.CampNode node)
+    {
+        // 1. Efecto de partículas
+        if (arrivalFXPrefab != null)
+            Instantiate(arrivalFXPrefab, node.position + Vector3.up * 0.2f, Quaternion.identity);
+
+        // 2. Tienda única con offset 0.75
+        if (tentPrefab != null && !node.HasTent && node.id != campGraph.finalDestinationNodeId)
+        {
+            Vector3 tentPos = node.position + (Vector3.up * tentYOffset);
+            node.instantiatedTent = Instantiate(tentPrefab, tentPos, Quaternion.identity);
+        }
+
+        // 3. Ocultar escalador
+        isInsideTent = true;
+        if (climberVisual != null) climberVisual.SetActive(false);
+        if (pathLineRenderer != null) pathLineRenderer.enabled = false;
+
+        yield return null;
+    }
+    private void ExitTent()
+    {
+        isInsideTent = false;
+        isAtCamp = false; // Importante: ya no está detenido en el campamento
+
+        if (climberVisual != null)
+            climberVisual.SetActive(true);
+
+        // Destruir la tienda física y liberar el nodo
+        if (currentNode != null && currentNode.instantiatedTent != null)
+        {
+            Destroy(currentNode.instantiatedTent);
+            currentNode.instantiatedTent = null;
+        }
+
+        if (isSelected && pathLineRenderer != null)
+        {
+            pathLineRenderer.enabled = true;
+            UpdatePathVisualization();
+        }
     }
 
     private void HandleReachedGoal()

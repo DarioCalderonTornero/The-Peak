@@ -33,6 +33,10 @@ public class CampGraphBuilder : MonoBehaviour
         public float height;
         public int stepsToSummit = 9999;
         public List<CampEdge> neighbors = new List<CampEdge>();
+
+        // --- NUEVAS VARIABLES PARA LA TIENDA ---
+        public GameObject instantiatedTent;
+        public bool HasTent => instantiatedTent != null;
     }
 
     public class CampEdge

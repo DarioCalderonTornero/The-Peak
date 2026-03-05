@@ -721,7 +721,7 @@ Transform:
   m_GameObject: {fileID: 230477812}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 36.519997, y: -10.89, z: 287.55}
+  m_LocalPosition: {x: -132.9, y: 1.1000004, z: 52.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2173,7 +2173,7 @@ MonoBehaviour:
   blendInTime: 1
   delayAfterAnim: 0.25
   delayAfterBlendCameras: 0.5
-  useDeathCinematics: 0
+  useDeathCinematics: 1
 --- !u!1 &639492198
 GameObject:
   m_ObjectHideFlags: 0
@@ -4447,7 +4447,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -4476,9 +4476,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scenesToLoadAdditive:
-  - "MRScene_ConMonta\xF1a"
   - AlexScene
   - JuanScene
+  - "MRScene_ConMonta\xF1a"
 --- !u!1 &1106746828
 GameObject:
   m_ObjectHideFlags: 0
@@ -6848,7 +6848,7 @@ Transform:
   m_GameObject: {fileID: 1730901957}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 36.52, y: -10.89, z: 285.59}
+  m_LocalPosition: {x: -127.1, y: 1.1, z: 369.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

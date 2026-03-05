@@ -15,3 +15,4 @@ MonoBehaviour:
   deathCause: 1
   deathAudioClip: {fileID: 8300000, guid: 90e4bfa79882a444b8f8b3bbe536ae00, type: 3}
   deathAnimationClip: {fileID: 7400000, guid: 31e50b01fcd62ca4b9cc301818e82408, type: 2}
+  climberExplodeGameObject: {fileID: 253284601063518662, guid: 20ffa80d78f8bf8449b4d48bab1898eb, type: 3}

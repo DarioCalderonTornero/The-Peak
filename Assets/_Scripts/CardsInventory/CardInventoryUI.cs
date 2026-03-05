@@ -17,8 +17,14 @@ public class CardInventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI selectedCountText;
     [SerializeField] private Button startMatchButton;
 
+    [Header("Paginación UI")]
+    [SerializeField] private Button prevPageButton;
+    [SerializeField] private Button nextPageButton;
+    [SerializeField] private TextMeshProUGUI pageText;
+
     [Header("Configuración")]
     [SerializeField] private int maxSelectedCards = 8;
+    [SerializeField] private int cardsPerPage = 9;
     [SerializeField] private Color selectedColor = new Color(0.4f, 1f, 0.4f, 1f);
     [SerializeField] private Color normalColor = Color.white;
 
@@ -36,6 +42,9 @@ public class CardInventoryUI : MonoBehaviour
 
     private readonly List<CardData> selectedCards = new();
 
+    // Página actual (0-based)
+    private int currentPage = 0;
+
     private void Start()
     {
         if (startMatchButton != null)
@@ -44,8 +53,22 @@ public class CardInventoryUI : MonoBehaviour
             startMatchButton.onClick.AddListener(OnStartMatchButtonClicked);
         }
 
+        if (prevPageButton != null)
+        {
+            prevPageButton.onClick.RemoveAllListeners();
+            prevPageButton.onClick.AddListener(GoToPrevPage);
+        }
+
+        if (nextPageButton != null)
+        {
+            nextPageButton.onClick.RemoveAllListeners();
+            nextPageButton.onClick.AddListener(GoToNextPage);
+        }
+
+        ClampCurrentPage();
         RefreshInventory();
         UpdateCountText();
+        UpdatePaginationUI();
     }
 
     public void AddCard(CardData card)
@@ -55,31 +78,55 @@ public class CardInventoryUI : MonoBehaviour
         if (!availableCards.Contains(card))
         {
             availableCards.Add(card);
-            if (inventoryPanel.activeSelf)
+
+            // Si la nueva carta crea una página nueva, no pasa nada:
+            // mantenemos currentPage y refrescamos si el inventario está abierto.
+            ClampCurrentPage();
+
+            if (inventoryPanel != null && inventoryPanel.activeSelf)
+            {
                 RefreshInventory();
+                UpdatePaginationUI();
+            }
         }
     }
 
     public void ShowInventory()
     {
-        inventoryPanel.SetActive(true);
+        if (inventoryPanel != null)
+            inventoryPanel.SetActive(true);
+
+        currentPage = 0;
+
+        ClampCurrentPage();
         RefreshInventory();
         UpdateCountText();
         ResetAllCardScales();
+        UpdatePaginationUI();
     }
 
     public void HideInventory()
     {
-        inventoryPanel.SetActive(false);
+        if (inventoryPanel != null)
+            inventoryPanel.SetActive(false);
     }
 
     private void RefreshInventory()
     {
+        if (cardContainer == null || cardPrefab == null) return;
+
         foreach (Transform child in cardContainer)
             Destroy(child.gameObject);
 
-        foreach (var cardData in availableCards)
+        int total = availableCards.Count;
+        if (total <= 0) return;
+
+        int startIndex = currentPage * cardsPerPage;
+        int endExclusive = Mathf.Min(startIndex + cardsPerPage, total);
+
+        for (int i = startIndex; i < endExclusive; i++)
         {
+            var cardData = availableCards[i];
             if (cardData == null) continue;
 
             GameObject cardObj = Instantiate(cardPrefab, cardContainer);
@@ -105,13 +152,63 @@ public class CardInventoryUI : MonoBehaviour
             Button btn = cardObj.GetComponent<Button>();
             if (btn == null) btn = cardObj.AddComponent<Button>();
             btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(() => ToggleSelect(cardObj, cardData));
+
+            // IMPORTANTE: capturamos variables locales para evitar closures raros
+            CardData capturedData = cardData;
+            GameObject capturedObj = cardObj;
+
+            btn.onClick.AddListener(() => ToggleSelect(capturedObj, capturedData));
 
             // Mostrar color según estado
             var img = GetMainImage(cardObj);
             if (img != null)
                 img.color = selectedCards.Contains(cardData) ? selectedColor : normalColor;
         }
+    }
+
+    private int GetTotalPages()
+    {
+        if (cardsPerPage <= 0) return 1;
+        return Mathf.Max(1, Mathf.CeilToInt(availableCards.Count / (float)cardsPerPage));
+    }
+
+    private void ClampCurrentPage()
+    {
+        int totalPages = GetTotalPages();
+        currentPage = Mathf.Clamp(currentPage, 0, totalPages - 1);
+    }
+
+    private void GoToPrevPage()
+    {
+        if (currentPage <= 0) return;
+        currentPage--;
+        RefreshInventory();
+        ResetAllCardScales();
+        UpdatePaginationUI();
+    }
+
+    private void GoToNextPage()
+    {
+        int totalPages = GetTotalPages();
+        if (currentPage >= totalPages - 1) return;
+        currentPage++;
+        RefreshInventory();
+        ResetAllCardScales();
+        UpdatePaginationUI();
+    }
+
+    private void UpdatePaginationUI()
+    {
+        int totalPages = GetTotalPages();
+
+        if (prevPageButton != null)
+            prevPageButton.interactable = currentPage > 0;
+
+        if (nextPageButton != null)
+            nextPageButton.interactable = currentPage < totalPages - 1;
+
+        if (pageText != null)
+            pageText.text = $"{currentPage + 1} / {totalPages}";
     }
 
     private void AddHoverEffect(GameObject cardObj)
@@ -211,6 +308,8 @@ public class CardInventoryUI : MonoBehaviour
 
     private void ResetAllCardScales()
     {
+        if (cardContainer == null) return;
+
         foreach (Transform child in cardContainer)
             child.localScale = cardScale;
     }
@@ -226,7 +325,6 @@ public class CardInventoryUI : MonoBehaviour
 
     private Image GetMainImage(GameObject cardObj)
     {
-        // Busca el Image principal de la carta
         var img = cardObj.GetComponent<Image>();
         if (img == null)
             img = cardObj.GetComponentInChildren<Image>();

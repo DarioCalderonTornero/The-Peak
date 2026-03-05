@@ -17,7 +17,7 @@ MonoBehaviour:
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 5360695673246543767, guid: b561ed8ee1500494abe41d4f4abee8f6, type: 3}
   cost: 3
-  worldSprite: {fileID: 575808051, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
+  worldSprite: {fileID: 21300000, guid: 5df0c272e7c29784690e77a47c9b190a, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}
@@ -27,3 +27,4 @@ MonoBehaviour:
   supportYOffset: 2.14
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}
   gridSize: {x: 3, y: 2}
+  decalOffset: {x: 0, y: 0}

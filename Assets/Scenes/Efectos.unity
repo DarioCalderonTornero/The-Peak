@@ -185,7 +185,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &32370506
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -5695,7 +5695,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!73398921 &177082072
 VFXRenderer:
   serializedVersion: 1
@@ -5704,7 +5704,7 @@ VFXRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 177082071}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -6831,7 +6831,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &197628016
 Transform:
   m_ObjectHideFlags: 0
@@ -8495,7 +8495,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!73398921 &356249012
 VFXRenderer:
   serializedVersion: 1
@@ -8504,7 +8504,7 @@ VFXRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 356249011}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -9826,7 +9826,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1418796099938714149, guid: 6faaa0874a229984b970790762a70a2d, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8015755565452522410, guid: 6faaa0874a229984b970790762a70a2d, type: 3}
       propertyPath: m_Name
@@ -15929,7 +15929,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &731197919
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -20823,7 +20823,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3196289024585426556, guid: 06a24a16d66fd474b976ed2193a6b61e, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6278449252031181647, guid: 06a24a16d66fd474b976ed2193a6b61e, type: 3}
       propertyPath: m_Name
@@ -30102,6 +30102,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RocaPrefabRescaled
       objectReference: {fileID: 0}
+    - target: {fileID: 8310934270780480791, guid: c5afdb53a90a4154ba295aeebfd6f103, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8655230203415349165, guid: c5afdb53a90a4154ba295aeebfd6f103, type: 3}
       propertyPath: m_LocalPosition.x
       value: -48.87
@@ -30741,7 +30745,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &1301833242
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -35567,7 +35571,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 836705305892634516, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 997821771517726474, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -35619,7 +35623,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5606444330844840924, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6927222038028137417, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
       propertyPath: m_IsActive
@@ -38104,7 +38108,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1469094895
 Transform:
   m_ObjectHideFlags: 0
@@ -40425,6 +40429,7 @@ GameObject:
   - component: {fileID: 1763429640}
   - component: {fileID: 1763429639}
   - component: {fileID: 1763429638}
+  - component: {fileID: 1763429641}
   m_Layer: 0
   m_Name: Blood
   m_TagString: Untagged
@@ -41148,7 +41153,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 90, z: 0}
-    m_Scale: {x: 0.25, y: 0.25, z: 0.25}
+    m_Scale: {x: 0.5, y: 0.36, z: 0.5}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -44272,7 +44277,7 @@ ParticleSystem:
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 0
+    collisionMessages: 1
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -45241,12 +45246,28 @@ Transform:
   m_GameObject: {fileID: 1763429637}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -43.53, y: 3.897, z: -117.89}
+  m_LocalPosition: {x: -41.56, y: 5.21, z: -117.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1763429641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763429637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e4c1b3d82fc9f440944554799269256, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bloodDecalPrefab: {fileID: 1003983365510553270, guid: 8677fdb1840ec16459f688b57bf99769, type: 3}
+  maxDecals: 500
+  spawnProbability: 0.2
+  minDistance: 0.15
 --- !u!1 &1786436412
 GameObject:
   m_ObjectHideFlags: 0
@@ -46205,6 +46226,10 @@ PrefabInstance:
     - target: {fileID: 9116140613543229606, guid: ec34624df7ae8df499d8cf48bc8b6776, type: 3}
       propertyPath: m_Name
       value: Lluvia
+      objectReference: {fileID: 0}
+    - target: {fileID: 9116140613543229606, guid: ec34624df7ae8df499d8cf48bc8b6776, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -47898,7 +47923,6 @@ SceneRoots:
   - {fileID: 197628016}
   - {fileID: 1332658017}
   - {fileID: 16649606}
-  - {fileID: 1763429640}
   - {fileID: 32370508}
   - {fileID: 1301833244}
   - {fileID: 213405564}
@@ -47907,3 +47931,4 @@ SceneRoots:
   - {fileID: 356249014}
   - {fileID: 731197921}
   - {fileID: 1202212249}
+  - {fileID: 1763429640}

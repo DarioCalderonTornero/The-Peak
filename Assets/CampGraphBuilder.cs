@@ -36,6 +36,7 @@ public class CampGraphBuilder : MonoBehaviour
 
         // --- NUEVAS VARIABLES PARA LA TIENDA ---
         public GameObject instantiatedTent;
+        public int occupantsCount = 0;
         public bool HasTent => instantiatedTent != null;
     }
 

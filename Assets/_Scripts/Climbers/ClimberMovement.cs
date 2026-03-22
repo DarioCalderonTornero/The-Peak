@@ -17,10 +17,10 @@ public class ClimberMovement : MonoBehaviour
 
     [Header("Visualización de Ruta (Vistosa)")]
     [SerializeField] private LineRenderer pathLineRenderer;
-    [SerializeField] private Color pathColor = new Color(1f, 0.5f, 0f); // Naranja brillante
-    [SerializeField] private float animationSpeed = 2.0f; // Velocidad de las "hormigas"
-    [SerializeField] private float textureTiling = 1.0f; // Repetición de la textura
-    private Material lineMaterialInstance; // Para animar sin afectar a otros
+    private Color pathColor; // Se sobrescribirá dinámicamente con el del casco
+    [SerializeField] private float animationSpeed = 2.0f;
+    [SerializeField] private float textureTiling = 1.0f;
+    private Material lineMaterialInstance;
     private bool isSelected = false;
     [SerializeField] private LayerMask mountainLayer;
     [SerializeField] private float raycastHeight = 8f;
@@ -55,13 +55,11 @@ public class ClimberMovement : MonoBehaviour
     [SerializeField] private GameObject tentPrefab;
     [SerializeField] private GameObject arrivalFXPrefab;
     [SerializeField] private float tentYOffset = 0.75f;
-    [SerializeField] private GameObject climberVisual; // El objeto hijo con el modelo 3D
+    [SerializeField] private GameObject climberVisual;
     private bool isInsideTent = false;
 
-    // --- Coordinación escalonada ---
     private static float _globalNextMoveTime = 0f;
 
-    // Estado
     [SerializeField] private float currentStamina;
     private Vector3 lastFramePosition;
     private float lastFrameHeight;
@@ -80,7 +78,6 @@ public class ClimberMovement : MonoBehaviour
     private Dictionary<int, int> nodeVisitCount = new Dictionary<int, int>();
     private bool externallyForcedDone = false;
 
-    // Getters
     public bool IsAtCamp => isAtCamp;
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
@@ -88,7 +85,6 @@ public class ClimberMovement : MonoBehaviour
     public Vector3 originalDestination;
     [HideInInspector] public bool hasEatenThisTurn = false;
 
-    // Equipment related
     private Coroutine temporaryStopRoutine;
     private float _resumeTime = -1f;
     private float _cachedMultiplierBeforeStop = 1f;
@@ -104,36 +100,20 @@ public class ClimberMovement : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
-
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (loadout == null) loadout = GetComponent<ClimberLoadout>();
+        if (pathLineRenderer == null) pathLineRenderer = GetComponent<LineRenderer>();
 
-        if (pathLineRenderer == null)
-            pathLineRenderer = GetComponent<LineRenderer>();
-
+        // Accedemos a .material para crear la instancia única para este LineRenderer
         if (pathLineRenderer.material != null)
         {
             lineMaterialInstance = pathLineRenderer.material;
-
-            if (lineMaterialInstance.HasProperty("_Color"))
-                lineMaterialInstance.color = pathColor;
-            else if (lineMaterialInstance.HasProperty("_BaseColor"))
-                lineMaterialInstance.SetColor("_BaseColor", pathColor);
         }
-
-        pathLineRenderer.startColor = pathColor;
-        pathLineRenderer.endColor = new Color(
-            pathColor.r,
-            pathColor.g,
-            pathColor.b,
-            0.1f
-        );
 
         pathLineRenderer.positionCount = 0;
         pathLineRenderer.enabled = false;
         pathLineRenderer.textureMode = LineTextureMode.Tile;
     }
-
 
     private void OnEnable()
     {
@@ -162,7 +142,6 @@ public class ClimberMovement : MonoBehaviour
             GameObject summitGO = GameObject.Find("FinalDestination");
             if (summitGO != null) summit = summitGO.transform;
         }
-
         if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();
 
         currentStamina = maxStamina;
@@ -177,13 +156,15 @@ public class ClimberMovement : MonoBehaviour
 
         isAtCamp = false;
         reachedSummit = false;
-
         StartCoroutine(StartLateCheck());
     }
 
     private IEnumerator StartLateCheck()
     {
         yield return new WaitForEndOfFrame();
+
+        SyncPathColorWithHelmet(); // Sincroniza el color con el casco
+
         if (TurnManager.Instance != null)
         {
             if (TurnManager.Instance.IsPlayerTurn()) PlanNextMove();
@@ -191,68 +172,74 @@ public class ClimberMovement : MonoBehaviour
         }
     }
 
-    // ================= SELECCIÓN & VISUALIZACIÓN =================
+    private void SyncPathColorWithHelmet()
+    {
+        if (loadout != null && pathLineRenderer != null)
+        {
+            // Nota: Asume que has añadido el método GetHelmetColor() en ClimberLoadout
+            pathColor = loadout.GetHelmetColor();
+
+            // 1. Ponemos el color global del LineRenderer en blanco puro (neutro).
+            // Esto asegura que el material personalizado se vea exactamente como está configurado,
+            // y que el LineRenderer no "tiña" el color. Mantener el efecto neutro es clave.
+            pathLineRenderer.startColor = Color.white;
+            pathLineRenderer.endColor = Color.white;
+
+            // 2. Si tenemos la instancia del material, actualizamos la propiedad específica
+            if (lineMaterialInstance != null)
+            {
+                // Usamos el nombre exacto de la propiedad del Shader: "ColorDentro"
+                if (lineMaterialInstance.HasProperty("_ColorDentro"))
+                {
+                    lineMaterialInstance.SetColor("_ColorDentro", pathColor);
+                }
+                else
+                {
+                    // Fallback por si acaso el nombre no es correcto en algún material
+                    if (lineMaterialInstance.HasProperty("_Color"))
+                        lineMaterialInstance.color = pathColor;
+                    else if (lineMaterialInstance.HasProperty("_BaseColor"))
+                        lineMaterialInstance.SetColor("_BaseColor", pathColor);
+                }
+            }
+        }
+    }
 
     public void SetSelected(bool selected)
     {
         isSelected = selected;
         pathLineRenderer.enabled = isSelected;
-
-        if (isSelected)
-        {
-            UpdatePathVisualization();
-        }
+        if (isSelected) UpdatePathVisualization();
     }
 
     private void UpdatePathVisualization()
     {
-        if (plannedTargetNode == null)
-        {
-            pathLineRenderer.positionCount = 0;
-            return;
-        }
-
+        if (plannedTargetNode == null) { pathLineRenderer.positionCount = 0; return; }
         NavMeshPath path = new NavMeshPath();
-
         Vector3 start = transform.position;
         Vector3 end = plannedTargetNode.position;
-
         NavMesh.SamplePosition(start, out NavMeshHit hitStart, 5f, NavMesh.AllAreas);
         NavMesh.SamplePosition(end, out NavMeshHit hitEnd, 5f, NavMesh.AllAreas);
-
         NavMesh.CalculatePath(hitStart.position, hitEnd.position, NavMesh.AllAreas, path);
 
-        if (path.status != NavMeshPathStatus.PathComplete)
-        {
-            pathLineRenderer.positionCount = 0;
-            return;
-        }
+        if (path.status != NavMeshPathStatus.PathComplete) { pathLineRenderer.positionCount = 0; return; }
 
         List<Vector3> finalPoints = new List<Vector3>();
-
         for (int i = 0; i < path.corners.Length - 1; i++)
         {
             Vector3 a = path.corners[i];
             Vector3 b = path.corners[i + 1];
-
             for (int j = 0; j <= subdivisionsPerSegment; j++)
             {
                 float t = j / (float)subdivisionsPerSegment;
                 Vector3 samplePoint = Vector3.Lerp(a, b, t);
-
                 Ray ray = new Ray(samplePoint + Vector3.up * raycastHeight, Vector3.down);
                 if (Physics.Raycast(ray, out RaycastHit hit, raycastHeight * 2f, mountainLayer))
-                {
-                    Vector3 floatedPoint = hit.point + hit.normal * floatOffset;
-                    finalPoints.Add(floatedPoint);
-                }
+                    finalPoints.Add(hit.point + hit.normal * floatOffset);
                 else
-                {
                     finalPoints.Add(samplePoint + Vector3.up * floatOffset);
-                }
             }
         }
-
         pathLineRenderer.positionCount = finalPoints.Count;
         pathLineRenderer.SetPositions(finalPoints.ToArray());
     }
@@ -262,7 +249,8 @@ public class ClimberMovement : MonoBehaviour
         if (lineMaterialInstance != null)
         {
             float textureOffset = Time.time * -animationSpeed;
-            //lineMaterialInstance.mainTextureOffset = new Vector2(textureOffset, 0);
+            // Descomentar si usas textura de puntos/flechas y tu shader lo soporta:
+            // lineMaterialInstance.mainTextureOffset = new Vector2(textureOffset, 0);
         }
     }
 
@@ -276,51 +264,20 @@ public class ClimberMovement : MonoBehaviour
     private void TriggerDeath(DeathCause cause)
     {
         if (pointsAddedThisTurn) return;
-
         PointsManager.Instance.AddPoints(10);
         ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-            {
-                climber = this,
-                position = transform.position,
-                cause = cause
-            });
+            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo { climber = this, position = transform.position, cause = cause });
         }
-
-        isActiveThisTurn = false;
-        isAtCamp = false;
-        pointsAddedThisTurn = true;
-
-        // Detenemos por completo al escalador para que la cámara pueda enfocarlo bien
-        if (agent != null && agent.enabled && agent.isOnNavMesh)
-        {
-            agent.isStopped = true;
-            agent.enabled = false;
-        }
-
-        Debug.Log($"[ClimberMovement] Escalador ha muerto por: {cause}");
-        // IMPORTANTE: Ya no hay Destroy(gameObject) aquí.
+        isActiveThisTurn = false; isAtCamp = false; pointsAddedThisTurn = true;
+        if (agent != null && agent.enabled && agent.isOnNavMesh) { agent.isStopped = true; agent.enabled = false; }
     }
-
-    // ================= UPDATE Y LÓGICA =================
 
     private void Update()
     {
-        if (currentStamina <= 0f && !pointsAddedThisTurn)
-        {
-            TriggerDeath(DeathCause.Stamina);
-            return;
-        }
-
-
-        if (isSelected && pathLineRenderer.enabled)
-        {
-            AnimateLine();
-        }
-
+        if (currentStamina <= 0f && !pointsAddedThisTurn) { TriggerDeath(DeathCause.Stamina); return; }
+        if (isSelected && pathLineRenderer.enabled) AnimateLine();
         if (!isActiveThisTurn || reachedSummit || agent == null) return;
         if (!agent.enabled || !agent.isOnNavMesh) return;
 
@@ -335,25 +292,17 @@ public class ClimberMovement : MonoBehaviour
             float slope = uphill / frameDistance;
             float frameCost = frameDistance * baseCostPerMeter * (1f + slope * uphillExtraCostFactor);
             frameCost = Mathf.Max(frameCost, minStaminaCost * Time.deltaTime);
-
             currentStamina = Mathf.Max(0f, currentStamina - frameCost);
-
             lastFramePosition = currentPos;
             lastFrameHeight = frameHeight;
         }
 
         agent.speed = originalSpeed * externalSpeedMultiplier;
-
-        if (!agent.pathPending)
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + reachedThreshold)
         {
-            if (agent.remainingDistance <= agent.stoppingDistance + reachedThreshold)
-            {
-                HandleReachedCamp();
-            }
+            HandleReachedCamp();
         }
     }
-
-    // ================= FASE 1: PENSAR =================
 
     private void HandlePlayerTurnStart()
     {
@@ -366,29 +315,20 @@ public class ClimberMovement : MonoBehaviour
     private void PlanNextMove()
     {
         if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();
-        if (campGraph != null) campGraph.RecalculateObstaclesOnEdges(); // <-- FIX: asegurar obstáculos actualizados tras colocar
-
-        if (isGoingToFirstCamp || currentNode == null)
-        {
-            plannedTargetNode = FindClosestCampNode();
-            return;
-        }
+        if (campGraph != null) campGraph.RecalculateObstaclesOnEdges();
+        if (isGoingToFirstCamp || currentNode == null) { plannedTargetNode = FindClosestCampNode(); return; }
         plannedTargetNode = CalculateBestNeighborNode();
     }
-
-    // ================= FASE 2: ACTUAR =================
 
     private void HandleClimberTurnStart()
     {
         if (reachedSummit || agent == null || externallyForcedDone) return;
-
         hasStartedThisTurn = true;
         hasEatenThisTurn = false;
 
         float now = Time.time;
-        float delay = 0f;
         if (_globalNextMoveTime < now) _globalNextMoveTime = now;
-        delay = _globalNextMoveTime - now;
+        float delay = _globalNextMoveTime - now;
         _globalNextMoveTime += 0.75f;
 
         StartCoroutine(ExecuteTurnDecisionWithDelay(delay));
@@ -397,37 +337,19 @@ public class ClimberMovement : MonoBehaviour
     private IEnumerator ExecuteTurnDecisionWithDelay(float delay)
     {
         if (delay > 0f) yield return new WaitForSeconds(delay);
-
         if (this == null || externallyForcedDone || reachedSummit) yield break;
 
-        // --- FORZAR SALIDA DE TIENDA AQUÍ ---
-        if (isInsideTent)
-        {
-            ExitTent();
-        }
-        // ------------------------------------
+        if (isInsideTent) ExitTent();
 
         PlanNextMove();
         if (isSelected) UpdatePathVisualization();
-
-        if (plannedTargetNode != null)
-        {
-            MoveToNode(plannedTargetNode);
-        }
-        else
-        {
-            PlanNextMove();
-            if (plannedTargetNode != null) MoveToNode(plannedTargetNode);
-            else { isAtCamp = true; isActiveThisTurn = false; }
-        }
+        if (plannedTargetNode != null) MoveToNode(plannedTargetNode);
+        else { isAtCamp = true; isActiveThisTurn = false; }
     }
 
     private void MoveToNode(CampGraphBuilder.CampNode node)
     {
-        targetNode = node;
-        isActiveThisTurn = true;
-        isAtCamp = false;
-
+        targetNode = node; isActiveThisTurn = true; isAtCamp = false;
         if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = false;
@@ -438,18 +360,15 @@ public class ClimberMovement : MonoBehaviour
         lastFrameHeight = transform.position.y;
     }
 
-    // ================= HEURÍSTICA & UTILS =================
-
     private CampGraphBuilder.CampNode FindClosestCampNode()
     {
         if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();
         if (campGraph == null || campGraph.nodes == null) return null;
         float bestDist = float.PositiveInfinity;
         CampGraphBuilder.CampNode closest = null;
-        Vector3 pos = transform.position;
         foreach (var node in campGraph.nodes)
         {
-            float d = Vector3.Distance(pos, node.position);
+            float d = Vector3.Distance(transform.position, node.position);
             if (d < bestDist) { bestDist = d; closest = node; }
         }
         return closest;
@@ -469,25 +388,14 @@ public class ClimberMovement : MonoBehaviour
         CampGraphBuilder.CampEdge bestUnaffordable = null;
         float bestUnaffordableScore = float.PositiveInfinity;
 
-        if (campGraph != null) campGraph.RecalculateObstaclesOnEdges();
-
         foreach (var edge in currentNode.neighbors)
         {
             bool hasRealObstacle = edge.hasObstacle && edge.obstacleType != ObstacleType.None;
+            bool canPassObstacle = !hasRealObstacle || (loadout != null && loadout.CanHandleObstacle(edge.obstacleType));
 
-            bool canPassObstacle = true;
-            if (hasRealObstacle)
-                canPassObstacle = (loadout != null) && loadout.CanHandleObstacle(edge.obstacleType);
-
-            // <-- FIX: si no puede manejar el obstáculo, NO considerar esta arista
-            if (hasRealObstacle && !canPassObstacle)
-                continue;
+            if (hasRealObstacle && !canPassObstacle) continue;
 
             float effectiveWeight = edge.weight;
-
-            if (hasRealObstacle && canPassObstacle && campGraph != null)
-                effectiveWeight -= (campGraph.obstaclePenalty * edge.obstacleCount);
-
             int myVisits = nodeVisitCount.ContainsKey(edge.to.id) ? nodeVisitCount[edge.to.id] : 0;
             effectiveWeight += myVisits * revisitPenaltyPerVisit;
 
@@ -496,13 +404,11 @@ public class ClimberMovement : MonoBehaviour
                 float distNow = Vector3.Distance(currentNode.position, summit.position);
                 float distNext = Vector3.Distance(edge.to.position, summit.position);
                 float approach = distNow - distNext;
-                if (approach < -backtrackTolerance)
-                    effectiveWeight += (-approach - backtrackTolerance) * backtrackPenaltyPerMeter;
+                if (approach < -backtrackTolerance) effectiveWeight += (-approach - backtrackTolerance) * backtrackPenaltyPerMeter;
             }
 
             effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
-            float randomNoise = UnityEngine.Random.Range(-noiseRange, noiseRange);
-            float perceivedWeight = Mathf.Max(effectiveWeight + randomNoise, 0.1f);
+            float perceivedWeight = Mathf.Max(effectiveWeight + UnityEngine.Random.Range(-noiseRange, noiseRange), 0.1f);
             int steps = (edge.to != null) ? edge.to.stepsToSummit : 999;
             float finalScore = perceivedWeight + (steps * stepConversionFactor);
 
@@ -524,20 +430,12 @@ public class ClimberMovement : MonoBehaviour
         if (targetNode != null) { currentNode = targetNode; targetNode = null; }
         isActiveThisTurn = false;
         isAtCamp = true;
-
-        if (agent != null)
-        {
-            agent.isStopped = true;
-            lastFramePosition = transform.position;
-            lastFrameHeight = transform.position.y;
-        }
+        if (agent != null) agent.isStopped = true;
 
         if (currentNode != null)
         {
             if (!nodeVisitCount.ContainsKey(currentNode.id)) nodeVisitCount[currentNode.id] = 0;
             nodeVisitCount[currentNode.id]++;
-
-            // Iniciar secuencia de acampada
             StartCoroutine(EnterTentSequence(currentNode));
         }
 
@@ -549,37 +447,47 @@ public class ClimberMovement : MonoBehaviour
 
     private IEnumerator EnterTentSequence(CampGraphBuilder.CampNode node)
     {
-        // 1. Efecto de partículas
         if (arrivalFXPrefab != null)
             Instantiate(arrivalFXPrefab, node.position + Vector3.up * 0.2f, Quaternion.identity);
 
-        // 2. Tienda única con offset 0.75
+        // Lógica de ocupación grupal
+        node.occupantsCount++;
+
         if (tentPrefab != null && !node.HasTent && node.id != campGraph.finalDestinationNodeId)
         {
             Vector3 tentPos = node.position + (Vector3.up * tentYOffset);
             node.instantiatedTent = Instantiate(tentPrefab, tentPos, Quaternion.identity);
         }
 
-        // 3. Ocultar escalador
         isInsideTent = true;
         if (climberVisual != null) climberVisual.SetActive(false);
         if (pathLineRenderer != null) pathLineRenderer.enabled = false;
 
         yield return null;
     }
+
     private void ExitTent()
     {
         isInsideTent = false;
-        isAtCamp = false; // Importante: ya no está detenido en el campamento
+        isAtCamp = false;
 
         if (climberVisual != null)
             climberVisual.SetActive(true);
 
-        // Destruir la tienda física y liberar el nodo
-        if (currentNode != null && currentNode.instantiatedTent != null)
+        // Lógica de salida: Solo destruye la tienda si es el último en salir
+        if (currentNode != null)
         {
-            Destroy(currentNode.instantiatedTent);
-            currentNode.instantiatedTent = null;
+            currentNode.occupantsCount--;
+
+            if (currentNode.occupantsCount <= 0)
+            {
+                currentNode.occupantsCount = 0;
+                if (currentNode.instantiatedTent != null)
+                {
+                    Destroy(currentNode.instantiatedTent);
+                    currentNode.instantiatedTent = null;
+                }
+            }
         }
 
         if (isSelected && pathLineRenderer != null)
@@ -591,13 +499,10 @@ public class ClimberMovement : MonoBehaviour
 
     private void HandleReachedGoal()
     {
-        reachedSummit = true;
-        isActiveThisTurn = false;
-        isAtCamp = false;
+        reachedSummit = true; isActiveThisTurn = false; isAtCamp = false;
         if (agent != null) agent.isStopped = true;
         GameOverManager.Instance.SetGameOverCamera();
         ShowFinalStats.Instance.Show();
-        Debug.Log("Cima alcanzada");
     }
 
     private void HandleClimberTurnEnd()
@@ -625,7 +530,6 @@ public class ClimberMovement : MonoBehaviour
         isGoingToFirstCamp = false; isAtCamp = false; isActiveThisTurn = true; reachedSummit = false;
         targetNode = node; plannedTargetNode = node;
         agent.isStopped = false; agent.SetDestination(node.position); originalDestination = node.position;
-        lastFramePosition = transform.position; lastFrameHeight = transform.position.y;
     }
     public void SetExternallyDoneThisTurn(bool value) { externallyForcedDone = value; if (value && agent != null) agent.isStopped = true; }
     public void AddMaxStamina(float amount) { maxStamina += amount; currentStamina = maxStamina; }
@@ -645,4 +549,8 @@ public class ClimberMovement : MonoBehaviour
         if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = false;
         temporaryStopRoutine = null; _resumeTime = -1f;
     }
+
+
+
+    
 }

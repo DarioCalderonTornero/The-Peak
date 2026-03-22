@@ -213,6 +213,17 @@ public class ClimberLoadout : MonoBehaviour
     }
 
     // GETTERS
+
+    public Color GetHelmetColor()
+    {
+        if (helmetRenderer != null)
+        {
+            // Usamos .sharedMaterial si quieres el color original o .material para la instancia actual
+            return helmetRenderer.material.color;
+        }
+        return Color.white; // Color por defecto si falla
+    }
+
     public void PickAxeSound()
     {
         Temporal_Sound_Music.Instance.PlaySound(pickaxeAudioClip, 1.0f);

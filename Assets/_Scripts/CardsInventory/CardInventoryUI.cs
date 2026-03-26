@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -17,12 +17,12 @@ public class CardInventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI selectedCountText;
     [SerializeField] private Button startMatchButton;
 
-    [Header("Paginación UI")]
+    [Header("PaginaciÃ³n UI")]
     [SerializeField] private Button prevPageButton;
     [SerializeField] private Button nextPageButton;
     [SerializeField] private TextMeshProUGUI pageText;
 
-    [Header("Configuración")]
+    [Header("ConfiguraciÃ³n")]
     [SerializeField] private int maxSelectedCards = 8;
     [SerializeField] private int cardsPerPage = 9;
     [SerializeField] private Color selectedColor = new Color(0.4f, 1f, 0.4f, 1f);
@@ -42,8 +42,15 @@ public class CardInventoryUI : MonoBehaviour
 
     private readonly List<CardData> selectedCards = new();
 
-    // Página actual (0-based)
+    // PÃ¡gina actual (0-based)
     private int currentPage = 0;
+
+    [Header("Feedback slide de pÃ¡gina")]
+    [SerializeField] private float pageSlideDuration = 0.08f;
+    [SerializeField] private float pageSlideDistance = 25f;
+
+    private bool isChangingPage = false;
+
 
     private void Start()
     {
@@ -79,8 +86,8 @@ public class CardInventoryUI : MonoBehaviour
         {
             availableCards.Add(card);
 
-            // Si la nueva carta crea una página nueva, no pasa nada:
-            // mantenemos currentPage y refrescamos si el inventario está abierto.
+            // Si la nueva carta crea una pÃ¡gina nueva, no pasa nada:
+            // mantenemos currentPage y refrescamos si el inventario estÃ¡ abierto.
             ClampCurrentPage();
 
             if (inventoryPanel != null && inventoryPanel.activeSelf)
@@ -145,10 +152,10 @@ public class CardInventoryUI : MonoBehaviour
                 cardUI.SetupCardUI();
             }
 
-            // Añadir efecto hover
+            // AÃ±adir efecto hover
             AddHoverEffect(cardObj);
 
-            // Configurar botón de selección
+            // Configurar botÃ³n de selecciÃ³n
             Button btn = cardObj.GetComponent<Button>();
             if (btn == null) btn = cardObj.AddComponent<Button>();
             btn.onClick.RemoveAllListeners();
@@ -159,7 +166,7 @@ public class CardInventoryUI : MonoBehaviour
 
             btn.onClick.AddListener(() => ToggleSelect(capturedObj, capturedData));
 
-            // Mostrar color según estado
+            // Mostrar color segÃºn estado
             var img = GetMainImage(cardObj);
             if (img != null)
                 img.color = selectedCards.Contains(cardData) ? selectedColor : normalColor;
@@ -180,21 +187,15 @@ public class CardInventoryUI : MonoBehaviour
 
     private void GoToPrevPage()
     {
-        if (currentPage <= 0) return;
-        currentPage--;
-        RefreshInventory();
-        ResetAllCardScales();
-        UpdatePaginationUI();
+        if (isChangingPage || currentPage <= 0) return;
+        StartCoroutine(ChangePageWithSlide(-1));
     }
 
     private void GoToNextPage()
     {
         int totalPages = GetTotalPages();
-        if (currentPage >= totalPages - 1) return;
-        currentPage++;
-        RefreshInventory();
-        ResetAllCardScales();
-        UpdatePaginationUI();
+        if (isChangingPage || currentPage >= totalPages - 1) return;
+        StartCoroutine(ChangePageWithSlide(1));
     }
 
     private void UpdatePaginationUI()
@@ -202,10 +203,10 @@ public class CardInventoryUI : MonoBehaviour
         int totalPages = GetTotalPages();
 
         if (prevPageButton != null)
-            prevPageButton.interactable = currentPage > 0;
+            prevPageButton.interactable = !isChangingPage && currentPage > 0;
 
         if (nextPageButton != null)
-            nextPageButton.interactable = currentPage < totalPages - 1;
+            nextPageButton.interactable = !isChangingPage && currentPage < totalPages - 1;
 
         if (pageText != null)
             pageText.text = $"{currentPage + 1} / {totalPages}";
@@ -278,6 +279,86 @@ public class CardInventoryUI : MonoBehaviour
 
         UpdateCountText();
         UpdateStartButtonState();
+    }
+
+    private IEnumerator ChangePageWithSlide(int direction)
+    {
+        isChangingPage = true;
+        UpdatePaginationUI();
+
+        List<RectTransform> visibleCards = GetVisibleCardRects();
+
+        // ðŸ‘‡ Micro desliz direccional
+        yield return StartCoroutine(SlideCards(visibleCards, direction));
+
+        currentPage += direction;
+        ClampCurrentPage();
+
+        RefreshInventory();
+        ResetAllCardScales();
+
+        isChangingPage = false;
+        UpdatePaginationUI();
+    }
+
+    private IEnumerator SlideCards(List<RectTransform> cards, int direction)
+    {
+        if (cards == null || cards.Count == 0)
+            yield break;
+
+        List<Vector2> originalPositions = new List<Vector2>(cards.Count);
+
+        foreach (var rt in cards)
+            originalPositions.Add(rt.anchoredPosition);
+
+        float elapsed = 0f;
+
+        // DirecciÃ³n:
+        // Derecha (+1) â†’ cartas se mueven a la izquierda
+        // Izquierda (-1) â†’ cartas se mueven a la derecha
+        float offset = -direction * pageSlideDistance;
+
+        while (elapsed < pageSlideDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / pageSlideDuration);
+
+            // curva tipo "punch" (ida y vuelta rÃ¡pida)
+            float curve = Mathf.Sin(t * Mathf.PI);
+
+            for (int i = 0; i < cards.Count; i++)
+            {
+                if (cards[i] == null) continue;
+
+                cards[i].anchoredPosition =
+                    originalPositions[i] + new Vector2(offset * curve, 0f);
+            }
+
+            yield return null;
+        }
+
+        // Reset final
+        for (int i = 0; i < cards.Count; i++)
+        {
+            if (cards[i] == null) continue;
+            cards[i].anchoredPosition = originalPositions[i];
+        }
+    }
+
+    private List<RectTransform> GetVisibleCardRects()
+    {
+        List<RectTransform> rects = new List<RectTransform>();
+
+        if (cardContainer == null) return rects;
+
+        foreach (Transform child in cardContainer)
+        {
+            RectTransform rt = child as RectTransform;
+            if (rt != null)
+                rects.Add(rt);
+        }
+
+        return rects;
     }
 
     private void UpdateCountText()

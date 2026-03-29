@@ -1,80 +1,115 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class TentInteraction : MonoBehaviour
 {
-    /*private static TentInteraction _selectedTent; // La única tienda activa en el juego
-    private List<ClimberMovement> occupants = new List<ClimberMovement>();
+    [Header("Referencias")]
+    [SerializeField] private CampGraphBuilder campGraph;
 
-    public void RegisterClimber(ClimberMovement climber)
-    {
-        if (!occupants.Contains(climber)) occupants.Add(climber);
-    }
+    [Header("Configuración de Clics")]
+    [Tooltip("La capa o capas donde están las tiendas de campaña o los colliders invisibles de los campamentos.")]
+    [SerializeField] private LayerMask clickableLayers;
 
-    public void UnregisterClimber(ClimberMovement climber)
-    {
-        if (occupants.Contains(climber)) occupants.Remove(climber);
-    }
+    // Guardamos los escaladores que están seleccionados actualmente para poder deseleccionarlos después
+    private List<ClimberMovement> currentlySelectedClimbers = new List<ClimberMovement>();
 
-    private void OnMouseDown()
+    private void Start()
     {
-        // Si clicamos en una tienda distinta, "limpiamos" la anterior
-        if (_selectedTent != null && _selectedTent != this)
+        // Si no se ha asignado manualmente, lo buscamos en la escena
+        if (campGraph == null)
         {
-            _selectedTent.HideAllOccupantPaths();
+            campGraph = FindObjectOfType<CampGraphBuilder>();
         }
-
-        _selectedTent = this;
-        ShowAllOccupantPaths();
     }
 
     private void Update()
     {
-        // Si esta es la tienda seleccionada y el jugador hace clic izquierdo...
-        if (_selectedTent == this && Input.GetMouseButtonDown(0))
+        // Detectar el clic izquierdo del ratón
+        if (Input.GetMouseButtonDown(0))
         {
-            // Lanzamos un rayo para ver si el clic fue FUERA de la tienda
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            HandleClick();
+        }
+    }
+
+    private void HandleClick()
+    {
+        // Lanzamos un rayo desde la posición del ratón en la pantalla
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, clickableLayers))
+        {
+            GameObject clickedObject = hit.collider.gameObject;
+            CampGraphBuilder.CampNode clickedNode = GetNodeFromClickedObject(clickedObject);
+
+            if (clickedNode != null && clickedNode.HasTent)
             {
-                if (hit.transform != this.transform)
-                {
-                    DeselectTent();
-                }
+                // Si hicimos clic en una tienda válida, mostramos las rutas
+                ShowPathsForCamp(clickedNode);
             }
             else
             {
-                // Clic al vacío (al cielo o fuera de colliders)
-                DeselectTent();
+                // Si hicimos clic en algo de esa capa pero no es una tienda, limpiamos
+                ClearSelectedPaths();
+            }
+        }
+        else
+        {
+            // Si hicimos clic en el vacío, limpiamos las selecciones
+            ClearSelectedPaths();
+        }
+    }
+
+    private CampGraphBuilder.CampNode GetNodeFromClickedObject(GameObject clickedObject)
+    {
+        if (campGraph == null || campGraph.nodes == null) return null;
+
+        foreach (var node in campGraph.nodes)
+        {
+            // Opción 1: Hicimos clic directamente en la tienda instanciada (o un hijo de ella)
+            if (node.instantiatedTent != null &&
+               (clickedObject == node.instantiatedTent || clickedObject.transform.IsChildOf(node.instantiatedTent.transform)))
+            {
+                return node;
+            }
+
+            // Opción 2: Hicimos clic en el collider invisible del campamento ("Camp_INVISIBLE")
+            // Comparamos por proximidad al nodo, ya que se instancian en la misma posición
+            if (clickedObject.name.Contains("Camp_INVISIBLE") &&
+                Vector3.Distance(clickedObject.transform.position, node.position) < 0.1f)
+            {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+    private void ShowPathsForCamp(CampGraphBuilder.CampNode node)
+    {
+        // Primero limpiamos cualquier ruta que estuviera dibujada previamente
+        ClearSelectedPaths();
+
+        // Activamos la ruta de todos los escaladores presentes en el campamento
+        foreach (var climber in node.presentClimbers)
+        {
+            if (climber != null)
+            {
+                climber.SetSelected(true);
+                currentlySelectedClimbers.Add(climber);
             }
         }
     }
 
-    private void ShowAllOccupantPaths()
+    private void ClearSelectedPaths()
     {
-        foreach (var climber in occupants)
+        foreach (var climber in currentlySelectedClimbers)
         {
-            if (climber != null) climber.ShowPathFromTent(true);
+            if (climber != null)
+            {
+                // Deseleccionamos al escalador para apagar su LineRenderer
+                climber.SetSelected(false);
+            }
         }
+        currentlySelectedClimbers.Clear();
     }
-
-    private void HideAllOccupantPaths()
-    {
-        foreach (var climber in occupants)
-        {
-            if (climber != null) climber.ShowPathFromTent(false);
-        }
-    }
-
-    private void DeselectTent()
-    {
-        HideAllOccupantPaths();
-        if (_selectedTent == this) _selectedTent = null;
-    }
-
-    private void OnDestroy()
-    {
-        // Limpieza de seguridad si la tienda se destruye mientras está seleccionada
-        if (_selectedTent == this) _selectedTent = null;
-    }*/
 }

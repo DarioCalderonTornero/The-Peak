@@ -37,6 +37,10 @@ public class CampGraphBuilder : MonoBehaviour
         // --- NUEVAS VARIABLES PARA LA TIENDA ---
         public GameObject instantiatedTent;
         public int occupantsCount = 0;
+
+        // --- NUEVO: Lista de escaladores presentes en este campamento ---
+        public List<ClimberMovement> presentClimbers = new List<ClimberMovement>();
+
         public bool HasTent => instantiatedTent != null;
     }
 
@@ -113,7 +117,7 @@ public class CampGraphBuilder : MonoBehaviour
             GameObject go = new GameObject("Camp_INVISIBLE");
             go.transform.position = node.position;
             go.layer = layer;
-            go.hideFlags = HideFlags.HideInHierarchy; // No se ve en jerarquía ni Gizmos de selección
+            go.hideFlags = HideFlags.HideInHierarchy;
             go.AddComponent<SphereCollider>().radius = campCollisionRadius;
             campCollisionObjects.Add(go);
         }

@@ -104,7 +104,6 @@ public class ClimberMovement : MonoBehaviour
         if (loadout == null) loadout = GetComponent<ClimberLoadout>();
         if (pathLineRenderer == null) pathLineRenderer = GetComponent<LineRenderer>();
 
-        // Accedemos a .material para crear la instancia única para este LineRenderer
         if (pathLineRenderer.material != null)
         {
             lineMaterialInstance = pathLineRenderer.material;
@@ -163,7 +162,7 @@ public class ClimberMovement : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        SyncPathColorWithHelmet(); // Sincroniza el color con el casco
+        SyncPathColorWithHelmet();
 
         if (TurnManager.Instance != null)
         {
@@ -176,26 +175,18 @@ public class ClimberMovement : MonoBehaviour
     {
         if (loadout != null && pathLineRenderer != null)
         {
-            // Nota: Asume que has añadido el método GetHelmetColor() en ClimberLoadout
             pathColor = loadout.GetHelmetColor();
-
-            // 1. Ponemos el color global del LineRenderer en blanco puro (neutro).
-            // Esto asegura que el material personalizado se vea exactamente como está configurado,
-            // y que el LineRenderer no "tiña" el color. Mantener el efecto neutro es clave.
             pathLineRenderer.startColor = Color.white;
             pathLineRenderer.endColor = Color.white;
 
-            // 2. Si tenemos la instancia del material, actualizamos la propiedad específica
             if (lineMaterialInstance != null)
             {
-                // Usamos el nombre exacto de la propiedad del Shader: "ColorDentro"
                 if (lineMaterialInstance.HasProperty("_ColorDentro"))
                 {
                     lineMaterialInstance.SetColor("_ColorDentro", pathColor);
                 }
                 else
                 {
-                    // Fallback por si acaso el nombre no es correcto en algún material
                     if (lineMaterialInstance.HasProperty("_Color"))
                         lineMaterialInstance.color = pathColor;
                     else if (lineMaterialInstance.HasProperty("_BaseColor"))
@@ -249,8 +240,6 @@ public class ClimberMovement : MonoBehaviour
         if (lineMaterialInstance != null)
         {
             float textureOffset = Time.time * -animationSpeed;
-            // Descomentar si usas textura de puntos/flechas y tu shader lo soporta:
-            // lineMaterialInstance.mainTextureOffset = new Vector2(textureOffset, 0);
         }
     }
 
@@ -453,6 +442,12 @@ public class ClimberMovement : MonoBehaviour
         // Lógica de ocupación grupal
         node.occupantsCount++;
 
+        // --- NUEVO: Se añade el escalador a la lista de presentes en el campamento ---
+        if (!node.presentClimbers.Contains(this))
+        {
+            node.presentClimbers.Add(this);
+        }
+
         if (tentPrefab != null && !node.HasTent && node.id != campGraph.finalDestinationNodeId)
         {
             Vector3 tentPos = node.position + (Vector3.up * tentYOffset);
@@ -478,6 +473,12 @@ public class ClimberMovement : MonoBehaviour
         if (currentNode != null)
         {
             currentNode.occupantsCount--;
+
+            // --- NUEVO: Se elimina el escalador de la lista al salir ---
+            if (currentNode.presentClimbers.Contains(this))
+            {
+                currentNode.presentClimbers.Remove(this);
+            }
 
             if (currentNode.occupantsCount <= 0)
             {
@@ -549,8 +550,4 @@ public class ClimberMovement : MonoBehaviour
         if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = false;
         temporaryStopRoutine = null; _resumeTime = -1f;
     }
-
-
-
-    
 }

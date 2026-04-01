@@ -28,8 +28,14 @@ public class ClimberLoadout : MonoBehaviour
 
     private bool _isInitialized = false;
 
+    private ClimberMovement climberMovement;
+    private Animator climberAnimator;
+
     private void Awake()
     {
+        climberMovement = GetComponent<ClimberMovement>();  
+        climberAnimator = GetComponentInChildren<Animator>(); 
+
         if (helmetRenderer == null)
         {
             Debug.LogWarning("No helmet renderer");
@@ -232,5 +238,15 @@ public class ClimberLoadout : MonoBehaviour
     public void RockDestroySound()
     {
         Temporal_Sound_Music.Instance.PlaySound(rockDestroyAudioClip, 0.25f);
+    }
+
+    public void RequestClimberStop(float duration)
+    {
+        climberMovement?.StopForSeconds(duration);
+    }
+
+    public void TriggerAnimation(string triggerName)
+    {
+            climberAnimator?.SetTrigger(triggerName);
     }
 }

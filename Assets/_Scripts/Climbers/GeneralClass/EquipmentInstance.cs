@@ -5,8 +5,6 @@ public abstract class EquipmentInstance
     protected string equipmentName;
 
     protected ClimberLoadout ownerLoadout;
-    protected ClimberMovement ownerClimber;
-    protected Animator ownerAnimator;
     
 
     /// <summary>
@@ -21,18 +19,10 @@ public abstract class EquipmentInstance
         {
             var go = ownerLoadout.gameObject;
 
-            ownerClimber = go.GetComponent<ClimberMovement>();
-            ownerAnimator = go.GetComponentInChildren<Animator>();
-        }
-        else
-        {
-            ownerClimber = null;
-            ownerAnimator = null;
         }
     }
 
     public ClimberLoadout OwnerLoadout => ownerLoadout;
-    public ClimberMovement OwnerClimber => ownerClimber;
 
     public virtual void Initialize(string name)
     {

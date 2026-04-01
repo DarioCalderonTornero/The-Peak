@@ -3,14 +3,6 @@ using UnityEngine;
 
 public class RockBreakerEquipment : EquipmentInstance
 {
-    private ClimberMovement climberMovement;
-
-    private float maxTime = 3f;
-
-    private void Awake()
-    {
-        //climberMovement = <ClimberMovement>();
-    }
 
     public override void Initialize(string name)
     {
@@ -38,11 +30,11 @@ public class RockBreakerEquipment : EquipmentInstance
     {
         base.OnCounterSuccess(type);
 
-        if (ownerClimber == null)
+        if (ownerLoadout == null)
             return;
 
-        ownerClimber.StopForSeconds(2.2f);
-        ownerAnimator.SetTrigger("canPick");
+        ownerLoadout.RequestClimberStop(2.2f);
+        ownerLoadout.TriggerAnimation("canPick");
 
         Debug.Log($"<color=green>[RockBreakerEquipment]</color> Successfully countered {type}! (Would break it here)");
     }

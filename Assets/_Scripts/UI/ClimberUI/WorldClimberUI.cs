@@ -16,6 +16,11 @@ public class WorldClimberUI : MonoBehaviour
 
     private bool isStaminaHide = true;
 
+    private void Awake()
+    {
+        isStaminaHide = false;
+    }
+
     private void Start()
     {
         if (gameOverClimberText != null)

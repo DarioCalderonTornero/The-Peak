@@ -2267,10 +2267,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ff7324c04c6fa6542b3f1025eb1d93ca, type: 2}
   - {fileID: 11400000, guid: 47362b00288441e49a59a6677321d422, type: 2}
   - {fileID: 11400000, guid: 1e5e43a2db2ce844d856910d790669ba, type: 2}
-  - {fileID: 11400000, guid: 2ea0e1a9ce889354ea7a06306d92bc33, type: 2}
-  - {fileID: 11400000, guid: 659e4c6cffe64814fa48d561db32f7a6, type: 2}
-  - {fileID: 11400000, guid: 659e4c6cffe64814fa48d561db32f7a6, type: 2}
-  - {fileID: 11400000, guid: 659e4c6cffe64814fa48d561db32f7a6, type: 2}
   pageSlideDuration: 0.2
   pageSlideDistance: 15
 --- !u!4 &895229883

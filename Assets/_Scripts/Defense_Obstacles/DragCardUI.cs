@@ -686,22 +686,20 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return "Fuera del suelo";
 
         // ✅ Si estamos en segmento, valida con SegmentGridSettings (no con PlacementMaskData)
-        if (usingSegmentGrid && activeSegment != null)
+        if (usingSegmentGrid)
         {
-            int segId = activeSegment.GetInstanceID();
-
             for (int k = 0; k < currentFootprintKeys.Count; k++)
             {
                 var key = currentFootprintKeys[k];
 
-                // si por lo que sea llega una key de otro seg, inválido
-                if (key.segmentId != segId)
+                var seg = SegmentRegistry.Get(key.segmentId);
+                if (seg == null)
                     return "Fuera del segmento";
 
-                if (!activeSegment.InBounds(key.x, key.y))
+                if (!seg.InBounds(key.x, key.y))
                     return "Fuera del segmento";
 
-                if (activeSegment.IsBlocked(key.x, key.y))
+                if (seg.IsBlocked(key.x, key.y))
                     return "Zona bloqueada";
             }
         }
@@ -1236,6 +1234,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         ApplyPreviewMaterial(currentPreviewIsValid);
     }
 
+
     private bool TrySnapOnSegmentGrid(
     SegmentGridSettings seg,
     Vector3 hitPoint,
@@ -1260,30 +1259,25 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         float cs = Mathf.Max(0.01f, seg.cellSize);
         Vector3 origin = seg.OriginWorld;
 
-        // rotación por pasos (0/90/180/270)
         int step = Mathf.RoundToInt(yawDegrees / 90f) & 3;
         bool rotated = (step % 2) != 0;
 
         int w = rotated ? baseGridSize.y : baseGridSize.x;
         int h = rotated ? baseGridSize.x : baseGridSize.y;
 
-        // Coordenadas en celdas (u/v) respecto al origin
         Vector3 rel = hitPoint - origin;
         float u = Vector3.Dot(rel, U) / cs;
         float v = Vector3.Dot(rel, V) / cs;
 
-        // Snap del centro: impar => .5, par => entero
         float offsetU = (w % 2 == 0) ? 0f : 0.5f;
         float offsetV = (h % 2 == 0) ? 0f : 0.5f;
 
-        // ✅ evita problemas con .5 (AwayFromZero)
         float centerU = (float)System.Math.Round(u - offsetU, System.MidpointRounding.AwayFromZero) + offsetU;
         float centerV = (float)System.Math.Round(v - offsetV, System.MidpointRounding.AwayFromZero) + offsetV;
 
         float startU = -(w / 2f) + 0.5f;
         float startV = -(h / 2f) + 0.5f;
 
-        // Forward base según rotación 0/90/180/270 (en ejes del segmento)
         Vector3 fwdBase = step switch
         {
             0 => V,
@@ -1300,8 +1294,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         Vector3 sumN = Vector3.zero;
         int count = 0;
 
-        int segId = seg.GetInstanceID();
-
         for (int ix = 0; ix < w; ix++)
         {
             for (int iz = 0; iz < h; iz++)
@@ -1309,30 +1301,40 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 float cu = centerU + startU + ix;
                 float cv = centerV + startV + iz;
 
-                // ✅ IMPORTANTÍSIMO: NO RoundToInt (banker's rounding). Usa FloorToInt.
                 int i = Mathf.FloorToInt(cu);
                 int j = Mathf.FloorToInt(cv);
 
-                // Guarda siempre la key (aunque esté fuera), para que la validez sea consistente
-                outFootprintKeys.Add(new CellKey(segId, i, j));
-
-                if (!seg.InBounds(i, j))
-                {
-                    anyOut = true;
-                    continue;
-                }
-
-                if (seg.IsBlocked(i, j))
-                    anyBlocked = true;
-
-                // Raycast para colocar el preview “pegado” a la geometría, incluso si está bloqueada
+                // 🔥 Centro de esa celda en el plano del segmento ORIGINAL
                 Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
-
                 Vector3 rayOrigin = planeCenter + N * 5f;
+
+                // 🔥 Detectar segmento REAL bajo esta celda
                 if (!Physics.Raycast(rayOrigin, -N, out RaycastHit cellHit, 30f, placementMask))
                 {
                     anyNoSurface = true;
                     continue;
+                }
+
+                var realSeg = cellHit.collider.GetComponentInParent<SegmentGridSettings>();
+
+                if (realSeg != null)
+                {
+                    // Convertir a coordenadas del segmento REAL
+                    if (realSeg.TryWorldToCell(cellHit.point, out int ri, out int rj))
+                    {
+                        outFootprintKeys.Add(new CellKey(realSeg.GetInstanceID(), ri, rj));
+
+                        if (realSeg.IsBlocked(ri, rj))
+                            anyBlocked = true;
+                    }
+                    else
+                    {
+                        anyOut = true;
+                    }
+                }
+                else
+                {
+                    anyOut = true;
                 }
 
                 sumPos += cellHit.point;
@@ -1341,10 +1343,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             }
         }
 
-        // Si no hemos podido samplear nada, no podemos ni colocar preview
         if (count == 0)
         {
-            // fallback: intenta un raycast desde el propio hitPoint
             if (!Physics.Raycast(hitPoint + N * 5f, -N, out RaycastHit hinfo, 30f, placementMask))
             {
                 reason = "Fuera del suelo";
@@ -1356,24 +1356,36 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         else
         {
-            snappedPos = sumPos / count;
-            avgNormal = sumN.normalized;
+            Vector3 gridCenter =
+                origin +
+                centerU * cs * U +
+                centerV * cs * V;
+
+            Vector3 rayOrigin = gridCenter + N * 5f;
+
+            if (Physics.Raycast(rayOrigin, -N, out RaycastHit hitInfo, 30f, placementMask))
+            {
+                snappedPos = hitInfo.point;
+                avgNormal = hitInfo.normal;
+            }
+            else
+            {
+                snappedPos = gridCenter;
+                avgNormal = N;
+            }
         }
 
-        // Rotación final: alineada al segmento y pegada a normal real
         Vector3 fwdOnPlane = Vector3.ProjectOnPlane(fwdBase, avgNormal).normalized;
         if (fwdOnPlane.sqrMagnitude < 0.0001f)
             fwdOnPlane = Vector3.ProjectOnPlane(V, avgNormal).normalized;
 
         snappedRot = Quaternion.LookRotation(fwdOnPlane, avgNormal);
 
-        // Motivo final (prioridad)
         if (anyOut) reason = "Fuera del segmento";
         else if (anyNoSurface) reason = "Fuera del suelo";
         else if (anyBlocked) reason = "Zona bloqueada";
         else reason = "Válido";
 
-        // ✅ OJO: devuelve true aunque sea inválido, porque el preview sí puede posicionarse
         return true;
     }
 

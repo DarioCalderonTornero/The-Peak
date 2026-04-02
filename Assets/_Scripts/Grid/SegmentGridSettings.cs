@@ -64,4 +64,14 @@ public class SegmentGridSettings : MonoBehaviour
         j = Mathf.FloorToInt(v);
         return InBounds(i, j);
     }
+
+    private void OnEnable()
+    {
+        SegmentRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        SegmentRegistry.Unregister(this);
+    }
 }

@@ -283,10 +283,12 @@ public class BrambleDefense : BaseDefense
 
     private void ClearSpawnedInstances()
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
+        for (int i = 0; i < spawnedInstances.Count; i++)
         {
-            Destroy(transform.GetChild(i).gameObject);
+            if (spawnedInstances[i] != null && spawnedInstances[i].transform != null)
+                Destroy(spawnedInstances[i].transform.gameObject);
         }
+
         spawnedInstances.Clear();
     }
 

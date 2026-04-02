@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0581865a6448894468c747c839913835, type: 3}
   m_Name: LodoRescaled
   m_EditorClassIdentifier: 
-  cardName: LodoRescaled
-  description: "Ralentiza a los enemigos mientras gastan x1.5 de energ\xEDa. Ejecuta
-    cuando tienen un 20% o menos, y el lodo desaparece."
+  cardName: Mud
+  description: Slows enemies while they consume 1.5 times their energy. Triggers
+    when they have 20% or less health, and the slow effect ends.
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 9104421247320485007, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
   cost: 4
@@ -27,5 +27,5 @@ MonoBehaviour:
   supportRayDistance: 1.94
   supportYOffset: 0.52
   placementCheckExtents: {x: 0.5, y: 2.55, z: 0.5}
-  gridSize: {x: 1, y: 1}
+  gridSize: {x: 2, y: 4}
   decalOffset: {x: 0.5, y: 0.5}

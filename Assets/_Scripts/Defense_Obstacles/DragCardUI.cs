@@ -716,19 +716,19 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     tmp.Add(new Vector2Int(currentFootprintKeys[i].x, currentFootprintKeys[i].y));
 
                 if (!PlacementMaskManager.Instance.AreBuildable(tmp))
-                    return "Zona bloqueada";
+                    return "Restricted area";
             }
 
             // Y si quieres mantener el “suelo completo” del modo global:
             if (!HasFullFootprintGround(position, rotation, cardData.gridSize))
-                return "Fuera del suelo";
+                return "Off the ground";
         }
 
         // Ocupación (segmento o mundo)
         if (GridOccupancyManager.Instance != null)
         {
             if (GridOccupancyManager.Instance.AnyOccupied(currentFootprintKeys))
-                return "Casilla ocupada";
+                return "Checkbox selected";
         }
 
         // Campamento
@@ -736,7 +736,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         Vector3 center = position + (normal * 0.25f);
 
         if (Physics.CheckBox(center, boxSize / 2f, rotation, campMask))
-            return "Demasiado cerca de un campamento";
+            return "Too close to a campsite";
 
         // Soporte completo
         if (cardData != null && cardData.requireFullSupport)

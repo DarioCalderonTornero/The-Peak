@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Geyser
   m_EditorClassIdentifier: 
   cardName: Geyser
-  description: 
+  description: When a climber passes over it, it is blown into the air and is therefore
+    instantly eliminated.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 5606444330844840924, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
   cost: 2
@@ -27,3 +28,4 @@ MonoBehaviour:
   supportYOffset: 0.1
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}
   gridSize: {x: 2, y: 2}
+  decalOffset: {x: 0, y: 0}

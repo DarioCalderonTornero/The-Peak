@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: BerryTree
   m_EditorClassIdentifier: 
   cardName: Berry Tree
-  description: "Los escaladores que pasen por su lado se comer\xE1n una baya. La
-    buena les otorga 200 de energ\xEDa m\xE1xima extra, la mala los ejecuta, es aleatorio."
+  description: "Climbers who pass by it will eat a berry. The good one gives them
+    an extra 200 maximum energy, while the bad one kills them\u2014it\u2019s random."
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  defensePrefab: {fileID: 5185131529581212778, guid: 06f5878d1abbe7e45bddb145ac073d90, type: 3}
+  defensePrefab: {fileID: 7238312057479520051, guid: 5ff1cfd0171d7e14a88490e3d47bbb08, type: 3}
   cost: 5
   worldSprite: {fileID: -794114979, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
   hasFixedPlacement: 0
@@ -27,5 +27,5 @@ MonoBehaviour:
   supportRayDistance: 0.5
   supportYOffset: 0.1
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}
-  gridSize: {x: 1, y: 1}
+  gridSize: {x: 2, y: 2}
   decalOffset: {x: 0.5, y: 0.5}

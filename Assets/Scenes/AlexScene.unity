@@ -584,7 +584,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Selecciona cartas para comenzar
+  m_text: Select cards to begin
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1d8b0615c66b1ab4497da50503ef4717, type: 2}
   m_sharedMaterial: {fileID: -6041452604112936565, guid: 1d8b0615c66b1ab4497da50503ef4717, type: 2}
@@ -2154,67 +2154,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!1001 &884818474
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 30.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 65.1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 168.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -7511558181221131132, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 858647d15163eb9448d369abcf7aa56c, type: 2}
-    - target: {fileID: 919132149155446097, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
-      propertyPath: m_Name
-      value: 4x4
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 96a98462b707d494a8fb6885e64162ea, type: 3}
 --- !u!1 &895229881
 GameObject:
   m_ObjectHideFlags: 0
@@ -2261,9 +2200,9 @@ MonoBehaviour:
   hoverScaleMultiplier: 1.1
   hoverSmoothTime: 0.1
   availableCards:
-  - {fileID: 11400000, guid: a648721e5957e1e48a68cb0ff7817a4e, type: 2}
+  - {fileID: 11400000, guid: 659e4c6cffe64814fa48d561db32f7a6, type: 2}
   - {fileID: 11400000, guid: 0cf55efb4a688e642abc4f23ff15c39f, type: 2}
-  - {fileID: 11400000, guid: add7f9942751ca04189daaf009869321, type: 2}
+  - {fileID: 11400000, guid: 2ea0e1a9ce889354ea7a06306d92bc33, type: 2}
   - {fileID: 11400000, guid: ff7324c04c6fa6542b3f1025eb1d93ca, type: 2}
   - {fileID: 11400000, guid: 47362b00288441e49a59a6677321d422, type: 2}
   - {fileID: 11400000, guid: 1e5e43a2db2ce844d856910d790669ba, type: 2}
@@ -2817,7 +2756,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Comenzar
+  m_text: Begin
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1d8b0615c66b1ab4497da50503ef4717, type: 2}
   m_sharedMaterial: {fileID: -6041452604112936565, guid: 1d8b0615c66b1ab4497da50503ef4717, type: 2}
@@ -3559,7 +3498,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "P\xE1gina actual X/Y"
+  m_text: Current page X/Y
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1d8b0615c66b1ab4497da50503ef4717, type: 2}
   m_sharedMaterial: {fileID: -6041452604112936565, guid: 1d8b0615c66b1ab4497da50503ef4717, type: 2}
@@ -4371,4 +4310,3 @@ SceneRoots:
   - {fileID: 895229883}
   - {fileID: 1277916354}
   - {fileID: 421653288}
-  - {fileID: 884818474}

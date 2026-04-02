@@ -1,0 +1,154 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7544320640546988642
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 37.365986
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 38.18001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 203.79556
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -5714667146654196344, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -877765559663978962, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_Name
+      value: BerriBushesPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4634474165549773433, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1158647918039873167}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3596600907896227737}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7559047358828205400}
+  m_SourcePrefab: {fileID: 100100000, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+--- !u!1 &2945980965390045211 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4634474165549773433, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+  m_PrefabInstance: {fileID: 7544320640546988642}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6342092089532596202 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -5714667146654196344, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+  m_PrefabInstance: {fileID: 7544320640546988642}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7238312057479520051 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+  m_PrefabInstance: {fileID: 7544320640546988642}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &1158647918039873167
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7238312057479520051}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.1623764, y: 1, z: 2.4043121}
+  m_Center: {x: -0.0811882, y: 0, z: -0.06404877}
+--- !u!114 &3596600907896227737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7238312057479520051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9130906a616cc7c49a4a95664fc15873, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  goodBerry: {fileID: 6342092089532596202}
+  badBerry: {fileID: 2945980965390045211}
+  turnsToFirstGrow: 2
+  turnsToRespawn: 3
+  detectionRadius: 4.66
+  climberLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  eatStopDuration: 1
+--- !u!114 &7559047358828205400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7238312057479520051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97a96f72894c20429c31f3cf6833f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleType: 5

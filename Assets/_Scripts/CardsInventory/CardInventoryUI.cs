@@ -364,7 +364,7 @@ public class CardInventoryUI : MonoBehaviour
     private void UpdateCountText()
     {
         if (selectedCountText != null)
-            selectedCountText.text = $"Selecciona cartas para comenzar la partida {selectedCards.Count} / {maxSelectedCards}";
+            selectedCountText.text = $"Select cards to start the game {selectedCards.Count} / {maxSelectedCards}";
     }
 
     private void UpdateStartButtonState()

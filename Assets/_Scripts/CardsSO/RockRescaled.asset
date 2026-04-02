@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0581865a6448894468c747c839913835, type: 3}
   m_Name: RockRescaled
   m_EditorClassIdentifier: 
-  cardName: RockRescaled
-  description: Bloquea un camino por donde pongas la roca.
+  cardName: Rock
+  description: Block the path wherever you place the rock.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 8310934270780480791, guid: c5afdb53a90a4154ba295aeebfd6f103, type: 3}
   cost: 3
@@ -27,3 +27,4 @@ MonoBehaviour:
   supportYOffset: 0.1
   placementCheckExtents: {x: 2, y: 2, z: 2}
   gridSize: {x: 2, y: 2}
+  decalOffset: {x: 0, y: 0}

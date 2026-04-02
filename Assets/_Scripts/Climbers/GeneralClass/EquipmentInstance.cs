@@ -23,6 +23,7 @@ public abstract class EquipmentInstance
     }
 
     public ClimberLoadout OwnerLoadout => ownerLoadout;
+ 
 
     public virtual void Initialize(string name)
     {

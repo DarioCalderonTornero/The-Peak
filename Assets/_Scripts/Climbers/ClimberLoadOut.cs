@@ -1,17 +1,19 @@
-// ClimberLoadout.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ClimberLoadout : MonoBehaviour
 {
-    [Header("Arquetipo del escalador (configuraci�n de equipamiento)")]
+    [Header("Arquetipo del escalador (configuración de equipamiento)")]
     [SerializeField] private ClimberArchetypeSO archetype;
 
     [Header("Equipamiento asignado en runtime (solo lectura)")]
     private readonly List<EquipmentInstance> equippedItems = new List<EquipmentInstance>();
 
-    [Header("DEBUG � Equipo visible en Inspector (no tocar)")]
+    // Guardamos también los SOs para poder acceder a sus datos (icono, etc.)
+    private readonly List<EquipmentDefinitionSO> equippedDefinitions = new List<EquipmentDefinitionSO>();
+
+    [Header("DEBUG – Equipo visible en Inspector (no tocar)")]
     [SerializeField] private string[] debugEquippedItemNames;
 
     [SerializeField] private Renderer helmetRenderer;
@@ -22,7 +24,7 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private AudioClip rockDestroyAudioClip;
 
     [Header("Initialization")]
-    [Tooltip("Si est� activo, el loadout se inicializa autom�ticamente en Awake usando el archetype (modo normal). " +
+    [Tooltip("Si está activo, el loadout se inicializa automáticamente en Awake usando el archetype (modo normal). " +
              "Si vas a forzar equipo desde el SpawnManager, puedes dejarlo activo: la clase detecta si ya fue inicializada.")]
     [SerializeField] private bool autoInitializeOnAwake = true;
 
@@ -33,23 +35,27 @@ public class ClimberLoadout : MonoBehaviour
 
     private void Awake()
     {
-        climberMovement = GetComponent<ClimberMovement>();  
-        climberAnimator = GetComponentInChildren<Animator>(); 
+        climberMovement = GetComponent<ClimberMovement>();
+        climberAnimator = GetComponentInChildren<Animator>();
+
+        if (climberMovement == null)
+            Debug.LogError($"[ClimberLoadout] Sin ClimberMovement en {gameObject.name}");
+
+        if (climberAnimator == null)
+            Debug.LogWarning($"[ClimberLoadout] Sin Animator en {gameObject.name}");
 
         if (helmetRenderer == null)
-        {
-            Debug.LogWarning("No helmet renderer");
-        }
+            Debug.LogWarning($"[ClimberLoadout] Sin helmet renderer en {gameObject.name}");
 
         if (autoInitializeOnAwake)
-        {
-            // Importante: solo inicializa si nadie lo ha forzado antes (por pooling, etc.)
             InitializeRandomLoadoutIfNeeded();
-        }
     }
 
+    // ─── Inicialización ───────────────────────────────────────────────────────
+
     /// <summary>
-    /// Inicializa el loadout de forma random seg�n el archetype, pero solo si a�n no est� inicializado.
+    /// Inicializa el loadout de forma random según el archetype,
+    /// pero solo si aún no está inicializado.
     /// </summary>
     public void InitializeRandomLoadoutIfNeeded()
     {
@@ -65,6 +71,7 @@ public class ClimberLoadout : MonoBehaviour
     public void InitializeForcedSingleEquipment(EquipmentDefinitionSO forcedEquipment)
     {
         equippedItems.Clear();
+        equippedDefinitions.Clear();
 
         if (forcedEquipment == null)
         {
@@ -79,6 +86,7 @@ public class ClimberLoadout : MonoBehaviour
             instance.SetupOwner(this);
             instance.Initialize(forcedEquipment.equipmentName);
             equippedItems.Add(instance);
+            equippedDefinitions.Add(forcedEquipment);
             ChangeClimberColorBasedOnEquipment(forcedEquipment);
         }
 
@@ -87,20 +95,22 @@ public class ClimberLoadout : MonoBehaviour
     }
 
     /// <summary>
-    /// Permite re-inicializar si alg�n d�a haces pooling.
+    /// Permite re-inicializar si algún día haces pooling.
     /// </summary>
     public void ResetLoadoutState()
     {
         _isInitialized = false;
         equippedItems.Clear();
+        equippedDefinitions.Clear();
         UpdateDebugNames();
     }
 
-    // ----------------- Internals -----------------
+    // ─── Internals ────────────────────────────────────────────────────────────
 
     private void InitializeRandomLoadout_Internal()
     {
         equippedItems.Clear();
+        equippedDefinitions.Clear();
 
         if (archetype == null || archetype.equipmentPool == null || archetype.equipmentPool.Length == 0)
         {
@@ -111,7 +121,6 @@ public class ClimberLoadout : MonoBehaviour
         var pool = new List<EquipmentDefinitionSO>(archetype.equipmentPool);
         int maxItems = Mathf.Clamp(archetype.maxRandomItems, 0, pool.Count);
         int minItems = Mathf.Clamp(archetype.minRandomItems, 0, maxItems);
-
         int itemsToEquip = UnityEngine.Random.Range(minItems, maxItems + 1);
 
         if (itemsToEquip == 0)
@@ -126,8 +135,7 @@ public class ClimberLoadout : MonoBehaviour
             EquipmentDefinitionSO chosenDef = pool[index];
             pool.RemoveAt(index);
 
-            if (chosenDef == null)
-                continue;
+            if (chosenDef == null) continue;
 
             var instance = CreateEquipmentInstance(chosenDef);
             if (instance != null)
@@ -135,6 +143,7 @@ public class ClimberLoadout : MonoBehaviour
                 instance.SetupOwner(this);
                 instance.Initialize(chosenDef.equipmentName);
                 equippedItems.Add(instance);
+                equippedDefinitions.Add(chosenDef);
                 ChangeClimberColorBasedOnEquipment(chosenDef);
             }
         }
@@ -145,9 +154,7 @@ public class ClimberLoadout : MonoBehaviour
     private void ChangeClimberColorBasedOnEquipment(EquipmentDefinitionSO equipment)
     {
         if (helmetRenderer != null && equipment != null)
-        {
             helmetRenderer.material.color = equipment.color;
-        }
     }
 
     private void UpdateDebugNames()
@@ -159,12 +166,10 @@ public class ClimberLoadout : MonoBehaviour
         }
 
         debugEquippedItemNames = new string[equippedItems.Count];
-
         for (int i = 0; i < equippedItems.Count; i++)
-        {
-            debugEquippedItemNames[i] =
-                equippedItems[i] != null ? equippedItems[i].GetType().Name : "NULL";
-        }
+            debugEquippedItemNames[i] = equippedItems[i] != null
+                ? equippedItems[i].GetType().Name
+                : "NULL";
     }
 
     private EquipmentInstance CreateEquipmentInstance(EquipmentDefinitionSO definition)
@@ -177,20 +182,24 @@ public class ClimberLoadout : MonoBehaviour
 
         if (type == null)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var asm in assemblies)
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
                 type = asm.GetType(typeName);
-                if (type != null)
-                    break;
+                if (type != null) break;
             }
         }
 
         if (type == null)
+        {
+            Debug.LogError($"[ClimberLoadout] Tipo '{typeName}' no encontrado. " +
+                           $"Revisa 'logicClassName' en el SO '{definition.name}'.");
             return null;
+        }
 
         return Activator.CreateInstance(type) as EquipmentInstance;
     }
+
+    // ─── Obstacles ────────────────────────────────────────────────────────────
 
     public void TryHandleObstacle(ObstacleType obstacleType)
     {
@@ -206,47 +215,45 @@ public class ClimberLoadout : MonoBehaviour
 
     public bool CanHandleObstacle(ObstacleType obstacleType)
     {
-        if (obstacleType == ObstacleType.None)
-            return true;
+        if (obstacleType == ObstacleType.None) return true;
 
         foreach (var eq in equippedItems)
-        {
-            if (eq != null && eq.CanHandleObstacle(obstacleType))
-                return true;
-        }
+            if (eq != null && eq.CanHandleObstacle(obstacleType)) return true;
 
         return false;
     }
 
-    // GETTERS
+    // ─── API pública / Getters ────────────────────────────────────────────────
 
     public Color GetHelmetColor()
     {
         if (helmetRenderer != null)
-        {
-            // Usamos .sharedMaterial si quieres el color original o .material para la instancia actual
             return helmetRenderer.material.color;
-        }
-        return Color.white; // Color por defecto si falla
+
+        return Color.white;
     }
 
-    public void PickAxeSound()
+    /// <summary>
+    /// Devuelve el icono del primer equipo equipado, o null si no hay ninguno.
+    /// Usado por ClimberEntryUI para mostrar el icono en la lista.
+    /// </summary>
+    public Sprite GetFirstEquipmentIcon()
     {
-        Temporal_Sound_Music.Instance.PlaySound(pickaxeAudioClip, 1.0f);
-    }
+        if (equippedDefinitions == null || equippedDefinitions.Count == 0)
+            return null;
 
-    public void RockDestroySound()
-    {
-        Temporal_Sound_Music.Instance.PlaySound(rockDestroyAudioClip, 0.25f);
+        return equippedDefinitions[0]?.icon;
     }
 
     public void RequestClimberStop(float duration)
-    {
-        climberMovement?.StopForSeconds(duration);
-    }
+        => climberMovement?.StopForSeconds(duration);
 
     public void TriggerAnimation(string triggerName)
-    {
-            climberAnimator?.SetTrigger(triggerName);
-    }
+        => climberAnimator?.SetTrigger(triggerName);
+
+    public void PickAxeSound()
+        => Temporal_Sound_Music.Instance.PlaySound(pickaxeAudioClip, 1.0f);
+
+    public void RockDestroySound()
+        => Temporal_Sound_Music.Instance.PlaySound(rockDestroyAudioClip, 0.25f);
 }

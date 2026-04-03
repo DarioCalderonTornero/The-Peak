@@ -871,7 +871,7 @@ Transform:
   m_GameObject: {fileID: 230477812}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 26.01, y: -12.53, z: 285.33}
+  m_LocalPosition: {x: 252.1, y: -15.85, z: 568.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4816,7 +4816,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1089094619}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 874498c43afff7442836dd4e4fd73316, type: 3}
   m_Name: 
@@ -4824,7 +4824,7 @@ MonoBehaviour:
   scenesToLoadAdditive:
   - AlexScene
   - JuanScene
-  - "MRScene_ConMonta\xF1a"
+  - PrototipoM2
 --- !u!1 &1106746828
 GameObject:
   m_ObjectHideFlags: 0
@@ -7271,7 +7271,7 @@ Transform:
   m_GameObject: {fileID: 1730901957}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 26.01, y: -12.53, z: 290.47}
+  m_LocalPosition: {x: 235.46, y: -15.85, z: 598.68}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

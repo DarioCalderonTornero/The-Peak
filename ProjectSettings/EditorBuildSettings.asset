@@ -24,6 +24,9 @@ EditorBuildSettings:
     path: "Assets/Scenes/MRScene_ConMonta\xF1a.unity"
     guid: 30e8c1c9cbc15394285cbf11a9e95b6a
   - enabled: 1
+    path: Assets/Scenes/PototipoM2.unity
+    guid: c3a4aa2647aa03a46824cce147c1824b
+  - enabled: 1
     path: Assets/Scenes/ArturoScene.unity
     guid: b9b21c41aae5ff946b5bf3b2c7d5dc66
   m_configObjects:

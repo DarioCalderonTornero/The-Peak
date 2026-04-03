@@ -4822,9 +4822,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scenesToLoadAdditive:
+  - GYM
   - AlexScene
   - JuanScene
-  - PrototipoM2
+  - PototipoM2
 --- !u!1 &1106746828
 GameObject:
   m_ObjectHideFlags: 0
@@ -5016,6 +5017,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnPathPoints:
   - {fileID: 1730901958}
+  - {fileID: 1728307727}
   - {fileID: 230477813}
   prefab: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
   amountToSpawn: 1
@@ -7056,6 +7058,7 @@ Transform:
   m_Children:
   - {fileID: 1730901958}
   - {fileID: 230477813}
+  - {fileID: 1728307727}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1696843967
@@ -7245,6 +7248,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1728307726
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1728307727}
+  m_Layer: 0
+  m_Name: SPAWN3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1728307727
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1728307726}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 238.6, y: -15.85, z: 578.04}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1681812316}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1730901957
 GameObject:

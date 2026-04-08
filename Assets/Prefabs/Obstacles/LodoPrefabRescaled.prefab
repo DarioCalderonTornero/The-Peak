@@ -356,7 +356,7 @@ GameObject:
   - component: {fileID: 2773684854053539636}
   - component: {fileID: 6918693850378216002}
   m_Layer: 7
-  m_Name: LodoPrefabRescaled
+  m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

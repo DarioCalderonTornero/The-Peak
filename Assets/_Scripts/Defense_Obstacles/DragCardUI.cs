@@ -457,32 +457,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return;
         }
 
-        Vector3 finalPosition;
-        Quaternion finalRotation;
+        // 🔥 SIEMPRE usar preview real
+        Vector3 finalPosition = previewInstance.transform.position;
+        Quaternion finalRotation = previewInstance.transform.rotation;
         Vector3 finalNormal = lastHitNormal;
 
-        if (isFreeScaling)
-        {
-            finalPosition = freeScalePivot;
-            finalRotation = freeScaleLockedRotation;
-            finalNormal = freeScaleLockedNormal;
-        }
-        else if (useFixedPosition)
-        {
-            finalPosition = fixedPlacementPosition;
-            finalNormal = Vector3.up;
-            finalRotation = previewInstance.transform.rotation;
-        }
-        else if (isFreeRotating)
-        {
-            finalPosition = freeRotatePivot;
-            finalRotation = previewInstance.transform.rotation;
-        }
-        else
-        {
-            finalPosition = previewInstance.transform.position;
-            finalRotation = previewInstance.transform.rotation;
-        }
+        Debug.Log("PREVIEW POS: " + previewInstance.transform.position);
+        Debug.Log("FINAL POS: " + finalPosition);
 
         // ✅ Validación FINAL (ya con grid occupancy)
         string placementReason = CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
@@ -533,9 +514,26 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     return;
                 }
 
+                var log = go.GetComponent<RollingLogDefense>();
+                if (log != null)
+                {
+                    if (usingSegmentGrid && activeSegment != null && currentFootprintKeys.Count > 0)
+                    {
+                        var key = currentFootprintKeys[0]; // centro aproximado
+                        var seg = SegmentRegistry.Get(key.segmentId);
+
+                        if (seg != null)
+                        {
+                            log.InitializeFromPlacement(seg, new Vector2Int(key.x, key.y));
+                        }
+                    }
+                }
+
                 go.transform.localScale = finalScale;
             }
         );
+        Debug.Log("PLACED POS: " + placed.transform.position);
+
 
         // ✅ Si por cualquier razón no se instanció, devolvemos puntos y salimos
         if (placed == null)
@@ -678,6 +676,13 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         // Pendiente
         float slopeAngle = Vector3.Angle(Vector3.up, normal);
+
+        if (cardData != null && cardData.cardName == "Tronco") // o usa un flag mejor
+        {
+            if (slopeAngle < 5f)
+                return "Solo se puede colocar en rampas";
+        }
+
         if (slopeAngle > 61f)
             return "Pendiente demasiado pronunciada";
 

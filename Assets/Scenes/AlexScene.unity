@@ -2206,6 +2206,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ff7324c04c6fa6542b3f1025eb1d93ca, type: 2}
   - {fileID: 11400000, guid: 47362b00288441e49a59a6677321d422, type: 2}
   - {fileID: 11400000, guid: 1e5e43a2db2ce844d856910d790669ba, type: 2}
+  - {fileID: 11400000, guid: 1bc0024ec0d441149ac8640ba11a99e9, type: 2}
   pageSlideDuration: 0.2
   pageSlideDistance: 15
 --- !u!4 &895229883

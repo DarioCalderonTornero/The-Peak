@@ -1460,8 +1460,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae322ed62f4408b4c9607e74b078ae90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  content: {fileID: 1163623494}
-  climberEntryPrefab: {fileID: 1126248756026253869, guid: 593506825d6f04045bfa73ba86db4f1f, type: 3}
+  content: {fileID: 0}
+  climberEntryPrefab: {fileID: 0}
 --- !u!1 &389656969
 GameObject:
   m_ObjectHideFlags: 0
@@ -4793,7 +4793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -5465,8 +5465,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NoiseProfile: {fileID: 11400000, guid: 69ce8388f6785dd4c8c39915efece2f4, type: 2}
   PivotOffset: {x: 0, y: 0, z: 0}
-  AmplitudeGain: 1
-  FrequencyGain: 1
+  AmplitudeGain: 0
+  FrequencyGain: 0
   m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!82 &1299652168
 AudioSource:
@@ -5814,8 +5814,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NoiseProfile: {fileID: 11400000, guid: 46965f9cbaf525742a6da4c2172a99cd, type: 2}
   PivotOffset: {x: 0, y: 2, z: 0}
-  AmplitudeGain: 1
-  FrequencyGain: 1
+  AmplitudeGain: 0
+  FrequencyGain: 0
   m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &1360076848
 GameObject:

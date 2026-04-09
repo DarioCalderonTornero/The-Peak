@@ -7516,9 +7516,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   flagPrefab: {fileID: 4123658193882663387, guid: 474bb0d213e815849a02ebc8ecab1498, type: 3}
   flagsContainer: {fileID: 0}
-  maxSlope: 10
+  maxSlope: 50
   minTrianglesPerZone: 2
-  minZoneArea: 5
+  minZoneArea: 1
   minZoneWidth: 1
   minZoneDepth: 1
   minCompactness: 0

@@ -99,6 +99,12 @@ public class CampGraphBuilder : MonoBehaviour
                 }
             }
         }
+
+        Debug.Log($"[CampGraphBuilder] Grafo construido. Nodos: {nodes.Count}. FinalDestination ID: {finalDestinationNodeId}");
+
+        foreach (var node in nodes)
+            Debug.Log($"  Nodo {node.id} en {node.position}, vecinos: {node.neighbors.Count}");
+
         PruneNeighborsByDistance();
         AutoRegisterObstaclesOnEdges();
         RecalculateAllEdgeWeights();

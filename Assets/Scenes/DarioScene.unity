@@ -4793,7 +4793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -4822,7 +4822,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scenesToLoadAdditive:
-  - GYM
   - AlexScene
   - JuanScene
   - PototipoM2
@@ -5750,13 +5749,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1358668564}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0967939, y: -0.80216455, z: 0.13540237, w: 0.5734363}
-  m_LocalPosition: {x: -19.48, y: 173.96, z: -154.67}
+  m_LocalRotation: {x: 0.26600808, y: -0, z: -0, w: 0.96397084}
+  m_LocalPosition: {x: 226.13, y: 38.9, z: 207.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1696843968}
-  m_LocalEulerAnglesHint: {x: 19.162, y: -108.881, z: 0}
+  m_LocalEulerAnglesHint: {x: 30.854, y: 0, z: 0}
 --- !u!114 &1358668566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7242,13 +7241,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1709219933}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.49991274, y: -0.49991274, z: -0.50008726, w: 0.50008726}
-  m_LocalPosition: {x: -47.87, y: 162.38, z: -163}
+  m_LocalRotation: {x: -0.27059805, y: -0.27059805, z: -0.6532815, w: 0.6532815}
+  m_LocalPosition: {x: 226.13, y: 38.9, z: 207.7}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -45, y: 0, z: -90}
 --- !u!1 &1728307726
 GameObject:
   m_ObjectHideFlags: 0

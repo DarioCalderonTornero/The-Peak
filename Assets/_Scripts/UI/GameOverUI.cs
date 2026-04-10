@@ -29,7 +29,7 @@ public class GameOverUI : MonoBehaviour
     private IEnumerator SetRetryButtonActive()
     {
         UIManager.Instance.HideAll();
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(4);
         UIManager.Instance.ShowOnly(UICanvasType.GameOver); 
     }
 }

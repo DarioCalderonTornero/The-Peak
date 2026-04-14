@@ -13,6 +13,9 @@ public class PlacementMaskManagerEditor : Editor
     private float cellSize = 1f;       // tu grid es 1 unidad
     private float yDrawOffset = 0.02f; // para que no parpadee
 
+    private bool lockToSegment = false;
+    private SegmentGridSettings lockedSegment = null;
+
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -40,20 +43,13 @@ public class PlacementMaskManagerEditor : Editor
 
         // Ray desde el ratón
         Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-
-        // Si tienes paintMask en el manager úsalo; si no, raycast a todo
         int mask = (mgr.paintMask.value == 0) ? ~0 : mgr.paintMask.value;
 
-        // ✅ En vez de Raycast simple:
         RaycastHit[] hits = Physics.RaycastAll(ray, 2000f, mask);
         if (hits == null || hits.Length == 0) return;
 
-        // Ordenar por distancia
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-        // Elegir el hit “principal”:
-        // - Primero el más cercano que tenga SegmentGridSettings
-        // - Si no hay ninguno, el más cercano normal
         RaycastHit hit = hits[0];
         for (int i = 0; i < hits.Length; i++)
         {
@@ -64,24 +60,46 @@ public class PlacementMaskManagerEditor : Editor
             }
         }
 
-        // Coordenada de celda "global" (la de tu sistema actual)
+        // 🔥 TOGGLE LOCK SEGMENT (SHIFT + P)
+        if (e.type == EventType.KeyDown && e.shift && e.keyCode == KeyCode.P)
+        {
+            lockToSegment = !lockToSegment;
+
+            if (lockToSegment)
+            {
+                lockedSegment = hit.collider.GetComponentInParent<SegmentGridSettings>();
+                Debug.Log("🔒 Segment LOCKED: " + (lockedSegment != null ? lockedSegment.name : "NULL"));
+            }
+            else
+            {
+                lockedSegment = null;
+                Debug.Log("🔓 Segment UNLOCKED");
+            }
+
+            e.Use();
+        }
+
         Vector2Int centerGlobal = new Vector2Int(
             Mathf.RoundToInt(hit.point.x),
             Mathf.RoundToInt(hit.point.z)
         );
 
-        // 1) DIBUJAR OVERLAY
+        // Overlay
         DrawOverlay(mgr, hit, centerGlobal, mask);
 
-        // 2) PINTAR (SHIFT + click/drag)
         if (!e.shift) return;
 
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
         if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
         {
-            // ✅ Si estamos sobre un segmento con rejilla local, pintamos ahí
-            SegmentGridSettings settings = hit.collider.GetComponentInParent<SegmentGridSettings>();
+            SegmentGridSettings settings = lockToSegment
+                ? lockedSegment
+                : hit.collider.GetComponentInParent<SegmentGridSettings>();
+
+            if (lockToSegment && settings == null)
+                return;
+
             if (settings != null)
             {
                 if (settings.TryWorldToCell(hit.point, out int ci, out int cj))
@@ -92,11 +110,7 @@ public class PlacementMaskManagerEditor : Editor
                     {
                         for (int dz = -brushRadius; dz <= brushRadius; dz++)
                         {
-                            int i = ci + dx;
-                            int j = cj + dz;
-
-                            // SetBlocked ya ignora fuera de bounds
-                            settings.SetBlocked(i, j, paintBlocked);
+                            settings.SetBlocked(ci + dx, cj + dz, paintBlocked);
                         }
                     }
 
@@ -105,10 +119,10 @@ public class PlacementMaskManagerEditor : Editor
                 }
 
                 e.Use();
-                return; // importante: no pintes también la global
+                return;
             }
 
-            // ✅ Fallback: pintar máscara global por X/Z mundo (tu sistema viejo)
+            // GLOBAL fallback
             Undo.RecordObject(mgr.data, "Paint Placement Mask");
 
             for (int dx = -brushRadius; dx <= brushRadius; dx++)
@@ -129,7 +143,9 @@ public class PlacementMaskManagerEditor : Editor
     private void DrawOverlay(PlacementMaskManager mgr, RaycastHit centerHit, Vector2Int center, int mask)
     {
         // ¿Estamos sobre un segmento con rejilla local?
-        SegmentGridSettings settings = centerHit.collider.GetComponentInParent<SegmentGridSettings>();
+        SegmentGridSettings settings = lockToSegment
+    ? lockedSegment
+    : centerHit.collider.GetComponentInParent<SegmentGridSettings>();
 
         // ============================
         // MODO SEGMENTO (rejilla local)
@@ -218,6 +234,7 @@ public class PlacementMaskManagerEditor : Editor
         // ======================================
 
         var touchedSegments = new System.Collections.Generic.HashSet<SegmentGridSettings>();
+        bool nearAnySegment = false;
 
         for (int dx = -viewRange; dx <= viewRange; dx++)
         {
@@ -230,11 +247,11 @@ public class PlacementMaskManagerEditor : Editor
                 if (!Physics.Raycast(probe, Vector3.down, out RaycastHit cellHit, 200f, mask))
                     continue;
 
-                // ✅ Si este punto cae sobre un segmento con settings, NO dibujes la global encima
                 SegmentGridSettings segSettings = cellHit.collider.GetComponentInParent<SegmentGridSettings>();
+
                 if (segSettings != null)
                 {
-                    touchedSegments.Add(segSettings);
+                    nearAnySegment = true;   // 🔥 NUEVO
                     continue;
                 }
 
@@ -245,9 +262,10 @@ public class PlacementMaskManagerEditor : Editor
                     : new Color(1f, 1f, 1f, 0.18f);
 
                 Vector3 up = cellHit.normal;
-                Vector3 fwd = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
+                Vector3 fwd = Vector3.ProjectOnPlane(centerHit.transform.forward, up).normalized;
+
                 if (fwd.sqrMagnitude < 0.0001f)
-                    fwd = Vector3.ProjectOnPlane(Vector3.right, up).normalized;
+                    fwd = Vector3.ProjectOnPlane(centerHit.transform.right, up).normalized;
 
                 Quaternion rot = Quaternion.LookRotation(fwd, up);
 
@@ -258,11 +276,17 @@ public class PlacementMaskManagerEditor : Editor
             }
         }
 
+        // 🔥 CLAVE: si hay algún segmento cerca, NO dibujar grid global
+        if (nearAnySegment)
+        {
+            return;
+        }
+
         // ✅ Opcional: dibuja la rejilla LOCAL de los segmentos con settings que han entrado en rango
-        foreach (var s in touchedSegments)
+        /* foreach (var s in touchedSegments)
         {
             DrawSegmentLocalGrid(s, mask);
-        }
+        }*/
 
         // Brush verde global
         Handles.color = new Color(0f, 1f, 0f, 0.75f);
@@ -273,7 +297,13 @@ public class PlacementMaskManagerEditor : Editor
                 Vector2Int c = new Vector2Int(center.x + dx, center.y + dz);
                 if (!mgr.data.InBounds(c)) continue;
 
-                Vector3 probe = new Vector3(c.x * cellSize, centerHit.point.y + 50f, c.y * cellSize);
+                Vector3 basePos = centerHit.point;
+
+                // movernos en plano tangente al suelo en vez de XZ puro
+                Vector3 right = Vector3.ProjectOnPlane(Vector3.right, centerHit.normal).normalized;
+                Vector3 forward = Vector3.ProjectOnPlane(Vector3.forward, centerHit.normal).normalized;
+
+                Vector3 probe = basePos + right * dx * cellSize + forward * dz * cellSize + Vector3.up * 5f;
                 if (!Physics.Raycast(probe, Vector3.down, out RaycastHit cellHit, 200f, mask))
                     continue;
 
@@ -289,6 +319,12 @@ public class PlacementMaskManagerEditor : Editor
                     Handles.DrawWireCube(Vector3.zero, new Vector3(0.98f * cellSize, 0f, 0.98f * cellSize));
                 }
             }
+        }
+
+        if (lockToSegment && lockedSegment != null)
+        {
+            Handles.color = Color.cyan;
+            Handles.Label(lockedSegment.transform.position, "LOCKED");
         }
     }
 

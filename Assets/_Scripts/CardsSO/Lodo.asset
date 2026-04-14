@@ -22,9 +22,10 @@ MonoBehaviour:
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}
-  requireFullSupport: 0
-  supportCheckExtents: {x: 7, y: 4.8}
+  requireFullSupport: 1
+  supportCheckExtents: {x: 8, y: 2}
   supportRayDistance: 1.94
   supportYOffset: 0.52
   placementCheckExtents: {x: 0.5, y: 2.55, z: 0.5}
   gridSize: {x: 4, y: 2}
+  decalOffset: {x: 0, y: 0}

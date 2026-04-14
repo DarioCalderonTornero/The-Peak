@@ -183,6 +183,114 @@ public class OccupiedCellMarkerManager : MonoBehaviour
         }
     }
 
+    public void UpdateMarkersAroundSegments(
+     Vector3 centerWorldPos,
+     int range,
+     float segmentSearchRadius,
+     LayerMask placementMask)
+    {
+        if (occupiedCellMarkerPrefab == null) return;
+        if (GridOccupancyManager.Instance == null) return;
+
+        usedThisFrame.Clear();
+
+        Collider[] cols = Physics.OverlapSphere(centerWorldPos, segmentSearchRadius, placementMask);
+        if (cols == null || cols.Length == 0)
+        {
+            HideUnusedThisFrame();
+            return;
+        }
+
+        var seen = new HashSet<SegmentGridSettings>();
+
+        for (int k = 0; k < cols.Length; k++)
+        {
+            var col = cols[k];
+            if (col == null) continue;
+
+            var seg = col.GetComponentInParent<SegmentGridSettings>();
+            if (seg == null) continue;
+            if (!seen.Add(seg)) continue;
+
+            UpdateMarkersAroundSingleSegment_NoClear(seg, centerWorldPos, range, placementMask);
+        }
+
+        HideUnusedThisFrame();
+    }
+
+    private void UpdateMarkersAroundSingleSegment_NoClear(
+    SegmentGridSettings seg,
+    Vector3 centerWorldPos,
+    int range,
+    LayerMask placementMask)
+    {
+        if (seg == null) return;
+
+        seg.EnsureMask();
+        seg.GetPlaneBasis(out var U, out var V, out var N);
+
+        float cs = Mathf.Max(0.01f, seg.cellSize);
+        Vector3 origin = seg.OriginWorld;
+        int segId = seg.GetInstanceID();
+
+        Vector3 rel = centerWorldPos - origin;
+        float u = Vector3.Dot(rel, U) / cs;
+        float v = Vector3.Dot(rel, V) / cs;
+
+        int iMin = Mathf.Clamp(Mathf.FloorToInt(u - range), 0, seg.gridDims.x - 1);
+        int iMax = Mathf.Clamp(Mathf.FloorToInt(u + range), 0, seg.gridDims.x - 1);
+        int jMin = Mathf.Clamp(Mathf.FloorToInt(v - range), 0, seg.gridDims.y - 1);
+        int jMax = Mathf.Clamp(Mathf.FloorToInt(v + range), 0, seg.gridDims.y - 1);
+
+        float radiusWorld = (range + 0.25f) * cs;
+        float radiusSqr = radiusWorld * radiusWorld;
+
+        for (int i = iMin; i <= iMax; i++)
+        {
+            for (int j = jMin; j <= jMax; j++)
+            {
+                var key = new CellKey(segId, i, j);
+
+                if (!GridOccupancyManager.Instance.IsOccupied(key))
+                    continue;
+
+                Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
+
+                if ((planeCenter - centerWorldPos).sqrMagnitude > radiusSqr)
+                    continue;
+
+                GameObject marker = GetOrCreateMarker(key);
+
+                // 🔥 RAYCAST CORRECTO
+                Vector3 rayOrigin = planeCenter + N * 0.2f;
+
+                if (!Physics.Raycast(rayOrigin, -N, out RaycastHit hit, 1.0f, placementMask))
+                    continue;
+
+                // 🔥 SOLO SU SEGMENTO
+                var hitSeg = hit.collider.GetComponentInParent<SegmentGridSettings>();
+                if (hitSeg != seg)
+                    continue;
+
+                // 🔥 OPCIONAL: evitar caras incorrectas
+                if (Vector3.Dot(hit.normal, N) < 0.5f)
+                    continue;
+
+                Vector3 targetPos = hit.point;
+
+                Vector3 up = hit.normal;
+                Vector3 fwd = Vector3.ProjectOnPlane(V, up).normalized;
+                if (fwd.sqrMagnitude < 0.0001f)
+                    fwd = Vector3.ProjectOnPlane(U, up).normalized;
+
+                Quaternion targetRot = Quaternion.LookRotation(fwd, up);
+
+                ApplyPoseAndShow(marker, targetPos, targetRot);
+                usedThisFrame.Add(key);
+            }
+        }
+    }
+
     public void HideAll()
     {
         foreach (var kvp in markersByKey)

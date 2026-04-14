@@ -383,28 +383,32 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
         }
 
-        // ✅ NUEVO: colocar usando el sistema correcto (segmento o global)
         UpdatePlacementFromHit(hit);
 
-        if (AvailableCellMarkerManager.Instance != null && previewInstance != null)
+        if (usingSegmentGrid && activeSegment != null && currentFootprintKeys.Count > 0)
         {
-            float segRadius = occupiedMarkerRange * 2.0f; // sube/baja según quieras
-            AvailableCellMarkerManager.Instance.UpdateAvailableAround(
-                centerWorldPos: previewInstance.transform.position,
-                range: occupiedMarkerRange,
-                segmentSearchRadius: segRadius,
-                placementMask: placementMask,
-                maskData: (PlacementMaskManager.Instance != null) ? PlacementMaskManager.Instance.data : null
+            var key = currentFootprintKeys[0];
+
+            // 🟣 AVAILABLE
+            AvailableCellMarkerManager.Instance?.UpdateAvailableAroundSegment(
+                activeSegment,
+                key.x,
+                key.y,
+                occupiedMarkerRange
+            );
+
+            // 🔴 OCCUPIED
+            OccupiedCellMarkerManager.Instance?.UpdateMarkersAroundSegment(
+                activeSegment,
+                previewInstance.transform.position,
+                occupiedMarkerRange,
+                placementMask
             );
         }
-
-        // Markers alrededor del preview (si quieres, mantenlos solo para global)
-        if (OccupiedCellMarkerManager.Instance != null)
+        else
         {
-            if (usingSegmentGrid && activeSegment != null)
-                OccupiedCellMarkerManager.Instance.UpdateMarkersAroundSegment(activeSegment, hit.point, occupiedMarkerRange, placementMask);
-            else
-                OccupiedCellMarkerManager.Instance.UpdateMarkersAroundWorld(previewInstance.transform.position, occupiedMarkerRange, placementMask);
+            AvailableCellMarkerManager.Instance?.HideAll();
+            OccupiedCellMarkerManager.Instance?.HideAll();
         }
 
         // Decal (lo dejamos como estaba, centrado donde esté el preview)
@@ -706,6 +710,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
                 if (seg.IsBlocked(key.x, key.y))
                     return "Zona bloqueada";
+
+                if (!HasPerfectGroundContact(position, rotation, cardData.gridSize))
+                    return "Mal contacto con el suelo";
             }
         }
         else
@@ -780,6 +787,37 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
             if (!Physics.Raycast(origin, dir, maxDist, placementMask))
                 return false;
+        }
+
+        return true;
+    }
+
+    private bool HasPerfectGroundContact(Vector3 position, Quaternion rotation, Vector2Int gridSize)
+    {
+        const float rayHeight = 5f;
+        const float maxVerticalTolerance = 0.15f; // 🔥 MUCHO más estricto
+
+        float startX = -(gridSize.x / 2f) + 0.5f;
+        float startZ = -(gridSize.y / 2f) + 0.5f;
+
+        for (int x = 0; x < gridSize.x; x++)
+        {
+            for (int z = 0; z < gridSize.y; z++)
+            {
+                Vector3 local = new Vector3(startX + x, 0f, startZ + z);
+                Vector3 worldCenter = position + rotation * local;
+
+                Vector3 rayOrigin = worldCenter + Vector3.up * rayHeight;
+
+                if (!Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, rayHeight * 2f, placementMask))
+                    return false;
+
+                // 🔥 CLAVE: diferencia vertical REAL
+                float verticalDelta = Mathf.Abs(worldCenter.y - hit.point.y);
+
+                if (verticalDelta > maxVerticalTolerance)
+                    return false;
+            }
         }
 
         return true;
@@ -1291,9 +1329,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             _ => -U
         };
 
-        bool anyOut = false;
         bool anyBlocked = false;
-        bool anyNoSurface = false;
 
         Vector3 sumPos = Vector3.zero;
         Vector3 sumN = Vector3.zero;
@@ -1309,37 +1345,37 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 int i = Mathf.FloorToInt(cu);
                 int j = Mathf.FloorToInt(cv);
 
-                // 🔥 Centro de esa celda en el plano del segmento ORIGINAL
                 Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
                 Vector3 rayOrigin = planeCenter + N * 5f;
 
-                // 🔥 Detectar segmento REAL bajo esta celda
+                // ✅ Sin superficie → fallo inmediato
                 if (!Physics.Raycast(rayOrigin, -N, out RaycastHit cellHit, 30f, placementMask))
                 {
-                    anyNoSurface = true;
-                    continue;
+                    reason = "Fuera del suelo";
+                    return false;
                 }
 
                 var realSeg = cellHit.collider.GetComponentInParent<SegmentGridSettings>();
 
                 if (realSeg != null)
                 {
-                    // Convertir a coordenadas del segmento REAL
-                    if (realSeg.TryWorldToCell(cellHit.point, out int ri, out int rj))
+                    // ✅ Fuera de bounds del segmento → fallo inmediato
+                    if (!realSeg.TryWorldToCell(cellHit.point, out int ri, out int rj))
                     {
-                        outFootprintKeys.Add(new CellKey(realSeg.GetInstanceID(), ri, rj));
+                        reason = "Fuera del segmento";
+                        return false;
+                    }
 
-                        if (realSeg.IsBlocked(ri, rj))
-                            anyBlocked = true;
-                    }
-                    else
-                    {
-                        anyOut = true;
-                    }
+                    outFootprintKeys.Add(new CellKey(realSeg.GetInstanceID(), ri, rj));
+
+                    if (realSeg.IsBlocked(ri, rj))
+                        anyBlocked = true;
                 }
                 else
                 {
-                    anyOut = true;
+                    // ✅ La celda cae sobre suelo que no es segmento → fallo inmediato
+                    reason = "Fuera del suelo";
+                    return false;
                 }
 
                 sumPos += cellHit.point;
@@ -1348,36 +1384,26 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             }
         }
 
+        // Si llegamos aquí, todas las celdas tienen superficie válida
         if (count == 0)
         {
-            if (!Physics.Raycast(hitPoint + N * 5f, -N, out RaycastHit hinfo, 30f, placementMask))
-            {
-                reason = "Fuera del suelo";
-                return false;
-            }
+            reason = "Fuera del suelo";
+            return false;
+        }
 
-            snappedPos = hinfo.point;
-            avgNormal = hinfo.normal;
+        // Calcular posición y normal snapeadas desde el centro del footprint
+        Vector3 gridCenter = origin + centerU * cs * U + centerV * cs * V;
+        Vector3 centerRayOrigin = gridCenter + N * 5f;
+
+        if (Physics.Raycast(centerRayOrigin, -N, out RaycastHit centerHit, 30f, placementMask))
+        {
+            snappedPos = centerHit.point;
+            avgNormal = centerHit.normal;
         }
         else
         {
-            Vector3 gridCenter =
-                origin +
-                centerU * cs * U +
-                centerV * cs * V;
-
-            Vector3 rayOrigin = gridCenter + N * 5f;
-
-            if (Physics.Raycast(rayOrigin, -N, out RaycastHit hitInfo, 30f, placementMask))
-            {
-                snappedPos = hitInfo.point;
-                avgNormal = hitInfo.normal;
-            }
-            else
-            {
-                snappedPos = gridCenter;
-                avgNormal = N;
-            }
+            snappedPos = gridCenter;
+            avgNormal = N;
         }
 
         Vector3 fwdOnPlane = Vector3.ProjectOnPlane(fwdBase, avgNormal).normalized;
@@ -1386,11 +1412,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         snappedRot = Quaternion.LookRotation(fwdOnPlane, avgNormal);
 
-        if (anyOut) reason = "Fuera del segmento";
-        else if (anyNoSurface) reason = "Fuera del suelo";
-        else if (anyBlocked) reason = "Zona bloqueada";
-        else reason = "Válido";
-
+        reason = anyBlocked ? "Zona bloqueada" : "Válido";
         return true;
     }
 

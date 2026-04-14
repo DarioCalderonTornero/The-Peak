@@ -108,10 +108,10 @@ public class AvailableCellMarkerManager : MonoBehaviour
     // SEGMENTO: por proximidad real
     // =========================
     private void AddAvailableSegment_ByProximity_NoClear(
-        SegmentGridSettings seg,
-        Vector3 centerWorldPos,
-        int range,
-        LayerMask placementMask)
+    SegmentGridSettings seg,
+    Vector3 centerWorldPos,
+    int range,
+    LayerMask placementMask)
     {
         seg.EnsureMask();
         seg.GetPlaneBasis(out var U, out var V, out var N);
@@ -120,24 +120,15 @@ public class AvailableCellMarkerManager : MonoBehaviour
         Vector3 origin = seg.OriginWorld;
         int segId = seg.GetInstanceID();
 
-        // Convertimos el centro a coordenadas "flotantes" de celda en U/V
         Vector3 rel = centerWorldPos - origin;
         float u = Vector3.Dot(rel, U) / cs;
         float v = Vector3.Dot(rel, V) / cs;
 
-        // Rango en índices alrededor de esa coordenada (aunque estés fuera del 4x4)
-        int iMin = Mathf.FloorToInt(u - range);
-        int iMax = Mathf.FloorToInt(u + range);
-        int jMin = Mathf.FloorToInt(v - range);
-        int jMax = Mathf.FloorToInt(v + range);
+        int iMin = Mathf.Clamp(Mathf.FloorToInt(u - range), 0, seg.gridDims.x - 1);
+        int iMax = Mathf.Clamp(Mathf.FloorToInt(u + range), 0, seg.gridDims.x - 1);
+        int jMin = Mathf.Clamp(Mathf.FloorToInt(v - range), 0, seg.gridDims.y - 1);
+        int jMax = Mathf.Clamp(Mathf.FloorToInt(v + range), 0, seg.gridDims.y - 1);
 
-        // Clamp a bounds del segmento
-        iMin = Mathf.Clamp(iMin, 0, seg.gridDims.x - 1);
-        iMax = Mathf.Clamp(iMax, 0, seg.gridDims.x - 1);
-        jMin = Mathf.Clamp(jMin, 0, seg.gridDims.y - 1);
-        jMax = Mathf.Clamp(jMax, 0, seg.gridDims.y - 1);
-
-        // Radio real en metros para que “vayan apareciendo” de forma progresiva
         float radiusWorld = (range + 0.25f) * cs;
         float radiusSqr = radiusWorld * radiusWorld;
 
@@ -151,16 +142,24 @@ public class AvailableCellMarkerManager : MonoBehaviour
                 if (GridOccupancyManager.Instance.IsOccupied(key))
                     continue;
 
-                // Centro de celda en plano
                 Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
 
-                // ✅ filtro por distancia real (esto es lo que hace que aparezcan/desaparezcan “por proximidad”)
                 if ((planeCenter - centerWorldPos).sqrMagnitude > radiusSqr)
                     continue;
 
-                // Proyectar al mesh real
-                Vector3 rayOrigin = planeCenter + N * 5f;
-                if (!Physics.Raycast(rayOrigin, -N, out RaycastHit hit, 30f, placementMask))
+                // 🔥 RAYCAST CORRECTO
+                Vector3 rayOrigin = planeCenter + N * 0.2f;
+
+                if (!Physics.Raycast(rayOrigin, -N, out RaycastHit hit, 1.0f, placementMask))
+                    continue;
+
+                // 🔥 SOLO SU SEGMENTO
+                var hitSeg = hit.collider.GetComponentInParent<SegmentGridSettings>();
+                if (hitSeg != seg)
+                    continue;
+
+                // 🔥 OPCIONAL: evitar caras raras
+                if (Vector3.Dot(hit.normal, N) < 0.5f)
                     continue;
 
                 Vector3 up = hit.normal;
@@ -232,6 +231,60 @@ public class AvailableCellMarkerManager : MonoBehaviour
             markersByKey[key] = go;
         }
         return go;
+    }
+
+    public void UpdateAvailableAroundSegment(
+    SegmentGridSettings seg,
+    int centerX,
+    int centerY,
+    int range)
+    {
+        if (availableCellMarkerPrefab == null) return;
+        if (GridOccupancyManager.Instance == null) return;
+        if (seg == null) return;
+
+        usedThisFrame.Clear();
+
+        seg.EnsureMask();
+        seg.GetPlaneBasis(out var U, out var V, out var N);
+
+        float cs = Mathf.Max(0.01f, seg.cellSize);
+        Vector3 origin = seg.OriginWorld;
+        int segId = seg.GetInstanceID();
+
+        for (int i = centerX - range; i <= centerX + range; i++)
+        {
+            for (int j = centerY - range; j <= centerY + range; j++)
+            {
+                if (!seg.InBounds(i, j)) continue;
+                if (seg.IsBlocked(i, j)) continue;
+
+                var key = new CellKey(segId, i, j);
+
+                if (GridOccupancyManager.Instance.IsOccupied(key))
+                    continue;
+
+                Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
+
+                Vector3 rayOrigin = planeCenter + N * 5f;
+                if (!Physics.Raycast(rayOrigin, -N, out RaycastHit hit, 30f))
+                    continue;
+
+                Vector3 up = hit.normal;
+                Vector3 fwd = Vector3.ProjectOnPlane(V, up).normalized;
+                if (fwd.sqrMagnitude < 0.0001f)
+                    fwd = Vector3.ProjectOnPlane(U, up).normalized;
+
+                Quaternion rot = Quaternion.LookRotation(fwd, up);
+                Vector3 pos = hit.point + up * surfaceOffset;
+
+                var marker = GetOrCreate(key);
+                ApplyPoseAndShow(marker, pos, rot);
+                usedThisFrame.Add(key);
+            }
+        }
+
+        HideUnusedThisFrame();
     }
 
     private void ApplyPoseAndShow(GameObject go, Vector3 pos, Quaternion rot)

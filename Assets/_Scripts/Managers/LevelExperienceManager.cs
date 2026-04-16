@@ -36,20 +36,21 @@ public class LevelExperienceManager : MonoBehaviour
 
     private void OnEnable()
     {
-        if (GameManager.Instance != null)
-            GameManager.Instance.OnClimberDead += GameManager_OnClimberDead;
+        if (DeathCinematicManager.Instance != null)
+            DeathCinematicManager.Instance.OnCinematicFinished += DeathCinematicManager_OnCinematicFinished;
+         else
+            Debug.LogWarning("[LevelExperienceManager] DeathCinematicManager.Instance es null en OnEnable.");
+    }
+
+    private void DeathCinematicManager_OnCinematicFinished(object sender, EventArgs e)
+    {
+        AddExperience(levelExperienceToAdd);
     }
 
     private void OnDisable()
     {
-        if (GameManager.Instance != null)
-            GameManager.Instance.OnClimberDead -= GameManager_OnClimberDead;
-    }
-
-
-    private void GameManager_OnClimberDead(GameManager.DeathInfo obj)
-    {
-        AddExperience(levelExperienceToAdd);
+        if (DeathCinematicManager.Instance != null)
+            DeathCinematicManager.Instance.OnCinematicFinished -= DeathCinematicManager_OnCinematicFinished;
     }
 
 

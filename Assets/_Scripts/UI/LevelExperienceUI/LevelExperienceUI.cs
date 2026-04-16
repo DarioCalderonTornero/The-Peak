@@ -115,7 +115,7 @@ public class LevelExperienceUI : MonoBehaviour
         }
 
         starSequence?.Kill();
-        resetTween?.Kill(); // NEW
+        resetTween?.Kill(); 
         idleTween?.Kill();
         if (glowImage != null) glowImage.DOKill();
         if (starIconImage != null) starIconImage.DOKill();
@@ -128,7 +128,6 @@ public class LevelExperienceUI : MonoBehaviour
 
         if (forceFillToFullOnLevelUp)
         {
-            // 1) Forzamos llenar la barra hasta 1
             targetFill = 1f;
             forceFillToFullOnLevelUp = false;
 

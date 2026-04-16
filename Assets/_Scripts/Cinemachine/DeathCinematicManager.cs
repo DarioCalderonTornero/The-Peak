@@ -260,6 +260,7 @@ public class DeathCinematicManager : MonoBehaviour
             if (config != null && config.climberExplodeGameObject != null)
             {
                 Instantiate(config.climberExplodeGameObject, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);
+                Instantiate(config.deathVFX_Effect, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);
             }
                 Destroy(currentDeathInfo.climber.gameObject);
             Debug.Log($"[DeathCinematicManager] Escalador {currentDeathInfo.climber.name} destruido después de la cinemática.");

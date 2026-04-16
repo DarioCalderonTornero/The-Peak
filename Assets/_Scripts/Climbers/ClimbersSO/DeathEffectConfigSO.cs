@@ -9,4 +9,5 @@ public class DeathEffectConfigSO : ScriptableObject
     //public GameObject deathEffectPrefab;
     public AnimationClip deathAnimationClip;
     public GameObject climberExplodeGameObject;
+    public GameObject deathVFX_Effect;
 }

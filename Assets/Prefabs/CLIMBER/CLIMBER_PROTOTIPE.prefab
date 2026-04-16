@@ -521,7 +521,7 @@ MonoBehaviour:
   floatOffset: 2
   subdivisionsPerSegment: 6
   reachedThreshold: 0.2
-  maxStamina: 50
+  maxStamina: 40
   baseCostPerMeter: 1
   uphillExtraCostFactor: 1
   minStaminaCost: 0.1
@@ -533,7 +533,7 @@ MonoBehaviour:
   stepConversionFactor: 20
   noiseRange: 0
   tentPrefab: {fileID: 7363756080913931316, guid: d829f967092952f4b939089479a38594, type: 3}
-  arrivalFXPrefab: {fileID: 8015755565452522410, guid: 6faaa0874a229984b970790762a70a2d, type: 3}
+  arrivalFXPrefab: {fileID: 8369099536167962522, guid: 630e05d8736b4b64d94c5def7d97d794, type: 3}
   tentYOffset: 0.75
   climberVisual: {fileID: 3989725419049320024}
   currentStamina: 0

@@ -144,6 +144,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         if (worldSpriteImage != null && cardData.worldSprite != null)
             worldSpriteImage.sprite = cardData.worldSprite;
+
+        rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
     }
 
     private void HandlePointsChanged(int points) => UpdateInteractable();
@@ -315,18 +317,26 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
             return;
 
-        // Movimiento de la carta UI (se mantiene igual)
+        // Movimiento de la carta UI, solo se mueve en Y
         Vector2 newPos = rectTransform.anchoredPosition;
-        newPos.x += eventData.delta.x / canvas.scaleFactor;
+
+        // SOLO movimiento vertical
+        newPos.y += eventData.delta.y / canvas.scaleFactor;
+
+        // Bloqueamos X para que no se mueva lateralmente
+        newPos.x = originalPosition.x;
+
+        // Establecemos la nueva posición
         rectTransform.anchoredPosition = newPos;
 
-        float distanceToRight = rectTransform.anchoredPosition.x - originalPosition.x;
-        float alpha = Mathf.Clamp01(1f - (distanceToRight / placementThreshold));
+        float distanceUp = rectTransform.anchoredPosition.y - originalPosition.y;
+        float alpha = Mathf.Clamp01(1f - (distanceUp / placementThreshold));
         canvasGroup.alpha = alpha;
 
         bool overUI = IsPointerOverUI();
 
-        if (!inPlacementMode && distanceToRight >= placementThreshold && !overUI)
+        // Si no está en modo de colocación y se ha superado el umbral de colocación, cambiamos al modo de colocación
+        if (!inPlacementMode && distanceUp >= placementThreshold && !overUI)
             EnterPlacementMode();
 
         if (inPlacementMode && overUI)
@@ -349,6 +359,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return;
         }
 
+        // Si no estamos en el modo de colocación, o estamos escalando o usando una posición fija, no hacer nada
         if (!inPlacementMode || isFreeScaling || useFixedPosition)
             return;
 
@@ -356,11 +367,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
             return;
 
-        // Guardar último hit para re-snap si giras sin mover ratón
+        // Guardamos el último hit para realizar un resnap si giramos sin mover el ratón
         hasLastPlacementHit = true;
         lastPlacementHit = hit;
 
-        // Crear preview si no existe
+        // Crear el preview si aún no existe
         if (previewInstance == null)
         {
             previewInstance = Instantiate(cardData.defensePrefab);
@@ -383,32 +394,44 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
         }
 
+        // Actualizar la colocación según el hit
         UpdatePlacementFromHit(hit);
 
-        if (usingSegmentGrid && activeSegment != null && currentFootprintKeys.Count > 0)
+        if (AvailableCellMarkerManager.Instance != null && previewInstance != null)
         {
-            var key = currentFootprintKeys[0];
+            float segRadius = occupiedMarkerRange * 2f;
 
-            // 🟣 AVAILABLE
-            AvailableCellMarkerManager.Instance?.UpdateAvailableAroundSegment(
-                activeSegment,
-                key.x,
-                key.y,
-                occupiedMarkerRange
-            );
-
-            // 🔴 OCCUPIED
-            OccupiedCellMarkerManager.Instance?.UpdateMarkersAroundSegment(
-                activeSegment,
-                previewInstance.transform.position,
-                occupiedMarkerRange,
-                placementMask
+            AvailableCellMarkerManager.Instance.UpdateAvailableAround(
+                centerWorldPos: previewInstance.transform.position,
+                range: occupiedMarkerRange,
+                segmentSearchRadius: segRadius,
+                placementMask: placementMask,
+                maskData: (PlacementMaskManager.Instance != null)
+                    ? PlacementMaskManager.Instance.data
+                    : null
             );
         }
-        else
+
+        // OCCUPIED (esto sí puede seguir usando segment o global)
+        if (OccupiedCellMarkerManager.Instance != null)
         {
-            AvailableCellMarkerManager.Instance?.HideAll();
-            OccupiedCellMarkerManager.Instance?.HideAll();
+            if (usingSegmentGrid && activeSegment != null)
+            {
+                OccupiedCellMarkerManager.Instance.UpdateMarkersAroundSegment(
+                    activeSegment,
+                    previewInstance.transform.position,
+                    occupiedMarkerRange,
+                    placementMask
+                );
+            }
+            else
+            {
+                OccupiedCellMarkerManager.Instance.UpdateMarkersAroundWorld(
+                    previewInstance.transform.position,
+                    occupiedMarkerRange,
+                    placementMask
+                );
+            }
         }
 
         // Decal (lo dejamos como estaba, centrado donde esté el preview)
@@ -444,7 +467,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
 
-        rectTransform.anchoredPosition = new Vector2(originalPosition.x, rectTransform.anchoredPosition.y);
+        rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
 
         // Si sueltas encima de UI -> no colocar
         if (IsPointerOverUI())
@@ -453,6 +476,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             ResetTransientStates();
             return;
         }
+
+        rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
 
         if (!inPlacementMode || previewInstance == null)
         {

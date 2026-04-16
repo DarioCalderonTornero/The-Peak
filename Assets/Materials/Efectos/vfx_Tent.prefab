@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2269776947931093817}
   - component: {fileID: 808813075998222731}
   m_Layer: 0
-  m_Name: Fumata
+  m_Name: vfx_Tent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

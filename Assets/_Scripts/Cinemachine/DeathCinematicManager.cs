@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
@@ -7,6 +8,8 @@ using UnityEngine.AI;
 public class DeathCinematicManager : MonoBehaviour
 {
     public static DeathCinematicManager Instance { get; private set; }
+
+    public event EventHandler OnCinematicFinished;
 
     [Header("Referencias de Cámara")]
     [Tooltip("La cámara virtual dedicada a las muertes.")]
@@ -137,6 +140,9 @@ public class DeathCinematicManager : MonoBehaviour
         isPlayingCinematic = false;
 
         Debug.Log("[DeathCinematicManager] Cinemática saltada por el jugador.");
+
+        OnCinematicFinished?.Invoke(this, EventArgs.Empty);
+
     }
 
     private void HandleClimberDeath(GameManager.DeathInfo deathInfo)
@@ -274,6 +280,8 @@ public class DeathCinematicManager : MonoBehaviour
         // Devolvemos el control al jugador
         GameManager.Instance.SetState(GameManager.GameState.Playing);
         isPlayingCinematic = false;
+
+        OnCinematicFinished?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

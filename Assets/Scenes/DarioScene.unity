@@ -2477,9 +2477,9 @@ MonoBehaviour:
   mountainLayer:
     serializedVersion: 2
     m_Bits: 64
-  cameraDistance: 1
+  cameraDistance: 0.8
   heightOffset: 10
-  sideOffset: 15
+  sideOffset: 10
   blendInTime: 1
   delayAfterAnim: 0.25
   delayAfterBlendCameras: 0.5
@@ -4793,7 +4793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0

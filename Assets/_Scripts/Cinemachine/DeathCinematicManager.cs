@@ -257,7 +257,7 @@ public class DeathCinematicManager : MonoBehaviour
 
             // --- 4. RESOLUCIÓN ---
 
-            if (config != null && config.climberExplodeGameObject != null)
+            if (config != null && config.climberExplodeGameObject != null && config.deathVFX_Effect != null)
             {
                 Instantiate(config.climberExplodeGameObject, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);
                 Instantiate(config.deathVFX_Effect, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);

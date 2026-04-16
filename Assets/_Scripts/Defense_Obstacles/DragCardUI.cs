@@ -103,6 +103,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private readonly List<CellKey> currentFootprintKeys = new List<CellKey>(32);
 
 
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -296,6 +297,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
 
+        isHovering = false;
+        if (hoverRoutine != null) StopCoroutine(hoverRoutine);
+
         if (PointsManager.Instance != null && !PointsManager.Instance.CanAfford(cardData.cost))
         {
             canDragThisTime = false;
@@ -306,9 +310,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canDragThisTime = true;
         canvasGroup.blocksRaycasts = false;
 
-        // ✅ Reset SOLO de estados temporales (NO tocamos scale/rot persistentes)
-        ResetTransientStates();
+        // Guardar desde dónde empieza el drag (puede ser desde hover lifted)
+        dragStartY = rectTransform.anchoredPosition.y;
 
+        ResetTransientStates();
         CleanupPreview();
     }
 
@@ -329,7 +334,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         // Establecemos la nueva posición
         rectTransform.anchoredPosition = newPos;
 
-        float distanceUp = rectTransform.anchoredPosition.y - originalPosition.y;
+        float distanceUp = rectTransform.anchoredPosition.y - dragStartY;
         float alpha = Mathf.Clamp01(1f - (distanceUp / placementThreshold));
         canvasGroup.alpha = alpha;
 
@@ -946,22 +951,48 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         replacementCallback?.Invoke(this);
     }
 
-    private bool isHoveringForReplacement = false;
+    [Header("Hover Animation")]
+    [SerializeField] private float hoverLiftY = 120f;   // cuánto sube (px de canvas)
+    [SerializeField] private float hoverDuration = 0.2f;
+
     private Coroutine hoverRoutine;
-    private Vector2 hoverTargetOffset = new Vector2(30f, 0f);
-    private float hoverSpeed = 10f;
+    private bool isHovering = false;
+    private float dragStartY;
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (replacementCallback != null && !isHoveringForReplacement)
+        if (isHovering) return;
+        isHovering = true;
+        if (hoverRoutine != null) StopCoroutine(hoverRoutine);
+        hoverRoutine = StartCoroutine(AnimateHoverLift(true));
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!isHovering) return;
+        isHovering = false;
+        if (hoverRoutine != null) StopCoroutine(hoverRoutine);
+        hoverRoutine = StartCoroutine(AnimateHoverLift(false));
+    }
+
+    private IEnumerator AnimateHoverLift(bool lifting)
+    {
+        Vector2 startPos = rectTransform.anchoredPosition;
+        Vector2 targetPos = lifting
+            ? new Vector2(originalPosition.x, originalPosition.y + hoverLiftY)
+            : originalPosition;
+
+        float elapsed = 0f;
+        while (elapsed < hoverDuration)
         {
-            isHoveringForReplacement = true;
-
-            if (hoverRoutine != null)
-                StopCoroutine(hoverRoutine);
-
-            hoverRoutine = StartCoroutine(MoveCardSmooth(originalPosition, originalPosition + hoverTargetOffset));
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / hoverDuration;
+            // EaseOut: desacelera al llegar
+            float smooth = 1f - Mathf.Pow(1f - Mathf.Clamp01(t), 3f);
+            rectTransform.anchoredPosition = Vector2.LerpUnclamped(startPos, targetPos, smooth);
+            yield return null;
         }
+        rectTransform.anchoredPosition = targetPos;
     }
 
     private Vector3 GetSnappedPosition(Vector3 hitPoint, int width, int height, Quaternion rotation)
@@ -983,19 +1014,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         // Mantenemos la Y del punto de impacto (o fíjalo a 0 si tu suelo es plano)
         return new Vector3(x, hitPoint.y, z);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (replacementCallback != null && isHoveringForReplacement)
-        {
-            isHoveringForReplacement = false;
-
-            if (hoverRoutine != null)
-                StopCoroutine(hoverRoutine);
-
-            hoverRoutine = StartCoroutine(MoveCardSmooth(rectTransform.anchoredPosition, originalPosition));
-        }
     }
 
     // Estructura para devolver posición y normal ajustadas
@@ -1063,7 +1081,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         return result;
     }
 
-    private IEnumerator MoveCardSmooth(Vector2 from, Vector2 to)
+    /* private IEnumerator MoveCardSmooth(Vector2 from, Vector2 to)
     {
         float t = 0f;
 
@@ -1075,7 +1093,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         rectTransform.anchoredPosition = to;
-    }
+    }*/
 
     [Header("Configuración Visual de Grilla")]
     [SerializeField] private bool showGlobalGrid = true;

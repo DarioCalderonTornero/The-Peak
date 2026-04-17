@@ -229,6 +229,23 @@ public class DeathCinematicManager : MonoBehaviour
                 CameraShake.Instance.ShakeDeathCamera(3f, 10f, 0.2f);
             }
 
+            float slowDuration = 0.5f;
+            float elapsed = 0f;
+
+            Time.timeScale = 0.2f;
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+            while (elapsed < slowDuration)
+            {
+                elapsed += Time.unscaledDeltaTime; 
+                Time.timeScale = Mathf.Lerp(0.5f, 1f, elapsed / slowDuration);
+                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+                yield return null;
+            }
+
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+
             if (config != null)
             {
                 if (config.deathAudioClip != null)
@@ -259,6 +276,7 @@ public class DeathCinematicManager : MonoBehaviour
 
             if (config != null && config.climberExplodeGameObject != null && config.deathVFX_Effect != null)
             {
+                Debug.Log("climberExplode");
                 Instantiate(config.climberExplodeGameObject, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);
                 Instantiate(config.deathVFX_Effect, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);
             }

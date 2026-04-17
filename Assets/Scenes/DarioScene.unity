@@ -2477,9 +2477,9 @@ MonoBehaviour:
   mountainLayer:
     serializedVersion: 2
     m_Bits: 64
-  cameraDistance: 0.8
-  heightOffset: 10
-  sideOffset: 10
+  cameraDistance: 0.5
+  heightOffset: 5
+  sideOffset: 5
   blendInTime: 1
   delayAfterAnim: 0.25
   delayAfterBlendCameras: 0.5
@@ -4793,7 +4793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -5577,11 +5577,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   flySpeed: 125
-  panSpeed: 0.15
+  panSpeed: 0.05
   invertPanY: 0
   panVerticalUsesWorldUp: 0
   panVerticalMultiplier: 1
-  zoomSpeed: 15
+  zoomSpeed: 3
   mountainTag: Mountain
   zoomInStopDistance: 30
   zoomInCastRadius: 0

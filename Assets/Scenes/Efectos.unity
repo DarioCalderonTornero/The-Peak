@@ -13977,6 +13977,83 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1001 &989948688
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -41.826
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.182
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -117.965
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2182945553310340217, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: m_Name
+      value: vfx_MuertePolvo
+      objectReference: {fileID: 0}
+    - target: {fileID: 3055834226310139621, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: retrasOjos
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3055834226310139621, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: fuerzaRodar
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3055834226310139621, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: tiempoEnElSuelo
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3055834226310139621, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: fuerzaSeparacion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3055834226310139621, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: duracionDesvanecimiento
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
 --- !u!43 &1011594725
 Mesh:
   m_ObjectHideFlags: 0
@@ -25242,6 +25319,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Fumata
       objectReference: {fileID: 0}
+    - target: {fileID: 8369099536167962522, guid: 630e05d8736b4b64d94c5def7d97d794, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -28586,68 +28667,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: vfx_Blood
       objectReference: {fileID: 0}
+    - target: {fileID: 1487853291997279668, guid: 48e38bae4f8f2644fa5bb558e8500057, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 48e38bae4f8f2644fa5bb558e8500057, type: 3}
---- !u!1001 &2995188970911002965
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -44.173
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 4.182
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -117.273
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2037831899772208212, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2182945553310340217, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
-      propertyPath: m_Name
-      value: vfx_MuertePolvo
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
 --- !u!1001 &4967089186229640762
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28699,6 +28727,10 @@ PrefabInstance:
     - target: {fileID: 3715605854781016189, guid: c92c5aa89bd8ffd43a152a689d0cf132, type: 3}
       propertyPath: m_Name
       value: vfx_Explosion+Blood
+      objectReference: {fileID: 0}
+    - target: {fileID: 3715605854781016189, guid: c92c5aa89bd8ffd43a152a689d0cf132, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -28757,6 +28789,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: vfx_Explosion
       objectReference: {fileID: 0}
+    - target: {fileID: 7975431338800691531, guid: 6dfea463206e1b747bef5a8d6f6ec7f5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -28772,7 +28808,6 @@ SceneRoots:
   - {fileID: 197628016}
   - {fileID: 1332658017}
   - {fileID: 16649606}
-  - {fileID: 2995188970911002965}
   - {fileID: 1301833244}
   - {fileID: 213405564}
   - {fileID: 1226909815}
@@ -28786,3 +28821,4 @@ SceneRoots:
   - {fileID: 287591392}
   - {fileID: 1688505080}
   - {fileID: 2864735509040422718}
+  - {fileID: 989948688}

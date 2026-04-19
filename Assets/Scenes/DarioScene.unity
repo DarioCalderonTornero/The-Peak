@@ -2481,8 +2481,10 @@ MonoBehaviour:
   heightOffset: 5
   sideOffset: 5
   blendInTime: 1
-  delayAfterAnim: 0.25
+  delayAfterExplosion: 1.5
   delayAfterBlendCameras: 0.5
+  slowMotionScale: 0.2
+  slowMotionDuration: 0.5
   useDeathCinematics: 1
 --- !u!1 &639492198
 GameObject:

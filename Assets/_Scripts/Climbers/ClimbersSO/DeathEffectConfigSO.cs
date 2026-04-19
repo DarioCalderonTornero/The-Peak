@@ -7,7 +7,6 @@ public class DeathEffectConfigSO : ScriptableObject
     public DeathCause deathCause;
     public AudioClip deathAudioClip;
     //public GameObject deathEffectPrefab;
-    public AnimationClip deathAnimationClip;
-    public GameObject climberExplodeGameObject;
+    public GameObject deathVisualPrefab;
     public GameObject deathVFX_Effect;
 }

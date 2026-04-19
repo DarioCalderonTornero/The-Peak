@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Se añade al prefab visual de muerte junto a DeathAnimation.
+/// Escucha OnAnimationComplete y lanza la explosión cuando la animación termina.
+/// </summary>
 public class DeathClimberExplosion : MonoBehaviour
 {
     [Header("Explosion Settings")]
@@ -17,15 +21,47 @@ public class DeathClimberExplosion : MonoBehaviour
     [Header("Cleanup")]
     [SerializeField] private float lifeTime = 3f;
 
-    private void Start()
+    private DeathAnimation deathAnimation;
+
+    private void Awake()
+    {
+        deathAnimation = GetComponent<DeathAnimation>();
+
+        // Congelar física hasta que explote
+        foreach (var rb in GetComponentsInChildren<Rigidbody>())
+        {
+            rb.isKinematic = true;
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (deathAnimation != null)
+            deathAnimation.OnAnimationComplete += HandleAnimationComplete;
+    }
+
+    private void OnDisable()
+    {
+        if (deathAnimation != null)
+            deathAnimation.OnAnimationComplete -= HandleAnimationComplete;
+    }
+
+    private void HandleAnimationComplete()
+    {
+        ClimberExplosion();
+    }
+
+    private void ClimberExplosion()
     {
         Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
-
         Vector3 origin = transform.position + explosionOffset;
 
         foreach (Rigidbody rb in rbs)
         {
             if (rb == null) continue;
+
+            rb.isKinematic = false;
+            rb.useGravity = true;
 
             rb.AddExplosionForce(explosionForce, origin, explosionRadius, upwardsModifier, ForceMode.Impulse);
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
@@ -11,152 +11,117 @@ public class DeathCinematicManager : MonoBehaviour
 
     public event EventHandler OnCinematicFinished;
 
-    [Header("Referencias de C�mara")]
-    [Tooltip("La c�mara virtual dedicada a las muertes.")]
+    [Header("Referencias de Cámara")]
     [SerializeField] private CinemachineCamera deathCamera;
 
-    [Header("Configuraci�n de Posicionamiento")]
-    [Tooltip("Capa de la monta�a para detectar la normal del suelo.")]
+    [Header("Configuración de Posicionamiento")]
     [SerializeField] private LayerMask mountainLayer;
-    [Tooltip("Distancia a la que se colocar� la c�mara desde la cara del escalador.")]
     [SerializeField] private float cameraDistance = 3f;
-    [Tooltip("Altura extra para que la c�mara mire un poco desde arriba.")]
     [SerializeField] private float heightOffset = 1.5f;
-    [Tooltip("Desplazamiento lateral. Positivo = Derecha, Negativo = Izquierda.")]
     [SerializeField] private float sideOffset = 3f;
 
-    [Header("Tiempos Cinem�ticos")]
-    [Tooltip("Tiempo de espera para que la c�mara llegue al escalador antes de ejecutar la muerte.")]
+    [Header("Tiempos Cinemáticos")]
+    [Tooltip("Tiempo que tarda la cámara en llegar al escalador.")]
     [SerializeField] private float blendInTime = 2.0f;
-    [Tooltip("Tiempo de gracia extra despu�s de la animaci�n de muerte antes de volver.")]
-    [SerializeField] private float delayAfterAnim = 0.5f;
-    [Tooltip("Tiempo de espera desde que la c�mara llega a la muerte hasta que salen las bandas negras")]
+    [Tooltip("Tiempo que la cámara se queda mirando después de la explosión.")]
+    [SerializeField] private float delayAfterExplosion = 1.5f;
     [SerializeField] private float delayAfterBlendCameras = 0.0f;
 
-    [Header("Ajustes de Control")]
-    [Tooltip("Si se desactiva, no habr� cinem�tica y el escalador morir� instant�neamente.")]
-    [SerializeField] private bool useDeathCinematics = true;
+    [Header("Slow Motion")]
+    [SerializeField] private float slowMotionScale = 0.2f;
+    [SerializeField] private float slowMotionDuration = 0.5f;
 
-    [Header("Opciones de Salto")]
-    [Tooltip("Tecla para saltar la cinem�tica de muerte.")]
+    [Header("Ajustes de Control")]
+    [SerializeField] private bool useDeathCinematics = true;
 
     private Coroutine processQueueCoroutine;
     private GameManager.DeathInfo currentDeathInfo;
 
-    // La cola de muertes pendientes
     private Queue<GameManager.DeathInfo> deathQueue = new Queue<GameManager.DeathInfo>();
     private bool isPlayingCinematic = false;
 
-    // Objeto invisible que usaremos para posicionar la c�mara
     private Transform cameraAnchor;
+
+    // Flag que se activa cuando DeathAnimation termina
+    private bool animationComplete = false;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
-        // Crear el ancla din�mico en tiempo de ejecuci�n (para no ensuciar la escena)
         cameraAnchor = new GameObject("DeathCameraAnchor").transform;
         cameraAnchor.SetParent(transform);
 
-        // Asegurarnos de que la c�mara de muerte empieza apagada (prioridad 0)
         if (deathCamera != null) deathCamera.Priority = 0;
     }
 
     private void Start()
     {
-        // Nos suscribimos al evento de muerte del GameManager
         if (GameManager.Instance != null)
-        {
             GameManager.Instance.OnClimberDead += HandleClimberDeath;
-        }
         else
-        {
-            Debug.LogWarning("[DeathCinematicManager] No se encontr� el GameManager en la escena.");
-        }
+            Debug.LogWarning("[DeathCinematicManager] No se encontró el GameManager en la escena.");
 
         InputManager.Instance.OnSkipCinematic += InputManager_OnSkipCinematic;
-    }
-
-    private void InputManager_OnSkipCinematic(object sender, System.EventArgs e)
-    {
-        if (isPlayingCinematic)
-        {
-            SkipCinematic();
-        }   
     }
 
     private void OnDestroy()
     {
         if (GameManager.Instance != null)
-        {
             GameManager.Instance.OnClimberDead -= HandleClimberDeath;
-        }
     }
 
+    private void InputManager_OnSkipCinematic(object sender, System.EventArgs e)
+    {
+        if (isPlayingCinematic) SkipCinematic();
+    }
+
+    // ─── Skip ────────────────────────────────────────────────────────────────
 
     private void SkipCinematic()
     {
-        // 1. Abortamos la corrutina de los tiempos inmediatamente
         if (processQueueCoroutine != null)
         {
             StopCoroutine(processQueueCoroutine);
             processQueueCoroutine = null;
         }
 
-        // 2. Destruimos al escalador actual que estaba en pantalla. 
-        // CORRECCI�N: Al ser un struct, solo comprobamos si el escalador es nulo.
-        if (currentDeathInfo.climber != null)
-        {
-            Destroy(currentDeathInfo.climber.gameObject);
-        }
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
+        animationComplete = true; // desbloquea cualquier WaitUntil pendiente
 
-        // 3. Vaciamos la cola por si murieron varios a la vez
-        // y los destruimos al instante para no tener que ver sus cinem�ticas tampoco.
+        if (currentDeathInfo.climber != null)
+            Destroy(currentDeathInfo.climber.gameObject);
+
         while (deathQueue.Count > 0)
         {
-            var pendingDeath = deathQueue.Dequeue();
-            if (pendingDeath.climber != null) Destroy(pendingDeath.climber.gameObject);
+            var pending = deathQueue.Dequeue();
+            if (pending.climber != null) Destroy(pending.climber.gameObject);
         }
 
-        // 4. Detenemos temblores de c�mara si los hubiera
         if (CameraShake.Instance != null) CameraShake.Instance.StopShake();
-
-        // 5. Devolvemos la c�mara principal devolviendo la prioridad de la c�mara de muerte a 0
         deathCamera.Priority = 0;
-
-        // 6. Quitamos las bandas negras inmediatamente
         if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
 
-        // 7. Encendemos el UI principal del juego
         UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
-
-        // 8. Devolvemos el control al jugador
         GameManager.Instance.SetState(GameManager.GameState.Playing);
         isPlayingCinematic = false;
 
-        Debug.Log("[DeathCinematicManager] Cinem�tica saltada por el jugador.");
-
+        Debug.Log("[DeathCinematicManager] Cinemática saltada por el jugador.");
         OnCinematicFinished?.Invoke(this, EventArgs.Empty);
-
     }
+
+    // ─── Handle ──────────────────────────────────────────────────────────────
 
     private void HandleClimberDeath(GameManager.DeathInfo deathInfo)
     {
         if (!useDeathCinematics)
         {
-            if (deathInfo.climber != null)
-            {
-                Destroy(deathInfo.climber.gameObject);
-            }
+            if (deathInfo.climber != null) Destroy(deathInfo.climber.gameObject);
             return;
         }
 
-        // --- Si el sistema est� activado, procedemos como antes ---
         if (deathInfo.climber != null)
         {
             deathInfo.climber.SetExternalSpeedMultiplier(0f);
@@ -167,17 +132,15 @@ public class DeathCinematicManager : MonoBehaviour
         deathQueue.Enqueue(deathInfo);
 
         if (!isPlayingCinematic)
-        {
             processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
-        }
     }
+
+    // ─── Cola de muertes ─────────────────────────────────────────────────────
 
     private IEnumerator ProcessDeathQueue()
     {
         isPlayingCinematic = true;
         GameManager.Instance.SetState(GameManager.GameState.Cinematic);
-
-        // 1. Apagamos la UI de golpe para limpiar la pantalla durante el vuelo
         UIManager.Instance.HideAll();
 
         bool barsAreShown = false;
@@ -187,139 +150,141 @@ public class DeathCinematicManager : MonoBehaviour
             currentDeathInfo = deathQueue.Dequeue();
             if (currentDeathInfo.climber == null) continue;
 
+            // 1. Posicionar cámara y volar hacia el escalador
             CalculateCameraAnchorPosition(currentDeathInfo.climber.transform);
-
             deathCamera.Follow = cameraAnchor;
             deathCamera.LookAt = currentDeathInfo.climber.transform;
             deathCamera.Priority = 100;
 
-            // --- EL VUELO DE LA C�MARA (Sincronizado con las bandas) ---
-
-            float barsAnimationTime = 0.0f; 
+            float barsAnimationTime = 0.0f;
             float waitBeforeBars = Mathf.Max(0f, blendInTime - barsAnimationTime);
             float waitAfterBars = blendInTime - waitBeforeBars;
 
-            // 1. Esperamos la mayor parte del viaje de la c�mara
             yield return new WaitForSeconds(waitBeforeBars);
 
             if (currentDeathInfo.climber == null)
             {
-                Debug.LogWarning("[DeathCinematicManager] �Un script externo ha destruido al escalador antes de tiempo!");
+                Debug.LogWarning("[DeathCinematicManager] Escalador destruido antes de tiempo.");
                 if (deathQueue.Count <= 1) deathCamera.Priority = 0;
                 continue;
             }
 
-            // 2. �AHORA SACAMOS LAS BANDAS! (Mientras la c�mara da sus �ltimos metros de vuelo)
             if (!barsAreShown)
             {
                 if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
                 barsAreShown = true;
             }
 
-            // 3. Esperamos el tiempo que le queda a la c�mara para llegar a su destino
             yield return new WaitForSeconds(waitAfterBars + delayAfterBlendCameras);
 
-            // --- 3. REPRODUCIR EFECTOS ---
-            DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeathInfo.cause);
-            float animDuration = 1.0f;
-            float audioDuration = 0f;
-
+            // 2. Slow motion + camera shake al llegar
             if (CameraShake.Instance != null)
-            {
                 CameraShake.Instance.ShakeDeathCamera(3f, 10f, 0.2f);
-            }
 
-            float slowDuration = 0.5f;
-            float elapsed = 0f;
+            yield return StartCoroutine(SlowMotionRoutine());
 
-            Time.timeScale = 0.2f;
-            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            // 3. Destruir escalador original e instanciar prefab visual
+            DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeathInfo.cause);
 
-            while (elapsed < slowDuration)
+            Vector3 deathPos = currentDeathInfo.climber.transform.position;
+            Quaternion deathRot = currentDeathInfo.climber.transform.rotation;
+
+            var loadout = currentDeathInfo.climber.GetComponent<ClimberLoadout>();
+            Color helmetColor = loadout != null ? loadout.GetHelmetColor() : Color.white;
+
+            Destroy(currentDeathInfo.climber.gameObject);
+
+            // 4. Instanciar visual y esperar a que la animación termine
+            animationComplete = false;
+
+            if (config != null && config.deathVisualPrefab != null)
             {
-                elapsed += Time.unscaledDeltaTime; 
-                Time.timeScale = Mathf.Lerp(0.5f, 1f, elapsed / slowDuration);
-                Time.fixedDeltaTime = 0.02f * Time.timeScale;
-                yield return null;
+                var visual = Instantiate(config.deathVisualPrefab, deathPos, deathRot);
+                var deathAnim = visual.GetComponent<DeathAnimation>();
+
+                if (deathAnim != null)
+                {
+                    // Suscribirse al evento de fin de animación
+                    deathAnim.OnAnimationComplete += () => animationComplete = true;
+                    deathAnim.PlayAnimation(currentDeathInfo.cause, helmetColor);
+                }
+                else
+                {
+                    // Si no hay DeathAnimation, continuamos igualmente
+                    animationComplete = true;
+                }
+            }
+            else
+            {
+                animationComplete = true;
             }
 
-            Time.timeScale = 1f;
-            Time.fixedDeltaTime = 0.02f;
+            // Esperamos a que la animación de código termine
+            yield return new WaitUntil(() => animationComplete);
 
+            // 5. Al terminar la animación: audio + VFX simultáneos
+            // (la explosión la gestiona DeathClimberExplosion vía OnAnimationComplete)
             if (config != null)
             {
                 if (config.deathAudioClip != null)
-                {
-                    audioDuration = config.deathAudioClip.length;
                     Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
-                }
 
-                // Reproducir Animaci�n
-                if (config.deathAnimationClip != null)
-                {
-                    Animator anim = currentDeathInfo.climber.GetComponentInChildren<Animator>();
-                    if (anim != null)
-                    {
-                        anim.Play(config.deathAnimationClip.name);
-                        animDuration = config.deathAnimationClip.length;
-                    }
-                }
+                if (config.deathVFX_Effect != null)
+                    Instantiate(config.deathVFX_Effect, deathPos, deathRot);
             }
 
-            // --- NUEVO: ESPERAR DE FORMA INTELIGENTE ---
-            float timeToWait = Mathf.Max(animDuration, audioDuration);
+            // 6. Cámara se queda mirando el punto de muerte
+            yield return new WaitForSeconds(delayAfterExplosion);
 
-            // Esperamos ese tiempo + el tiempo de gracia
-            yield return new WaitForSeconds(timeToWait + delayAfterAnim);
-
-            // --- 4. RESOLUCI�N ---
-
-            if (config != null && config.climberExplodeGameObject != null && config.deathVFX_Effect != null)
-            {
-                Debug.Log("climberExplode");
-                Instantiate(config.climberExplodeGameObject, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);
-                Instantiate(config.deathVFX_Effect, currentDeathInfo.climber.transform.position, currentDeathInfo.climber.transform.rotation);
-            }
-                Destroy(currentDeathInfo.climber.gameObject);
-            Debug.Log($"[DeathCinematicManager] Escalador {currentDeathInfo.climber.name} destruido despu�s de la cinem�tica.");
-
-            // Bajamos la prioridad de la c�mara para que vuelva a la vista general si es la �ltima muerte
+            // 7. Cámara vuelve
             if (deathQueue.Count == 0)
             {
                 deathCamera.Priority = 0;
-                // Esperamos a que la c�mara vuelva antes de devolver el control
                 yield return new WaitForSeconds(blendInTime);
             }
         }
 
         if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
-
         UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
-
-        // Devolvemos el control al jugador
         GameManager.Instance.SetState(GameManager.GameState.Playing);
         isPlayingCinematic = false;
 
         OnCinematicFinished?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>
-    /// Calcula una posici�n segura para la c�mara evaluando colisiones laterales.
-    /// </summary>
-    private void CalculateCameraAnchorPosition(Transform climberTransform)
-    {
-        // 1. Definimos desde d�nde mira la c�mara (la cabeza/pecho del escalador)
-        Vector3 headPosition = climberTransform.position + (Vector3.up * 1.5f);
-        Vector3 baseOrigin = climberTransform.position + (Vector3.up * 0.5f);
+    // ─── Slow Motion ─────────────────────────────────────────────────────────
 
-        // 2. Obtenemos la normal del suelo para saber hacia d�nde es "afuera" de la monta�a
-        Vector3 outwardsDirection = Vector3.back; // Por defecto hacia atr�s
-        if (Physics.Raycast(baseOrigin, Vector3.down, out RaycastHit groundHit, 5f, mountainLayer))
+    private IEnumerator SlowMotionRoutine()
+    {
+        float elapsed = 0f;
+
+        Time.timeScale = slowMotionScale;
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+        while (elapsed < slowMotionDuration)
         {
-            outwardsDirection = groundHit.normal.normalized;
+            elapsed += Time.unscaledDeltaTime;
+            Time.timeScale = Mathf.Lerp(slowMotionScale, 1f, elapsed / slowMotionDuration);
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            yield return null;
         }
 
-        Vector3[] sideDirectionsToTry = new Vector3[]
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
+    }
+
+    // ─── Posicionamiento de cámara ───────────────────────────────────────────
+
+    private void CalculateCameraAnchorPosition(Transform climberTransform)
+    {
+        Vector3 headPosition = climberTransform.position + Vector3.up * 1.5f;
+        Vector3 baseOrigin = climberTransform.position + Vector3.up * 0.5f;
+
+        Vector3 outwardsDirection = Vector3.back;
+        if (Physics.Raycast(baseOrigin, Vector3.down, out RaycastHit groundHit, 5f, mountainLayer))
+            outwardsDirection = groundHit.normal.normalized;
+
+        Vector3[] sideDirections = new Vector3[]
         {
             climberTransform.right,
             -climberTransform.right,
@@ -328,35 +293,31 @@ public class DeathCinematicManager : MonoBehaviour
 
         Vector3 finalSafePos = climberTransform.position;
 
-        // 4. Probamos cada direcci�n una por una
-        foreach (Vector3 sideDir in sideDirectionsToTry)
+        foreach (Vector3 sideDir in sideDirections)
         {
-            // Calculamos el punto te�rico donde nos gustar�a poner la c�mara
             Vector3 targetPos = climberTransform.position
-                              + (outwardsDirection * cameraDistance)
-                              + (sideDir * sideOffset)
-                              + (Vector3.up * heightOffset);
+                              + outwardsDirection * cameraDistance
+                              + sideDir * sideOffset
+                              + Vector3.up * heightOffset;
 
-            // Vector y distancia desde la cabeza hasta ese punto te�rico
-            Vector3 directionToTarget = targetPos - headPosition;
-            float distanceToTarget = directionToTarget.magnitude;
+            Vector3 dir = targetPos - headPosition;
+            float dist = dir.magnitude;
 
-            if (!Physics.SphereCast(headPosition, 0.5f, directionToTarget.normalized, out RaycastHit wallHit, distanceToTarget, mountainLayer))
+            if (!Physics.SphereCast(headPosition, 0.5f, dir.normalized, out RaycastHit wallHit, dist, mountainLayer))
             {
                 finalSafePos = targetPos;
                 break;
             }
             else
             {
-                // Hemos chocado con una pared. 
-                finalSafePos = wallHit.point + (wallHit.normal * 0.5f);
+                finalSafePos = wallHit.point + wallHit.normal * 0.5f;
             }
         }
 
-        // 5. Asignamos la posici�n ganadora al ancla
         cameraAnchor.position = finalSafePos;
     }
 
-    //SETTERS
-    public void IsPlayingCinematic() => useDeathCinematics = !useDeathCinematics; 
+    // ─── Setters ─────────────────────────────────────────────────────────────
+
+    public void IsPlayingCinematic() => useDeathCinematics = !useDeathCinematics;
 }

@@ -17,7 +17,7 @@ public class BrambleDefense : BaseDefense
 
     [Header("Vibración cuando hay escaladores dentro")]
     [SerializeField] private float shakeMagnitude = 0.05f;
-    [SerializeField] private float shakeSpeed = 25f; // (reservado)
+    [SerializeField] private float shakeSpeed = 25f;
     [SerializeField] private float shakeRadiusAroundClimber = 1.2f;
 
     [Header("Visual de zarzas")]
@@ -36,20 +36,20 @@ public class BrambleDefense : BaseDefense
 
     [Header("Preview / Seed")]
     [SerializeField] private bool isPreview = false;
-    [SerializeField] private int layoutSeed = 0; // el seed que define cuántas/dónde
-    [SerializeField] private Material previewMaterialOverride; // material transparente (del CardData)
+    [SerializeField] private int layoutSeed = 0;
+    [SerializeField] private Material previewMaterialOverride;
 
     private int insideCount = 0;
     private Collider areaCollider;
     private Coroutine spawnRoutine;
 
-    // Escaladores dentro del área de la zarza
     private readonly List<ClimberMovement> climbersInside = new List<ClimberMovement>();
 
     private class BrambleClimberData
     {
         public float lastStamina;
         public bool inside;
+        public bool wasImmune;
     }
 
     private readonly Dictionary<ClimberMovement, BrambleClimberData> staminaTracked =
@@ -78,18 +78,14 @@ public class BrambleDefense : BaseDefense
         else
             Debug.LogWarning("[BrambleDefense] No hay Collider en el objeto de zarzas, el área no funcionará.");
 
-        // Si es preview y ya tenemos seed, generamos al despertar
         if (isPreview && bramblePrefab != null && layoutSeed != 0)
-        {
             GenerateLayout(layoutSeed, previewMaterialOverride, animate: false);
-        }
     }
 
     public override void Initialize()
     {
         base.Initialize();
 
-        // Defensa REAL: si no hay seed asignado, generamos uno
         if (layoutSeed == 0)
             layoutSeed = Random.Range(int.MinValue, int.MaxValue);
 
@@ -101,16 +97,8 @@ public class BrambleDefense : BaseDefense
 
     private void PlaySpawnVfx()
     {
-        if (spawnVfxPrefab == null)
-            return;
-
-        VisualEffect vfx = Instantiate(
-            spawnVfxPrefab,
-            transform.position,
-            transform.rotation,
-            null // sin padre
-        );
-
+        if (spawnVfxPrefab == null) return;
+        VisualEffect vfx = Instantiate(spawnVfxPrefab, transform.position, transform.rotation, null);
         Destroy(vfx.gameObject, spawnVfxDuration);
     }
 
@@ -121,8 +109,6 @@ public class BrambleDefense : BaseDefense
         isPreview = true;
         layoutSeed = seed;
         previewMaterialOverride = previewMat;
-
-        // Generamos instantáneo (sin pop) para que se vea claro
         GenerateLayout(layoutSeed, previewMaterialOverride, animate: false);
     }
 
@@ -144,17 +130,15 @@ public class BrambleDefense : BaseDefense
             yield break;
         }
 
-        // Creamos layout (instancias en escala 0)
         BuildLayout(seed, previewMat);
 
-        // Preview: normalmente no animamos ni hacemos pop
         if (!animate)
         {
             foreach (var inst in spawnedInstances)
             {
                 if (inst.transform == null) continue;
                 inst.transform.localScale = inst.targetScale;
-                inst.transform.localRotation = inst.endRotation;  // 🔹 LOCAL
+                inst.transform.localRotation = inst.endRotation;
                 inst.originalLocalPos = inst.transform.localPosition;
             }
             spawnRoutine = null;
@@ -162,7 +146,6 @@ public class BrambleDefense : BaseDefense
         }
 
         float elapsed = 0f;
-
         while (elapsed < spawnDuration)
         {
             elapsed += Time.deltaTime * Mathf.Max(0.01f, spawnAnimSpeed);
@@ -172,10 +155,9 @@ public class BrambleDefense : BaseDefense
             foreach (var inst in spawnedInstances)
             {
                 if (inst.transform == null) continue;
-                inst.transform.localScale = inst.targetScale * eased;           // 🔹 LOCAL
-                inst.transform.localRotation = Quaternion.Slerp(inst.startRotation, inst.endRotation, eased);  // 🔹 LOCAL
+                inst.transform.localScale = inst.targetScale * eased;
+                inst.transform.localRotation = Quaternion.Slerp(inst.startRotation, inst.endRotation, eased);
             }
-
             yield return null;
         }
 
@@ -183,7 +165,7 @@ public class BrambleDefense : BaseDefense
         {
             if (inst.transform == null) continue;
             inst.transform.localScale = inst.targetScale;
-            inst.transform.localRotation = inst.endRotation;                 // 🔹 LOCAL
+            inst.transform.localRotation = inst.endRotation;
             inst.originalLocalPos = inst.transform.localPosition;
         }
 
@@ -201,14 +183,11 @@ public class BrambleDefense : BaseDefense
         spawnedInstances.Clear();
 
         var rng = new System.Random(seed);
-
         int count = RandRangeInt(rng, minClumps, maxClumps + 1);
 
         BoxCollider box = areaCollider as BoxCollider;
         if (box == null)
-        {
             Debug.LogWarning("[BrambleDefense] El collider no es BoxCollider, se usará el punto central.");
-        }
 
         for (int i = 0; i < count; i++)
         {
@@ -217,36 +196,26 @@ public class BrambleDefense : BaseDefense
             if (box != null)
             {
                 Vector3 halfSize = box.size * 0.5f;
-
                 float randX = RandRangeFloat(rng, -halfSize.x, halfSize.x);
                 float randZ = RandRangeFloat(rng, -halfSize.z, halfSize.z);
-
-                // 🔹 Y = 0 en el espacio local del collider (suelo local)
                 localPos = new Vector3(randX, 0f, randZ) + box.center;
             }
 
-            // 🔹 Instanciar directamente como hijo con posición LOCAL
             GameObject instance = Instantiate(bramblePrefab, transform);
             instance.transform.localPosition = localPos;
 
-            // Rotación inicial / final SOLO en eje Y local + "tumba"
             float randomY = RandRangeFloat(rng, 0f, 360f);
-
             Quaternion startRot = Quaternion.Euler(-90f, randomY, 0f);
             Quaternion endRot = Quaternion.Euler(90f, randomY, 0f);
+            instance.transform.localRotation = startRot;
 
-            instance.transform.localRotation = startRot;  // 🔹 LOCAL
-
-            // Escala determinista
             Vector3 baseScale = instance.transform.localScale;
             float randomScale = RandRangeFloat(rng, randomScaleRange.x, randomScaleRange.y) * globalScaleMultiplier;
-
             Vector3 targetScale = new Vector3(
                 baseScale.x * randomScale,
                 baseScale.y * randomScale,
                 baseScale.z * randomScale * zScaleMultiplier
             );
-
             instance.transform.localScale = Vector3.zero;
 
             if (previewMat != null)
@@ -258,7 +227,7 @@ public class BrambleDefense : BaseDefense
                 targetScale = targetScale,
                 startRotation = startRot,
                 endRotation = endRot,
-                originalLocalPos = localPos  // 🔹 Guardar la posición local calculada
+                originalLocalPos = localPos
             });
         }
     }
@@ -275,8 +244,7 @@ public class BrambleDefense : BaseDefense
         foreach (var r in renderers)
         {
             var mats = r.materials;
-            for (int i = 0; i < mats.Length; i++)
-                mats[i] = mat;
+            for (int i = 0; i < mats.Length; i++) mats[i] = mat;
             r.materials = mats;
         }
     }
@@ -288,25 +256,22 @@ public class BrambleDefense : BaseDefense
             if (spawnedInstances[i] != null && spawnedInstances[i].transform != null)
                 Destroy(spawnedInstances[i].transform.gameObject);
         }
-
         spawnedInstances.Clear();
     }
 
-    // ---------- Gameplay (solo si NO es preview) ----------
+    // ---------- Gameplay ----------
 
     private void Update()
     {
         if (isPreview) return;
         if (spawnedInstances.Count == 0) return;
 
-        // Limpieza de lista visual (ya la tienes)
         for (int i = climbersInside.Count - 1; i >= 0; i--)
         {
             if (climbersInside[i] == null)
                 climbersInside.RemoveAt(i);
         }
 
-        // ✅ FIX: si se destruyen dentro, no hay OnTriggerExit -> aquí forzamos el Stop
         if (climbersInside.Count == 0)
         {
             insideCount = 0;
@@ -319,12 +284,7 @@ public class BrambleDefense : BaseDefense
                 brambleAudioSource.Play();
         }
 
-        // --- SHAKE VISUAL (tal cual lo tienes) ---
-        // ...
-
-        // --- NUEVO: stamina extra + posible muerte por zarza ---
-        if (staminaTracked.Count == 0)
-            return;
+        if (staminaTracked.Count == 0) return;
 
         var keys = new List<ClimberMovement>(staminaTracked.Keys);
 
@@ -336,38 +296,48 @@ public class BrambleDefense : BaseDefense
                 continue;
             }
 
-            if (!staminaTracked.TryGetValue(climber, out BrambleClimberData data))
-                continue;
-
-            if (!data.inside)
-                continue;
+            if (!staminaTracked.TryGetValue(climber, out BrambleClimberData data)) continue;
+            if (!data.inside) continue;
 
             float prev = data.lastStamina;
             float current = climber.GetCurrentStamina();
-
-            // Gasto base que ha ocurrido este frame (por caminar, habilidades, etc.)
             float delta = Mathf.Max(0f, prev - current);
 
             if (delta > 0f && staminaMultiplier > 1f)
             {
-                // Igual que en el lodo: compensamos el slow para que el coste total
-                // sea delta * staminaMultiplier aunque vaya más lento.
-                float effectiveFactor = staminaMultiplier;
-
-                if (slowFactor > 0f)
-                    effectiveFactor = staminaMultiplier / slowFactor;
+                float effectiveFactor = slowFactor > 0f
+                    ? staminaMultiplier / slowFactor
+                    : staminaMultiplier;
 
                 float extra = delta * (effectiveFactor - 1f);
                 float newStamina = Mathf.Max(0f, current - extra);
 
                 climber.SetCurrentStamina(newStamina);
                 current = newStamina;
+
+                if (current <= 0f)
+                {
+                    // Nosotros gestionamos esta muerte: notificamos con causa Bramble
+                    // y bloqueamos que ClimberMovement la dispare de nuevo como Stamina
+                    GameManager.Instance?.NotifyClimberDied(new GameManager.DeathInfo
+                    {
+                        climber = climber,
+                        position = climber.transform.position,
+                        cause = DeathCause.Bramble
+                    });
+                    ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+                    PointsManager.Instance?.AddPoints(10);
+
+                    climber.SuppressStaminaDeath();
+                    staminaTracked.Remove(climber);
+                    climbersInside.Remove(climber);
+                    continue;
+                }
             }
 
             data.lastStamina = current;
         }
     }
-
 
     private void OnTriggerEnter(Collider other)
     {
@@ -377,7 +347,7 @@ public class BrambleDefense : BaseDefense
         if (climber == null) return;
 
         var loadout = other.GetComponent<ClimberLoadout>();
-        bool isImmuneToBramble = false;
+        bool isImmune = loadout != null && loadout.CanHandleObstacle(ObstacleType.Bramble);
 
         insideCount++;
 
@@ -385,20 +355,8 @@ public class BrambleDefense : BaseDefense
             brambleAudioSource.Play();
 
         if (loadout != null)
-        {
             loadout.TryHandleObstacle(ObstacleType.Bramble);
-            isImmuneToBramble = loadout.CanHandleObstacle(ObstacleType.Bramble);
-        }
 
-        if (isImmuneToBramble)
-            return;
-
-        climber.SetExternalSpeedMultiplier(slowFactor);
-
-        if (!climbersInside.Contains(climber))
-            climbersInside.Add(climber);
-
-        // 🔹 NUEVO: registrar stamina mientras esté dentro
         if (!staminaTracked.TryGetValue(climber, out BrambleClimberData data))
         {
             data = new BrambleClimberData();
@@ -406,7 +364,15 @@ public class BrambleDefense : BaseDefense
         }
 
         data.inside = true;
+        data.wasImmune = isImmune;
         data.lastStamina = climber.GetCurrentStamina();
+
+        if (isImmune) return;
+
+        climber.SetExternalSpeedMultiplier(slowFactor);
+
+        if (!climbersInside.Contains(climber))
+            climbersInside.Add(climber);
     }
 
     private void OnTriggerExit(Collider other)
@@ -424,14 +390,19 @@ public class BrambleDefense : BaseDefense
         if (loadout != null)
             loadout.TryHandleObstacleExit(ObstacleType.Bramble);
 
-        climber.SetExternalSpeedMultiplier(1f);
-        climbersInside.Remove(climber);
-
-        // 🔹 NUEVO: dejar de trackear stamina
+        // Solo restauramos velocidad si fuimos nosotros quienes la redujimos
         if (staminaTracked.TryGetValue(climber, out BrambleClimberData data))
         {
+            if (!data.wasImmune)
+                climber.SetExternalSpeedMultiplier(1f);
+
             data.inside = false;
-            // si quieres, también puedes hacer: staminaTracked.Remove(climber);
         }
+        else
+        {
+            climber.SetExternalSpeedMultiplier(1f);
+        }
+
+        climbersInside.Remove(climber);
     }
 }

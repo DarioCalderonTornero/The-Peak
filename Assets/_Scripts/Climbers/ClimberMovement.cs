@@ -602,6 +602,8 @@ public class ClimberMovement : MonoBehaviour
         if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
     }
 
+    public void SuppressStaminaDeath() => pointsAddedThisTurn = true;
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private float CalculateStaminaCost(CampGraphBuilder.CampEdge edge)

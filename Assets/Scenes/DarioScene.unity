@@ -2485,6 +2485,7 @@ MonoBehaviour:
   delayAfterBlendCameras: 0.5
   slowMotionScale: 0.2
   slowMotionDuration: 0.5
+  deathVisualRotationOffset: {x: 0, y: 90, z: 0}
   useDeathCinematics: 1
 --- !u!1 &639492198
 GameObject:

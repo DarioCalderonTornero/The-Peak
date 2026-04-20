@@ -10,22 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0581865a6448894468c747c839913835, type: 3}
-  m_Name: Geyser
+  m_Name: StormyCloud
   m_EditorClassIdentifier: 
-  cardName: Geyser
-  description: When a climber passes over it, it is blown into the air and is therefore
-    instantly eliminated.
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  defensePrefab: {fileID: 1391558099927299792, guid: 4920ddcab506aa542aa2eca0d92c85e5, type: 3}
-  cost: 2
-  worldSprite: {fileID: 2024314572, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
+  cardName: Nube de rayos
+  description: 
+  icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  defensePrefab: {fileID: 3271114533185505083, guid: 8390b10bca356fe498636057d1770050, type: 3}
+  cost: 0
+  worldSprite: {fileID: 507376643, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
-  previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}
+  previewMaterial: {fileID: 0}
   requireFullSupport: 0
   supportCheckExtents: {x: 0.5, y: 0.5}
   supportRayDistance: 0.5
   supportYOffset: 0.1
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}
-  gridSize: {x: 2, y: 2}
+  gridSize: {x: 3, y: 3}
   decalOffset: {x: 0, y: 0}

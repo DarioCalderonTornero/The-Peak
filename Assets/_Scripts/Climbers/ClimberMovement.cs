@@ -631,6 +631,22 @@ public class ClimberMovement : MonoBehaviour
         NotifyStaminaChanged();
     }
 
+    public void FreezeInPlace()
+    {
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;       // Detiene el movimiento
+            agent.velocity = Vector3.zero; // Elimina la inercia acumulada
+            agent.ResetPath();            // Olvida a dónde iba para no intentar rotar
+        }
+
+        // Opcional: Desactivamos el flag de actividad para que el Update no lo mueva
+        isActiveThisTurn = false;
+
+        // Seteamos el multiplicador a 0 por seguridad
+        SetExternalSpeedMultiplier(0f);
+    }
+
     public float GetMaxStamina() => maxStamina;
 
     public void AddMaxStamina(float amount)

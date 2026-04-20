@@ -880,7 +880,7 @@ MonoBehaviour:
   replacementPanel: {fileID: 1517367540}
   replacementText: {fileID: 560772898}
   cancelButton: {fileID: 1792850871}
-  newCardData: {fileID: 11400000, guid: 1fbd222a3b929814586f57caa6d90b5a, type: 2}
+  newCardData: {fileID: 0}
   newCardPreviewSlot: {fileID: 0}
   cardInventoryUI: {fileID: 0}
 --- !u!114 &281424689

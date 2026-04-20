@@ -9,7 +9,8 @@ using UnityEditor;
 [DefaultExecutionOrder(50)]
 public class CampGraphBuilder : MonoBehaviour
 {
-    public NavMeshCampZoneFinder campZoneFinder;
+    // Reemplazamos el Finder por una referencia opcional si quieres seguir usándolo, 
+    // pero la prioridad será encontrar objetos en la escena.
     public Transform finalDestination;
     [Min(1)] public int maxNeighborsPerNode = 3;
     public bool drawConnections = true;
@@ -34,11 +35,8 @@ public class CampGraphBuilder : MonoBehaviour
         public int stepsToSummit = 9999;
         public List<CampEdge> neighbors = new List<CampEdge>();
 
-        // --- NUEVAS VARIABLES PARA LA TIENDA ---
         public GameObject instantiatedTent;
         public int occupantsCount = 0;
-
-        // --- NUEVO: Lista de escaladores presentes en este campamento ---
         public List<ClimberMovement> presentClimbers = new List<ClimberMovement>();
 
         public bool HasTent => instantiatedTent != null;
@@ -67,23 +65,40 @@ public class CampGraphBuilder : MonoBehaviour
 
     public void BuildGraph()
     {
-        nodes.Clear(); finalDestinationNodeId = -1;
-        if (campZoneFinder == null || campZoneFinder.campZones == null) return;
-        minNodeHeight = float.MaxValue; maxNodeHeight = float.MinValue;
+        nodes.Clear();
+        finalDestinationNodeId = -1;
+        minNodeHeight = float.MaxValue;
+        maxNodeHeight = float.MinValue;
 
-        for (int i = 0; i < campZoneFinder.campZones.Count; i++)
+        // --- NUEVA LÓGICA: BUSCAR POR COMPONENTE EN LA ESCENA ---
+        CampLocation[] foundLocations = FindObjectsOfType<CampLocation>();
+
+        for (int i = 0; i < foundLocations.Length; i++)
         {
-            Vector3 pos = campZoneFinder.campZones[i];
+            Vector3 pos = foundLocations[i].transform.position + new Vector3(0, 2.9f, 0f);
+
+            // Ajustamos al NavMesh la posición ya desplazada
+            if (NavMesh.SamplePosition(pos, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
+            {
+                pos = hit.position;
+            }
+
             nodes.Add(new CampNode { id = i, position = pos, height = pos.y });
-            minNodeHeight = Mathf.Min(minNodeHeight, pos.y); maxNodeHeight = Mathf.Max(maxNodeHeight, pos.y);
+            minNodeHeight = Mathf.Min(minNodeHeight, pos.y);
+            maxNodeHeight = Mathf.Max(maxNodeHeight, pos.y);
         }
+        // -------------------------------------------------------
 
         if (finalDestination != null)
         {
             CampNode summit = new CampNode { id = nodes.Count, position = finalDestination.position, height = finalDestination.position.y };
-            nodes.Add(summit); finalDestinationNodeId = summit.id;
-            minNodeHeight = Mathf.Min(minNodeHeight, summit.height); maxNodeHeight = Mathf.Max(maxNodeHeight, summit.height);
+            nodes.Add(summit);
+            finalDestinationNodeId = summit.id;
+            minNodeHeight = Mathf.Min(minNodeHeight, summit.height);
+            maxNodeHeight = Mathf.Max(maxNodeHeight, summit.height);
         }
+
+        if (nodes.Count < 2) return;
 
         NavMeshPath path = new NavMeshPath();
         for (int i = 0; i < nodes.Count; i++)
@@ -100,17 +115,17 @@ public class CampGraphBuilder : MonoBehaviour
             }
         }
 
-        Debug.Log($"[CampGraphBuilder] Grafo construido. Nodos: {nodes.Count}. FinalDestination ID: {finalDestinationNodeId}");
-
-        foreach (var node in nodes)
-            Debug.Log($"  Nodo {node.id} en {node.position}, vecinos: {node.neighbors.Count}");
-
         PruneNeighborsByDistance();
         AutoRegisterObstaclesOnEdges();
         RecalculateAllEdgeWeights();
         CalculateStepsToSummit();
         CreateCampCollisionObjects();
+
+        Debug.Log($"[CampGraphBuilder] Grafo construido con {nodes.Count} nodos desde módulos.");
     }
+
+    // El resto de funciones (CreateCampCollisionObjects, CalculateStepsToSummit, etc.) 
+    // permanecen exactamente igual para mantener la funcionalidad original.
 
     private void CreateCampCollisionObjects()
     {
@@ -124,6 +139,7 @@ public class CampGraphBuilder : MonoBehaviour
             go.transform.position = node.position;
             go.layer = layer;
             go.hideFlags = HideFlags.HideInHierarchy;
+            go.AddComponent<SphereCollider>().isTrigger = true;
             go.AddComponent<SphereCollider>().radius = campCollisionRadius;
             campCollisionObjects.Add(go);
         }

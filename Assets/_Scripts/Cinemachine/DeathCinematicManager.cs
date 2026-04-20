@@ -48,7 +48,6 @@ public class DeathCinematicManager : MonoBehaviour
 
     private Transform cameraAnchor;
 
-    // Flag que se activa cuando DeathAnimation termina
     private bool animationComplete = false;
 
     private void Awake()
@@ -154,19 +153,55 @@ public class DeathCinematicManager : MonoBehaviour
             return;
         }
 
+        // Geyser: solo mover la cámara, NO encolar ni procesar cinemática todavía.
+        // NotifyReadyToProcess lo hará tras el vuelo.
+        if (deathInfo.cause == DeathCause.Geyser)
+        {
+            if (deathInfo.climber != null)
+            {
+                deathInfo.climber.SetExternalSpeedMultiplier(0f);
+                var geyserAgent = deathInfo.climber.GetComponent<NavMeshAgent>();
+                if (geyserAgent != null) geyserAgent.enabled = false;
+            }
+            FocusCameraOnClimber(deathInfo.climber);
+            return;
+        }
+
         if (deathInfo.climber != null)
         {
             deathInfo.climber.SetExternalSpeedMultiplier(0f);
-
             var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
-            if (agent != null)
-                agent.enabled = false;
+            if (agent != null) agent.enabled = false;
         }
 
         deathQueue.Enqueue(deathInfo);
 
         if (!isPlayingCinematic)
             processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
+    }
+
+    // ─── Foco de cámara para Geyser (sin cinemática completa) ────────────────
+
+    /// <summary>
+    /// Mueve la cámara de muerte al escalador sin iniciar ProcessDeathQueue.
+    /// Usado por el Geyser para que la cámara llegue durante el hold.
+    /// </summary>
+    public void FocusCameraOnClimber(ClimberMovement climber)
+    {
+        if (climber == null) return;
+
+        CalculateCameraAnchorPosition(climber.transform);
+        deathCamera.Follow = cameraAnchor;
+        deathCamera.LookAt = climber.transform;
+        deathCamera.Priority = 100;
+
+        GameManager.Instance.SetState(GameManager.GameState.Cinematic);
+        UIManager.Instance.HideAll();
+
+        if (CinematicBars.Instance != null)
+            CinematicBars.Instance.ShowBars();
+
+        isPlayingCinematic = true;
     }
 
     // ─── Cola de muertes ─────────────────────────────────────────────────────
@@ -269,8 +304,6 @@ public class DeathCinematicManager : MonoBehaviour
                     if (slowMotionCoroutine != null)
                         StopCoroutine(slowMotionCoroutine);
 
-                    //slowMotionCoroutine = StartCoroutine(SlowMotionRoutine());
-
                     if (config.deathAudioClip != null)
                         Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
 
@@ -346,6 +379,25 @@ public class DeathCinematicManager : MonoBehaviour
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
         slowMotionCoroutine = null;
+    }
+
+    // ─── NotifyReadyToProcess ────────────────────────────────────────────────
+
+    /// <summary>
+    /// Llamado por GeyserDefense tras deathCinematicDelay segundos de vuelo.
+    /// Destruye el escalador y encola la muerte para instanciar el prefab visual.
+    /// </summary>
+    public void NotifyReadyToProcess(GameManager.DeathInfo deathInfo)
+    {
+        if (deathInfo.climber != null)
+            Destroy(deathInfo.climber.gameObject);
+
+        deathQueue.Enqueue(deathInfo);
+
+        if (!isPlayingCinematic)
+            processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
+        else if (processQueueCoroutine == null)
+            processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
     }
 
     // ─── Posicionamiento de cámara ───────────────────────────────────────────

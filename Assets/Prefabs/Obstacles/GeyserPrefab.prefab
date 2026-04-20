@@ -248,7 +248,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   shakeClimber: 1
   climberShakeMultiplier: 1
-  launchForce: 130
+  launchForce: 15
   gravity: 60
   minSpinDegPerSec: 250
   maxSpinDegPerSec: 650
@@ -256,6 +256,7 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+  deathCinematicDelay: 3
   geyserVFX: {fileID: 8414889602308928615}
   eruptFadeSeconds: 2
   eruptHoldSeconds: 2

@@ -2481,8 +2481,8 @@ MonoBehaviour:
   heightOffset: 5
   sideOffset: 5
   blendInTime: 1
-  delayAfterExplosion: 1.5
-  delayAfterBlendCameras: 0.5
+  delayAfterExplosion: 0.75
+  delayAfterBlendCameras: 0.25
   slowMotionScale: 0.2
   slowMotionDuration: 0.5
   deathVisualRotationOffset: {x: 0, y: 90, z: 0}

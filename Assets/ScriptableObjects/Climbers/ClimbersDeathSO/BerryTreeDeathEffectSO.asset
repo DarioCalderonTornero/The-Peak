@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deathCause: 2
   deathAudioClip: {fileID: 8300000, guid: ff49baa560675ad43b482f06a36f3777, type: 3}
-  deathAnimationClip: {fileID: 7400000, guid: 31e50b01fcd62ca4b9cc301818e82408, type: 2}
+  deathVisualPrefab: {fileID: 253284601063518662, guid: 20ffa80d78f8bf8449b4d48bab1898eb, type: 3}
+  deathVFX_Effect: {fileID: 3715605854781016189, guid: c92c5aa89bd8ffd43a152a689d0cf132, type: 3}

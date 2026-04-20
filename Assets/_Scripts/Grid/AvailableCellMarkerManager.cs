@@ -148,9 +148,9 @@ public class AvailableCellMarkerManager : MonoBehaviour
                     continue;
 
                 // 🔥 RAYCAST CORRECTO
-                Vector3 rayOrigin = planeCenter + N * 0.2f;
+                Vector3 rayOrigin = planeCenter + N * 4.0f;
 
-                if (!Physics.Raycast(rayOrigin, -N, out RaycastHit hit, 1.0f, placementMask))
+                if (!Physics.Raycast(rayOrigin, -N, out RaycastHit hit, 7.0f, placementMask))
                     continue;
 
                 // 🔥 SOLO SU SEGMENTO

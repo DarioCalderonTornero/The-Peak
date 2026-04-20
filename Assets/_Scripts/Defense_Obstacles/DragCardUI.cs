@@ -372,6 +372,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
             return;
 
+        // 🔥 NUEVA REGLA: Si la superficie a la que apuntamos es una pared vertical (lateral), la ignoramos.
+        // hit.normal.y vale 1.0 en suelo plano y 0.0 en una pared totalmente vertical.
+        // 0.4f permite rampas inclinadas de hasta unos 65 grados, pero ignora paredes.
+        if (hit.normal.y < 0.4f)
+            return;
+
         // Guardamos el último hit para realizar un resnap si giramos sin mover el ratón
         hasLastPlacementHit = true;
         lastPlacementHit = hit;
@@ -437,30 +443,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     placementMask
                 );
             }
-        }
-
-        // Decal (lo dejamos como estaba, centrado donde esté el preview)
-        if (globalDecal != null && previewInstance != null)
-        {
-            int padding = 2;
-            float newSizeX = cardData.gridSize.x + padding;
-            float newSizeZ = cardData.gridSize.y + padding;
-
-            globalDecal.size = new Vector3(newSizeX, newSizeZ, globalDecal.size.z);
-            globalDecal.uvScale = new Vector2(newSizeX, newSizeZ);
-
-            float physOffsetX = (cardData.gridSize.x % 2 != newSizeX % 2) ? 0.5f : 0f;
-            float physOffsetZ = (cardData.gridSize.y % 2 != newSizeZ % 2) ? 0.5f : 0f;
-
-            Vector3 p = previewInstance.transform.position;
-            globalDecal.transform.position = new Vector3(
-                p.x + physOffsetX,
-                p.y + 5f,
-                p.z + physOffsetZ
-            );
-
-            globalDecal.uvBias = Vector2.zero;
-            if (!globalDecal.enabled) globalDecal.enabled = true;
         }
     }
 

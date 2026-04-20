@@ -10,6 +10,7 @@ public class DeathCinematicManager : MonoBehaviour
     public static DeathCinematicManager Instance { get; private set; }
 
     public event EventHandler OnCinematicFinished;
+    public event Action<GameManager.DeathInfo> OnOwnClimberCinematicFinished;
 
     [Header("Referencias de Cámara")]
     [SerializeField] private CinemachineCamera deathCamera;
@@ -137,6 +138,8 @@ public class DeathCinematicManager : MonoBehaviour
         isPlayingCinematic = false;
 
         Debug.Log("[DeathCinematicManager] Cinemática saltada por el jugador.");
+
+        OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
         OnCinematicFinished?.Invoke(this, EventArgs.Empty);
     }
 
@@ -300,6 +303,9 @@ public class DeathCinematicManager : MonoBehaviour
 
             // 6. Cámara se queda mirando el punto de muerte
             yield return new WaitForSeconds(delayAfterExplosion);
+
+            // ✅ Notificar fin de cinemática individual, dentro del bucle
+            OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
 
             // 7. Cámara vuelve
             if (deathQueue.Count == 0)

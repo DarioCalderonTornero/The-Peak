@@ -49,7 +49,7 @@ public class DeathAnimation : MonoBehaviour
     private void StaminaDeathRoutine()
     {
         float targetAngle = 1.5f;
-        float animDuration = 1.25f;
+        float animDuration = 0.85f;
         float shakeMagnitude = 0.01f;
 
         StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));

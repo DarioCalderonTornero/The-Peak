@@ -82,6 +82,16 @@ public class BrambleDefense : BaseDefense
             GenerateLayout(layoutSeed, previewMaterialOverride, animate: false);
     }
 
+    private void Start()
+    {
+        DeathCinematicManager.Instance.OnCinematicFinished += DeathCinematicManager_OnCinematicFinished;
+    }
+
+    private void DeathCinematicManager_OnCinematicFinished(object sender, System.EventArgs e)
+    {
+        //throw new System.NotImplementedException();
+    }
+
     public override void Initialize()
     {
         base.Initialize();

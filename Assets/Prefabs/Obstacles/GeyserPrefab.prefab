@@ -351,7 +351,19 @@ VisualEffect:
   m_ResourceVersion: 1
   m_PropertySheet:
     m_Float:
-      m_Array: []
+      m_Array:
+      - m_Value: 0
+        m_Name: EruptingPower
+        m_Overridden: 1
+      - m_Value: 0.2
+        m_Name: VelocidadBurbujas
+        m_Overridden: 1
+      - m_Value: 15
+        m_Name: VelocidadErupcion
+        m_Overridden: 1
+      - m_Value: 0
+        m_Name: AlturaEspuma
+        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
@@ -371,7 +383,13 @@ VisualEffect:
     m_NamedObject:
       m_Array: []
     m_Bool:
-      m_Array: []
+      m_Array:
+      - m_Value: 0
+        m_Name: Bubbling
+        m_Overridden: 1
+      - m_Value: 0
+        m_Name: EspumaArriba
+        m_Overridden: 1
 --- !u!73398921 &193506623556897025
 VFXRenderer:
   serializedVersion: 1

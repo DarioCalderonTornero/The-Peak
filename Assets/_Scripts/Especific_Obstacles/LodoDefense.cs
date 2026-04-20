@@ -277,7 +277,7 @@ public class LodoDefense : BaseDefense
         // ¡Ya no hacemos Destroy(climber.gameObject)! El DeathCinematicManager lo hará luego.
 
         // Destruimos el charco de lodo (opcional: puedes ponerle un pequeño delay o animación de desaparecer si quieres)
-        Destroy(gameObject);
+        Destroy(gameObject, 2f);
     }
 
     private IEnumerator RestoreBaseOffset(ClimberMovement climber, MudClimberData data)

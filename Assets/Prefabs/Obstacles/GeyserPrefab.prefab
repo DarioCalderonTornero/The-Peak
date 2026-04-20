@@ -218,7 +218,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   captureDelay: 0.2
-  holdSeconds: 3
+  holdSeconds: 1
   shakeMagnitudeStart: 0.1
   shakeMagnitudeEnd: 0.3
   shakeFrequency: 25
@@ -248,15 +248,15 @@ MonoBehaviour:
     m_RotationOrder: 4
   shakeClimber: 1
   climberShakeMultiplier: 1
-  launchForce: 15
-  gravity: 60
+  launchForce: 35
+  gravity: 10
   minSpinDegPerSec: 250
   maxSpinDegPerSec: 650
   cooldownTurns: 3
   groundMask:
     serializedVersion: 2
     m_Bits: 64
-  deathCinematicDelay: 3
+  deathCinematicDelay: 0.75
   geyserVFX: {fileID: 8414889602308928615}
   eruptFadeSeconds: 2
   eruptHoldSeconds: 2

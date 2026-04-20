@@ -2487,6 +2487,9 @@ MonoBehaviour:
   slowMotionDuration: 0.5
   deathVisualRotationOffset: {x: 0, y: 90, z: 0}
   useDeathCinematics: 1
+  geyserCameraDistance: 6
+  geyserHeightOffset: 10
+  geyserSideOffset: 10
 --- !u!1 &639492198
 GameObject:
   m_ObjectHideFlags: 0

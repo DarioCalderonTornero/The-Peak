@@ -276,6 +276,9 @@ public class GeyserDefense : BaseDefense
         SetBubbling(false);
         TriggerEruptionFade();
 
+        //Añadimos retraso para que el VFX del geyser se vea un poco antes de que el escalador salga volando
+        yield return new WaitForSeconds(0.25f);
+
         LaunchCaptured();
 
         inCooldown = true;

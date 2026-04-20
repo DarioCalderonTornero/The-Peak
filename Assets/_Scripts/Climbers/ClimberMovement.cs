@@ -535,6 +535,8 @@ public class ClimberMovement : MonoBehaviour
         if (arrivalFXPrefab != null)
             Instantiate(arrivalFXPrefab, node.position + Vector3.up * 0.2f, Quaternion.identity);
 
+        yield return new WaitForSeconds(2f);
+
         node.occupantsCount++;
 
         if (!node.presentClimbers.Contains(this))

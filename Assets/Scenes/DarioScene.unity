@@ -2481,7 +2481,7 @@ MonoBehaviour:
   heightOffset: 5
   sideOffset: 5
   blendInTime: 1
-  delayAfterExplosion: 0.75
+  delayAfterExplosion: 1
   delayAfterBlendCameras: 0.25
   slowMotionScale: 0.2
   slowMotionDuration: 0.5
@@ -2830,7 +2830,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerTurnsUI: {fileID: 584625723}
   currentTurnState: 1
-  currentTurnNumber: 1
+  currentTurnNumber: 0
   recordTurnNumber: 0
   logTurnChanges: 1
   nextTurnButton: {fileID: 1534971994}
@@ -2894,6 +2894,18 @@ PrefabInstance:
       propertyPath: freeCameraController
       value: 
       objectReference: {fileID: 1299652169}
+    - target: {fileID: 1664845768463103096, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_Value
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1664845768463103096, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_MaxValue
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1664845768463103096, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_WholeNumbers
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3988031752996619610, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -2982,6 +2994,18 @@ PrefabInstance:
       propertyPath: cinematicModeToggleButton
       value: 
       objectReference: {fileID: 683846220}
+    - target: {fileID: 8948827107965988776, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_Value
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8948827107965988776, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_MaxValue
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8948827107965988776, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_WholeNumbers
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5024,7 +5048,7 @@ MonoBehaviour:
   prefab: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
   amountToSpawn: 1
   spawnCooldown: 2
-  minDistance: 20
+  minDistance: 5
   introUniqueEquipments:
   - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
   - {fileID: 11400000, guid: 338103a60dc2c2141ada12844300638e, type: 2}
@@ -5033,6 +5057,30 @@ MonoBehaviour:
   spawnCooldownTimer: 0
   spawnedCount: 0
   isMaxCount: 0
+  spawnAnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0.21052632
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 5
+      inSlope: 0.21052632
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   introSpawnIndex: 0
 --- !u!1 &1124537430
 GameObject:
@@ -5579,14 +5627,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49486846a7266d749ba522754fd8286d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flySpeed: 125
-  panSpeed: 0.05
+  flySpeed: 10
+  panSpeed: 0.01
   invertPanY: 0
   panVerticalUsesWorldUp: 0
-  panVerticalMultiplier: 1
+  panVerticalMultiplier: 0.2
   zoomSpeed: 3
   mountainTag: Mountain
-  zoomInStopDistance: 30
+  zoomInStopDistance: 5
   zoomInCastRadius: 0
   zoomInCollisionMask:
     serializedVersion: 2

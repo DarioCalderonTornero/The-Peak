@@ -113,6 +113,8 @@ public class ClimberMovement : MonoBehaviour
         if (pathLineRenderer.material != null)
             lineMaterialInstance = pathLineRenderer.material;
 
+        currentStamina = maxStamina;
+
         pathLineRenderer.positionCount = 0;
         pathLineRenderer.enabled = false;
         pathLineRenderer.textureMode = LineTextureMode.Tile;
@@ -154,7 +156,6 @@ public class ClimberMovement : MonoBehaviour
 
         if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();
 
-        currentStamina = maxStamina;
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
 

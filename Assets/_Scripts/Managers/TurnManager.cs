@@ -134,7 +134,7 @@ public class TurnManager : MonoBehaviour
         switch (newState)
         {
             case GameManager.GameState.Playing:
-                StartGame();
+                //StartGame();
                 break;
             case GameManager.GameState.GameOver:
                 //CurrentTurnState = TurnState.GameOver;
@@ -166,6 +166,9 @@ public class TurnManager : MonoBehaviour
         currentTurnNumber++;
         OnTurnNumberChanged?.Invoke(currentTurnNumber);
 
+        if (playerTurnsUI != null)
+            playerTurnsUI.currentTurns.text = currentTurnNumber.ToString();
+
         if (CardSlotsUI.Instance != null)
         {
             CardSlotsUI.Instance.ShowSlotContainer();
@@ -195,6 +198,11 @@ public class TurnManager : MonoBehaviour
     private void StartClimberTurn()
     {
         CurrentTurnState = TurnState.ClimberTurn;
+
+        if (spawnManager != null)
+        {
+            spawnManager.SetSpawnAmountForTurn(CurrentTurnNumber);
+        }
 
         if (CardSlotsUI.Instance != null)
         {
@@ -245,7 +253,7 @@ public class TurnManager : MonoBehaviour
         // Actualizamos el contador de turnos en el UI
         if (playerTurnsUI != null)
         {
-            playerTurnsUI.currentTurns.text = (currentTurnNumber).ToString(); 
+            //playerTurnsUI.currentTurns.text = (currentTurnNumber).ToString(); 
             ShowFinalStats.Instance.totalRounds.text = "TOTAL ROUNDS: " + (currentTurnNumber).ToString();  
             ShowFinalStats.Instance.recordTotalRounds.text = "MAX ROUNDS: " + recordTurnNumber.ToString();
         }

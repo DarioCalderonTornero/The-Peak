@@ -96,19 +96,22 @@ public class SettingsUI : MonoBehaviour
         // Asignar nuevos listeners
         cameraSpeedSlider.onValueChanged.AddListener(value =>
         {
-            freeCameraController.SetCameraSpeed(value);
-            PlayerPrefs.SetFloat("CameraSpeed", value);
+            freeCameraController.SetCameraSpeedMultiplier(value);
+            PlayerPrefs.SetFloat("CameraSpeedMultiplier", value);
         });
 
         cameraPanSlider.onValueChanged.AddListener(value =>
         {
-            freeCameraController.SetCameraPan(value);
-            PlayerPrefs.SetFloat("CameraPan", value);
+            freeCameraController.SetCameraPanMultiplier(value);
+            PlayerPrefs.SetFloat("CameraPanMultiplier", value);
         });
 
-        // Setear valores actuales sin disparar los eventos recién creados
-        cameraSpeedSlider.SetValueWithoutNotify(freeCameraController.GetCameraSpeed());
-        cameraPanSlider.SetValueWithoutNotify(freeCameraController.GetCameraPan());
+        // Setear slider en el multiplicador guardado (o 1 si no existe)
+        float savedSpeedMult = PlayerPrefs.GetFloat("CameraSpeedMultiplier", 1f);
+        float savedPanMult = PlayerPrefs.GetFloat("CameraPanMultiplier", 1f);
+
+        cameraSpeedSlider.SetValueWithoutNotify(savedSpeedMult);
+        cameraPanSlider.SetValueWithoutNotify(savedPanMult);
     }
 
     public void ShowVolumeSettings()
@@ -152,13 +155,7 @@ public class SettingsUI : MonoBehaviour
 
     private void Update()
     {
-        // NOTA: Hacer ToString() de floats cada frame en el Update puede generar algo de "basura" en memoria (Garbage Collection). 
-        // Funciona bien, pero en el futuro puedes optimizarlo actualizando el texto SOLO dentro del "onValueChanged" del slider correspondiente.
-
-        musicVolumeText.text = "Music Volume: " + Temporal_Sound_Music.Instance.GetMusicVolume().ToString("F1");
-        effectsVolumeText.text = "Effects Volume: " + Temporal_Sound_Music.Instance.GetSoundVolume().ToString("F1");
-
-        cameraSpeedText.text = "Camera Speed: " + freeCameraController.GetCameraSpeed().ToString("F0");
-        cameraPanText.text = "Camera Pan: " + freeCameraController.GetCameraPan().ToString("F1");
+        cameraSpeedText.text = "Camera Speed: " + cameraSpeedSlider.value.ToString("F1");
+        cameraPanText.text = "Camera Pan: " + cameraPanSlider.value.ToString("F1");
     }
 }

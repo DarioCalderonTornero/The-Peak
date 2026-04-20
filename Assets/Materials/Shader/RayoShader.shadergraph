@@ -510,8 +510,8 @@
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
     "m_Value": {
-        "x": 0.8700000047683716,
-        "y": 0.4000000059604645,
+        "x": 1.090000033378601,
+        "y": 0.6399999856948853,
         "z": 0.0,
         "w": 0.0
     }
@@ -655,7 +655,7 @@
     "m_ConservativeDepthOffset": false,
     "m_TransparencyFog": true,
     "m_AlphaTestShadow": false,
-    "m_BackThenFrontRendering": false,
+    "m_BackThenFrontRendering": true,
     "m_TransparentDepthPrepass": false,
     "m_TransparentDepthPostpass": false,
     "m_TransparentPerPixelSorting": false,
@@ -1342,7 +1342,7 @@
     "m_MaterialNeedsUpdateHash": 0,
     "m_SurfaceType": 1,
     "m_RenderingPass": 4,
-    "m_BlendMode": 0,
+    "m_BlendMode": 1,
     "m_ZTest": 4,
     "m_ZWrite": false,
     "m_TransparentCullMode": 2,

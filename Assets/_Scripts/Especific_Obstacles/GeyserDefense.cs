@@ -10,7 +10,7 @@ public class GeyserDefense : BaseDefense
     [SerializeField] private LayerMask climberLayer;
 
     [Header("Capture")]
-    [SerializeField] private float captureDelay = 0.08f;   // cuanto más, más “se mete dentro” antes de pararse
+    [SerializeField] private float captureDelay = 0.08f;
 
     [Header("Hold + Shake (Geyser)")]
     [SerializeField] private float holdSeconds = 3f;
@@ -33,8 +33,8 @@ public class GeyserDefense : BaseDefense
     [SerializeField] private float climberShakeMultiplier = 1.0f;
 
     [Header("Launch")]
-    [SerializeField] private float launchForce = 18f;      // ↑ velocidad inicial (más alto = sube más rápido)
-    [SerializeField] private float gravity = 25f;          // ↓ aceleración (más alto = cae más rápido)
+    [SerializeField] private float launchForce = 18f;
+    [SerializeField] private float gravity = 25f;
 
     [Header("Air Spin")]
     [SerializeField] private float minSpinDegPerSec = 250f;
@@ -46,6 +46,10 @@ public class GeyserDefense : BaseDefense
     [Header("Ground detection")]
     [SerializeField] private LayerMask groundMask;
 
+    [Header("Death Cinematic Delay")]
+    [Tooltip("Segundos tras el lanzamiento antes de instanciar el prefab visual de muerte.")]
+    [SerializeField] private float deathCinematicDelay = 3f;
+
     // --- internal state ---
     private bool isBusy = false;
     private bool inCooldown = false;
@@ -54,18 +58,19 @@ public class GeyserDefense : BaseDefense
     private ClimberMovement capturedClimber;
     private NavMeshAgent capturedAgent;
 
-    private Vector3 originalPos;                 // posición base del géiser
-    private Vector3 capturedClimberBasePos;      // posición base del climber mientras está “retenido”
+    private Vector3 originalPos;
+    private Vector3 capturedClimberBasePos;
 
     private Coroutine holdRoutine;
     private Coroutine captureRoutine;
+
+    private GameManager.DeathInfo pendingDeathInfo;
 
     [Header("VFX")]
     [SerializeField] private VisualEffect geyserVFX;
     [SerializeField] private float eruptFadeSeconds = 2f;
     [SerializeField] private float eruptHoldSeconds = 3f;
 
-    // IDs
     private static readonly int BubblingID = Shader.PropertyToID("Bubbling");
     private static readonly int EruptingPowerID = Shader.PropertyToID("EruptingPower");
     private static readonly int AlturaEspumaID = Shader.PropertyToID("AlturaEspuma");
@@ -142,7 +147,6 @@ public class GeyserDefense : BaseDefense
         capturedClimber = climber;
         capturedAgent = climber.GetComponent<NavMeshAgent>();
 
-        // Guardamos la “base” del climber para poder temblarlo y luego restaurarlo bien
         capturedClimberBasePos = capturedClimber.transform.position;
 
         if (capturedAgent != null)
@@ -155,22 +159,25 @@ public class GeyserDefense : BaseDefense
         capturedClimber.SetExternallyDoneThisTurn(true);
         isBusy = true;
 
-        // --- ¡EL CHIVATAZO TEMPRANO! ---
-        // Avisamos al Manager AHORA para que la cámara venga a ver el temblor y el despegue
+        // Guardamos el DeathInfo para usarlo después del vuelo
+        pendingDeathInfo = new GameManager.DeathInfo
+        {
+            climber = capturedClimber,
+            position = transform.position,
+            cause = DeathCause.Geyser
+        };
+
+        // Notificamos para que HandleClimberDeath mueva la cámara (solo eso)
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-            {
-                climber = capturedClimber,
-                position = transform.position,
-                cause = DeathCause.Geyser
-            });
+            GameManager.Instance.NotifyClimberDied(pendingDeathInfo);
 
-            // Repartimos los puntos directamente aquí
-            if (ClimberDeathPointsManager.Instance != null) ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(10);
+            if (ClimberDeathPointsManager.Instance != null)
+                ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+
+            if (PointsManager.Instance != null)
+                PointsManager.Instance.AddPoints(10);
         }
-        // -------------------------------
 
         SetBubbling(true);
 
@@ -195,10 +202,8 @@ public class GeyserDefense : BaseDefense
             holdRoutine = null;
         }
 
-        // Reset géiser
         transform.position = originalPos;
 
-        // Reset climber (por si se quedó con offset de temblor)
         if (capturedClimber != null)
         {
             capturedClimber.transform.position = capturedClimberBasePos;
@@ -230,7 +235,6 @@ public class GeyserDefense : BaseDefense
 
         while (t < holdSeconds)
         {
-            // El manager podría haber destruido al escalador si el jugador saltó la cinemática
             if (capturedClimber == null)
             {
                 CancelHold();
@@ -239,40 +243,32 @@ public class GeyserDefense : BaseDefense
 
             t += Time.deltaTime;
 
-            // Progreso 0..1 del hold
             float n = (holdSeconds <= 0.0001f) ? 1f : Mathf.Clamp01(t / holdSeconds);
             float mix = (shakeRamp != null) ? Mathf.Clamp01(shakeRamp.Evaluate(n)) : n;
             float mag = Mathf.Lerp(shakeMagnitudeStart, shakeMagnitudeEnd, mix);
 
-            // Normal del suelo bajo el géiser
             Vector3 groundNormal = Vector3.up;
             Vector3 rayOrigin = originalPos + Vector3.up * 1.0f;
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 6f, groundMask, QueryTriggerInteraction.Ignore))
                 groundNormal = hit.normal;
 
-            // Base tangente al plano (t1, t2)
             Vector3 t1 = Vector3.Cross(groundNormal, Vector3.up);
             if (t1.sqrMagnitude < 0.0001f)
                 t1 = Vector3.Cross(groundNormal, Vector3.right);
             t1.Normalize();
             Vector3 t2 = Vector3.Cross(groundNormal, t1).normalized;
 
-            // Offset SOLO en el plano del suelo
             float a = Time.time * shakeFrequency;
             Vector3 offset = (Mathf.Sin(a) * t1 + Mathf.Cos(a) * t2) * mag;
 
-            // Aplicar temblor
             transform.position = originalPos + offset;
 
             if (shakeClimber && capturedClimber != null)
-            {
                 capturedClimber.transform.position = capturedClimberBasePos + (offset * climberShakeMultiplier);
-            }
 
             yield return null;
         }
 
-        // Reset posiciones antes de lanzar
         transform.position = originalPos;
         if (capturedClimber != null)
             capturedClimber.transform.position = capturedClimberBasePos;
@@ -298,14 +294,14 @@ public class GeyserDefense : BaseDefense
 
         Transform tr = capturedClimber.transform;
 
-        // Apagar NavMesh para que no pelee con la física
+        // Guard para evitar error si el agent ya estaba desactivado
         if (capturedAgent != null)
         {
-            capturedAgent.isStopped = true;
+            if (capturedAgent.enabled && capturedAgent.isOnNavMesh)
+                capturedAgent.isStopped = true;
             capturedAgent.enabled = false;
         }
 
-        // Física temporal SOLO durante el vuelo
         Rigidbody rb = tr.GetComponent<Rigidbody>();
         if (rb == null) rb = tr.gameObject.AddComponent<Rigidbody>();
 
@@ -319,7 +315,6 @@ public class GeyserDefense : BaseDefense
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // Impulso direccional
         Vector3 up = transform.up.normalized;
         Vector3 fwdOnPlane = Vector3.ProjectOnPlane(transform.forward, up).normalized;
         if (fwdOnPlane.sqrMagnitude < 0.0001f) fwdOnPlane = Vector3.zero;
@@ -329,36 +324,48 @@ public class GeyserDefense : BaseDefense
 
         rb.linearVelocity = launchDir * launchForce;
 
-        // Spin
         Vector3 randomAxis = Random.onUnitSphere;
         float spin = Random.Range(minSpinDegPerSec, maxSpinDegPerSec);
         rb.angularVelocity = randomAxis * (spin * Mathf.Deg2Rad);
 
-        // Caída más rápida (el bucle se destruirá solo cuando el Manager elimine el GameObject)
         StartCoroutine(ExtraGravityWhileAirborne(tr, rb));
 
-        // Limpiar captura (el Géiser se desentiende)
+        // Tras deathCinematicDelay segundos, notificamos al DeathCinematicManager
+        // para que destruya el escalador e instancie el prefab visual
+        StartCoroutine(NotifyDeathAfterDelay(tr, pendingDeathInfo));
+
         capturedClimber = null;
         capturedAgent = null;
         isBusy = false;
+    }
+
+    private IEnumerator NotifyDeathAfterDelay(Transform climberTransform, GameManager.DeathInfo info)
+    {
+        yield return new WaitForSeconds(deathCinematicDelay);
+
+        // Actualizamos la posición al punto donde está el escalador ahora
+        if (climberTransform != null)
+            info.position = climberTransform.position;
+
+        if (DeathCinematicManager.Instance != null)
+            DeathCinematicManager.Instance.NotifyReadyToProcess(info);
     }
 
     private IEnumerator ExtraGravityWhileAirborne(Transform tr, Rigidbody rb)
     {
         float extraG = Mathf.Max(0f, gravity);
 
-        // Como el Manager se encargará de destruirlo, este bucle correrá hasta que el objeto desaparezca
         while (tr != null && rb != null)
         {
             if (extraG > 0f)
                 rb.AddForce(Vector3.down * extraG, ForceMode.Acceleration);
 
-            // Usamos FixedUpdate porque estamos aplicando fuerzas físicas
             yield return new WaitForFixedUpdate();
         }
     }
 
-    // --- MÉTODOS DE VFX INTACTOS ---
+    // --- VFX ---
+
     private void SetBubbling(bool value)
     {
         if (geyserVFX == null) return;

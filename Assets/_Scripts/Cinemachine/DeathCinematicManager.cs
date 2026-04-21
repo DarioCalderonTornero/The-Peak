@@ -163,9 +163,14 @@ public class DeathCinematicManager : MonoBehaviour
         {
             if (deathInfo.climber != null)
             {
-                deathInfo.climber.SetExternalSpeedMultiplier(0f);
-                var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
-                if (agent != null) agent.enabled = false;
+                // Geyser: deshabilitamos agent porque ya vuela por física
+                // StormyCloud: NO tocamos el agent, necesita caminar al centro todavía
+                if (deathInfo.cause == DeathCause.Geyser)
+                {
+                    deathInfo.climber.SetExternalSpeedMultiplier(0f);
+                    var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
+                    if (agent != null) agent.enabled = false;
+                }
             }
             FocusCameraOnClimber(deathInfo.climber);
             return;

@@ -66,51 +66,59 @@ public class CloudKillDefense : BaseDefense
 
         data.isBeingKilled = true;
 
-        // 🔥 1. En lugar de congelarlo, le ordenamos ir al centro de la nube
+        // Construimos el deathInfo una sola vez
+        var deathInfo = new GameManager.DeathInfo
+        {
+            climber = climber,
+            position = climber.transform.position,
+            cause = DeathCause.StormyCloud
+        };
+
+        // Suprimimos muerte por stamina para evitar duplicados
+        climber.SuppressStaminaDeath();
+
+        // Ordenamos al escalador ir al centro de la nube
         climber.MoveToWorldPosition(transform.position);
 
-        // ⏳ 2. Esperamos los 2 segundos de rigor (mientras el escalador camina hacia el centro)
-        yield return new WaitForSeconds(delayBeforeDeath);
-
-        // 🛑 3. Pasados los 2 segundos, lo congelamos totalmente para la ejecución
-        climber.FreezeInPlace();
-
-        // ⚡ 4. Activamos el VFX del rayo
-        if (killVFX != null)
+        // Notificamos ya → HandleClimberDeath ve StormyCloud y mueve la cámara inmediatamente
+        if (GameManager.Instance != null)
         {
-            killVFX.SetActive(true);
+            GameManager.Instance.NotifyClimberDied(deathInfo);
+            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            PointsManager.Instance?.AddPoints(15);
         }
 
-        // ⏱️ 5. Esperamos el medio segundo para que impacte el rayo
+        // Esperamos mientras el escalador camina hacia el centro
+        yield return new WaitForSeconds(delayBeforeDeath);
+
+        if (climber == null) yield break;
+
+        // Congelamos totalmente para la ejecución
+        climber.FreezeInPlace();
+
+        // Activamos el VFX del rayo
+        if (killVFX != null)
+            killVFX.SetActive(true);
+
+        // Esperamos el impacto del rayo
         yield return new WaitForSeconds(0.5f);
 
-        // 💀 6. Destrucción y puntos
         if (climber != null)
         {
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-                {
-                    climber = climber,
-                    position = climber.transform.position,
-                });
+            // Actualizamos posición al punto actual
+            deathInfo.position = climber.transform.position;
 
-                ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-                PointsManager.Instance.AddPoints(15);
-            }
-
-            Destroy(climber.gameObject);
+            // El DeathCinematicManager destruye al escalador y gestiona la cinemática completa
+            if (DeathCinematicManager.Instance != null)
+                DeathCinematicManager.Instance.NotifyReadyToProcess(deathInfo);
         }
 
         hasKilled = true;
 
         yield return new WaitForSeconds(1.5f);
 
-        // 💨 7. Efecto de Pop invertido del visual de la nube (si lo implementaste antes)
         if (visualChild != null)
-        {
             yield return StartCoroutine(AnimatePop(visualChild, originalVisualScale, Vector3.zero));
-        }
 
         Destroy(gameObject);
     }

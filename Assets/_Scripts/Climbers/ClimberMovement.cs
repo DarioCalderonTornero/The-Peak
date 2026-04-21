@@ -647,6 +647,19 @@ public class ClimberMovement : MonoBehaviour
         SetExternalSpeedMultiplier(0f);
     }
 
+    public void MoveToWorldPosition(Vector3 targetPos)
+    {
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(targetPos);
+        }
+
+        // Desactivamos el flag para que el Update del turno no intente 
+        // recalcular su ruta hacia el campamento mientras va al centro de la nube.
+        isActiveThisTurn = false;
+    }
+
     public float GetMaxStamina() => maxStamina;
 
     public void AddMaxStamina(float amount)

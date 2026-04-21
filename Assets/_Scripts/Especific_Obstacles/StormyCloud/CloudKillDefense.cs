@@ -33,7 +33,6 @@ public class CloudKillDefense : BaseDefense
         var col = GetComponent<Collider>();
         if (col != null) col.isTrigger = true;
 
-        // Si no asignaste nada en el inspector, intenta buscar el primer hijo
         if (visualChild == null && transform.childCount > 0)
             visualChild = transform.GetChild(0);
 
@@ -43,7 +42,6 @@ public class CloudKillDefense : BaseDefense
 
     private void Start()
     {
-        // 1. Solo el visual aparece con Pop
         if (visualChild != null)
             StartCoroutine(AnimatePop(visualChild, Vector3.zero, originalVisualScale));
     }
@@ -55,12 +53,10 @@ public class CloudKillDefense : BaseDefense
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
         if (victims.ContainsKey(climber)) return;
-
         if (Random.value > killChance) return;
 
         var data = new CloudVictimData();
         victims[climber] = data;
-
         StartCoroutine(KillAfterDelay(climber, data));
     }
 
@@ -70,8 +66,27 @@ public class CloudKillDefense : BaseDefense
 
         data.isBeingKilled = true;
         climber.FreezeInPlace();
+        climber.SuppressStaminaDeath();
+
+        // Construimos el deathInfo una sola vez y lo reutilizamos
+        var deathInfo = new GameManager.DeathInfo
+        {
+            climber = climber,
+            position = climber.transform.position,
+            cause = DeathCause.StormyCloud
+        };
+
+        // Notificamos inmediatamente → HandleClimberDeath ve StormyCloud y solo mueve la cámara
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.NotifyClimberDied(deathInfo);
+            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            PointsManager.Instance?.AddPoints(15);
+        }
 
         yield return new WaitForSeconds(delayBeforeDeath);
+
+        if (climber == null) yield break;
 
         if (killVFX != null)
             killVFX.SetActive(true);
@@ -80,31 +95,23 @@ public class CloudKillDefense : BaseDefense
 
         if (climber != null)
         {
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-                {
-                    climber = climber,
-                    position = climber.transform.position,
-                });
-                ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-                PointsManager.Instance.AddPoints(15);
-            }
-            Destroy(climber.gameObject);
+            // Actualizamos posición al punto actual igual que hace el Geyser
+            deathInfo.position = climber.transform.position;
+
+            if (DeathCinematicManager.Instance != null)
+                DeathCinematicManager.Instance.NotifyReadyToProcess(deathInfo);
         }
 
         hasKilled = true;
 
         yield return new WaitForSeconds(1.5f);
 
-        // 2. El visual desaparece con Pop invertido
         if (visualChild != null)
             yield return StartCoroutine(AnimatePop(visualChild, originalVisualScale, Vector3.zero));
 
         Destroy(gameObject);
     }
 
-    // Corrutina que ahora recibe qué transform escalar
     private IEnumerator AnimatePop(Transform target, Vector3 start, Vector3 end)
     {
         if (target == null) yield break;
@@ -117,6 +124,7 @@ public class CloudKillDefense : BaseDefense
             target.localScale = Vector3.Lerp(start, end, popCurve.Evaluate(percent));
             yield return null;
         }
+
         target.localScale = end;
     }
 }

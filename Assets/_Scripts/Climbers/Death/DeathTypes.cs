@@ -11,6 +11,7 @@ public enum DeathCause
     Geyser,
     Stamina,
     Bramble,
+    StormyCloud,
     Snow
 }
 

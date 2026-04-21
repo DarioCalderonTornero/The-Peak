@@ -39,7 +39,7 @@ public class DeathCinematicManager : MonoBehaviour
     [Header("Ajustes de Control")]
     [SerializeField] private bool useDeathCinematics = true;
 
-    [Header("Geyser Camera Override")]
+    [Header("Geyser / StormyCloud Camera Override")]
     [SerializeField] private float geyserCameraDistance = 6f;
     [SerializeField] private float geyserHeightOffset = 3f;
     [SerializeField] private float geyserSideOffset = 5f;
@@ -52,7 +52,6 @@ public class DeathCinematicManager : MonoBehaviour
     private bool isPlayingCinematic = false;
 
     private Transform cameraAnchor;
-
     private bool animationComplete = false;
 
     private void Awake()
@@ -158,15 +157,15 @@ public class DeathCinematicManager : MonoBehaviour
             return;
         }
 
-        // Geyser: solo mover la cámara, NO encolar ni procesar cinemática todavía.
-        // NotifyReadyToProcess lo hará tras el vuelo.
-        if (deathInfo.cause == DeathCause.Geyser)
+        // Geyser y StormyCloud: solo mover la cámara ahora.
+        // NotifyReadyToProcess gestionará la cinemática completa después.
+        if (deathInfo.cause == DeathCause.Geyser || deathInfo.cause == DeathCause.StormyCloud)
         {
             if (deathInfo.climber != null)
             {
                 deathInfo.climber.SetExternalSpeedMultiplier(0f);
-                var geyserAgent = deathInfo.climber.GetComponent<NavMeshAgent>();
-                if (geyserAgent != null) geyserAgent.enabled = false;
+                var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
+                if (agent != null) agent.enabled = false;
             }
             FocusCameraOnClimber(deathInfo.climber);
             return;
@@ -185,18 +184,12 @@ public class DeathCinematicManager : MonoBehaviour
             processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
     }
 
-    // ─── Foco de cámara para Geyser (sin cinemática completa) ────────────────
+    // ─── Foco de cámara para Geyser y StormyCloud ────────────────────────────
 
-    /// <summary>
-    /// Mueve la cámara de muerte al escalador sin iniciar ProcessDeathQueue.
-    /// Usado por el Geyser para que la cámara llegue durante el hold,
-    /// con distancias más amplias para ver el VFX completo.
-    /// </summary>
     public void FocusCameraOnClimber(ClimberMovement climber)
     {
         if (climber == null) return;
 
-        // ✅ Una sola llamada con los overrides del Geyser
         CalculateCameraAnchorPosition(climber.transform,
             geyserCameraDistance,
             geyserHeightOffset,
@@ -217,17 +210,10 @@ public class DeathCinematicManager : MonoBehaviour
 
     // ─── NotifyReadyToProcess ────────────────────────────────────────────────
 
-    /// <summary>
-    /// Llamado por GeyserDefense tras deathCinematicDelay segundos de vuelo.
-    /// Encola la muerte para que ProcessDeathQueue destruya el escalador
-    /// e instancie el prefab visual. NO destruye el escalador aquí.
-    /// </summary>
     public void NotifyReadyToProcess(GameManager.DeathInfo deathInfo)
     {
         deathQueue.Enqueue(deathInfo);
 
-        // isPlayingCinematic puede ser true porque FocusCameraOnClimber lo puso a true,
-        // pero processQueueCoroutine es null porque aún no se ha iniciado.
         if (!isPlayingCinematic || processQueueCoroutine == null)
             processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
     }
@@ -249,10 +235,10 @@ public class DeathCinematicManager : MonoBehaviour
             if (currentDeathInfo.climber == null)
                 continue;
 
-            // 1. Posicionar cámara y esperar blend
-            // ✅ Para Geyser la cámara ya está en su sitio desde FocusCameraOnClimber,
-            // así que saltamos el reposicionamiento y el blendInTime
-            if (currentDeathInfo.cause != DeathCause.Geyser)
+            // Para Geyser y StormyCloud la cámara ya está en su sitio,
+            // saltamos el reposicionamiento y el blendInTime
+            if (currentDeathInfo.cause != DeathCause.Geyser &&
+                currentDeathInfo.cause != DeathCause.StormyCloud)
             {
                 CalculateCameraAnchorPosition(currentDeathInfo.climber.transform);
                 deathCamera.Follow = cameraAnchor;
@@ -284,7 +270,7 @@ public class DeathCinematicManager : MonoBehaviour
             }
             else
             {
-                // Para Geyser: actualizar LookAt a la posición actual del escalador
+                // Geyser / StormyCloud: actualizamos LookAt a la posición actual
                 if (currentDeathInfo.climber != null)
                     deathCamera.LookAt = currentDeathInfo.climber.transform;
 
@@ -326,8 +312,6 @@ public class DeathCinematicManager : MonoBehaviour
                     {
                         if (slowMotionCoroutine != null)
                             StopCoroutine(slowMotionCoroutine);
-
-                        //slowMotionCoroutine = StartCoroutine(SlowMotionRoutine());
 
                         if (config.deathAudioClip != null)
                             Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
@@ -380,7 +364,6 @@ public class DeathCinematicManager : MonoBehaviour
             // 6. Cámara se queda mirando el punto de muerte
             yield return new WaitForSeconds(delayAfterExplosion);
 
-            // ✅ Notificar fin de cinemática individual, dentro del bucle
             OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
 
             // 7. Cámara vuelve
@@ -431,7 +414,6 @@ public class DeathCinematicManager : MonoBehaviour
         float? heightOverride = null,
         float? sideOverride = null)
     {
-        // ✅ Usar las variables locales en lugar de los campos del inspector
         float distance = distanceOverride ?? cameraDistance;
         float height = heightOverride ?? heightOffset;
         float side = sideOverride ?? sideOffset;
@@ -455,9 +437,9 @@ public class DeathCinematicManager : MonoBehaviour
         foreach (Vector3 sideDir in sideDirections)
         {
             Vector3 targetPos = climberTransform.position
-                              + outwardsDirection * distance   // ✅ distance en vez de cameraDistance
-                              + sideDir * side                 // ✅ side en vez de sideOffset
-                              + Vector3.up * height;           // ✅ height en vez de heightOffset
+                              + outwardsDirection * distance
+                              + sideDir * side
+                              + Vector3.up * height;
 
             Vector3 dir = targetPos - headPosition;
             float dist = dir.magnitude;

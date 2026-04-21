@@ -4981,6 +4981,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7d6a38ea675daaf4f9ed45c48f7c844a, type: 2}
   - {fileID: 11400000, guid: 0027b24972f453e40bfd02eb327b143a, type: 2}
   - {fileID: 11400000, guid: ae05d3a870e920b479c2b178780aad28, type: 2}
+  - {fileID: 11400000, guid: 3f208c60cc967dc45b094185a2abb408, type: 2}
   currentState: 0
   turnManager: {fileID: 675079561}
   spawnManager: {fileID: 1116203805}

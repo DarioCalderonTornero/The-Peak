@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0581865a6448894468c747c839913835, type: 3}
   m_Name: Snow
   m_EditorClassIdentifier: 
-  cardName: Snow
+  cardName: Nieve
   description: It traps an enemy, slowly swallowing it whole until it is completely
     covered, then eliminates it. If another climber passes by, it saves them.
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 9104421247320485007, guid: 272bd9776cb7d3c4985a6fb336eb75f7, type: 3}
   cost: 6
-  worldSprite: {fileID: -588210426, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
+  worldSprite: {fileID: 21300000, guid: 1624ef97017a2944eba8fbadcfc671dd, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}

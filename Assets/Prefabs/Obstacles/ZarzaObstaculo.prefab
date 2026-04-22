@@ -152,8 +152,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11c718b86383a7e459be75ab471a8907, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slowFactor: 0.2
-  staminaMultiplier: 1.05
+  slowFactor: 0.9
+  staminaMultiplier: 1.65
   brambleAudioSource: {fileID: 3653686631558448835}
 --- !u!114 &9002646512306724513
 MonoBehaviour:

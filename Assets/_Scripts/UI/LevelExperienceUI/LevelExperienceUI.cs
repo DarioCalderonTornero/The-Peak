@@ -12,6 +12,11 @@ public class LevelExperienceUI : MonoBehaviour
     [SerializeField] private float fillSpeed = 1.5f;
     private bool forceFillToFullOnLevelUp;
 
+    [Header("Bar Shine")]
+    [SerializeField] private RectTransform barShineRect;
+    [SerializeField] private Image barShineImage;
+    [SerializeField] private float shineDuration = 0.35f;
+
     [Header("Texts")]
     [SerializeField] private TextMeshProUGUI currentLevelText;
     [SerializeField] private TextMeshProUGUI currentXpText;
@@ -24,9 +29,9 @@ public class LevelExperienceUI : MonoBehaviour
     [SerializeField] private float starFillDuration = 0.5f;
 
     [Header("Star FX - Bounce (Scale)")]
-    [SerializeField] private float bounceUpScale = 1.18f;
-    [SerializeField] private float bounceUpTime = 0.12f;
-    [SerializeField] private float bounceDownTime = 0.10f;
+    [SerializeField] private float bounceUpScale = 1.35f;
+    [SerializeField] private float bounceUpTime = 0.08f;
+    [SerializeField] private float bounceDownTime = 0.20f;
     [SerializeField] private Ease bounceEaseUp = Ease.OutBack;
     [SerializeField] private Ease bounceEaseDown = Ease.OutQuad;
 
@@ -36,14 +41,13 @@ public class LevelExperienceUI : MonoBehaviour
     [SerializeField] private float flashInTime = 0.08f;
     [SerializeField] private float flashOutTime = 0.18f;
 
-    [Header("Star FX - Subtle Rotation")]
+    [Header("Star FX - Wobble (Rotation)")]
     [SerializeField] private bool useRotation = true;
-    [SerializeField] private float rotationDegrees = 12f;
-    [SerializeField] private float rotationTime = 0.22f;
-    [SerializeField] private Ease rotationEase = Ease.OutBack;
+    [SerializeField] private float wobbleDuration = 0.4f;
+    [SerializeField] private Ease wobbleEase = Ease.OutElastic;
 
     [Header("Star FX - Glow (Optional Overlay Image)")]
-    [Tooltip("Imagen opcional para glow detrás de la estrella. Recomiendo duplicar la estrella como child y ponerla detrás.")]
+    [Tooltip("Imagen opcional para glow detrás de la estrella.")]
     [SerializeField] private Image glowImage;
     [SerializeField] private bool useGlow = true;
     [SerializeField] private float glowMaxAlpha = 0.65f;
@@ -60,17 +64,17 @@ public class LevelExperienceUI : MonoBehaviour
     [SerializeField] private bool useLevelColor = true;
     [Tooltip("Gradiente para el color base de la estrella según el nivel.")]
     [SerializeField] private Gradient levelColorGradient;
-    [Tooltip("Nivel a partir del cual el gradiente se queda en 1. Ej: si pones 50, a nivel 50+ será el color final.")]
+    [Tooltip("Nivel a partir del cual el gradiente se queda en 1.")]
     [SerializeField] private int maxLevelForGradient = 50;
 
-    [Header("Star - Auto Reset (Down Animation)")] // NEW
+    [Header("Star - Auto Reset (Down Animation)")]
     [Tooltip("Segundos después del level up para vaciar la estrella de nuevo.")]
-    [SerializeField] private float secondsBeforeReset = 10f; // NEW
+    [SerializeField] private float secondsBeforeReset = 10f;
     [Tooltip("Duración del vaciado (1 -> 0) al resetear.")]
-    [SerializeField] private float downResetDuration = 0.35f; // NEW
-    [Tooltip("Pequeño 'squeeze' al vaciar para que quede más chulo.")]
-    [SerializeField] private float downSqueezeScale = 0.92f; // NEW
-    [SerializeField] private Ease downResetEase = Ease.InOutQuad; // NEW
+    [SerializeField] private float downResetDuration = 0.35f;
+    [Tooltip("Pequeño squeeze al vaciar.")]
+    [SerializeField] private float downSqueezeScale = 0.92f;
+    [SerializeField] private Ease downResetEase = Ease.InOutQuad;
 
     // Internals
     private Coroutine fillCoroutine;
@@ -81,7 +85,7 @@ public class LevelExperienceUI : MonoBehaviour
     private Vector3 starBaseScale;
     private Color starBaseColor;
 
-    private Tween resetTween; // NEW (para cancelar el reset si hace falta)
+    private Tween resetTween;
 
     private void Start()
     {
@@ -93,10 +97,6 @@ public class LevelExperienceUI : MonoBehaviour
             starRect = starIconImage.rectTransform;
             starBaseScale = starRect.localScale;
             starBaseColor = starIconImage.color;
-
-            // Si quieres que empiece vacía, perfecto:
-            // (tu nota decía que esto está bien)
-            // starIconImage.fillAmount = 0f;
         }
 
         levelBarImage.fillAmount = LevelExperienceManager.Instance.GetExperienceNormalized();
@@ -115,7 +115,7 @@ public class LevelExperienceUI : MonoBehaviour
         }
 
         starSequence?.Kill();
-        resetTween?.Kill(); 
+        resetTween?.Kill();
         idleTween?.Kill();
         if (glowImage != null) glowImage.DOKill();
         if (starIconImage != null) starIconImage.DOKill();
@@ -149,7 +149,6 @@ public class LevelExperienceUI : MonoBehaviour
         UpdateTexts();
     }
 
-
     private void OnLevelUp(object sender, EventArgs e)
     {
         resetTween?.Kill();
@@ -166,31 +165,86 @@ public class LevelExperienceUI : MonoBehaviour
     {
         yield return AnimateBar(1f);
 
+        // Shine solo en level up
+        StartCoroutine(PlayBarShine(1f));
+
+        // Pequeña espera para que se vea el shine antes del reset
+        yield return new WaitForSeconds(shineDuration);
+
         levelBarImage.fillAmount = 0f;
     }
-
-
 
     private IEnumerator AnimateBar(float target)
     {
         float start = levelBarImage.fillAmount;
         float time = 0f;
 
+        float overshootTarget = Mathf.Min(target + 0.03f, 1f);
+
         while (time < 1f)
         {
             time += Time.deltaTime * fillSpeed;
-            levelBarImage.fillAmount = Mathf.Lerp(start, target, time);
+            float eased = Mathf.SmoothStep(0f, 1f, time);
+            levelBarImage.fillAmount = Mathf.Lerp(start, overshootTarget, eased);
+            yield return null;
+        }
+
+        time = 0f;
+        float overshootStart = levelBarImage.fillAmount;
+        while (time < 1f)
+        {
+            time += Time.deltaTime * (fillSpeed * 2f);
+            levelBarImage.fillAmount = Mathf.Lerp(overshootStart, target, time);
             yield return null;
         }
 
         levelBarImage.fillAmount = target;
+        // Sin shine aquí
+    }
+
+    private IEnumerator PlayBarShine(float fillAmount)
+    {
+        if (barShineRect == null || barShineImage == null) yield break;
+
+        float barWidth = levelBarImage.rectTransform.rect.width;
+        float shineWidth = 15f;
+
+        float startX = -(barWidth * 0.5f);
+        float endX = startX + (barWidth * fillAmount);
+
+        barShineRect.sizeDelta = new Vector2(shineWidth, 0f);
+        barShineRect.anchoredPosition = new Vector2(startX, 0f);
+
+        barShineImage.color = new Color(1f, 1f, 1f, 0f);
+
+        float elapsed = 0f;
+
+        while (elapsed < shineDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / shineDuration);
+
+            barShineRect.anchoredPosition = new Vector2(Mathf.Lerp(startX, endX, t), 0f);
+
+            float alpha = t < 0.5f
+                ? Mathf.Lerp(0f, 0.6f, t / 0.5f)
+                : Mathf.Lerp(0.6f, 0f, (t - 0.5f) / 0.5f);
+
+            barShineImage.color = new Color(1f, 1f, 1f, alpha);
+            yield return null;
+        }
+
+        barShineImage.color = new Color(1f, 1f, 1f, 0f);
     }
 
     private void UpdateTexts()
     {
-        currentLevelText.text = LevelExperienceManager.Instance.GetLevel().ToString();
-        currentXpText.text = "XP: " + LevelExperienceManager.Instance.GetCurrentXp().ToString() + "/ ";
-        xpToNextLevelText.text = LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
+        if (currentLevelText != null)
+            currentLevelText.text = LevelExperienceManager.Instance.GetLevel().ToString();
+        if (currentXpText != null)
+            currentXpText.text = "XP: " + LevelExperienceManager.Instance.GetCurrentXp().ToString() + "/ ";
+        if (xpToNextLevelText != null)
+            xpToNextLevelText.text = LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
     }
 
     // -------------------------
@@ -256,7 +310,6 @@ public class LevelExperienceUI : MonoBehaviour
 
         starRect.localScale = starBaseScale;
         starRect.localRotation = Quaternion.identity;
-
         starIconImage.fillAmount = 0f;
 
         starSequence = DOTween.Sequence();
@@ -266,7 +319,7 @@ public class LevelExperienceUI : MonoBehaviour
             starIconImage.DOFillAmount(1f, starFillDuration).SetEase(Ease.InOutBack)
         );
 
-        // Bounce
+        // Bounce más exagerado
         starSequence.Join(
             starRect.DOScale(starBaseScale * bounceUpScale, bounceUpTime).SetEase(bounceEaseUp)
                 .OnComplete(() =>
@@ -275,27 +328,42 @@ public class LevelExperienceUI : MonoBehaviour
                 })
         );
 
-        // Flash
+        // Flash — primero blanco puro, luego al color base
         if (useFlash)
         {
             starSequence.Join(
-                starIconImage.DOColor(flashColor, flashInTime).SetEase(Ease.OutQuad)
+                starIconImage.DOColor(Color.white, 0.05f).SetEase(Ease.OutQuad)
                     .OnComplete(() =>
                     {
-                        starIconImage.DOColor(starBaseColor, flashOutTime).SetEase(Ease.OutQuad);
+                        starIconImage.DOColor(flashColor, flashInTime).SetEase(Ease.OutQuad)
+                            .OnComplete(() =>
+                            {
+                                starIconImage.DOColor(starBaseColor, flashOutTime).SetEase(Ease.OutQuad);
+                            });
                     })
             );
         }
 
-        // Rotation
+        // Wobble — +15, -10, +5, 0
         if (useRotation)
         {
             starSequence.Join(
-                starRect.DOLocalRotate(new Vector3(0f, 0f, rotationDegrees), rotationTime, RotateMode.FastBeyond360)
-                    .SetEase(rotationEase)
+                starRect.DOLocalRotate(new Vector3(0f, 0f, 15f), wobbleDuration * 0.25f)
+                    .SetEase(Ease.OutQuad)
                     .OnComplete(() =>
                     {
-                        starRect.DOLocalRotate(Vector3.zero, 0.12f).SetEase(Ease.OutQuad);
+                        starRect.DOLocalRotate(new Vector3(0f, 0f, -10f), wobbleDuration * 0.25f)
+                            .SetEase(Ease.OutQuad)
+                            .OnComplete(() =>
+                            {
+                                starRect.DOLocalRotate(new Vector3(0f, 0f, 5f), wobbleDuration * 0.25f)
+                                    .SetEase(Ease.OutQuad)
+                                    .OnComplete(() =>
+                                    {
+                                        starRect.DOLocalRotate(Vector3.zero, wobbleDuration * 0.25f)
+                                            .SetEase(Ease.OutQuad);
+                                    });
+                            });
                     })
             );
         }
@@ -318,14 +386,13 @@ public class LevelExperienceUI : MonoBehaviour
             );
         }
 
-        // When complete: resume idle + schedule down animation
+        // Al terminar
         starSequence.OnComplete(() =>
         {
             starRect.localScale = starBaseScale;
             starRect.localRotation = Quaternion.identity;
             ResumeIdle();
-
-            ScheduleDownReset(); // NEW
+            ScheduleDownReset();
         });
     }
 
@@ -333,37 +400,29 @@ public class LevelExperienceUI : MonoBehaviour
     // Down reset after N seconds
     // -------------------------
 
-    private void ScheduleDownReset() // NEW
+    private void ScheduleDownReset()
     {
         if (starIconImage == null || starRect == null) return;
 
         resetTween?.Kill();
 
-        // DelayedCall: espera X segundos y luego hace el vaciado chulo
         resetTween = DOVirtual.DelayedCall(secondsBeforeReset, () =>
         {
             PlayStarDownFX();
         }).SetUpdate(false);
     }
 
-    private void PlayStarDownFX() // NEW
+    private void PlayStarDownFX()
     {
         if (starIconImage == null || starRect == null) return;
 
-        // Si hay alguna animación de estrella en curso, la paramos
         starSequence?.Kill();
         StopIdleTemporarily();
 
-        // Mini secuencia simple pero resultona:
-        // - squeeze (encoger un pelín)
-        // - vaciar fill 1->0
-        // - volver a escala base
         Sequence downSeq = DOTween.Sequence();
 
         downSeq.Join(starRect.DOScale(starBaseScale * downSqueezeScale, downResetDuration * 0.35f).SetEase(Ease.InOutSine));
         downSeq.Join(starIconImage.DOFillAmount(0f, downResetDuration).SetEase(downResetEase));
-
-        // Vuelve a base
         downSeq.Append(starRect.DOScale(starBaseScale, downResetDuration * 0.35f).SetEase(Ease.OutQuad));
 
         downSeq.OnComplete(() =>

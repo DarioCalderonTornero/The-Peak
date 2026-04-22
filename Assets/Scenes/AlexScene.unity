@@ -871,7 +871,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 281424682}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 63e145d74bedf534195871daa0dc144a, type: 3}
   m_Name: 
@@ -2201,7 +2201,6 @@ MonoBehaviour:
   hoverSmoothTime: 0.1
   availableCards:
   - {fileID: 11400000, guid: 659e4c6cffe64814fa48d561db32f7a6, type: 2}
-  - {fileID: 11400000, guid: 0cf55efb4a688e642abc4f23ff15c39f, type: 2}
   - {fileID: 11400000, guid: 2ea0e1a9ce889354ea7a06306d92bc33, type: 2}
   - {fileID: 11400000, guid: ff7324c04c6fa6542b3f1025eb1d93ca, type: 2}
   - {fileID: 11400000, guid: 47362b00288441e49a59a6677321d422, type: 2}

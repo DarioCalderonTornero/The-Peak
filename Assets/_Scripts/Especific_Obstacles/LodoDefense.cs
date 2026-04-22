@@ -131,7 +131,7 @@ public class LodoDefense : BaseDefense
 
         if (!tracked.TryGetValue(climber, out MudClimberData data))
         {
-            climber.SetExternalSpeedMultiplier(1f);
+            climber.SetExternalSpeedMultiplier(0.3f);
             return;
         }
 
@@ -225,7 +225,6 @@ public class LodoDefense : BaseDefense
 
     private IEnumerator QuickAbsorbAndKill(ClimberMovement climber, MudClimberData data)
     {
-        // 1. Notificamos la muerte para que la cámara venga
         if (climber != null && GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
@@ -239,8 +238,6 @@ public class LodoDefense : BaseDefense
             PointsManager.Instance.AddPoints(10);
         }
 
-        // 2. Hundimiento visual del escalador original antes de que lo destruya
-        // DeathCinematicManager. Esto ocurre mientras la cámara viaja hacia él.
         NavMeshAgent agent = data.agent != null ? data.agent : climber.GetComponent<NavMeshAgent>();
 
         if (agent != null && data.hasInitialOffset)
@@ -271,24 +268,24 @@ public class LodoDefense : BaseDefense
             }
         }
 
-        // 3. Suscribirse al evento de cinemática individual para destruirse
-        // cuando termine la cinemática de ESTE escalador concreto
         if (DeathCinematicManager.Instance != null)
         {
+            // Cacheamos el climber en una variable local capturada por el lambda
+            // para que no dependa del struct que puede llegar con climber = null
+            ClimberMovement cachedClimber = climber;
+
             void OnThisDeath(GameManager.DeathInfo info)
             {
-                if (info.climber == climber)
-                {
-                    DeathCinematicManager.Instance.OnOwnClimberCinematicFinished -= OnThisDeath;
-                    Destroy(gameObject);
-                }
+                // Comparamos contra la referencia cacheada, no contra info.climber
+                // porque cuando se salta la cinemática info.climber ya es null
+                DeathCinematicManager.Instance.OnOwnClimberCinematicFinished -= OnThisDeath;
+                Destroy(gameObject);
             }
 
             DeathCinematicManager.Instance.OnOwnClimberCinematicFinished += OnThisDeath;
         }
         else
         {
-            // Fallback si no hay DeathCinematicManager
             Destroy(gameObject, 3f);
         }
     }

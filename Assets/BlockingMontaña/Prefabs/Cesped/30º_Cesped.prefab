@@ -72,27 +72,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 31.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -2.989
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.4515686
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.0000029504295
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalRotation.z
@@ -104,7 +104,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -180
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -182,7 +182,7 @@ MonoBehaviour:
   gridOrigin: {fileID: 4303394211492746185}
   gridDims: {x: 4, y: 4}
   cellSize: 1
-  blocked: 00000000000000000000000000000000
+  blocked: 00000101000001010000010100000101
 --- !u!4 &7774947879889205384 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: af8cc8c2dc774aa46a3a3d0d2c591f6e, type: 3}

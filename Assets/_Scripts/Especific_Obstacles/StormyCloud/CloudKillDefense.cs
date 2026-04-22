@@ -17,6 +17,8 @@ public class CloudKillDefense : BaseDefense
     [SerializeField] private float popDuration = 0.5f;
     [SerializeField] private AnimationCurve popCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
+    [SerializeField] private AudioClip VFXSound;
+
     private bool hasKilled = false;
     private Vector3 originalVisualScale;
 
@@ -99,6 +101,8 @@ public class CloudKillDefense : BaseDefense
         // Activamos el VFX del rayo
         if (killVFX != null)
             killVFX.SetActive(true);
+
+        Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
 
         // Esperamos el impacto del rayo
         yield return new WaitForSeconds(0.5f);

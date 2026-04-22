@@ -2481,7 +2481,7 @@ MonoBehaviour:
   heightOffset: 5
   sideOffset: 5
   blendInTime: 1
-  delayAfterExplosion: 1
+  delayAfterExplosion: 1.25
   delayAfterBlendCameras: 0.25
   slowMotionScale: 0.2
   slowMotionDuration: 0.5
@@ -4986,7 +4986,7 @@ MonoBehaviour:
   turnManager: {fileID: 675079561}
   spawnManager: {fileID: 1116203805}
   resourceManager: {fileID: 0}
-  autoStartGame: 1
+  autoStartGame: 0
   logStateChanges: 1
   gamePauseUI: {fileID: 831929931}
 --- !u!114 &1108060495

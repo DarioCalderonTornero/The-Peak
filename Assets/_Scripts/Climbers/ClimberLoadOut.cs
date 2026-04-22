@@ -17,6 +17,7 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private string[] debugEquippedItemNames;
 
     [SerializeField] private Renderer helmetRenderer;
+    [SerializeField] private Renderer bodyRenderer;
     public IReadOnlyList<EquipmentInstance> EquippedItems => equippedItems;
 
     [Header("Climber Getters")]
@@ -231,6 +232,14 @@ public class ClimberLoadout : MonoBehaviour
             return helmetRenderer.material.color;
 
         return Color.white;
+    }
+
+    public Color GetBodyColor()
+    {
+        if (bodyRenderer != null)
+            return bodyRenderer.material.color;
+
+        return Color.yellow;
     }
 
     /// <summary>

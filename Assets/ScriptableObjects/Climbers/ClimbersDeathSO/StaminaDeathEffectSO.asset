@@ -15,4 +15,4 @@ MonoBehaviour:
   deathCause: 6
   deathAudioClip: {fileID: 8300000, guid: 90e4bfa79882a444b8f8b3bbe536ae00, type: 3}
   deathVisualPrefab: {fileID: 253284601063518662, guid: 20ffa80d78f8bf8449b4d48bab1898eb, type: 3}
-  deathVFX_Effect: {fileID: 3715605854781016189, guid: c92c5aa89bd8ffd43a152a689d0cf132, type: 3}
+  deathVFX_Effect: {fileID: 1487853291997279668, guid: 48e38bae4f8f2644fa5bb558e8500057, type: 3}

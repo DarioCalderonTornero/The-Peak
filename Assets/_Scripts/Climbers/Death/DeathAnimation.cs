@@ -12,6 +12,7 @@ public class DeathAnimation : MonoBehaviour
     [Header("Referencias")]
     [Tooltip("Renderer del casco para aplicar el color del escalador original.")]
     [SerializeField] private Renderer helmetRenderer;
+    [SerializeField] private Renderer[] bodyRenderer;
 
     [Header("Seguridad")]
     [SerializeField] private float destroyDelay = 5f;
@@ -77,12 +78,12 @@ public class DeathAnimation : MonoBehaviour
 
     private void BadBerryDeathRoutine()
     {
-        float targetAngle = 1.5f;
         float animDuration = 2.0f;
         float shakeMagnitude = 0.01f;
 
-        StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));
-        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude)); // ← orden correcto
+        StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
+        StartCoroutine(BodyColorToRedRoutine(animDuration));
         Invoke(nameof(NotifyComplete), animDuration);
     }
 
@@ -115,6 +116,8 @@ public class DeathAnimation : MonoBehaviour
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
+
+
 
     private IEnumerator FlattenRoutine(float duration)
     {
@@ -165,5 +168,40 @@ public class DeathAnimation : MonoBehaviour
         }
 
         transform.localPosition = originalPos;
+    }
+
+    private IEnumerator BodyColorToRedRoutine(float duration)
+    {
+        if (bodyRenderer == null || bodyRenderer.Length == 0) yield break;
+
+        // Recogemos los colores originales de cada renderer
+        Color[] startColors = new Color[bodyRenderer.Length];
+        for (int i = 0; i < bodyRenderer.Length; i++)
+        {
+            if (bodyRenderer[i] != null)
+                startColors[i] = bodyRenderer[i].material.color;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+
+            for (int i = 0; i < bodyRenderer.Length; i++)
+            {
+                if (bodyRenderer[i] != null)
+                    bodyRenderer[i].material.color = Color.Lerp(startColors[i], Color.red, t);
+            }
+
+            yield return null;
+        }
+
+        // Aseguramos que llega a rojo puro al final
+        for (int i = 0; i < bodyRenderer.Length; i++)
+        {
+            if (bodyRenderer[i] != null)
+                bodyRenderer[i].material.color = Color.red;
+        }
     }
 }

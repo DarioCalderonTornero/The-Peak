@@ -77,6 +77,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  VFXSound: {fileID: 8300000, guid: 0a218261762ba61459a42ed5d6a41700, type: 3}
 --- !u!65 &6651538022001139168
 BoxCollider:
   m_ObjectHideFlags: 0

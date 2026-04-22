@@ -166,26 +166,19 @@ public class BerryTreeDefense : BaseDefense
         if (badBerry != null) badBerry.SetActive(false);
         badBerryAlive = false;
 
-        // Evitamos que ClimberMovement dispare su propia muerte por stamina
         climber.SuppressStaminaDeath();
-
-        var deathInfo = new GameManager.DeathInfo
-        {
-            climber = climber,
-            position = climber.transform.position,
-            cause = DeathCause.BadBerry
-        };
 
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.NotifyClimberDied(deathInfo);
+            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
+            {
+                climber = climber,
+                position = climber.transform.position,
+                cause = DeathCause.BadBerry
+            });
             ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
             PointsManager.Instance?.AddPoints(10);
         }
-
-        // El DeathCinematicManager gestiona destrucción y cinemática
-        if (DeathCinematicManager.Instance != null)
-            DeathCinematicManager.Instance.NotifyReadyToProcess(deathInfo);
 
         StartCoroutine(RespawnBerryAfterTurns(false));
     }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using DG.Tweening;
 
@@ -87,6 +88,10 @@ public class LevelExperienceUI : MonoBehaviour
 
     private Tween resetTween;
 
+    // Cola de level ups pendientes
+    private readonly Queue<int> levelUpQueue = new Queue<int>();
+    private bool isProcessingLevelUp = false;
+
     private void Start()
     {
         LevelExperienceManager.Instance.OnExperienceChanged += OnExperienceChanged;
@@ -124,27 +129,15 @@ public class LevelExperienceUI : MonoBehaviour
 
     private void OnExperienceChanged()
     {
-        float targetFill;
+        // Si estamos procesando un level up, no interrumpimos la animación
+        if (isProcessingLevelUp) return;
 
-        if (forceFillToFullOnLevelUp)
-        {
-            targetFill = 1f;
-            forceFillToFullOnLevelUp = false;
+        float targetFill = LevelExperienceManager.Instance.GetExperienceNormalized();
 
-            if (fillCoroutine != null)
-                StopCoroutine(fillCoroutine);
+        if (fillCoroutine != null)
+            StopCoroutine(fillCoroutine);
 
-            fillCoroutine = StartCoroutine(AnimateBarAndReset());
-        }
-        else
-        {
-            targetFill = LevelExperienceManager.Instance.GetExperienceNormalized();
-
-            if (fillCoroutine != null)
-                StopCoroutine(fillCoroutine);
-
-            fillCoroutine = StartCoroutine(AnimateBar(targetFill));
-        }
+        fillCoroutine = StartCoroutine(AnimateBar(targetFill));
 
         UpdateTexts();
     }
@@ -153,25 +146,78 @@ public class LevelExperienceUI : MonoBehaviour
     {
         resetTween?.Kill();
 
-        forceFillToFullOnLevelUp = true;
+        // Encolamos el nivel al que se sube
+        levelUpQueue.Enqueue(LevelExperienceManager.Instance.GetLevel());
 
-        ApplyStarBaseVisualsForCurrentLevel();
-        UpdateTexts();
-
-        PlayStarLevelUpFX();
+        if (!isProcessingLevelUp)
+            StartCoroutine(ProcessLevelUpQueue());
     }
 
-    private IEnumerator AnimateBarAndReset()
+    private IEnumerator ProcessLevelUpQueue()
     {
-        yield return AnimateBar(1f);
+        isProcessingLevelUp = true;
 
-        // Shine solo en level up
-        StartCoroutine(PlayBarShine(1f));
+        while (levelUpQueue.Count > 0)
+        {
+            int level = levelUpQueue.Dequeue();
 
-        // Pequeña espera para que se vea el shine antes del reset
-        yield return new WaitForSeconds(shineDuration);
+            // Actualizamos colores y textos para este nivel concreto
+            ApplyStarBaseVisualsForCurrentLevel();
+            UpdateTexts();
 
-        levelBarImage.fillAmount = 0f;
+            // Animamos la barra llenándose hasta el final
+            if (fillCoroutine != null)
+                StopCoroutine(fillCoroutine);
+
+            bool barDone = false;
+            fillCoroutine = StartCoroutine(AnimateBarLevelUp(() => barDone = true));
+
+            yield return new WaitUntil(() => barDone);
+
+            // Shine y espera
+            StartCoroutine(PlayBarShine(1f));
+            yield return new WaitForSeconds(shineDuration);
+
+            // Reset de la barra a 0
+            levelBarImage.fillAmount = 0f;
+
+            // Animación de la estrella — esperamos a que termine
+            bool starDone = false;
+            PlayStarLevelUpFX(() => starDone = true);
+
+            yield return new WaitUntil(() => starDone);
+
+            // Pequeña pausa entre level ups encadenados
+            if (levelUpQueue.Count > 0)
+                yield return new WaitForSeconds(0.3f);
+        }
+
+        isProcessingLevelUp = false;
+
+        // Ahora que terminamos todos los level ups, animamos al valor real de XP
+        float targetFill = LevelExperienceManager.Instance.GetExperienceNormalized();
+        if (fillCoroutine != null)
+            StopCoroutine(fillCoroutine);
+        fillCoroutine = StartCoroutine(AnimateBar(targetFill));
+
+        UpdateTexts();
+    }
+
+    private IEnumerator AnimateBarLevelUp(Action onComplete)
+    {
+        float start = levelBarImage.fillAmount;
+        float time = 0f;
+
+        while (time < 1f)
+        {
+            time += Time.deltaTime * fillSpeed;
+            float eased = Mathf.SmoothStep(0f, 1f, time);
+            levelBarImage.fillAmount = Mathf.Lerp(start, 1f, eased);
+            yield return null;
+        }
+
+        levelBarImage.fillAmount = 1f;
+        onComplete?.Invoke();
     }
 
     private IEnumerator AnimateBar(float target)
@@ -199,7 +245,6 @@ public class LevelExperienceUI : MonoBehaviour
         }
 
         levelBarImage.fillAmount = target;
-        // Sin shine aquí
     }
 
     private IEnumerator PlayBarShine(float fillAmount)
@@ -242,9 +287,9 @@ public class LevelExperienceUI : MonoBehaviour
         if (currentLevelText != null)
             currentLevelText.text = LevelExperienceManager.Instance.GetLevel().ToString();
         if (currentXpText != null)
-            currentXpText.text = "XP: " + LevelExperienceManager.Instance.GetCurrentXp().ToString() + "/ ";
-        if (xpToNextLevelText != null)
-            xpToNextLevelText.text = LevelExperienceManager.Instance.GetXpToNextLevel().ToString();
+            currentXpText.text = LevelExperienceManager.Instance.GetCurrentXp() + " / " +
+                                 LevelExperienceManager.Instance.GetXpToNextLevel();
+        // xpToNextLevelText ya no se usa, puedes borrarlo del script también
     }
 
     // -------------------------
@@ -301,9 +346,13 @@ public class LevelExperienceUI : MonoBehaviour
             StartIdle();
     }
 
-    private void PlayStarLevelUpFX()
+    private void PlayStarLevelUpFX(Action onComplete = null)
     {
-        if (starIconImage == null || starRect == null) return;
+        if (starIconImage == null || starRect == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
 
         starSequence?.Kill();
         StopIdleTemporarily();
@@ -319,7 +368,7 @@ public class LevelExperienceUI : MonoBehaviour
             starIconImage.DOFillAmount(1f, starFillDuration).SetEase(Ease.InOutBack)
         );
 
-        // Bounce más exagerado
+        // Bounce
         starSequence.Join(
             starRect.DOScale(starBaseScale * bounceUpScale, bounceUpTime).SetEase(bounceEaseUp)
                 .OnComplete(() =>
@@ -344,7 +393,7 @@ public class LevelExperienceUI : MonoBehaviour
             );
         }
 
-        // Wobble — +15, -10, +5, 0
+        // Wobble
         if (useRotation)
         {
             starSequence.Join(
@@ -393,6 +442,7 @@ public class LevelExperienceUI : MonoBehaviour
             starRect.localRotation = Quaternion.identity;
             ResumeIdle();
             ScheduleDownReset();
+            onComplete?.Invoke();
         });
     }
 

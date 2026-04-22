@@ -101,5 +101,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   appearHeight: 0.35
   duration: 0.12
-  surfaceOffset: 0.03
+  surfaceOffset: 0.2
   markerScale: {x: 1, y: 1, z: 1}

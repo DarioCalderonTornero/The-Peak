@@ -399,10 +399,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             currentPreviewIsValid = false;
             ApplyPreviewMaterial(false);
 
-            bramblePreviewSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-            var bramble = previewInstance.GetComponent<BrambleDefense>();
-            if (bramble != null)
-                bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
         }
 
         // Actualizar la colocación según el hit
@@ -510,9 +506,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             finalRotation,
             beforeInitialize: (go) =>
             {
-                var bramble = go.GetComponent<BrambleDefense>();
-                if (bramble != null)
-                    bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
+
             },
             afterInitialize: (go) =>
             {
@@ -628,11 +622,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 DisablePreviewLogic(previewInstance);
 
                 originalPreviewScale = previewInstance.transform.localScale;
-
-                bramblePreviewSeed = Random.Range(int.MinValue, int.MaxValue);
-                var bramble = previewInstance.GetComponent<BrambleDefense>();
-                if (bramble != null)
-                    bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
 
                 // ✅ aplicar persistentes al crear
                 ApplyScaleFactorToPreview(currentScaleFactor);

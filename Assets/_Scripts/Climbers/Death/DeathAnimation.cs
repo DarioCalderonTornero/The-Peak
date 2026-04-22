@@ -38,6 +38,7 @@ public class DeathAnimation : MonoBehaviour
             case DeathCause.BadBerry: BadBerryDeathRoutine(); break;
             case DeathCause.Geyser: StartCoroutine(GeyserDeathRoutine()); break;
             case DeathCause.Snow: StartCoroutine(SnowDeathRoutine()); break;
+            case DeathCause.StormyCloud: StormyCloudDeath(); break;
             default: StartCoroutine(DefaultDeathRoutine()); break;
         }
 
@@ -83,7 +84,7 @@ public class DeathAnimation : MonoBehaviour
 
         StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
         StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
-        StartCoroutine(BodyColorToRedRoutine(animDuration));
+        StartCoroutine(BodyColorToRedRoutine(Color.red, animDuration));
         Invoke(nameof(NotifyComplete), animDuration);
     }
 
@@ -100,6 +101,17 @@ public class DeathAnimation : MonoBehaviour
         yield return StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, 0.3f));
         yield return StartCoroutine(ScaleRoutine(Vector3.zero, 0.2f));
         NotifyComplete();
+    }
+
+    private void StormyCloudDeath()
+    {
+        float animDuration = 1.0f;
+        float shakeMagnitude = 0.01f;
+
+        StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
+        StartCoroutine(BodyColorToRedRoutine(Color.black, animDuration));
+        Invoke(nameof(NotifyComplete), animDuration);
     }
 
     private IEnumerator DefaultDeathRoutine()
@@ -170,7 +182,7 @@ public class DeathAnimation : MonoBehaviour
         transform.localPosition = originalPos;
     }
 
-    private IEnumerator BodyColorToRedRoutine(float duration)
+    private IEnumerator BodyColorToRedRoutine(Color deathColor, float duration)
     {
         if (bodyRenderer == null || bodyRenderer.Length == 0) yield break;
 
@@ -191,7 +203,7 @@ public class DeathAnimation : MonoBehaviour
             for (int i = 0; i < bodyRenderer.Length; i++)
             {
                 if (bodyRenderer[i] != null)
-                    bodyRenderer[i].material.color = Color.Lerp(startColors[i], Color.red, t);
+                    bodyRenderer[i].material.color = Color.Lerp(startColors[i], deathColor, t);
             }
 
             yield return null;

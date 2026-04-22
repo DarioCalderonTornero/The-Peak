@@ -102,7 +102,10 @@ public class CloudKillDefense : BaseDefense
         if (killVFX != null)
             killVFX.SetActive(true);
 
-        Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
+        if (Temporal_Sound_Music.Instance != null)
+        {
+            Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
+        }
 
         // Esperamos el impacto del rayo
         yield return new WaitForSeconds(0.5f);
@@ -122,7 +125,7 @@ public class CloudKillDefense : BaseDefense
         yield return new WaitForSeconds(1.5f);
 
         if (visualChild != null)
-            yield return StartCoroutine(AnimatePop(visualChild, originalVisualScale, Vector3.zero));
+            //yield return StartCoroutine(AnimatePop(visualChild, originalVisualScale, Vector3.zero));
 
         Destroy(gameObject);
     }

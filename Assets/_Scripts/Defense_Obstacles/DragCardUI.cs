@@ -146,7 +146,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (worldSpriteImage != null && cardData.worldSprite != null)
             worldSpriteImage.sprite = cardData.worldSprite;
 
-        rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
+        if (rectTransform != null)
+            rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
+    }
+
+    public void SetupVisualOnly()
+    {
+        if (cardData == null) return;
+        if (iconImage != null) iconImage.sprite = cardData.icon;
+        if (costText != null) costText.text = cardData.cost.ToString();
+        if (nameText != null) nameText.text = cardData.cardName;
+        if (worldSpriteImage != null && cardData.worldSprite != null)
+            worldSpriteImage.sprite = cardData.worldSprite;
     }
 
     private void HandlePointsChanged(int points) => UpdateInteractable();
@@ -741,13 +752,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (GridOccupancyManager.Instance.AnyOccupied(currentFootprintKeys))
                 return "Checkbox selected";
         }
-
-        // Campamento
-        Vector3 boxSize = new Vector3(cardData.gridSize.x - 0.1f, 0.5f, cardData.gridSize.y - 0.1f);
-        Vector3 center = position + (normal * 0.25f);
-
-        if (Physics.CheckBox(center, boxSize / 2f, rotation, campMask))
-            return "Too close to a campsite";
 
         // Soporte completo
         if (cardData != null && cardData.requireFullSupport)

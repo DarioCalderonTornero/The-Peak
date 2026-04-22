@@ -59,7 +59,6 @@ public class CampGraphBuilder : MonoBehaviour
     [Header("🔹 Camp Collision")]
     [SerializeField] private string campLayerName = "Campamentos";
     [SerializeField] private float campCollisionRadius = 2f;
-    private readonly List<GameObject> campCollisionObjects = new List<GameObject>();
 
     private void Start() => BuildGraph();
 
@@ -119,38 +118,8 @@ public class CampGraphBuilder : MonoBehaviour
         AutoRegisterObstaclesOnEdges();
         RecalculateAllEdgeWeights();
         CalculateStepsToSummit();
-        CreateCampCollisionObjects();
 
         Debug.Log($"[CampGraphBuilder] Grafo construido con {nodes.Count} nodos desde módulos.");
-    }
-
-    // El resto de funciones (CreateCampCollisionObjects, CalculateStepsToSummit, etc.) 
-    // permanecen exactamente igual para mantener la funcionalidad original.
-
-    private void CreateCampCollisionObjects()
-    {
-        ClearCampCollisionObjects();
-        int layer = LayerMask.NameToLayer(campLayerName);
-        if (layer == -1) return;
-        foreach (var node in nodes)
-        {
-            if (node.id == finalDestinationNodeId) continue;
-            GameObject go = new GameObject("Camp_INVISIBLE");
-            go.transform.position = node.position;
-            go.layer = layer;
-            go.hideFlags = HideFlags.HideInHierarchy;
-            go.AddComponent<SphereCollider>().isTrigger = true;
-            go.AddComponent<SphereCollider>().radius = campCollisionRadius;
-            campCollisionObjects.Add(go);
-        }
-    }
-
-    private void ClearCampCollisionObjects()
-    {
-        foreach (var go in campCollisionObjects) if (go != null) DestroyImmediate(go);
-        campCollisionObjects.Clear();
-        GameObject[] leftovers = GameObject.FindObjectsOfType<GameObject>(true);
-        foreach (var o in leftovers) if (o.name == "Camp_INVISIBLE") DestroyImmediate(o);
     }
 
     public void RecalculateObstaclesOnEdges()

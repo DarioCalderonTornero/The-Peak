@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,13 +14,15 @@ public class CardGameManager : MonoBehaviour
     [SerializeField] private CardSlotsUI slotsUI;
     [SerializeField] private Button startButton;
 
-    [Header("Configuraci�n")]
+    [Header("Configuración")]
     [SerializeField] private int maxSelectedCards = 8;
     [SerializeField] private int slotCount = 3;
 
-    private List<CardData> selectedCards = new List<CardData>();
+    [Header("Pool de cartas para recompensas")]
+    [Tooltip("Todas las CardData existentes en el juego. Las que no tenga el jugador en su mazo podrán aparecer como recompensa.")]
+    [SerializeField] private List<CardData> allCardsPool = new List<CardData>();
 
-    // Mazo de cartas disponibles para sacar
+    private List<CardData> selectedCards = new List<CardData>();
     private List<CardData> availableDeck = new List<CardData>();
 
     private void Awake()
@@ -41,6 +43,8 @@ public class CardGameManager : MonoBehaviour
 
         inventoryUI.ShowInventory();
     }
+
+    // ─── Selección inicial ───────────────────────────────────────────────────
 
     private void HandleCardSelected(CardData card)
     {
@@ -66,20 +70,19 @@ public class CardGameManager : MonoBehaviour
             startButton.interactable = (selectedCards.Count == maxSelectedCards);
     }
 
+    // ─── Inicio de partida ───────────────────────────────────────────────────
+
     private void StartMatch()
     {
-        OnInventoryHide?.Invoke(this,EventArgs.Empty);
+        OnInventoryHide?.Invoke(this, EventArgs.Empty);
 
         GameManager.Instance.StartGame();
 
         inventoryUI.HideInventory();
-
         slotsUI.ClearCards();
 
-        // Inicializar mazo de disponibles excluyendo cartas activas
         RefillAvailableDeck();
 
-        // Llenar los slots
         for (int i = 0; i < slotCount; i++)
         {
             CardData card = DrawFromDeck();
@@ -87,36 +90,25 @@ public class CardGameManager : MonoBehaviour
         }
 
         foreach (var dragCard in slotsUI.GetAllCards())
-        {
             dragCard.OnCardUsed += HandleCardUsed;
-        }
     }
 
-    /// <summary>
-    /// Rellena el mazo de disponibles excluyendo las cartas actualmente en slots.
-    /// </summary>
+    // ─── Rotación de cartas ──────────────────────────────────────────────────
+
     private void RefillAvailableDeck()
     {
         availableDeck = new List<CardData>(selectedCards);
 
-        // Excluir cartas activas en slots
         foreach (var slotCard in slotsUI.GetAllCards())
-        {
             availableDeck.Remove(slotCard.cardData);
-        }
 
         ShuffleList(availableDeck);
     }
 
-    /// <summary>
-    /// Saca una carta del mazo disponible, recargando si se vac�a.
-    /// </summary>
     private CardData DrawFromDeck()
     {
         if (availableDeck.Count == 0)
-        {
             RefillAvailableDeck();
-        }
 
         CardData card = availableDeck[0];
         availableDeck.RemoveAt(0);
@@ -128,18 +120,49 @@ public class CardGameManager : MonoBehaviour
         int index = slotsUI.GetCardIndex(usedCard);
         if (index == -1) return;
 
-        // Reemplazar carta
         CardData newCard = DrawFromDeck();
         slotsUI.ReplaceCardAt(index, newCard);
 
-        // Subscribir al nuevo dragCard
         var newUI = slotsUI.GetAllCards()[index];
         newUI.OnCardUsed += HandleCardUsed;
     }
 
+    // ─── API pública para CardRewardUI ───────────────────────────────────────
+
     /// <summary>
-    /// Mezcla una lista in-place
+    /// Devuelve candidatas barajadas que el jugador NO tiene en su mazo.
+    /// CardRewardUI coge las 2 primeras.
     /// </summary>
+    public List<CardData> GetRewardCandidates()
+    {
+        List<CardData> candidates = new List<CardData>();
+        foreach (var card in allCardsPool)
+        {
+            if (card != null && !selectedCards.Contains(card))
+                candidates.Add(card);
+        }
+
+        ShuffleList(candidates);
+        return candidates;
+    }
+
+    /// <summary>
+    /// Añade la carta elegida al mazo del jugador y la mete en rotación inmediatamente.
+    /// Llamado por CardRewardUI tras la elección del jugador.
+    /// </summary>
+    public void AddRewardCardToDeck(CardData chosen)
+    {
+        if (chosen == null) return;
+
+        selectedCards.Add(chosen);
+        availableDeck.Add(chosen);
+        ShuffleList(availableDeck);
+
+        Debug.Log($"[CardGameManager] Carta de recompensa añadida al mazo: {chosen.cardName}");
+    }
+
+    // ─── Utilidades ──────────────────────────────────────────────────────────
+
     private void ShuffleList<T>(List<T> list)
     {
         for (int i = 0; i < list.Count; i++)

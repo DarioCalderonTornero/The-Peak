@@ -4884,7 +4884,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -5841,6 +5841,7 @@ MonoBehaviour:
   baseXPToNextLevel: 200
   xpIncreasePerLevel: 100
   levelExperienceToAdd: 200
+  rewardLevels: 05000000
 --- !u!1 &1358668564
 GameObject:
   m_ObjectHideFlags: 0

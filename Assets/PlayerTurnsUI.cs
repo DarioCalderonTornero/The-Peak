@@ -14,7 +14,7 @@ public class PlayerTurnsUI : MonoBehaviour
         }
         else
         {
-            currentTurns.text = "0";
+            currentTurns.text = "Current turns: 0";
         }
     }
 

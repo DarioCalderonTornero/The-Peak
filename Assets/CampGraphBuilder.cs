@@ -173,11 +173,20 @@ public class CampGraphBuilder : MonoBehaviour
             if (m == null || m.Obstacle == null) continue;
             foreach (var n in nodes) foreach (var e in n.neighbors)
                 {
-                    if (e.from.id < e.to.id && e.pathCorners != null && DistancePointToPath(m.transform.position, e.pathCorners) <= m.obstacleRadius)
+                    if (e.from.id < e.to.id && e.pathCorners != null &&
+                        DistancePointToPath(m.transform.position, e.pathCorners) <= m.obstacleRadius)
                     {
-                        e.hasObstacle = true; e.obstacleCount++;
+                        e.hasObstacle = true;
+                        e.obstacleType = m.Obstacle.obstacleType; // ← ESTO FALTABA
+                        e.obstacleCount++;
+
                         CampEdge rev = e.to.neighbors.Find(x => x.to == e.from);
-                        if (rev != null) { rev.hasObstacle = true; rev.obstacleCount++; }
+                        if (rev != null)
+                        {
+                            rev.hasObstacle = true;
+                            rev.obstacleType = m.Obstacle.obstacleType; // ← Y AQUÍ TAMBIÉN
+                            rev.obstacleCount++;
+                        }
                     }
                 }
         }

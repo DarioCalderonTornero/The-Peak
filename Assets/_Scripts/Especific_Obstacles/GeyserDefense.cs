@@ -216,7 +216,10 @@ public class GeyserDefense : BaseDefense
             {
                 capturedAgent.updatePosition = true;
                 capturedAgent.updateRotation = true;
-                capturedAgent.isStopped = false;
+
+                // ← Guardia antes de tocar isStopped
+                if (capturedAgent.enabled && capturedAgent.isOnNavMesh)
+                    capturedAgent.isStopped = false;
             }
         }
 

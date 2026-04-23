@@ -819,8 +819,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50d00735057d33e4eb09b0b265297673, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slowFactor: 0.8
-  staminaMultiplier: 1.2
+  slowFactor: 0.03
+  staminaMultiplier: 5
   deathThresholdPercent: 0.2
   spawnDuration: 0.25
   idleSinkSpeed: 0.2

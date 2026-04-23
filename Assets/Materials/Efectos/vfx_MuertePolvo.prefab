@@ -673,7 +673,7 @@ ParticleSystem:
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
-    m_Position: {x: 0, y: 0, z: 0}
+    m_Position: {x: 0, y: 1.2, z: 0}
     m_Rotation: {x: 0, y: 90, z: 0}
     m_Scale: {x: 0.65, y: 0.65, z: 0.65}
     placementMode: 1
@@ -4869,7 +4869,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7b3d57c0b3d5f5f4f9d11483de035552, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.55999994
+      value: 2.26
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7b3d57c0b3d5f5f4f9d11483de035552, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4998,7 +4998,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7b3d57c0b3d5f5f4f9d11483de035552, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.55999994
+      value: 2.26
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7b3d57c0b3d5f5f4f9d11483de035552, type: 3}
       propertyPath: m_LocalPosition.z

@@ -282,7 +282,7 @@ public class ClimberMovement : MonoBehaviour
     {
         if (pointsAddedThisTurn) return;
 
-        PointsManager.Instance.AddPoints(10);
+        PointsManager.Instance.AddPoints(5);
         ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
 
         if (GameManager.Instance != null)

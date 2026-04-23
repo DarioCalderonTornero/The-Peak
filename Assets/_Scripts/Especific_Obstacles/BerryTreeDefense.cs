@@ -177,7 +177,7 @@ public class BerryTreeDefense : BaseDefense
                 cause = DeathCause.BadBerry
             });
             ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
-            PointsManager.Instance?.AddPoints(10);
+            PointsManager.Instance?.AddPoints(5);
         }
 
         StartCoroutine(RespawnBerryAfterTurns(false));

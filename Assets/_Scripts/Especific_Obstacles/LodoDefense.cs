@@ -235,7 +235,7 @@ public class LodoDefense : BaseDefense
             });
 
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            PointsManager.Instance.AddPoints(10);
+            PointsManager.Instance.AddPoints(5);
         }
 
         NavMeshAgent agent = data.agent != null ? data.agent : climber.GetComponent<NavMeshAgent>();

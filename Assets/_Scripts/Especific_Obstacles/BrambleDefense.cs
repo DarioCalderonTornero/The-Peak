@@ -76,7 +76,7 @@ public class BrambleDefense : BaseDefense
                         cause = DeathCause.Bramble
                     });
                     ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
-                    PointsManager.Instance?.AddPoints(10);
+                    PointsManager.Instance?.AddPoints(5);
 
                     climber.SuppressStaminaDeath();
                     staminaTracked.Remove(climber);

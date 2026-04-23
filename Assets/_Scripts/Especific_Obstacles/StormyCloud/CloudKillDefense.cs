@@ -87,7 +87,7 @@ public class CloudKillDefense : BaseDefense
         {
             GameManager.Instance.NotifyClimberDied(deathInfo);
             ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
-            PointsManager.Instance?.AddPoints(15);
+            PointsManager.Instance?.AddPoints(5);
         }
 
         // Esperamos mientras el escalador camina hacia el centro

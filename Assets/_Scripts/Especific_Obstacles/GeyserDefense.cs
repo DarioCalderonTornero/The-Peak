@@ -176,7 +176,7 @@ public class GeyserDefense : BaseDefense
                 ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
 
             if (PointsManager.Instance != null)
-                PointsManager.Instance.AddPoints(10);
+                PointsManager.Instance.AddPoints(5);
         }
 
         SetBubbling(true);

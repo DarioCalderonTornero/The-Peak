@@ -22,9 +22,7 @@ public class DeathCinematicManager : MonoBehaviour
     [SerializeField] private float sideOffset = 3f;
 
     [Header("Tiempos Cinemáticos")]
-    [Tooltip("Tiempo que tarda la cámara en llegar al escalador.")]
     [SerializeField] private float blendInTime = 2.0f;
-    [Tooltip("Tiempo que la cámara se queda mirando después de la explosión.")]
     [SerializeField] private float delayAfterExplosion = 1.5f;
     [SerializeField] private float delayAfterBlendCameras = 0.0f;
 
@@ -33,7 +31,6 @@ public class DeathCinematicManager : MonoBehaviour
     [SerializeField] private float slowMotionDuration = 0.5f;
 
     [Header("Rotación Visual de la Muerte")]
-    [Tooltip("Offset opcional para corregir la rotación del prefab visual de muerte.")]
     [SerializeField] private Vector3 deathVisualRotationOffset = Vector3.zero;
 
     [Header("Ajustes de Control")]
@@ -44,49 +41,28 @@ public class DeathCinematicManager : MonoBehaviour
     [SerializeField] private float geyserHeightOffset = 3f;
     [SerializeField] private float geyserSideOffset = 5f;
 
-    // ★ Entrada de la cola: guarda el DeathInfo y si está lista para procesar.
-    // Geyser/StormyCloud se encolan como ready=false y se marcan true cuando
-    // llaman a NotifyReadyToProcess. Las muertes normales entran ya ready=true.
-    private class QueuedDeath
-    {
-        public GameManager.DeathInfo info;
-        public bool ready;
-    }
-
     private Coroutine processQueueCoroutine;
     private Coroutine slowMotionCoroutine;
     private GameManager.DeathInfo currentDeathInfo;
 
-    // ★ La cola ahora guarda QueuedDeath, no DeathInfo directo.
-    private readonly List<QueuedDeath> deathQueue = new List<QueuedDeath>();
+    // LinkedList en vez de Queue para poder insertar al frente
+    private readonly LinkedList<GameManager.DeathInfo> deathQueue = new LinkedList<GameManager.DeathInfo>();
+    private bool isPlayingCinematic = false;
 
-    // ★ Dos flags separados en lugar de isPlayingCinematic a secas:
-    //   - isProcessingQueue: la coroutine ProcessDeathQueue está corriendo
-    //   - isCameraFocused:   hay una cámara de focus previa activa (Geyser/Cloud en fase previa)
-    private bool isProcessingQueue = false;
-    private bool isCameraFocused = false;
+    // Escalador concreto al que hemos pre-enfocado la cámara (Geyser/StormyCloud)
+    // y que aún no ha llamado a NotifyReadyToProcess. null si no hay ninguno.
+    private ClimberMovement preFocusedClimber = null;
 
     private Transform cameraAnchor;
     private bool animationComplete = false;
 
-    // ★ Propiedad pública para compatibilidad con otros scripts que pregunten.
-    public bool IsCinematicActive => isProcessingQueue || isCameraFocused;
-
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
         cameraAnchor = new GameObject("DeathCameraAnchor").transform;
         cameraAnchor.SetParent(transform);
-
-        if (deathCamera != null)
-            deathCamera.Priority = 0;
+        if (deathCamera != null) deathCamera.Priority = 0;
     }
 
     private void Start()
@@ -104,15 +80,13 @@ public class DeathCinematicManager : MonoBehaviour
     {
         if (GameManager.Instance != null)
             GameManager.Instance.OnClimberDead -= HandleClimberDeath;
-
         if (InputManager.Instance != null)
             InputManager.Instance.OnSkipCinematic -= InputManager_OnSkipCinematic;
     }
 
     private void InputManager_OnSkipCinematic(object sender, EventArgs e)
     {
-        if (IsCinematicActive)
-            SkipCinematic();
+        if (isPlayingCinematic) SkipCinematic();
     }
 
     // ─── Skip ────────────────────────────────────────────────────────────────
@@ -138,29 +112,22 @@ public class DeathCinematicManager : MonoBehaviour
         if (currentDeathInfo.climber != null)
             Destroy(currentDeathInfo.climber.gameObject);
 
-        // ★ Vaciar la cola respetando la nueva estructura
-        foreach (var q in deathQueue)
+        while (deathQueue.Count > 0)
         {
-            if (q.info.climber != null)
-                Destroy(q.info.climber.gameObject);
+            var pending = deathQueue.First.Value;
+            deathQueue.RemoveFirst();
+            if (pending.climber != null)
+                Destroy(pending.climber.gameObject);
         }
-        deathQueue.Clear();
 
-        if (CameraShake.Instance != null)
-            CameraShake.Instance.StopShake();
-
-        if (deathCamera != null)
-            deathCamera.Priority = 0;
-
-        if (CinematicBars.Instance != null)
-            CinematicBars.Instance.HideBars();
+        if (CameraShake.Instance != null) CameraShake.Instance.StopShake();
+        if (deathCamera != null) deathCamera.Priority = 0;
+        if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
 
         UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
         GameManager.Instance.SetState(GameManager.GameState.Playing);
-
-        // ★ Reset de ambos flags
-        isProcessingQueue = false;
-        isCameraFocused = false;
+        isPlayingCinematic = false;
+        preFocusedClimber = null;
 
         Debug.Log("[DeathCinematicManager] Cinemática saltada por el jugador.");
 
@@ -174,48 +141,40 @@ public class DeathCinematicManager : MonoBehaviour
     {
         if (!useDeathCinematics)
         {
-            if (deathInfo.climber != null)
-                Destroy(deathInfo.climber.gameObject);
+            if (deathInfo.climber != null) Destroy(deathInfo.climber.gameObject);
             return;
         }
 
-        bool isFocusCause = deathInfo.cause == DeathCause.Geyser ||
-                            deathInfo.cause == DeathCause.StormyCloud;
+        if (deathInfo.cause == DeathCause.Geyser || deathInfo.cause == DeathCause.StormyCloud)
+        {
+            if (deathInfo.climber != null)
+            {
+                if (deathInfo.cause == DeathCause.Geyser)
+                {
+                    deathInfo.climber.SetExternalSpeedMultiplier(0f);
+                    var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
+                    if (agent != null) agent.enabled = false;
+                }
+            }
+
+            // Intentamos pre-enfocar. Si el sistema está ocupado, el pre-focus
+            // se ignora silenciosamente y este escalador irá por la cola normal
+            // cuando llegue su NotifyReadyToProcess.
+            FocusCameraOnClimber(deathInfo.climber);
+            return;
+        }
 
         if (deathInfo.climber != null)
         {
-            // Geyser: detenemos al escalador, desactivamos agent (ya vuela por física).
-            // StormyCloud: NO tocamos el agent, necesita caminar al centro.
-            // Causa normal: paramos al escalador y desactivamos agent.
-            if (deathInfo.cause == DeathCause.Geyser)
-            {
-                deathInfo.climber.SetExternalSpeedMultiplier(0f);
-                var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
-                if (agent != null) agent.enabled = false;
-            }
-            else if (!isFocusCause)
-            {
-                deathInfo.climber.SetExternalSpeedMultiplier(0f);
-                var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
-                if (agent != null) agent.enabled = false;
-            }
+            deathInfo.climber.SetExternalSpeedMultiplier(0f);
+            var agent = deathInfo.climber.GetComponent<NavMeshAgent>();
+            if (agent != null) agent.enabled = false;
         }
 
-        // ★ Encolamos SIEMPRE, sin excepciones. Geyser/StormyCloud entran como not-ready.
-        var queued = new QueuedDeath
-        {
-            info = deathInfo,
-            ready = !isFocusCause
-        };
-        deathQueue.Add(queued);
+        // Muerte normal: añadir al final de la cola
+        deathQueue.AddLast(deathInfo);
 
-        // ★ Si es Geyser/StormyCloud, activamos la cámara de focus previa.
-        // Solo hay uno a la vez (confirmado), así que no hay conflicto de cámara.
-        if (isFocusCause)
-            FocusCameraOnClimber(deathInfo.climber);
-
-        // ★ Arrancamos la coroutine de cola si no está corriendo
-        if (!isProcessingQueue)
+        if (!isPlayingCinematic)
             processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
     }
 
@@ -225,10 +184,18 @@ public class DeathCinematicManager : MonoBehaviour
     {
         if (climber == null) return;
 
+        // Solo pre-enfocamos si el sistema está completamente libre.
+        // Si hay una cinemática reproduciéndose, muertes en cola, o ya hay
+        // otro escalador pre-enfocado, este escalador esperará su turno en
+        // la cola cuando llegue su NotifyReadyToProcess.
+        if (isPlayingCinematic || deathQueue.Count > 0 || preFocusedClimber != null)
+        {
+            Debug.Log($"[DeathCinematicManager] Pre-focus de {climber.name} ignorado: sistema ocupado. Irá por cola normal.");
+            return;
+        }
+
         CalculateCameraAnchorPosition(climber.transform,
-            geyserCameraDistance,
-            geyserHeightOffset,
-            geyserSideOffset);
+            geyserCameraDistance, geyserHeightOffset, geyserSideOffset);
 
         deathCamera.Follow = cameraAnchor;
         deathCamera.LookAt = climber.transform;
@@ -237,44 +204,35 @@ public class DeathCinematicManager : MonoBehaviour
         GameManager.Instance.SetState(GameManager.GameState.Cinematic);
         UIManager.Instance.HideAll();
 
-        if (CinematicBars.Instance != null)
-            CinematicBars.Instance.ShowBars();
+        if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
 
-        isCameraFocused = true; // ★ flag separado
+        isPlayingCinematic = true;
+        preFocusedClimber = climber;
     }
 
     // ─── NotifyReadyToProcess ────────────────────────────────────────────────
 
-    // ★ Ya NO encola. Solo busca la entrada correspondiente en la cola
-    //    y la marca como ready. Así se respeta el orden cronológico.
     public void NotifyReadyToProcess(GameManager.DeathInfo deathInfo)
     {
-        bool found = false;
-        for (int i = 0; i < deathQueue.Count; i++)
+        // ¿Este escalador concreto es el que tenía la cámara reservada?
+        bool wasPreFocused = (deathInfo.climber != null
+                              && deathInfo.climber == preFocusedClimber);
+
+        if (wasPreFocused)
         {
-            // Comparamos por referencia al climber (más fiable que struct equality)
-            if (deathQueue[i].info.climber == deathInfo.climber)
-            {
-                // Actualizamos la posición al punto final (Geyser la actualiza tras el vuelo)
-                var q = deathQueue[i];
-                q.info = deathInfo;
-                q.ready = true;
-                deathQueue[i] = q;
-                found = true;
-                break;
-            }
+            // La cámara ya está en posición para él → debe salir PRIMERO.
+            deathQueue.AddFirst(deathInfo);
+            preFocusedClimber = null;
+        }
+        else
+        {
+            // No tenía pre-focus (sistema estaba ocupado cuando él entró, o
+            // perdió su pre-focus). Entra al FINAL como cualquier otra muerte,
+            // respetando FIFO.
+            deathQueue.AddLast(deathInfo);
         }
 
-        if (!found)
-        {
-            Debug.LogWarning("[DeathCinematicManager] NotifyReadyToProcess llamado para un climber que no está en cola. Encolando como fallback.");
-            deathQueue.Add(new QueuedDeath { info = deathInfo, ready = true });
-        }
-
-        // ★ La cámara de focus deja de ser necesaria: la coroutine toma el control
-        isCameraFocused = false;
-
-        if (!isProcessingQueue)
+        if (processQueueCoroutine == null)
             processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
     }
 
@@ -282,7 +240,7 @@ public class DeathCinematicManager : MonoBehaviour
 
     private IEnumerator ProcessDeathQueue()
     {
-        isProcessingQueue = true;
+        isPlayingCinematic = true;
         GameManager.Instance.SetState(GameManager.GameState.Cinematic);
         UIManager.Instance.HideAll();
 
@@ -290,84 +248,69 @@ public class DeathCinematicManager : MonoBehaviour
 
         while (deathQueue.Count > 0)
         {
-            // ★ Peek al frente. Si no está ready, esperamos a que NotifyReadyToProcess
-            //    lo marque. No lo sacamos de la cola todavía.
-            QueuedDeath front = deathQueue[0];
-
-            if (!front.ready)
-            {
-                // Si el climber fue destruido antes de estar ready, lo descartamos
-                if (front.info.climber == null)
-                {
-                    deathQueue.RemoveAt(0);
-                    continue;
-                }
-
-                // Mientras no esté ready, cedemos control
-                yield return null;
-                continue;
-            }
-
-            // Ya está ready: lo sacamos y procesamos
-            deathQueue.RemoveAt(0);
-            currentDeathInfo = front.info;
+            currentDeathInfo = deathQueue.First.Value;
+            deathQueue.RemoveFirst();
 
             if (currentDeathInfo.climber == null)
                 continue;
 
-            bool isFocusCause = currentDeathInfo.cause == DeathCause.Geyser ||
-                                currentDeathInfo.cause == DeathCause.StormyCloud;
+            // ¿La cámara ya está siguiendo a este escalador? (venía de pre-focus)
+            bool cameraAlreadyOnThisClimber =
+                (deathCamera.LookAt == currentDeathInfo.climber.transform);
 
-            if (!isFocusCause)
+            if (!cameraAlreadyOnThisClimber)
             {
-                CalculateCameraAnchorPosition(currentDeathInfo.climber.transform);
+                // Preparar cámara desde cero, eligiendo parámetros según la causa
+                bool isSpectacular = currentDeathInfo.cause == DeathCause.Geyser
+                                  || currentDeathInfo.cause == DeathCause.StormyCloud;
+
+                if (isSpectacular)
+                {
+                    CalculateCameraAnchorPosition(currentDeathInfo.climber.transform,
+                        geyserCameraDistance, geyserHeightOffset, geyserSideOffset);
+                }
+                else
+                {
+                    CalculateCameraAnchorPosition(currentDeathInfo.climber.transform);
+                }
+
                 deathCamera.Follow = cameraAnchor;
                 deathCamera.LookAt = currentDeathInfo.climber.transform;
                 deathCamera.Priority = 100;
 
-                float barsAnimationTime = 0.0f;
-                float waitBeforeBars = Mathf.Max(0f, blendInTime - barsAnimationTime);
-                float waitAfterBars = blendInTime - waitBeforeBars;
-
+                float waitBeforeBars = Mathf.Max(0f, blendInTime);
                 yield return new WaitForSeconds(waitBeforeBars);
 
                 if (currentDeathInfo.climber == null)
                 {
                     Debug.LogWarning("[DeathCinematicManager] Escalador destruido antes de tiempo.");
-                    if (deathQueue.Count == 0)
-                        deathCamera.Priority = 0;
+                    if (deathQueue.Count == 0) deathCamera.Priority = 0;
                     continue;
                 }
 
                 if (!barsAreShown)
                 {
-                    if (CinematicBars.Instance != null)
-                        CinematicBars.Instance.ShowBars();
+                    if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
                     barsAreShown = true;
                 }
 
-                yield return new WaitForSeconds(waitAfterBars + delayAfterBlendCameras);
+                yield return new WaitForSeconds(delayAfterBlendCameras);
             }
             else
             {
-                // Geyser / StormyCloud: la cámara ya está en su sitio desde FocusCameraOnClimber.
-                // Solo actualizamos el LookAt a la posición actual del climber.
-                if (currentDeathInfo.climber != null)
-                    deathCamera.LookAt = currentDeathInfo.climber.transform;
+                // Cámara ya en posición por pre-focus → solo re-asegurar LookAt
+                deathCamera.LookAt = currentDeathInfo.climber.transform;
 
                 if (!barsAreShown)
                 {
-                    if (CinematicBars.Instance != null)
-                        CinematicBars.Instance.ShowBars();
+                    if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
                     barsAreShown = true;
                 }
             }
 
-            // 2. Shake al llegar
             if (CameraShake.Instance != null)
                 CameraShake.Instance.ShakeDeathCamera(3f, 10f, 0.2f);
 
-            // 3. Preparar datos de muerte ANTES de destruir
             DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeathInfo.cause);
 
             Vector3 deathPos = currentDeathInfo.climber.transform.position;
@@ -376,10 +319,8 @@ public class DeathCinematicManager : MonoBehaviour
             var loadout = currentDeathInfo.climber.GetComponent<ClimberLoadout>();
             Color helmetColor = loadout != null ? loadout.GetHelmetColor() : Color.white;
 
-            // 4. Destruir escalador original
             Destroy(currentDeathInfo.climber.gameObject);
 
-            // 5. Instanciar visual y esperar a que termine la animación
             animationComplete = false;
 
             if (config != null && config.deathVisualPrefab != null)
@@ -391,15 +332,11 @@ public class DeathCinematicManager : MonoBehaviour
                 {
                     void HandleDeathMoment()
                     {
-                        if (slowMotionCoroutine != null)
-                            StopCoroutine(slowMotionCoroutine);
-
+                        if (slowMotionCoroutine != null) StopCoroutine(slowMotionCoroutine);
                         if (config.deathAudioClip != null)
                             Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
-
                         if (config.deathVFX_Effect != null)
                             Instantiate(config.deathVFX_Effect, deathPos, deathRot);
-
                         animationComplete = true;
                         deathAnim.OnAnimationComplete -= HandleDeathMoment;
                     }
@@ -409,30 +346,22 @@ public class DeathCinematicManager : MonoBehaviour
                 }
                 else
                 {
-                    if (slowMotionCoroutine != null)
-                        StopCoroutine(slowMotionCoroutine);
-
                     if (config.deathAudioClip != null)
                         Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
-
                     if (config.deathVFX_Effect != null)
                         Instantiate(config.deathVFX_Effect, deathPos, deathRot);
-
                     animationComplete = true;
                 }
             }
             else
             {
-                if (slowMotionCoroutine != null)
-                    StopCoroutine(slowMotionCoroutine);
-
+                if (slowMotionCoroutine != null) StopCoroutine(slowMotionCoroutine);
                 slowMotionCoroutine = StartCoroutine(SlowMotionRoutine());
 
                 if (config != null)
                 {
                     if (config.deathAudioClip != null)
                         Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
-
                     if (config.deathVFX_Effect != null)
                         Instantiate(config.deathVFX_Effect, deathPos, deathRot);
                 }
@@ -441,31 +370,23 @@ public class DeathCinematicManager : MonoBehaviour
             }
 
             yield return new WaitUntil(() => animationComplete);
-
-            // 6. Cámara se queda mirando el punto de muerte
             yield return new WaitForSeconds(delayAfterExplosion);
 
             OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
 
-            // 7. Si no queda nada ready en cola, bajamos prioridad de cámara.
-            //    Si queda algo pero no está ready (p.ej. un Geyser en hold),
-            //    mantenemos la cámara alta y esperamos en la próxima iteración del while.
-            bool hasNextReady = deathQueue.Count > 0 && deathQueue[0].ready;
-            if (!hasNextReady && deathQueue.Count == 0)
+            if (deathQueue.Count == 0)
             {
                 deathCamera.Priority = 0;
                 yield return new WaitForSeconds(blendInTime);
             }
         }
 
-        if (CinematicBars.Instance != null)
-            CinematicBars.Instance.HideBars();
+        if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
 
         UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
         GameManager.Instance.SetState(GameManager.GameState.Playing);
-
-        isProcessingQueue = false;
-        isCameraFocused = false;
+        isPlayingCinematic = false;
+        preFocusedClimber = null;
         processQueueCoroutine = null;
 
         OnCinematicFinished?.Invoke(this, EventArgs.Empty);
@@ -476,7 +397,6 @@ public class DeathCinematicManager : MonoBehaviour
     private IEnumerator SlowMotionRoutine()
     {
         float elapsed = 0f;
-
         Time.timeScale = slowMotionScale;
         Time.fixedDeltaTime = 0.02f * Time.timeScale;
 
@@ -549,13 +469,10 @@ public class DeathCinematicManager : MonoBehaviour
     private Quaternion GetDeathVisualRotation(Transform climberTransform)
     {
         Vector3 flatForward = Vector3.ProjectOnPlane(climberTransform.forward, Vector3.up).normalized;
-
-        if (flatForward.sqrMagnitude < 0.0001f)
-            flatForward = Vector3.forward;
+        if (flatForward.sqrMagnitude < 0.0001f) flatForward = Vector3.forward;
 
         Quaternion lookRotation = Quaternion.LookRotation(flatForward, Vector3.up);
         Quaternion offsetRotation = Quaternion.Euler(deathVisualRotationOffset);
-
         return lookRotation * offsetRotation;
     }
 

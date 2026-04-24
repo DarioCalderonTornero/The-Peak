@@ -152,6 +152,10 @@ public class CardInventoryUI : MonoBehaviour
                 cardUI.SetupCardUI();
             }
 
+            var flipComponent = cardObj.GetComponent<CardFlip>();
+            if (flipComponent != null)
+                flipComponent.ResetToFront();
+
             // Añadir efecto hover
             AddHoverEffect(cardObj);
 

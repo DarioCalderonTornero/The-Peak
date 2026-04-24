@@ -102,6 +102,24 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     // cache del último footprint real
     private readonly List<CellKey> currentFootprintKeys = new List<CellKey>(32);
 
+    [Header("Hover FX - Outline Cartoon")]
+    [SerializeField] private CardOutlineController frontOutlineController;
+    [SerializeField] private CardOutlineController backOutlineController;
+    [SerializeField] private Color outlineHoverColor = new Color(1f, 0.85f, 0.1f, 1f);
+    [SerializeField] private Color outlineNormalColor = new Color(0.1f, 0.1f, 0.1f, 1f);
+    [SerializeField] private float outlineHoverWidth = 6f;
+    [SerializeField] private float outlineNormalWidth = 2f;
+    [SerializeField] private float outlineDuration = 0.25f;
+
+    [Header("Hover FX - Estrella Sparkle")]
+    [SerializeField] private GameObject sparkleObject;
+
+    [Header("Hover FX - Glow exterior (opcional)")]
+    [SerializeField] private Image glowImage;
+    [SerializeField] private float glowAlphaHover = 0.8f;
+
+    private Coroutine outlineRoutine;
+    private Coroutine glowRoutine;
 
 
     private void Awake()
@@ -113,6 +131,17 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         canvas = GetComponentInParent<Canvas>();
         cardButton = GetComponent<Button>();
+
+        // ── Ocultar estrella al inicio ──
+        if (sparkleObject != null) sparkleObject.SetActive(false);
+
+        // ── Glow invisible al inicio ──
+        if (glowImage != null)
+        {
+            Color c = glowImage.color;
+            c.a = 0f;
+            glowImage.color = c;
+        }
     }
 
     private void Start()
@@ -148,6 +177,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         if (rectTransform != null)
             rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
+
+        // ── NUEVO: configurar el reverso ──
+        var backSetup = GetComponentInChildren<CardBackSetup>(true);
+        if (backSetup != null)
+            backSetup.Setup(cardData);
     }
 
     public void SetupVisualOnly()
@@ -158,6 +192,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (nameText != null) nameText.text = cardData.cardName;
         if (worldSpriteImage != null && cardData.worldSprite != null)
             worldSpriteImage.sprite = cardData.worldSprite;
+
+        var backSetup = GetComponentInChildren<CardBackSetup>(true);
+        if (backSetup != null)
+            backSetup.Setup(cardData);
     }
 
     private void HandlePointsChanged(int points) => UpdateInteractable();
@@ -940,6 +978,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         isHovering = true;
         if (hoverRoutine != null) StopCoroutine(hoverRoutine);
         hoverRoutine = StartCoroutine(AnimateHoverLift(true));
+
+        // ── NUEVO: Activar efectos hover ──
+        TriggerHoverFX(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -948,6 +989,42 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         isHovering = false;
         if (hoverRoutine != null) StopCoroutine(hoverRoutine);
         hoverRoutine = StartCoroutine(AnimateHoverLift(false));
+
+        // ── NUEVO: Desactivar efectos hover ──
+        TriggerHoverFX(false);
+    }
+
+    private void SetupOutline(Outline outline)
+    {
+        if (outline == null) return;
+        outline.effectColor = outlineNormalColor;
+        outline.effectDistance = new Vector2(outlineNormalWidth, outlineNormalWidth);
+    }
+
+    private void TriggerHoverFX(bool active)
+    {
+        frontOutlineController?.SetHover(active);
+        backOutlineController?.SetHover(active);
+
+        if (glowImage != null) { /* igual que antes */ }
+        if (sparkleObject != null) sparkleObject.SetActive(active);
+    }
+
+    private IEnumerator AnimateGlow(float fromA, float toA, float dur)
+    {
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            float n = Mathf.Clamp01(t / dur);
+            Color c = glowImage.color;
+            c.a = Mathf.Lerp(fromA, toA, n);
+            glowImage.color = c;
+            yield return null;
+        }
+        Color fc = glowImage.color;
+        fc.a = toA;
+        glowImage.color = fc;
     }
 
     private IEnumerator AnimateHoverLift(bool lifting)

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewCard", menuName = "TowerDefense/Card")]
 public class CardData : ScriptableObject
@@ -20,23 +20,52 @@ public class CardData : ScriptableObject
     [Header("Soporte completo")]
     public bool requireFullSupport = false;
 
-    // Extensi�n de la base para el chequeo (en X/Z). Piensa en medio tama�o del objeto.
+    // Extensión de la base para el chequeo (en X/Z). Piensa en medio tamaño del objeto.
     public Vector2 supportCheckExtents = new Vector2(0.5f, 0.5f);
 
-    // Distancia m�xima hacia la monta�a para considerar que est� apoyado (tolerancia).
+    // Distancia máxima hacia la montaña para considerar que está apoyado (tolerancia).
     public float supportRayDistance = 0.5f;
 
     // Altura desde donde sale el cuadrado de raycasts
     public float supportYOffset = 0.1f;
 
-    [Header("Colisi�n entre defensas")]
-    // Mitad del tama�o del cubo para comprobar si hay otra defensa cerca
+    [Header("Colisión entre defensas")]
+    // Mitad del tamaño del cubo para comprobar si hay otra defensa cerca
     public Vector3 placementCheckExtents = new Vector3(0.5f, 0.5f, 0.5f);
 
-    [Header("Configuraci�n de Grilla")]
-    // NUEVO: Tama�o en casillas (Ej: 1x1, 2x2, 3x1)
+    [Header("Configuración de Grilla")]
+    // NUEVO: Tamaño en casillas (Ej: 1x1, 2x2, 3x1)
     public Vector2Int gridSize = new Vector2Int(1, 1);
 
     [Header("Decal Grid Offset")]
     public Vector2 decalOffset = Vector2.zero;
+
+    // ═══════════════════════════════════════════════════════════════
+    // NUEVO: DATOS DEL REVERSO DE LA CARTA
+    // ═══════════════════════════════════════════════════════════════
+    public enum CardType { Permanente, Temporal, Eventual }
+
+    [Header("─── REVERSO DE LA CARTA ───")]
+    public CardType cardType = CardType.Permanente;
+
+    [Tooltip("Imagen de fondo del reverso (opcional - normalmente diferente del frente)")]
+    public Sprite backBackground;
+
+    [Tooltip("Ilustración o icono grande del reverso (opcional)")]
+    public Sprite backIllustration;
+
+    [Tooltip("Frase temática / lore que aparece en el reverso")]
+    [TextArea(2, 4)]
+    public string loreText;
+
+    [Tooltip("Descripción extendida del reverso (más detallada que la del frente)")]
+    [TextArea(2, 5)]
+    public string extendedDescription;
+
+    [Header("─── COUNTER (equipamiento que contrarresta) ───")]
+    [Tooltip("Icono del equipamiento counter (pico, pantalón, etc.)")]
+    public Sprite counterIcon;
+
+    [Tooltip("Nombre del counter (ej: 'Pico', 'Pantalón')")]
+    public string counterName;
 }

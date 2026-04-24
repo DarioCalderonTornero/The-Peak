@@ -1001,14 +1001,16 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         outline.effectDistance = new Vector2(outlineNormalWidth, outlineNormalWidth);
     }
 
+    
     private void TriggerHoverFX(bool active)
     {
-        frontOutlineController?.SetHover(active);
-        backOutlineController?.SetHover(active);
+        //frontOutlineController?.SetHover(active);
+        //backOutlineController?.SetHover(active);
 
-        if (glowImage != null) { /* igual que antes */ }
-        if (sparkleObject != null) sparkleObject.SetActive(active);
+        //if (glowImage != null) { /* igual que antes */ }
+        //if (sparkleObject != null) sparkleObject.SetActive(active);
     }
+    
 
     private IEnumerator AnimateGlow(float fromA, float toA, float dur)
     {

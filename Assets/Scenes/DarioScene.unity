@@ -5113,9 +5113,9 @@ MonoBehaviour:
   - {fileID: 1728307727}
   - {fileID: 2122093107}
   prefab: {fileID: 4930685435348997123, guid: 3799462f643f19a4496e5780ee6186d3, type: 3}
-  amountToSpawn: 1
+  amountToSpawn: 5
   spawnCooldown: 2
-  minDistance: 5
+  minDistance: 2
   introUniqueEquipments:
   - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
   - {fileID: 11400000, guid: 338103a60dc2c2141ada12844300638e, type: 2}

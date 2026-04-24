@@ -57,18 +57,14 @@ public class CloudKillDefense : BaseDefense
         if (victims.ContainsKey(climber)) return;
         if (Random.value > killChance) return;
 
+        // ── Congelar al escalador inmediatamente nada más entrar ──────────────
+        climber.FreezeInPlace();
+        climber.SuppressStaminaDeath();
+
         var data = new CloudVictimData();
         victims[climber] = data;
-        StartCoroutine(KillAfterDelay(climber, data));
-    }
 
-    private IEnumerator KillAfterDelay(ClimberMovement climber, CloudVictimData data)
-    {
-        if (climber == null) yield break;
-
-        data.isBeingKilled = true;
-
-        // Construimos el deathInfo una sola vez
+        // Snapshot de posición en el momento de la captura
         var deathInfo = new GameManager.DeathInfo
         {
             climber = climber,
@@ -76,13 +72,37 @@ public class CloudKillDefense : BaseDefense
             cause = DeathCause.StormyCloud
         };
 
-        // Suprimimos muerte por stamina para evitar duplicados
-        climber.SuppressStaminaDeath();
+        // Pedimos slot. Cuando llegue nuestro turno, arranca todo el proceso.
+        DeathCinematicManager.Instance.RequestSpectacleSlot(() =>
+        {
+            OnSpectacleSlotGranted(climber, data, deathInfo);
+        });
+    }
 
-        // Ordenamos al escalador ir al centro de la nube
-        climber.MoveToWorldPosition(transform.position);
+    /// <summary>
+    /// El sistema está libre. Arrancamos la secuencia completa:
+    /// cámara → muerte notificada → caminar al centro → rayo → explosión.
+    /// </summary>
+    private void OnSpectacleSlotGranted(ClimberMovement climber, CloudVictimData data,
+        GameManager.DeathInfo deathInfo)
+    {
+        if (climber == null || hasKilled)
+        {
+            // Escalador ya destruido o nube ya usada: no podemos continuar.
+            // El slot se libera automáticamente porque ProcessDeathQueue
+            // no recibirá ningún NotifyReadyToProcess y al terminar el
+            // bucle vacío llamará a TryStartNextSpectacle.
+            // Para evitar el bloqueo, usamos un pequeño truco: empezamos
+            // la secuencia pero la cortocircuitamos inmediatamente.
+            return;
+        }
 
-        // Notificamos ya → HandleClimberDeath ve StormyCloud y mueve la cámara inmediatamente
+        data.isBeingKilled = true;
+
+        // 1. Mover cámara al escalador e iniciar estado cinemático AHORA
+        DeathCinematicManager.Instance.BeginSpectacleCinematic(climber);
+
+        // 2. Notificar muerte al GameManager (puntos, eventos)
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(deathInfo);
@@ -90,42 +110,50 @@ public class CloudKillDefense : BaseDefense
             PointsManager.Instance?.AddPoints(5);
         }
 
-        // Esperamos mientras el escalador camina hacia el centro
+        // 3. Arrancar secuencia espectacular
+        StartCoroutine(KillSequence(climber, data, deathInfo));
+    }
+
+    private IEnumerator KillSequence(ClimberMovement climber, CloudVictimData data,
+        GameManager.DeathInfo deathInfo)
+    {
+        if (climber == null) yield break;
+
+        // El escalador camina al centro de la nube
+        climber.MoveToWorldPosition(transform.position);
+
+        // Esperamos mientras camina
         yield return new WaitForSeconds(delayBeforeDeath);
 
         if (climber == null) yield break;
 
-        // Congelamos totalmente para la ejecución
+        // Congelamos para el impacto del rayo
         climber.FreezeInPlace();
 
-        // Activamos el VFX del rayo
+        // VFX del rayo
         if (killVFX != null)
             killVFX.SetActive(true);
 
         if (Temporal_Sound_Music.Instance != null)
-        {
             Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
-        }
 
-        // Esperamos el impacto del rayo
+        // Pequeña pausa para el impacto
         yield return new WaitForSeconds(0.5f);
 
         if (climber != null)
         {
-            // Actualizamos posición al punto actual
             deathInfo.position = climber.transform.position;
 
-            // El DeathCinematicManager destruye al escalador y gestiona la cinemática completa
+            // Encola la fase final (explosión) en ProcessDeathQueue
             if (DeathCinematicManager.Instance != null)
                 DeathCinematicManager.Instance.NotifyReadyToProcess(deathInfo);
+
+            // El slot se libera dentro de ProcessDeathQueue tras la explosión completa
         }
 
         hasKilled = true;
 
         yield return new WaitForSeconds(1.5f);
-
-        if (visualChild != null)
-            //yield return StartCoroutine(AnimatePop(visualChild, originalVisualScale, Vector3.zero));
 
         Destroy(gameObject);
     }

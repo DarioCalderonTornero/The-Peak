@@ -53,6 +53,14 @@ public class GeyserDefense : BaseDefense
     private Coroutine holdRoutine;
     private Coroutine captureRoutine;
 
+    // FIX Bug 4: coroutine que mantiene al escalador congelado
+    // mientras espera en la cola de espectáculos
+    private Coroutine keepFrozenRoutine;
+
+    // FIX Bug 2: flag para detectar que el slot fue cancelado
+    // antes de ser concedido (escalador salió del trigger)
+    private bool slotCancelled = false;
+
     private GameManager.DeathInfo pendingDeathInfo;
 
     [Header("VFX")]
@@ -73,7 +81,6 @@ public class GeyserDefense : BaseDefense
     private void OnEnable()
     {
         originalPos = transform.position;
-
         SetBubbling(false);
         SetEruptingPower(0f);
         SetEspumaActiva(false);
@@ -127,7 +134,6 @@ public class GeyserDefense : BaseDefense
         if (isBusy || inCooldown) yield break;
         if (climber == null) yield break;
 
-        // ── Congelar al escalador inmediatamente ──────────────────────────────
         capturedClimber = climber;
         capturedAgent = climber.GetComponent<NavMeshAgent>();
         capturedClimberBasePos = capturedClimber.transform.position;
@@ -142,8 +148,8 @@ public class GeyserDefense : BaseDefense
         capturedClimber.SetExternallyDoneThisTurn(true);
         capturedClimber.SetExternalSpeedMultiplier(0f);
         isBusy = true;
+        slotCancelled = false;
 
-        // Preparamos el DeathInfo ya para tenerlo listo
         pendingDeathInfo = new GameManager.DeathInfo
         {
             climber = capturedClimber,
@@ -151,37 +157,48 @@ public class GeyserDefense : BaseDefense
             cause = DeathCause.Geyser
         };
 
-        // Pedimos slot. El callback arranca cuando el sistema esté libre.
+        // FIX Bug 4: mantenemos al escalador congelado entre turnos
+        // mientras espera su turno en la cola de espectáculos
+        if (keepFrozenRoutine != null) StopCoroutine(keepFrozenRoutine);
+        keepFrozenRoutine = StartCoroutine(KeepFrozenWhileWaiting());
+
         DeathCinematicManager.Instance.RequestSpectacleSlot(OnSpectacleSlotGranted);
     }
 
-    /// <summary>
-    /// El sistema está libre. Arrancamos la secuencia completa:
-    /// cámara → muerte notificada → borboteo → shake → lanzamiento.
-    /// </summary>
+    // FIX Bug 4: reaplica el congelado en cada frame mientras espera slot
+    private IEnumerator KeepFrozenWhileWaiting()
+    {
+        while (capturedClimber != null && !slotCancelled)
+        {
+            capturedClimber.SetExternallyDoneThisTurn(true);
+            capturedClimber.SetExternalSpeedMultiplier(0f);
+            yield return new WaitForSeconds(0.1f);
+        }
+        keepFrozenRoutine = null;
+    }
+
     private void OnSpectacleSlotGranted()
     {
-        if (capturedClimber == null)
+        // Paramos el keep-frozen, ya no lo necesitamos
+        if (keepFrozenRoutine != null)
+        {
+            StopCoroutine(keepFrozenRoutine);
+            keepFrozenRoutine = null;
+        }
+
+        // FIX Bug 2: si el slot fue cancelado o el escalador desapareció,
+        // liberamos el slot para evitar el deadlock
+        if (slotCancelled || capturedClimber == null)
         {
             isBusy = false;
-            // Escalador desapareció mientras esperaba: liberar slot manualmente
-            // llamando de nuevo a TryStartNextSpectacle vía un release
-            // (usamos la vía pública del manager)
-            if (DeathCinematicManager.Instance != null)
-            {
-                // No hay slot que liberar formalmente; simplemente
-                // el spectacleInProgress ya fue puesto a true por el manager.
-                // Necesitamos liberarlo. Añadimos un callback vacío que libere.
-                // La forma más limpia: exponer un método de release en el manager.
-                // Ver nota al pie del script.
-            }
+            DeathCinematicManager.Instance.ForceReleaseSpectacleSlot();
             return;
         }
 
-        // 1. Mover cámara al escalador e iniciar estado cinemático AHORA
+        // 1. Mover cámara e iniciar estado cinemático
         DeathCinematicManager.Instance.BeginSpectacleCinematic(capturedClimber);
 
-        // 2. Notificar muerte al GameManager (puntos, eventos)
+        // 2. Notificar muerte al GameManager
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(pendingDeathInfo);
@@ -209,6 +226,16 @@ public class GeyserDefense : BaseDefense
 
     private void CancelHold()
     {
+        // FIX Bug 2: marcamos el slot como cancelado para que
+        // OnSpectacleSlotGranted libere el slot si llega tarde
+        slotCancelled = true;
+
+        if (keepFrozenRoutine != null)
+        {
+            StopCoroutine(keepFrozenRoutine);
+            keepFrozenRoutine = null;
+        }
+
         if (holdRoutine != null) { StopCoroutine(holdRoutine); holdRoutine = null; }
 
         transform.position = originalPos;
@@ -342,11 +369,8 @@ public class GeyserDefense : BaseDefense
         if (climberTransform != null)
             info.position = climberTransform.position;
 
-        // Encola la fase final (explosión) en ProcessDeathQueue
         if (DeathCinematicManager.Instance != null)
             DeathCinematicManager.Instance.NotifyReadyToProcess(info);
-
-        // El slot se libera dentro de ProcessDeathQueue tras la explosión completa
     }
 
     private IEnumerator ExtraGravityWhileAirborne(Transform tr, Rigidbody rb)

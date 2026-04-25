@@ -45,15 +45,16 @@ public class DeathCinematicManager : MonoBehaviour
     private Coroutine slowMotionCoroutine;
     private GameManager.DeathInfo currentDeathInfo;
 
-    // Cola de muertes normales y espectaculares (post-fase-activa)
     private readonly LinkedList<GameManager.DeathInfo> deathQueue = new LinkedList<GameManager.DeathInfo>();
-
-    // Cola de espectáculos esperando turno (Geyser, StormyCloud)
-    // Cada entrada es el callback que la trampa ejecuta cuando le llega el slot
     private readonly Queue<Action> spectacleQueue = new Queue<Action>();
 
     private bool isPlayingCinematic = false;
     private bool spectacleInProgress = false;
+
+    // FIX Bug 5: guardamos la referencia directa en vez de compararla
+    // a través de deathCamera.LookAt, que puede devolver resultados
+    // incorrectos si el objeto fue destruido entre frames.
+    private Transform spectacleCinematicTarget = null;
 
     private Transform cameraAnchor;
     private bool animationComplete = false;
@@ -102,8 +103,6 @@ public class DeathCinematicManager : MonoBehaviour
             return;
         }
 
-        // Geyser y StormyCloud se gestionan íntegramente desde sus trampas
-        // a través de RequestSpectacleSlot / BeginSpectacleCinematic.
         if (deathInfo.cause == DeathCause.Geyser || deathInfo.cause == DeathCause.StormyCloud)
             return;
 
@@ -122,10 +121,6 @@ public class DeathCinematicManager : MonoBehaviour
 
     // ─── API pública para Geyser y StormyCloud ───────────────────────────────
 
-    /// <summary>
-    /// La trampa llama a esto nada más capturar al escalador (ya congelado).
-    /// onGreenLight se ejecuta cuando el sistema esté libre.
-    /// </summary>
     public void RequestSpectacleSlot(Action onGreenLight)
     {
         spectacleQueue.Enqueue(onGreenLight);
@@ -133,9 +128,28 @@ public class DeathCinematicManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Mueve la cámara al escalador e inicia el estado cinemático ANTES
-    /// de que arranque la secuencia espectacular de la trampa.
-    /// La trampa llama a esto al principio de su callback de slot concedido.
+    /// FIX Bug 2: llamado por la trampa cuando su escalador desapareció
+    /// antes de que pudiera usar el slot. Evita el deadlock permanente.
+    /// </summary>
+    public void ForceReleaseSpectacleSlot()
+    {
+        spectacleInProgress = false;
+        spectacleCinematicTarget = null;
+        TryStartNextSpectacle();
+
+        // Si no hay nada más en cola y no hay cinemática activa, restauramos
+        if (!isPlayingCinematic && !spectacleInProgress)
+        {
+            if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
+            UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
+            GameManager.Instance.SetState(GameManager.GameState.Playing);
+            OnCinematicFinished?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// La trampa llama a esto al principio de su OnSpectacleSlotGranted.
+    /// Mueve la cámara al escalador e inicia el estado cinemático.
     /// </summary>
     public void BeginSpectacleCinematic(ClimberMovement climber)
     {
@@ -148,6 +162,9 @@ public class DeathCinematicManager : MonoBehaviour
         deathCamera.LookAt = climber.transform;
         deathCamera.Priority = 100;
 
+        // FIX Bug 5: guardamos referencia directa al transform
+        spectacleCinematicTarget = climber.transform;
+
         GameManager.Instance.SetState(GameManager.GameState.Cinematic);
         UIManager.Instance.HideAll();
         if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
@@ -155,10 +172,6 @@ public class DeathCinematicManager : MonoBehaviour
         isPlayingCinematic = true;
     }
 
-    /// <summary>
-    /// La trampa llama a esto tras su fase activa (shake+lanzamiento o rayo).
-    /// Encola al escalador para que ProcessDeathQueue gestione la explosión final.
-    /// </summary>
     public void NotifyReadyToProcess(GameManager.DeathInfo deathInfo)
     {
         deathQueue.AddFirst(deathInfo);
@@ -201,12 +214,17 @@ public class DeathCinematicManager : MonoBehaviour
             bool isSpectacular = currentDeathInfo.cause == DeathCause.Geyser
                                || currentDeathInfo.cause == DeathCause.StormyCloud;
 
-            // ¿La cámara ya está en este escalador? (puesta por BeginSpectacleCinematic)
-            bool cameraAlreadySet = deathCamera.LookAt == currentDeathInfo.climber.transform;
+            // FIX Bug 5: comparamos contra nuestra referencia guardada,
+            // no contra deathCamera.LookAt
+            bool cameraAlreadySet = spectacleCinematicTarget != null
+                                 && currentDeathInfo.climber != null
+                                 && spectacleCinematicTarget == currentDeathInfo.climber.transform;
+
+            // La referencia ya fue consumida, limpiamos
+            spectacleCinematicTarget = null;
 
             if (!cameraAlreadySet)
             {
-                // Muerte normal o espectacular sin pre-focus (fallback)
                 if (isSpectacular)
                     CalculateCameraAnchorPosition(currentDeathInfo.climber.transform,
                         geyserCameraDistance, geyserHeightOffset, geyserSideOffset);
@@ -219,7 +237,6 @@ public class DeathCinematicManager : MonoBehaviour
 
                 if (!isSpectacular)
                 {
-                    // Esperamos el blend antes de mostrar barras
                     float elapsed = 0f;
                     while (elapsed < blendInTime && !skipRequested)
                     {
@@ -253,7 +270,6 @@ public class DeathCinematicManager : MonoBehaviour
             }
             else
             {
-                // Cámara ya en posición — solo aseguramos barras
                 if (!barsAreShown)
                 {
                     if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
@@ -329,7 +345,6 @@ public class DeathCinematicManager : MonoBehaviour
                 animationComplete = true;
             }
 
-            // Esperamos animación o skip
             while (!animationComplete && !skipRequested)
                 yield return null;
 
@@ -339,7 +354,6 @@ public class DeathCinematicManager : MonoBehaviour
                 continue;
             }
 
-            // Esperamos delay post-explosión o skip
             float waitElapsed = 0f;
             while (waitElapsed < delayAfterExplosion && !skipRequested)
             {
@@ -349,20 +363,18 @@ public class DeathCinematicManager : MonoBehaviour
 
             OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
 
-            // Liberamos el slot del espectáculo tras ver la explosión completa
             if (isSpectacular)
                 spectacleInProgress = false;
 
             if (skipRequested)
             {
                 skipRequested = false;
-                // Continuamos al siguiente sin blend de salida
                 continue;
             }
 
-            // Blend de vuelta solo si no hay más muertes en cola
             if (deathQueue.Count == 0)
             {
+                // FIX Bug 1: siempre reseteamos Priority al salir del último elemento
                 deathCamera.Priority = 0;
                 float blendElapsed = 0f;
                 while (blendElapsed < blendInTime && !skipRequested)
@@ -374,21 +386,16 @@ public class DeathCinematicManager : MonoBehaviour
         }
 
         // ── Fin del bucle ────────────────────────────────────────────────────
-        // Liberamos el flag ANTES de llamar a TryStartNextSpectacle
         isPlayingCinematic = false;
         TryStartNextSpectacle();
 
         if (!spectacleInProgress)
         {
-            // No arrancó ningún espectáculo nuevo: restauramos el estado normal
             if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
             UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
             GameManager.Instance.SetState(GameManager.GameState.Playing);
             OnCinematicFinished?.Invoke(this, EventArgs.Empty);
         }
-        // Si spectacleInProgress == true, BeginSpectacleCinematic ya ocultó la UI
-        // y el estado Cinematic sigue activo. ProcessDeathQueue arrancará de nuevo
-        // cuando la trampa llame a NotifyReadyToProcess.
 
         processQueueCoroutine = null;
     }
@@ -407,7 +414,16 @@ public class DeathCinematicManager : MonoBehaviour
         Time.fixedDeltaTime = 0.02f;
         animationComplete = true;
 
+        // FIX Bug 3: destruimos el escalador si todavía existe
+        // (puede estar vivo si el skip ocurrió durante el blend-in)
+        if (currentDeathInfo.climber != null)
+            Destroy(currentDeathInfo.climber.gameObject);
+
         if (CameraShake.Instance != null) CameraShake.Instance.StopShake();
+
+        // FIX Bug 1: reseteamos la prioridad de la cámara siempre en skip
+        deathCamera.Priority = 0;
+        spectacleCinematicTarget = null;
 
         OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
 

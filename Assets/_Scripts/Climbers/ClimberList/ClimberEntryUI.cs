@@ -36,7 +36,7 @@ public class ClimberEntryUI : MonoBehaviour
         UpdateStamina(climber.GetCurrentStamina() / Mathf.Max(1f, climber.GetMaxStamina()));
 
         // Suscripción al evento de stamina
-        //climber.OnStaminaChanged += UpdateStamina;
+        climber.OnStaminaChanged += UpdateStamina;
 
         // Botón de selección (la cámara se conectará más adelante)
         if (selectButton != null)

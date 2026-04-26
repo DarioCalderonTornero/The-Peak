@@ -307,9 +307,9 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
-  m_FillOrigin: 0
+  m_FillOrigin: 1
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
 --- !u!114 &3996589926202336158
@@ -324,8 +324,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 289d0ab8afb295a439015076cfad08ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftColor: {r: 1, g: 0.088390216, b: 0, a: 1}
-  rightColor: {r: 0, g: 1, b: 0.09411765, a: 1}
+  leftColor: {r: 0, g: 1, b: 0.09411765, a: 1}
+  rightColor: {r: 1, g: 0.03455183, b: 0, a: 1}
 --- !u!1 &4108768428305488684
 GameObject:
   m_ObjectHideFlags: 0
@@ -460,7 +460,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0, g: 0.0006518364, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

@@ -78,6 +78,10 @@ public class ClimberMovement : MonoBehaviour
     private bool externallyForcedDone = false;
 
     public bool IsAtCamp => isAtCamp;
+
+    public bool IsInsideTent => isInsideTent;
+    public float GetAltitude() => transform.position.y;
+
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
     public bool isEating = false;

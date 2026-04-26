@@ -8,6 +8,9 @@ using System.Collections.Generic;
 public class ClimberMovement : MonoBehaviour
 {
     public static ClimberMovement Instance { get; private set; }
+
+    public event Action<bool> OnTentStateChanged;
+
     [Header("Referencias")]
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private CampGraphBuilder campGraph;
@@ -553,6 +556,8 @@ public class ClimberMovement : MonoBehaviour
         }
 
         isInsideTent = true;
+        OnTentStateChanged?.Invoke(true);
+
         if (climberVisual != null) climberVisual.SetActive(false);
         if (pathLineRenderer != null) pathLineRenderer.enabled = false;
 
@@ -562,6 +567,8 @@ public class ClimberMovement : MonoBehaviour
     private void ExitTent()
     {
         isInsideTent = false;
+        OnTentStateChanged?.Invoke(false);
+
         isAtCamp = false;
 
         if (climberVisual != null) climberVisual.SetActive(true);

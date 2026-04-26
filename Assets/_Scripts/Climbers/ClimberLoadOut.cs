@@ -29,6 +29,8 @@ public class ClimberLoadout : MonoBehaviour
              "Si vas a forzar equipo desde el SpawnManager, puedes dejarlo activo: la clase detecta si ya fue inicializada.")]
     [SerializeField] private bool autoInitializeOnAwake = true;
 
+    public event Action<Color> OnHelmetColorChanged;
+
     private bool _isInitialized = false;
 
     private ClimberMovement climberMovement;
@@ -155,7 +157,10 @@ public class ClimberLoadout : MonoBehaviour
     private void ChangeClimberColorBasedOnEquipment(EquipmentDefinitionSO equipment)
     {
         if (helmetRenderer != null && equipment != null)
+        {
             helmetRenderer.material.color = equipment.color;
+            OnHelmetColorChanged?.Invoke(equipment.color);
+        }
     }
 
     private void UpdateDebugNames()

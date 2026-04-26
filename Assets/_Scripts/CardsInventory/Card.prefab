@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 284610295463181388}
   - component: {fileID: 5056847341621660446}
+  - component: {fileID: 5077386692511051031}
   m_Layer: 5
   m_Name: BackCard
   m_TagString: Untagged
@@ -63,6 +64,14 @@ MonoBehaviour:
   counterGroup: {fileID: 0}
   counterIconImage: {fileID: 0}
   counterNameText: {fileID: 0}
+--- !u!222 &5077386692511051031
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 79754200805426024}
+  m_CullTransparentMesh: 1
 --- !u!1 &277521936166895542
 GameObject:
   m_ObjectHideFlags: 0
@@ -229,7 +238,7 @@ MonoBehaviour:
   outlineHoverColor: {r: 1, g: 0.85, b: 0.1, a: 1}
   outlineNormalColor: {r: 0, g: 0, b: 0, a: 1}
   outlineHoverWidth: 4
-  outlineNormalWidth: 1
+  outlineNormalWidth: 0
   animDuration: 0.25
 --- !u!1 &2536314259742266662
 GameObject:
@@ -376,6 +385,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2420952031743066206}
+  - component: {fileID: 1046307924482737585}
   m_Layer: 5
   m_Name: FrontCard
   m_TagString: Untagged
@@ -405,6 +415,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 95.8, y: 246.2}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1046307924482737585
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3827955494746613196}
+  m_CullTransparentMesh: 1
 --- !u!1 &4206073587049818648
 GameObject:
   m_ObjectHideFlags: 0
@@ -634,7 +652,7 @@ MonoBehaviour:
   outlineHoverColor: {r: 1, g: 0.85, b: 0.1, a: 1}
   outlineNormalColor: {r: 0, g: 0, b: 0, a: 1}
   outlineHoverWidth: 4
-  outlineNormalWidth: 1
+  outlineNormalWidth: 0
   animDuration: 0.25
 --- !u!1 &5338225186081177904
 GameObject:
@@ -925,6 +943,7 @@ GameObject:
   - component: {fileID: 2932618159408282318}
   - component: {fileID: -2835458001062903354}
   - component: {fileID: 6421110598494144851}
+  - component: {fileID: 2914823874943294374}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -1108,8 +1127,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardFront: {fileID: 3827955494746613196}
   cardBack: {fileID: 79754200805426024}
-  flipDuration: 0.55
+  flipDuration: 0.25
   dragCardUI: {fileID: 9174506942321326846}
+--- !u!114 &2914823874943294374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6781065058651717317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30899373e4d168d45ab508ca39ac3e0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  frontImage: {fileID: 712160700573686450}
+  backImage: {fileID: 6507203101870829265}
 --- !u!1 &7188704677183682083
 GameObject:
   m_ObjectHideFlags: 0

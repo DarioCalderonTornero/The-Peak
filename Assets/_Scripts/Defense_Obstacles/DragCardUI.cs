@@ -132,10 +132,28 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canvas = GetComponentInParent<Canvas>();
         cardButton = GetComponent<Button>();
 
-        // ── Ocultar estrella al inicio ──
+        // ── Auto-detectar outlines si no están asignados ──
+        if (frontOutlineController == null || backOutlineController == null)
+        {
+            var controllers = GetComponentsInChildren<CardOutlineController>(true);
+            foreach (var c in controllers)
+            {
+                if (c.transform.IsChildOf(transform))
+                {
+                    // Asignar al frente o al reverso según el nombre del padre
+                    if (frontOutlineController == null &&
+                        c.transform.parent != null &&
+                        c.transform.parent.parent != null &&
+                        c.transform.parent.parent.name.ToLower().Contains("front"))
+                        frontOutlineController = c;
+                    else if (backOutlineController == null)
+                        backOutlineController = c;
+                }
+            }
+        }
+
         if (sparkleObject != null) sparkleObject.SetActive(false);
 
-        // ── Glow invisible al inicio ──
         if (glowImage != null)
         {
             Color c = glowImage.color;
@@ -1004,11 +1022,11 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     
     private void TriggerHoverFX(bool active)
     {
-        //frontOutlineController?.SetHover(active);
-        //backOutlineController?.SetHover(active);
+        frontOutlineController?.SetHover(active);
+        backOutlineController?.SetHover(active);
 
-        //if (glowImage != null) { /* igual que antes */ }
-        //if (sparkleObject != null) sparkleObject.SetActive(active);
+        if (glowImage != null) { /* igual que antes */ }
+        if (sparkleObject != null) sparkleObject.SetActive(active);
     }
     
 

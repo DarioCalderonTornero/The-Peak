@@ -2,10 +2,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Controla el outline cartoon del shader "UI/CardOutline".
-/// Adjuntar al mismo GameObject que tiene la Image con ese material.
-/// </summary>
 [RequireComponent(typeof(Image))]
 public class CardOutlineController : MonoBehaviour
 {
@@ -14,37 +10,51 @@ public class CardOutlineController : MonoBehaviour
     [SerializeField] private Color outlineNormalColor = new Color(0f, 0f, 0f, 0f);
 
     [Header("Grosor (0 = sin outline)")]
-    [SerializeField] private float outlineHoverWidth = 0.018f;  // en UV space (0-0.05)
+    [SerializeField] private float outlineHoverWidth = 0.018f;
     [SerializeField] private float outlineNormalWidth = 0f;
 
     [Header("Velocidad")]
     [SerializeField] private float animDuration = 0.25f;
 
-    // IDs de propiedad del shader (más rápido que strings)
     private static readonly int s_OutlineColor = Shader.PropertyToID("_OutlineColor");
     private static readonly int s_OutlineWidth = Shader.PropertyToID("_OutlineWidth");
 
-    private Material mat;       // instancia privada del material (no toca el shared)
+    private Material mat;
+    private bool isReady = false;   // solo opera si el setup fue correcto
     private Coroutine anim;
 
     private void Awake()
     {
         var img = GetComponent<Image>();
+        if (img == null)
+        {
+            Debug.LogError($"[CardOutlineController] No hay Image en {gameObject.name}");
+            return;
+        }
 
-        // Creamos una instancia del material para que cada carta tenga el suyo
-        // (si no, todas las cartas comparten el mismo material y el outline
-        //  aparece en todas a la vez)
+        // El material DEBE ser el CardOutlineMat (shader UI/CardOutline)
+        // Si la Image no tiene material asignado en el Inspector, img.material
+        // devuelve el material por defecto de Unity UI, que NO tiene _OutlineColor.
+        if (img.material == null || img.material.shader.name != "UI/CardOutline")
+        {
+            Debug.LogWarning($"[CardOutlineController] '{gameObject.name}' no tiene el shader " +
+                             "UI/CardOutline asignado en el campo Material de la Image. " +
+                             "Asigna CardOutlineMat en el Inspector.");
+            return;
+        }
+
+        // Instanciamos para que cada carta tenga su propia copia del material
         mat = Instantiate(img.material);
         img.material = mat;
 
-        // Estado inicial: sin outline
         mat.SetColor(s_OutlineColor, outlineNormalColor);
         mat.SetFloat(s_OutlineWidth, outlineNormalWidth);
+
+        isReady = true;
     }
 
     private void OnDestroy()
     {
-        // Limpiar la instancia del material al destruir la carta
         if (mat != null) Destroy(mat);
     }
 
@@ -52,6 +62,8 @@ public class CardOutlineController : MonoBehaviour
 
     public void SetHover(bool active)
     {
+        if (!isReady) return;   // si el setup falló, ignoramos silenciosamente
+
         if (anim != null) StopCoroutine(anim);
         anim = StartCoroutine(Animate(
             mat.GetColor(s_OutlineColor),
@@ -62,6 +74,8 @@ public class CardOutlineController : MonoBehaviour
 
     public void SetImmediate(bool active)
     {
+        if (!isReady) return;
+
         if (anim != null) StopCoroutine(anim);
         mat.SetColor(s_OutlineColor, active ? outlineHoverColor : outlineNormalColor);
         mat.SetFloat(s_OutlineWidth, active ? outlineHoverWidth : outlineNormalWidth);

@@ -58,6 +58,7 @@ public class SelectionManager : MonoBehaviour
 
         ClimberMovement clicked = RaycastClimberUnderMouse();
         if (clicked == null) return;
+        if (clicked.IsInsideTent) return;
 
         if (currentSelectedClimber == clicked)
             DeselectCurrent();

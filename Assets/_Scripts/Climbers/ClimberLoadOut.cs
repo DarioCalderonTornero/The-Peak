@@ -30,6 +30,7 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private bool autoInitializeOnAwake = true;
 
     public event Action<Color> OnHelmetColorChanged;
+    public event Action<EquipmentDefinitionSO> OnEquipmentInitialized;
 
     private bool _isInitialized = false;
 
@@ -160,6 +161,7 @@ public class ClimberLoadout : MonoBehaviour
         {
             helmetRenderer.material.color = equipment.color;
             OnHelmetColorChanged?.Invoke(equipment.color);
+            OnEquipmentInitialized?.Invoke(equipment);
         }
     }
 
@@ -251,12 +253,12 @@ public class ClimberLoadout : MonoBehaviour
     /// Devuelve el icono del primer equipo equipado, o null si no hay ninguno.
     /// Usado por ClimberEntryUI para mostrar el icono en la lista.
     /// </summary>
-    public Sprite GetFirstEquipmentIcon()
+    public EquipmentDefinitionSO GetFirstEquipmentIcon()
     {
         if (equippedDefinitions == null || equippedDefinitions.Count == 0)
             return null;
 
-        return equippedDefinitions[0]?.icon;
+        return equippedDefinitions[0];
     }
 
     public void RequestClimberStop(float duration)

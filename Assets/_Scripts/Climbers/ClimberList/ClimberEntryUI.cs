@@ -46,9 +46,7 @@ public class ClimberEntryUI : MonoBehaviour
                 colorIndicator.color = helmetColor;
 
             loadout.OnHelmetColorChanged += OnHelmetColorChanged;
-
-            // Icono del counter
-            RefreshEquipmentIcon();
+            loadout.OnEquipmentInitialized += Loadout_OnEquipmentInitialized; 
         }
 
         // Stamina inicial
@@ -68,6 +66,18 @@ public class ClimberEntryUI : MonoBehaviour
         if (selectButton != null)
             selectButton.onClick.AddListener(OnSelectClicked);
     }
+
+    //Actualizar Loadout mediante evento
+    private void Loadout_OnEquipmentInitialized(EquipmentDefinitionSO equipmentDefinition)
+    {
+        if (equipmentDefinition == null) return;
+
+        if (equipmentIcon != null)
+        {
+            equipmentIcon.sprite = equipmentDefinition.icon;
+        }
+    }
+
 
     // ─── Updates desde eventos ────────────────────────────────────────────────
 
@@ -121,14 +131,6 @@ public class ClimberEntryUI : MonoBehaviour
         stateBadgeIcon.sprite = inTent ? iconInTent : iconMoving;
     }
 
-    private void RefreshEquipmentIcon()
-    {
-        if (equipmentIcon == null || loadout == null) return;
-
-        Sprite icon = loadout.GetFirstEquipmentIcon();
-        equipmentIcon.sprite = icon;
-        equipmentIcon.enabled = icon != null;
-    }
 
     // ─── Urgencia ─────────────────────────────────────────────────────────────
 

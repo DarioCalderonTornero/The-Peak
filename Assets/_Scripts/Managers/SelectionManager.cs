@@ -32,7 +32,19 @@ public class SelectionManager : MonoBehaviour
 
     private bool IsPointerOverUI()
     {
-        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        if (EventSystem.current == null) return false;
+
+        // Fix para el nuevo Input System:
+        // IsPointerOverGameObject() con -1 funciona correctamente
+        // desde callbacks del Input System
+        var pointerData = new UnityEngine.EventSystems.PointerEventData(EventSystem.current)
+        {
+            position = UnityEngine.InputSystem.Mouse.current.position.ReadValue()
+        };
+
+        var results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+        return results.Count > 0;
     }
 
     private bool IsPointerOverTent()

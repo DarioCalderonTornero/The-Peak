@@ -102,7 +102,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     // cache del último footprint real
     private readonly List<CellKey> currentFootprintKeys = new List<CellKey>(32);
 
-    [Header("Hover FX - Outline Cartoon")]
+    /* [Header("Hover FX - Outline Cartoon")]
     [SerializeField] private CardOutlineController frontOutlineController;
     [SerializeField] private CardOutlineController backOutlineController;
     [SerializeField] private Color outlineHoverColor = new Color(1f, 0.85f, 0.1f, 1f);
@@ -119,7 +119,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [SerializeField] private float glowAlphaHover = 0.8f;
 
     private Coroutine outlineRoutine;
-    private Coroutine glowRoutine;
+    private Coroutine glowRoutine;*/
 
 
     private void Awake()
@@ -133,7 +133,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         cardButton = GetComponent<Button>();
 
         // ── Auto-detectar outlines si no están asignados ──
-        if (frontOutlineController == null || backOutlineController == null)
+        /* if (frontOutlineController == null || backOutlineController == null)
         {
             var controllers = GetComponentsInChildren<CardOutlineController>(true);
             foreach (var c in controllers)
@@ -159,7 +159,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             Color c = glowImage.color;
             c.a = 0f;
             glowImage.color = c;
-        }
+        }*/
     }
 
     private void Start()
@@ -1012,25 +1012,25 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         TriggerHoverFX(false);
     }
 
-    private void SetupOutline(Outline outline)
+    /* private void SetupOutline(Outline outline)
     {
         if (outline == null) return;
         outline.effectColor = outlineNormalColor;
         outline.effectDistance = new Vector2(outlineNormalWidth, outlineNormalWidth);
-    }
+    }*/
 
     
     private void TriggerHoverFX(bool active)
     {
-        frontOutlineController?.SetHover(active);
+        /* frontOutlineController?.SetHover(active);
         backOutlineController?.SetHover(active);
 
-        if (glowImage != null) { /* igual que antes */ }
-        if (sparkleObject != null) sparkleObject.SetActive(active);
+        if (glowImage != null) {  }
+        if (sparkleObject != null) sparkleObject.SetActive(active);*/
     }
     
 
-    private IEnumerator AnimateGlow(float fromA, float toA, float dur)
+    /*private IEnumerator AnimateGlow(float fromA, float toA, float dur)
     {
         float t = 0f;
         while (t < dur)
@@ -1045,7 +1045,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         Color fc = glowImage.color;
         fc.a = toA;
         glowImage.color = fc;
-    }
+    }*/
 
     private IEnumerator AnimateHoverLift(bool lifting)
     {

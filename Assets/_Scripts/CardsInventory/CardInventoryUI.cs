@@ -171,8 +171,7 @@ public class CardInventoryUI : MonoBehaviour
             GameObject capturedObj = cardObj;
             btn.onClick.AddListener(() => ToggleSelect(capturedObj, capturedData));
 
-            // Color selección — siempre al final, con referencia explícita
-            ApplySelectionColor(cardObj, selectedCards.Contains(cardData));
+            SetCardStar(cardObj, selectedCards.Contains(cardData));
         }
     }
 
@@ -185,19 +184,72 @@ public class CardInventoryUI : MonoBehaviour
         if (isSelected)
         {
             selectedCards.Remove(data);
-            ApplySelectionColor(cardObj, false);
+            SetCardStar(cardObj, false);
             OnCardDeselected?.Invoke(data);
         }
         else
         {
             if (selectedCards.Count >= maxSelectedCards) return;
             selectedCards.Add(data);
-            ApplySelectionColor(cardObj, true);
+            SetCardStar(cardObj, true);
             OnCardSelected?.Invoke(data);
         }
 
         UpdateCountText();
         UpdateStartButtonState();
+    }
+
+
+    // ─── Estrella ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// Activa o desactiva la estrella de selección en la carta.
+    /// </summary>
+    private void SetCardStar(GameObject cardObj, bool selected)
+    {
+        // Aplica a todas las estrellas de la carta (front y back)
+        foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
+            star.SetSelected(selected);
+    }
+
+
+    // ─── Hover escala + estrella ──────────────────────────────────
+
+    private void AddHoverEffect(GameObject cardObj)
+    {
+        EventTrigger trigger = cardObj.GetComponent<EventTrigger>();
+        if (trigger == null) trigger = cardObj.AddComponent<EventTrigger>();
+        trigger.triggers.Clear();
+
+        Vector3 baseScale = cardObj.transform.localScale;
+        Vector3 targetScale = baseScale * hoverScaleMultiplier;
+        Coroutine scaleCoroutine = null;
+
+        void StartSmoothScale(Vector3 to)
+        {
+            if (scaleCoroutine != null) StopCoroutine(scaleCoroutine);
+            scaleCoroutine = StartCoroutine(SmoothScale(cardObj.transform, to));
+        }
+
+        // Pointer Enter: escala + estrella hover
+        var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        entryEnter.callback.AddListener((_) =>
+        {
+            StartSmoothScale(targetScale);
+            foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
+                star.OnHoverEnter();
+        });
+        trigger.triggers.Add(entryEnter);
+
+        // Pointer Exit: escala + estrella exit
+        var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        entryExit.callback.AddListener((_) =>
+        {
+            StartSmoothScale(baseScale);
+            foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
+                star.OnHoverExit();
+        });
+        trigger.triggers.Add(entryExit);
     }
 
     /// <summary>
@@ -222,31 +274,6 @@ public class CardInventoryUI : MonoBehaviour
     }
 
     // ─── Hover escala ─────────────────────────────────────────────
-
-    private void AddHoverEffect(GameObject cardObj)
-    {
-        EventTrigger trigger = cardObj.GetComponent<EventTrigger>();
-        if (trigger == null) trigger = cardObj.AddComponent<EventTrigger>();
-        trigger.triggers.Clear();
-
-        Vector3 baseScale = cardScale;
-        Vector3 targetScale = baseScale * hoverScaleMultiplier;
-        Coroutine scaleCoroutine = null;
-
-        void StartSmoothScale(Vector3 to)
-        {
-            if (scaleCoroutine != null) StopCoroutine(scaleCoroutine);
-            scaleCoroutine = StartCoroutine(SmoothScale(cardObj.transform, to));
-        }
-
-        var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-        entryEnter.callback.AddListener((_) => StartSmoothScale(targetScale));
-        trigger.triggers.Add(entryEnter);
-
-        var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-        entryExit.callback.AddListener((_) => StartSmoothScale(baseScale));
-        trigger.triggers.Add(entryExit);
-    }
 
     private IEnumerator SmoothScale(Transform target, Vector3 to)
     {

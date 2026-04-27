@@ -120,5 +120,9 @@ public class CardBackSetup : MonoBehaviour
             if (counterNameText != null)
                 counterNameText.text = data.counterName;
         }
+
+        var playButton = GetComponentInChildren<CardPlayButton>(true);
+        if (playButton != null)
+            playButton.SetClip(data.explanationVideo);
     }
 }

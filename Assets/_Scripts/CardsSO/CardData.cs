@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Video;
 
 [CreateAssetMenu(fileName = "NewCard", menuName = "TowerDefense/Card")]
 public class CardData : ScriptableObject
@@ -73,4 +74,8 @@ public class CardData : ScriptableObject
     [Tooltip("Icono pequeño que aparece en los slots del 'Último Deck'. " +
          "Si se deja vacío, se usará worldSprite como fallback.")]
     public Sprite deckSlotIcon;
+
+    [Header("─── VÍDEO EXPLICATIVO ───")]
+    [Tooltip("Vídeo explicativo que se muestra en el reverso de la carta.")]
+    public VideoClip explanationVideo;
 }

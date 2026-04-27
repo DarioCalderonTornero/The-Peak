@@ -363,4 +363,17 @@ public class FreeCameraMovement : MonoBehaviour
     {
         panSpeed = basePanSpeed * multiplier;
     }
+
+    public void TeleportTo(Vector3 position, Quaternion rotation)
+    {
+        transform.position = position;
+        transform.rotation = rotation;
+
+        Vector3 euler = rotation.eulerAngles;
+
+        yaw = euler.y;
+        pitch = euler.x;
+
+        if (pitch > 180) pitch -= 360;
+    }
 }

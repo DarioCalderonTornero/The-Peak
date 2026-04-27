@@ -11,7 +11,11 @@ public class ClimberListUI : MonoBehaviour
     private readonly Dictionary<ClimberMovement, ClimberEntryUI> entries = new();
     private ClimberMovement selectedClimber;
 
-    // ─── Unity ───────────────────────────────────────────────────────────────
+    [Header("Cámara")]
+    [SerializeField] private LayerMask mountainLayer;
+    [SerializeField] private float cameraDistance = 5f;
+    [SerializeField] private float heightOffset = 2f;
+    [SerializeField] private float sideOffset = 1f;
 
     private void Awake()
     {
@@ -129,8 +133,21 @@ public class ClimberListUI : MonoBehaviour
     public void OnEntryClicked(ClimberMovement climber)
     {
         selectedClimber = climber;
-        // La conexión con la cámara se hace en SelectionManager
-        Debug.Log($"[ClimberListUI] Escalador seleccionado: {climber.name}");
+
+        FreeCameraMovement cam = Object.FindFirstObjectByType<FreeCameraMovement>();
+        if (cam == null) return;
+
+        if (ClimberCameraUtils.TryCalculateCameraPosition(
+            climber.transform,
+            mountainLayer,
+            cameraDistance,
+            heightOffset,
+            sideOffset,
+            out Vector3 pos,
+            out Quaternion rot))
+        {
+            cam.TeleportTo(pos, rot);
+        }
     }
 
     /// <summary>

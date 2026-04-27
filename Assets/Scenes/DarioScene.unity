@@ -1386,6 +1386,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   content: {fileID: 1163623494}
   climberEntryPrefab: {fileID: 1126248756026253869, guid: 593506825d6f04045bfa73ba86db4f1f, type: 3}
+  mountainLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  cameraDistance: 5
+  heightOffset: 5
+  sideOffset: 10
 --- !u!1 &389656969
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,6 +16,7 @@ public class CardInventoryUI : MonoBehaviour
     [Header("Header UI")]
     [SerializeField] private TextMeshProUGUI selectedCountText;
     [SerializeField] private Button startMatchButton;
+    [SerializeField] private Button returnButton;
 
     [Header("Paginación UI")]
     [SerializeField] private Button prevPageButton;
@@ -49,6 +50,10 @@ public class CardInventoryUI : MonoBehaviour
 
     private bool isChangingPage = false;
 
+    [Header("Contadores de tipos de carta")]
+    [SerializeField] private TextMeshProUGUI permanentCountText;  // muestra "X / X"
+    [SerializeField] private TextMeshProUGUI temporalCountText;   // muestra "X / X"
+
     private void Start()
     {
         if (startMatchButton != null)
@@ -69,10 +74,14 @@ public class CardInventoryUI : MonoBehaviour
             nextPageButton.onClick.AddListener(GoToNextPage);
         }
 
+        if (returnButton != null)
+            returnButton.onClick.AddListener(() => UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScenee"));
+
         ClampCurrentPage();
         RefreshInventory();
         UpdateCountText();
         UpdatePaginationUI();
+        UpdateTypeCounters();
     }
 
     public void AddCard(CardData card)
@@ -86,6 +95,7 @@ public class CardInventoryUI : MonoBehaviour
             {
                 RefreshInventory();
                 UpdatePaginationUI();
+                UpdateTypeCounters();
             }
         }
     }
@@ -101,6 +111,7 @@ public class CardInventoryUI : MonoBehaviour
         UpdateCountText();
         ResetAllCardScales();
         UpdatePaginationUI();
+        UpdateTypeCounters();
     }
 
     public void HideInventory()
@@ -281,7 +292,7 @@ public class CardInventoryUI : MonoBehaviour
         int totalPages = GetTotalPages();
         if (prevPageButton != null) prevPageButton.interactable = !isChangingPage && currentPage > 0;
         if (nextPageButton != null) nextPageButton.interactable = !isChangingPage && currentPage < totalPages - 1;
-        if (pageText != null) pageText.text = $"{currentPage + 1} / {totalPages}";
+        if (pageText != null) pageText.text = $"Página {currentPage + 1} / {totalPages}";
     }
 
     private IEnumerator ChangePageWithSlide(int direction)
@@ -345,8 +356,8 @@ public class CardInventoryUI : MonoBehaviour
 
     private void UpdateCountText()
     {
-        if (selectedCountText != null)
-            selectedCountText.text = $"Select cards to start the game {selectedCards.Count} / {maxSelectedCards}";
+        // if (selectedCountText != null)
+            // selectedCountText.text = $"Select cards to start the game {selectedCards.Count} / {maxSelectedCards}";
     }
 
     private void UpdateStartButtonState()
@@ -357,11 +368,14 @@ public class CardInventoryUI : MonoBehaviour
 
     private void OnStartMatchButtonClicked()
     {
-        if (selectedCards.Count == maxSelectedCards)
-        {
-            OnStartMatch?.Invoke(new List<CardData>(selectedCards));
-            HideInventory();
-        }
+        if (selectedCards.Count != maxSelectedCards) return;
+
+        // ✅ Guardar el deck antes de empezar la partida
+        if (LastDeckManager.Instance != null)
+            LastDeckManager.Instance.SaveDeck(new List<CardData>(selectedCards));
+
+        OnStartMatch?.Invoke(new List<CardData>(selectedCards));
+        HideInventory();
     }
 
     public List<CardData> GetSelectedCards() => new List<CardData>(selectedCards);
@@ -371,6 +385,27 @@ public class CardInventoryUI : MonoBehaviour
         if (cardContainer == null) return;
         foreach (Transform child in cardContainer)
             child.localScale = cardScale;
+    }
+
+
+    private void UpdateTypeCounters()
+    {
+        int totalPermanent = 0;
+        int totalTemporal = 0;
+
+        foreach (var card in availableCards)
+        {
+            if (card == null) continue;
+            if (card.cardType == CardData.CardType.Permanente) totalPermanent++;
+            else if (card.cardType == CardData.CardType.Temporal) totalTemporal++;
+            // Eventual no cuenta en ninguno de los dos contadores
+        }
+
+        if (permanentCountText != null)
+            permanentCountText.text = $"{totalPermanent} / {totalPermanent}";
+
+        if (temporalCountText != null)
+            temporalCountText.text = $"{totalTemporal} / {totalTemporal}";
     }
 
     private void OnValidate()

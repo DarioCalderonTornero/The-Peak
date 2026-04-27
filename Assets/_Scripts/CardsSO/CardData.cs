@@ -68,4 +68,9 @@ public class CardData : ScriptableObject
 
     [Tooltip("Nombre del counter (ej: 'Pico', 'Pantalón')")]
     public string counterName;
+
+    [Header("─── ICONO SLOT ÚLTIMO DECK ───")]
+    [Tooltip("Icono pequeño que aparece en los slots del 'Último Deck'. " +
+         "Si se deja vacío, se usará worldSprite como fallback.")]
+    public Sprite deckSlotIcon;
 }

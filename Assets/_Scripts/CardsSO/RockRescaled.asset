@@ -28,10 +28,11 @@ MonoBehaviour:
   placementCheckExtents: {x: 2, y: 2, z: 2}
   gridSize: {x: 2, y: 2}
   decalOffset: {x: 0, y: 0}
-  cardType: 2
+  cardType: 0
   backBackground: {fileID: 1338487666, guid: eec02af191a6e1640a4fdde11aa8e33b, type: 3}
   backIllustration: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   loreText: Lore Text
   extendedDescription: Description
   counterIcon: {fileID: 0}
   counterName: 
+  deckSlotIcon: {fileID: 328779695, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}

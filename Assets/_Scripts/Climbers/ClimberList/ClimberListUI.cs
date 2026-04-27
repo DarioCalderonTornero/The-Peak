@@ -42,6 +42,12 @@ public class ClimberListUI : MonoBehaviour
             TurnManager.Instance.OnClimberTurnStart += HandleTurnChanged;
             TurnManager.Instance.OnPlayerTurnStart += HandleTurnChanged;
         }
+
+        if (SelectionManager.Instance != null)
+        {
+            SelectionManager.Instance.OnClimberSelected += OnWorldClimberSelected;
+            SelectionManager.Instance.OnClimberDeselected += OnWorldClimberDeselected;
+        }
     }
 
     private void OnDestroy()
@@ -56,6 +62,12 @@ public class ClimberListUI : MonoBehaviour
         {
             TurnManager.Instance.OnClimberTurnStart -= HandleTurnChanged;
             TurnManager.Instance.OnPlayerTurnStart -= HandleTurnChanged;
+        }
+
+        if (SelectionManager.Instance != null)
+        {
+            SelectionManager.Instance.OnClimberSelected -= OnWorldClimberSelected;
+            SelectionManager.Instance.OnClimberDeselected -= OnWorldClimberDeselected;
         }
     }
 
@@ -107,11 +119,9 @@ public class ClimberListUI : MonoBehaviour
     {
         if (entries.Count == 0) return;
 
-        // Ordenar por altitud descendente (más alto primero)
         var sorted = new List<ClimberMovement>(entries.Keys);
         sorted.Sort((a, b) => b.GetAltitude().CompareTo(a.GetAltitude()));
 
-        // Reordenar en la jerarquía y actualizar urgencia y estado
         ClimberMovement mostDangerous = sorted.Count > 0 ? sorted[0] : null;
 
         for (int i = 0; i < sorted.Count; i++)
@@ -127,9 +137,6 @@ public class ClimberListUI : MonoBehaviour
 
     // ─── Selección ────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Llamado por ClimberEntryUI cuando el jugador clica una viñeta.
-    /// </summary>
     public void OnEntryClicked(ClimberMovement climber)
     {
         selectedClimber = climber;
@@ -150,10 +157,6 @@ public class ClimberListUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Llamado por SelectionManager cuando el jugador clica un escalador en el mundo.
-    /// Hace highlight de la viñeta correspondiente.
-    /// </summary>
     public void OnWorldClimberSelected(ClimberMovement climber)
     {
         selectedClimber = climber;
@@ -161,7 +164,14 @@ public class ClimberListUI : MonoBehaviour
         foreach (var kvp in entries)
         {
             bool isSelected = kvp.Key == climber;
-            kvp.Value.SetSelected(isSelected);  
+            kvp.Value.SetSelected(isSelected);
         }
+    }
+
+    public void OnWorldClimberDeselected()
+    {
+        selectedClimber = null;
+        foreach (var kvp in entries)
+            kvp.Value.SetSelected(false);
     }
 }

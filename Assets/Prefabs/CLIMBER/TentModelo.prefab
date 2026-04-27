@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2309360794268164814}
   - component: {fileID: 6385089103213016551}
   - component: {fileID: 4792812517545588293}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group1241182310
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +97,7 @@ GameObject:
   - component: {fileID: 5789015686302346093}
   - component: {fileID: 6026227278367045600}
   - component: {fileID: 5668525054949300424}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group799625953
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -183,7 +183,7 @@ GameObject:
   - component: {fileID: 8238790765037825375}
   - component: {fileID: 6218539222485617260}
   - component: {fileID: 8702021639533731897}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group1762625985
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -269,7 +269,7 @@ GameObject:
   - component: {fileID: 1954576911321436349}
   - component: {fileID: 6126878897908409015}
   - component: {fileID: 7134244771499262145}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group637283230
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -355,7 +355,7 @@ GameObject:
   - component: {fileID: 9045472916351791998}
   - component: {fileID: 7536828254095519695}
   - component: {fileID: 7085615883164414283}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group1725671573
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -441,7 +441,7 @@ GameObject:
   - component: {fileID: 7957215499441188768}
   - component: {fileID: 1794427064123327061}
   - component: {fileID: 3615101747712502988}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group625022612
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -527,7 +527,7 @@ GameObject:
   - component: {fileID: 6344510240153370970}
   - component: {fileID: 7932442367690799896}
   - component: {fileID: 2475982995519670556}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group535548886
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -613,7 +613,7 @@ GameObject:
   - component: {fileID: 3043696306642465741}
   - component: {fileID: 5324210831551488415}
   - component: {fileID: 7227946490761514924}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group1249314938
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -699,7 +699,7 @@ GameObject:
   - component: {fileID: 3016943926846823907}
   - component: {fileID: 3612786758852701453}
   - component: {fileID: 7692650418129232541}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group1997237509
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -785,7 +785,7 @@ GameObject:
   - component: {fileID: 1693490276979149158}
   - component: {fileID: 7822002410146213409}
   - component: {fileID: 7222844918261712397}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group1211270279
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -871,7 +871,7 @@ GameObject:
   - component: {fileID: 1073942890976784970}
   - component: {fileID: 5211546903876387167}
   - component: {fileID: 400868672830036667}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group213706146
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -957,7 +957,7 @@ GameObject:
   - component: {fileID: 7816806711977449037}
   - component: {fileID: 6696842054186085305}
   - component: {fileID: 4078064719265395901}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group2034554043
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1041,9 +1041,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7888760121055970958}
-  - component: {fileID: 2849092278428212088}
   - component: {fileID: 8502703918324387031}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: TentModelo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1085,22 +1084,6 @@ Transform:
   - {fileID: 471993174508234878}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2849092278428212088
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7363756080913931316}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f399e138f26e6dc45a5bcf11ad68a784, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  campGraph: {fileID: 0}
-  clickableLayers:
-    serializedVersion: 2
-    m_Bits: 1
 --- !u!65 &8502703918324387031
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1116,12 +1099,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.8963013, y: 1.2761668, z: 1}
-  m_Center: {x: -0.5116679, y: 0.13808298, z: 0}
+  m_Size: {x: 3, y: 2, z: 2}
+  m_Center: {x: -0.48, y: 0, z: 0}
 --- !u!1 &7390883912445016181
 GameObject:
   m_ObjectHideFlags: 0
@@ -1133,7 +1116,7 @@ GameObject:
   - component: {fileID: 471993174508234878}
   - component: {fileID: 7243918004120656454}
   - component: {fileID: 2564334855671534977}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group2084766983
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1219,7 +1202,7 @@ GameObject:
   - component: {fileID: 7525874396121956375}
   - component: {fileID: 1747895749482726279}
   - component: {fileID: 5114196880834237646}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group535548886.002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1305,7 +1288,7 @@ GameObject:
   - component: {fileID: 5067947113097727705}
   - component: {fileID: 2213815941334125839}
   - component: {fileID: 357537806614686561}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group1139254300
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1391,7 +1374,7 @@ GameObject:
   - component: {fileID: 8954302975465897132}
   - component: {fileID: 6602863787623458980}
   - component: {fileID: 1839982972549048414}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group2045238674
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1477,7 +1460,7 @@ GameObject:
   - component: {fileID: 674196559428305957}
   - component: {fileID: 5917468784335513481}
   - component: {fileID: 5900334377441767500}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group263612592
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1563,7 +1546,7 @@ GameObject:
   - component: {fileID: 8852795586705093036}
   - component: {fileID: 4797815922506061036}
   - component: {fileID: 6594016844384279640}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group962132412
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1649,7 +1632,7 @@ GameObject:
   - component: {fileID: 8068449662907118744}
   - component: {fileID: 3939122832616249941}
   - component: {fileID: 4890684073117031395}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group535548886.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1735,7 +1718,7 @@ GameObject:
   - component: {fileID: 1993847767443185109}
   - component: {fileID: 7110988645142197770}
   - component: {fileID: 872761533374737634}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: group912174311
   m_TagString: Untagged
   m_Icon: {fileID: 0}

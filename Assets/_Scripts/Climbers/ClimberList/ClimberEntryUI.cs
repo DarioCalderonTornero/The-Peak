@@ -25,6 +25,9 @@ public class ClimberEntryUI : MonoBehaviour
     [SerializeField] private Color urgencyColor = new Color(0.88f, 0.24f, 0.24f, 1f);
     [SerializeField] private Color urgencyInactiveColor = new Color(1f, 1f, 1f, 0f);
 
+    [Header("Configuración selección")]
+    [SerializeField] private Color selectedBorderColor = new Color(1f, 1f, 1f, 1f);
+
     private ClimberMovement climber;
     private ClimberLoadout loadout;
     private bool isUrgent = false;
@@ -46,7 +49,7 @@ public class ClimberEntryUI : MonoBehaviour
                 colorIndicator.color = helmetColor;
 
             loadout.OnHelmetColorChanged += OnHelmetColorChanged;
-            loadout.OnEquipmentInitialized += Loadout_OnEquipmentInitialized; 
+            loadout.OnEquipmentInitialized += Loadout_OnEquipmentInitialized;
         }
 
         // Stamina inicial
@@ -67,19 +70,14 @@ public class ClimberEntryUI : MonoBehaviour
             selectButton.onClick.AddListener(OnSelectClicked);
     }
 
-    //Actualizar Loadout mediante evento
+    // ─── Updates desde eventos ────────────────────────────────────────────────
+
     private void Loadout_OnEquipmentInitialized(EquipmentDefinitionSO equipmentDefinition)
     {
         if (equipmentDefinition == null) return;
-
         if (equipmentIcon != null)
-        {
             equipmentIcon.sprite = equipmentDefinition.icon;
-        }
     }
-
-
-    // ─── Updates desde eventos ────────────────────────────────────────────────
 
     private void OnHelmetColorChanged(Color color)
     {
@@ -101,10 +99,7 @@ public class ClimberEntryUI : MonoBehaviour
         normalized = Mathf.Clamp01(normalized);
 
         if (staminaBarFill != null)
-        {
             staminaBarFill.fillAmount = normalized;
-            //staminaBarFill.color = GetStaminaColor(normalized);
-        }
     }
 
     private Color GetStaminaColor(float normalized)
@@ -116,7 +111,7 @@ public class ClimberEntryUI : MonoBehaviour
         return staminaLowColor;
     }
 
-    // ─── Refresh manual (llamado por ClimberListUI cada turno) ───────────────
+    // ─── Refresh manual ───────────────────────────────────────────────────────
 
     public void RefreshState()
     {
@@ -126,11 +121,8 @@ public class ClimberEntryUI : MonoBehaviour
     private void UpdateStateBadge()
     {
         if (stateBadgeIcon == null || climber == null) return;
-
-        bool inTent = climber.IsInsideTent;
-        stateBadgeIcon.sprite = inTent ? iconInTent : iconMoving;
+        stateBadgeIcon.sprite = climber.IsInsideTent ? iconInTent : iconMoving;
     }
-
 
     // ─── Urgencia ─────────────────────────────────────────────────────────────
 
@@ -147,8 +139,12 @@ public class ClimberEntryUI : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
-        // El highlight visual de selección lo gestiona ClimberListUI desde fuera
-        // Aquí solo guardamos estado si hiciera falta en el futuro
+        if (urgencyBorder == null) return;
+
+        if (selected)
+            urgencyBorder.color = selectedBorderColor;
+        else
+            urgencyBorder.color = isUrgent ? urgencyColor : urgencyInactiveColor;
     }
 
     private void OnSelectClicked()
@@ -166,15 +162,18 @@ public class ClimberEntryUI : MonoBehaviour
     private void OnDestroy()
     {
         if (climber != null)
+        {
             climber.OnStaminaChanged -= UpdateStamina;
+            climber.OnTentStateChanged -= OnTentStateChanged;
+        }
 
         if (loadout != null)
+        {
             loadout.OnHelmetColorChanged -= OnHelmetColorChanged;
+            loadout.OnEquipmentInitialized -= Loadout_OnEquipmentInitialized;
+        }
 
         if (selectButton != null)
             selectButton.onClick.RemoveAllListeners();
-
-        if (climber != null)
-            climber.OnTentStateChanged -= OnTentStateChanged;
     }
 }

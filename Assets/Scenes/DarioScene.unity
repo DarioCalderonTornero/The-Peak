@@ -7016,6 +7016,9 @@ MonoBehaviour:
   climberLayer:
     serializedVersion: 2
     m_Bits: 512
+  tentLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!4 &1634201594
 Transform:
   m_ObjectHideFlags: 0

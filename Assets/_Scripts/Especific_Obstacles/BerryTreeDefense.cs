@@ -166,6 +166,8 @@ public class BerryTreeDefense : BaseDefense
         if (badBerry != null) badBerry.SetActive(false);
         badBerryAlive = false;
 
+        climber.SuppressStaminaDeath();
+
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
@@ -174,13 +176,11 @@ public class BerryTreeDefense : BaseDefense
                 position = climber.transform.position,
                 cause = DeathCause.BadBerry
             });
+            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            PointsManager.Instance?.AddPoints(5);
         }
 
-        if (ClimberDeathPointsManager.Instance != null) ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-        if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(10);
-
         StartCoroutine(RespawnBerryAfterTurns(false));
-
     }
 
 

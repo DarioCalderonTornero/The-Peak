@@ -12,7 +12,7 @@ public class FreeCameraMovement : MonoBehaviour
     [SerializeField] private float flySpeed = 25f;
 
     [Header("Pan (MMB)")]
-    [SerializeField] private float panSpeed = 0.2f;
+    [SerializeField] private float panSpeed = 0.5f;
     [SerializeField] private bool invertPanY = false;
     [SerializeField] private bool panVerticalUsesWorldUp = true;
     [SerializeField] private float panVerticalMultiplier = 1f;
@@ -60,22 +60,32 @@ public class FreeCameraMovement : MonoBehaviour
     private Vector3 snapStartPos, snapTargetPos;
     private Quaternion snapStartRot, snapTargetRot;
 
+    // Valores base del inspector — fuente de verdad para los multiplicadores
+    private float baseFlySpeed;
+    private float basePanSpeed;
+
     // =========================================================
     //  UNITY
     // =========================================================
 
     private void Start()
     {
-        flySpeed = PlayerPrefs.GetFloat("CameraSpeed", flySpeed);
-        panSpeed = PlayerPrefs.GetFloat("CameraPan", panSpeed);
+        // Guardar valores del inspector ANTES de aplicar cualquier preferencia
+        baseFlySpeed = flySpeed;
+        basePanSpeed = panSpeed;
+
+        // Aplicar multiplicadores guardados si existen
+        if (PlayerPrefs.HasKey("CameraSpeedMultiplier"))
+            flySpeed = baseFlySpeed * PlayerPrefs.GetFloat("CameraSpeedMultiplier");
+
+        if (PlayerPrefs.HasKey("CameraPanMultiplier"))
+            panSpeed = basePanSpeed * PlayerPrefs.GetFloat("CameraPanMultiplier");
 
         Vector3 currentEuler = transform.eulerAngles;
         yaw = currentEuler.y;
 
         pitch = currentEuler.x;
         if (pitch > 180f) pitch -= 360f;
-
-
 
         if (InputManager.Instance != null)
         {
@@ -147,7 +157,6 @@ public class FreeCameraMovement : MonoBehaviour
         float step = zoomDelta.y * zoomSpeed;
         Vector3 forward = transform.forward;
 
-        // step > 0 => acercarse
         if (step > 0f)
         {
             float castDist = step + zoomInStopDistance;
@@ -190,7 +199,6 @@ public class FreeCameraMovement : MonoBehaviour
         }
         else
         {
-            // step < 0 => alejarse (sin límite)
             transform.position += forward * step;
         }
     }
@@ -218,7 +226,6 @@ public class FreeCameraMovement : MonoBehaviour
 
         Vector3 move = (right * x) + (forwardOnGround * z) + (upAxis * y);
 
-        // (si mantienes Shift como multiplicador de pan en tu input actual)
         if (InputManager.Instance.isCameraPanSpeedMultiplierHold())
         {
             float panSpeedMultiplier = 2f;
@@ -229,14 +236,13 @@ public class FreeCameraMovement : MonoBehaviour
     }
 
     // =========================================================
-    //  FLY + ROTATE (RMB)  -> "Unity Scene View"
+    //  FLY + ROTATE (RMB)
     // =========================================================
 
     private void HandleFlyRMB()
     {
         if (!InputManager.Instance.IsCameraRotationHold()) return;
 
-        // --- ROTATE (mouse delta) ---
         Vector2 delta = InputManager.Instance.GetCameraRotationDelta();
 
         float dx = delta.x * rotateSensitivity;
@@ -248,9 +254,8 @@ public class FreeCameraMovement : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
 
-        // --- FLY (WASD + Q/E) ---
-        Vector2 fly2D = InputManager.Instance.GetCameraFlyMovement(); // x=strife, y=forward
-        float upDown = InputManager.Instance.GetCameraFlyUpDown();    // E=+1, Q=-1
+        Vector2 fly2D = InputManager.Instance.GetCameraFlyMovement();
+        float upDown = InputManager.Instance.GetCameraFlyUpDown();
 
         if (fly2D.sqrMagnitude < 0.000001f && Mathf.Abs(upDown) < 0.000001f)
             return;
@@ -274,7 +279,6 @@ public class FreeCameraMovement : MonoBehaviour
         isSnapping = true;
         snapT = 0f;
 
-        // Start fijo: esto elimina la "cola" lenta del final.
         snapStartPos = transform.position;
         snapStartRot = transform.rotation;
 
@@ -284,17 +288,14 @@ public class FreeCameraMovement : MonoBehaviour
 
     private static float Smooth01(float t)
     {
-        // SmoothStep (suaviza aceleración y frenada)
         return t * t * (3f - 2f * t);
     }
 
     private void FinishSnap()
     {
-        // Clavamos exacto al objetivo para evitar drift y devolvemos control ya.
         transform.position = snapTargetPos;
         transform.rotation = snapTargetRot;
 
-        // Sync yaw/pitch para que el control siga suave tras el snap
         Vector3 euler = transform.eulerAngles;
         yaw = euler.y;
 
@@ -315,7 +316,6 @@ public class FreeCameraMovement : MonoBehaviour
         transform.position = Vector3.Lerp(snapStartPos, snapTargetPos, t);
         transform.rotation = Quaternion.Slerp(snapStartRot, snapTargetRot, t);
 
-        // Corte temprano cuando visualmente "ya está"
         if (t01 >= snapEarlyCompleteMinT)
         {
             float posDist = Vector3.Distance(transform.position, snapTargetPos);
@@ -328,32 +328,52 @@ public class FreeCameraMovement : MonoBehaviour
             }
         }
 
-        // Fin normal
         if (t01 >= 1f)
-        {
             FinishSnap();
-        }
     }
 
-    //GETTERS
-    public float GetCameraSpeed()
+    // =========================================================
+    //  GETTERS
+    // =========================================================
+
+    public float GetCameraSpeed() => flySpeed;
+    public float GetCameraPan() => panSpeed;
+
+    /// <summary>Devuelve el multiplicador actual (relativo al valor del inspector).</summary>
+    public float GetCameraSpeedMultiplier() => baseFlySpeed > 0f ? flySpeed / baseFlySpeed : 1f;
+    public float GetCameraPanMultiplier() => basePanSpeed > 0f ? panSpeed / basePanSpeed : 1f;
+
+    // =========================================================
+    //  SETTERS
+    // =========================================================
+
+    public void SetCameraSpeed(float speed) => flySpeed = speed;
+    public void SetCameraPan(float pan) => panSpeed = pan;
+
+    /// <summary>
+    /// Aplica un multiplicador sobre el valor base del inspector.
+    /// El slider de ajustes debe usar este método.
+    /// </summary>
+    public void SetCameraSpeedMultiplier(float multiplier)
     {
-        return flySpeed;    
+        flySpeed = baseFlySpeed * multiplier;
     }
 
-    public float GetCameraPan()
+    public void SetCameraPanMultiplier(float multiplier)
     {
-        return panSpeed;
+        panSpeed = basePanSpeed * multiplier;
     }
 
-    //SETTERS
-    public void SetCameraSpeed(float speed)
+    public void TeleportTo(Vector3 position, Quaternion rotation)
     {
-        flySpeed = speed;
-    }
+        transform.position = position;
+        transform.rotation = rotation;
 
-    public void SetCameraPan(float pan)
-    {
-        panSpeed = pan;
+        Vector3 euler = rotation.eulerAngles;
+
+        yaw = euler.y;
+        pitch = euler.x;
+
+        if (pitch > 180) pitch -= 360;
     }
 }

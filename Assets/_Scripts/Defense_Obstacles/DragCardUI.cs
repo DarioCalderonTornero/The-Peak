@@ -102,6 +102,24 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     // cache del último footprint real
     private readonly List<CellKey> currentFootprintKeys = new List<CellKey>(32);
 
+    [Header("Hover FX - Outline Cartoon")]
+    [SerializeField] private CardOutlineController frontOutlineController;
+    [SerializeField] private CardOutlineController backOutlineController;
+    [SerializeField] private Color outlineHoverColor = new Color(1f, 0.85f, 0.1f, 1f);
+    [SerializeField] private Color outlineNormalColor = new Color(0.1f, 0.1f, 0.1f, 1f);
+    [SerializeField] private float outlineHoverWidth = 6f;
+    [SerializeField] private float outlineNormalWidth = 2f;
+    [SerializeField] private float outlineDuration = 0.25f;
+
+    [Header("Hover FX - Estrella Sparkle")]
+    [SerializeField] private GameObject sparkleObject;
+
+    [Header("Hover FX - Glow exterior (opcional)")]
+    [SerializeField] private Image glowImage;
+    [SerializeField] private float glowAlphaHover = 0.8f;
+
+    private Coroutine outlineRoutine;
+    private Coroutine glowRoutine;
 
 
     private void Awake()
@@ -113,6 +131,35 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         canvas = GetComponentInParent<Canvas>();
         cardButton = GetComponent<Button>();
+
+        // ── Auto-detectar outlines si no están asignados ──
+        if (frontOutlineController == null || backOutlineController == null)
+        {
+            var controllers = GetComponentsInChildren<CardOutlineController>(true);
+            foreach (var c in controllers)
+            {
+                if (c.transform.IsChildOf(transform))
+                {
+                    // Asignar al frente o al reverso según el nombre del padre
+                    if (frontOutlineController == null &&
+                        c.transform.parent != null &&
+                        c.transform.parent.parent != null &&
+                        c.transform.parent.parent.name.ToLower().Contains("front"))
+                        frontOutlineController = c;
+                    else if (backOutlineController == null)
+                        backOutlineController = c;
+                }
+            }
+        }
+
+        if (sparkleObject != null) sparkleObject.SetActive(false);
+
+        if (glowImage != null)
+        {
+            Color c = glowImage.color;
+            c.a = 0f;
+            glowImage.color = c;
+        }
     }
 
     private void Start()
@@ -146,7 +193,27 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (worldSpriteImage != null && cardData.worldSprite != null)
             worldSpriteImage.sprite = cardData.worldSprite;
 
-        rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
+        if (rectTransform != null)
+            rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
+
+        // ── NUEVO: configurar el reverso ──
+        var backSetup = GetComponentInChildren<CardBackSetup>(true);
+        if (backSetup != null)
+            backSetup.Setup(cardData);
+    }
+
+    public void SetupVisualOnly()
+    {
+        if (cardData == null) return;
+        if (iconImage != null) iconImage.sprite = cardData.icon;
+        if (costText != null) costText.text = cardData.cost.ToString();
+        if (nameText != null) nameText.text = cardData.cardName;
+        if (worldSpriteImage != null && cardData.worldSprite != null)
+            worldSpriteImage.sprite = cardData.worldSprite;
+
+        var backSetup = GetComponentInChildren<CardBackSetup>(true);
+        if (backSetup != null)
+            backSetup.Setup(cardData);
     }
 
     private void HandlePointsChanged(int points) => UpdateInteractable();
@@ -372,6 +439,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask))
             return;
 
+        // 🔥 NUEVA REGLA: Si la superficie a la que apuntamos es una pared vertical (lateral), la ignoramos.
+        // hit.normal.y vale 1.0 en suelo plano y 0.0 en una pared totalmente vertical.
+        // 0.4f permite rampas inclinadas de hasta unos 65 grados, pero ignora paredes.
+        if (hit.normal.y < 0.4f)
+            return;
+
         // Guardamos el último hit para realizar un resnap si giramos sin mover el ratón
         hasLastPlacementHit = true;
         lastPlacementHit = hit;
@@ -393,10 +466,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             currentPreviewIsValid = false;
             ApplyPreviewMaterial(false);
 
-            bramblePreviewSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-            var bramble = previewInstance.GetComponent<BrambleDefense>();
-            if (bramble != null)
-                bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
         }
 
         // Actualizar la colocación según el hit
@@ -437,30 +506,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     placementMask
                 );
             }
-        }
-
-        // Decal (lo dejamos como estaba, centrado donde esté el preview)
-        if (globalDecal != null && previewInstance != null)
-        {
-            int padding = 2;
-            float newSizeX = cardData.gridSize.x + padding;
-            float newSizeZ = cardData.gridSize.y + padding;
-
-            globalDecal.size = new Vector3(newSizeX, newSizeZ, globalDecal.size.z);
-            globalDecal.uvScale = new Vector2(newSizeX, newSizeZ);
-
-            float physOffsetX = (cardData.gridSize.x % 2 != newSizeX % 2) ? 0.5f : 0f;
-            float physOffsetZ = (cardData.gridSize.y % 2 != newSizeZ % 2) ? 0.5f : 0f;
-
-            Vector3 p = previewInstance.transform.position;
-            globalDecal.transform.position = new Vector3(
-                p.x + physOffsetX,
-                p.y + 5f,
-                p.z + physOffsetZ
-            );
-
-            globalDecal.uvBias = Vector2.zero;
-            if (!globalDecal.enabled) globalDecal.enabled = true;
         }
     }
 
@@ -528,9 +573,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             finalRotation,
             beforeInitialize: (go) =>
             {
-                var bramble = go.GetComponent<BrambleDefense>();
-                if (bramble != null)
-                    bramble.SetupRuntimeFromPreviewSeed(bramblePreviewSeed);
+
             },
             afterInitialize: (go) =>
             {
@@ -646,11 +689,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 DisablePreviewLogic(previewInstance);
 
                 originalPreviewScale = previewInstance.transform.localScale;
-
-                bramblePreviewSeed = Random.Range(int.MinValue, int.MaxValue);
-                var bramble = previewInstance.GetComponent<BrambleDefense>();
-                if (bramble != null)
-                    bramble.SetupPreview(bramblePreviewSeed, cardData.previewMaterial);
 
                 // ✅ aplicar persistentes al crear
                 ApplyScaleFactorToPreview(currentScaleFactor);
@@ -770,13 +808,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (GridOccupancyManager.Instance.AnyOccupied(currentFootprintKeys))
                 return "Checkbox selected";
         }
-
-        // Campamento
-        Vector3 boxSize = new Vector3(cardData.gridSize.x - 0.1f, 0.5f, cardData.gridSize.y - 0.1f);
-        Vector3 center = position + (normal * 0.25f);
-
-        if (Physics.CheckBox(center, boxSize / 2f, rotation, campMask))
-            return "Too close to a campsite";
 
         // Soporte completo
         if (cardData != null && cardData.requireFullSupport)
@@ -965,6 +996,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         isHovering = true;
         if (hoverRoutine != null) StopCoroutine(hoverRoutine);
         hoverRoutine = StartCoroutine(AnimateHoverLift(true));
+
+        // ── NUEVO: Activar efectos hover ──
+        TriggerHoverFX(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -973,6 +1007,44 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         isHovering = false;
         if (hoverRoutine != null) StopCoroutine(hoverRoutine);
         hoverRoutine = StartCoroutine(AnimateHoverLift(false));
+
+        // ── NUEVO: Desactivar efectos hover ──
+        TriggerHoverFX(false);
+    }
+
+    private void SetupOutline(Outline outline)
+    {
+        if (outline == null) return;
+        outline.effectColor = outlineNormalColor;
+        outline.effectDistance = new Vector2(outlineNormalWidth, outlineNormalWidth);
+    }
+
+    
+    private void TriggerHoverFX(bool active)
+    {
+        frontOutlineController?.SetHover(active);
+        backOutlineController?.SetHover(active);
+
+        if (glowImage != null) { /* igual que antes */ }
+        if (sparkleObject != null) sparkleObject.SetActive(active);
+    }
+    
+
+    private IEnumerator AnimateGlow(float fromA, float toA, float dur)
+    {
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            float n = Mathf.Clamp01(t / dur);
+            Color c = glowImage.color;
+            c.a = Mathf.Lerp(fromA, toA, n);
+            glowImage.color = c;
+            yield return null;
+        }
+        Color fc = glowImage.color;
+        fc.a = toA;
+        glowImage.color = fc;
     }
 
     private IEnumerator AnimateHoverLift(bool lifting)

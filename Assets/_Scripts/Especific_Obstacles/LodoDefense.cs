@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -21,7 +22,7 @@ public class LodoDefense : BaseDefense
     [SerializeField] private float deathExtraSinkDepth = 0.5f;
 
     private Coroutine spawnRoutine;
-    private Vector3 spawnTargetLocalScale; // ✅ escala FINAL (ya escalada por placer)
+    private Vector3 spawnTargetLocalScale;
 
     private class MudClimberData
     {
@@ -47,8 +48,6 @@ public class LodoDefense : BaseDefense
 
     public override void Initialize()
     {
-        // OJO: aquí ya NO vuelvas a leer transform.localScale, asume que
-        // ApplyExternalScale ya ha puesto spawnTargetLocalScale.
         base.Initialize();
 
         if (spawnRoutine != null)
@@ -132,7 +131,7 @@ public class LodoDefense : BaseDefense
 
         if (!tracked.TryGetValue(climber, out MudClimberData data))
         {
-            climber.SetExternalSpeedMultiplier(1f);
+            climber.SetExternalSpeedMultiplier(0.3f);
             return;
         }
 
@@ -140,7 +139,7 @@ public class LodoDefense : BaseDefense
 
         if (!data.isDying)
         {
-            climber.SetExternalSpeedMultiplier(1f);
+            climber.SetExternalSpeedMultiplier(0.3f);
 
             if (data.agent != null && data.hasInitialOffset)
             {
@@ -226,7 +225,6 @@ public class LodoDefense : BaseDefense
 
     private IEnumerator QuickAbsorbAndKill(ClimberMovement climber, MudClimberData data)
     {
-        // 1. AVISAMOS AL MANAGER NADA MÁS EMPEZAR (Para que la cámara venga a mirar)
         if (climber != null && GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
@@ -236,12 +234,10 @@ public class LodoDefense : BaseDefense
                 cause = DeathCause.Mud
             });
 
-            // Damos los puntos aquí también
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            PointsManager.Instance.AddPoints(10);
+            PointsManager.Instance.AddPoints(5);
         }
 
-        // 2. HACEMOS EL HUNDIMIENTO VISUAL (La cámara lo estará grabando)
         NavMeshAgent agent = data.agent != null ? data.agent : climber.GetComponent<NavMeshAgent>();
 
         if (agent != null && data.hasInitialOffset)
@@ -258,11 +254,10 @@ public class LodoDefense : BaseDefense
                 yield return null;
             }
         }
-        else
+        else if (climber != null)
         {
             Transform t = climber.transform;
-            float startY = t.position.y;
-            float targetY = startY - (maxVisualSinkDepth + deathExtraSinkDepth);
+            float targetY = t.position.y - (maxVisualSinkDepth + deathExtraSinkDepth);
 
             while (climber != null && Mathf.Abs(t.position.y - targetY) > 0.01f)
             {
@@ -273,11 +268,26 @@ public class LodoDefense : BaseDefense
             }
         }
 
-        // 3. ELIMINAMOS EL DESTROY DEL ESCALADOR
-        // ¡Ya no hacemos Destroy(climber.gameObject)! El DeathCinematicManager lo hará luego.
+        if (DeathCinematicManager.Instance != null)
+        {
+            // Cacheamos el climber en una variable local capturada por el lambda
+            // para que no dependa del struct que puede llegar con climber = null
+            ClimberMovement cachedClimber = climber;
 
-        // Destruimos el charco de lodo (opcional: puedes ponerle un pequeño delay o animación de desaparecer si quieres)
-        Destroy(gameObject);
+            void OnThisDeath(GameManager.DeathInfo info)
+            {
+                // Comparamos contra la referencia cacheada, no contra info.climber
+                // porque cuando se salta la cinemática info.climber ya es null
+                DeathCinematicManager.Instance.OnOwnClimberCinematicFinished -= OnThisDeath;
+                Destroy(gameObject);
+            }
+
+            DeathCinematicManager.Instance.OnOwnClimberCinematicFinished += OnThisDeath;
+        }
+        else
+        {
+            Destroy(gameObject, 3f);
+        }
     }
 
     private IEnumerator RestoreBaseOffset(ClimberMovement climber, MudClimberData data)
@@ -331,7 +341,6 @@ public class LodoDefense : BaseDefense
 
     public void ApplyExternalScale(Vector3 finalScale)
     {
-        // Este será el tamaño “objetivo” para el lodo
         spawnTargetLocalScale = finalScale;
         transform.localScale = finalScale;
     }

@@ -16,6 +16,7 @@ public class CardInventoryUI : MonoBehaviour
     [Header("Header UI")]
     [SerializeField] private TextMeshProUGUI selectedCountText;
     [SerializeField] private Button startMatchButton;
+    [SerializeField] private Button returnButton;
 
     [Header("Paginación UI")]
     [SerializeField] private Button prevPageButton;
@@ -41,8 +42,6 @@ public class CardInventoryUI : MonoBehaviour
     public event Action<List<CardData>> OnStartMatch;
 
     private readonly List<CardData> selectedCards = new();
-
-    // Página actual (0-based)
     private int currentPage = 0;
 
     [Header("Feedback slide de página")]
@@ -51,6 +50,9 @@ public class CardInventoryUI : MonoBehaviour
 
     private bool isChangingPage = false;
 
+    [Header("Contadores de tipos de carta")]
+    [SerializeField] private TextMeshProUGUI permanentCountText;  // muestra "X / X"
+    [SerializeField] private TextMeshProUGUI temporalCountText;   // muestra "X / X"
 
     private void Start()
     {
@@ -72,28 +74,28 @@ public class CardInventoryUI : MonoBehaviour
             nextPageButton.onClick.AddListener(GoToNextPage);
         }
 
+        if (returnButton != null)
+            returnButton.onClick.AddListener(() => UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScenee"));
+
         ClampCurrentPage();
         RefreshInventory();
         UpdateCountText();
         UpdatePaginationUI();
+        UpdateTypeCounters();
     }
 
     public void AddCard(CardData card)
     {
         if (card == null) return;
-
         if (!availableCards.Contains(card))
         {
             availableCards.Add(card);
-
-            // Si la nueva carta crea una página nueva, no pasa nada:
-            // mantenemos currentPage y refrescamos si el inventario está abierto.
             ClampCurrentPage();
-
             if (inventoryPanel != null && inventoryPanel.activeSelf)
             {
                 RefreshInventory();
                 UpdatePaginationUI();
+                UpdateTypeCounters();
             }
         }
     }
@@ -104,12 +106,12 @@ public class CardInventoryUI : MonoBehaviour
             inventoryPanel.SetActive(true);
 
         currentPage = 0;
-
         ClampCurrentPage();
         RefreshInventory();
         UpdateCountText();
         ResetAllCardScales();
         UpdatePaginationUI();
+        UpdateTypeCounters();
     }
 
     public void HideInventory()
@@ -139,12 +141,12 @@ public class CardInventoryUI : MonoBehaviour
             GameObject cardObj = Instantiate(cardPrefab, cardContainer);
             cardObj.transform.localScale = cardScale;
 
-            // Si tiene DragCardUI, lo desactivamos dentro del inventario
+            // Desactivar drag en inventario
             var dragComponent = cardObj.GetComponent<DragCardUI>();
             if (dragComponent != null)
                 dragComponent.enabled = false;
 
-            // Configurar la UI de la carta
+            // Configurar UI
             var cardUI = cardObj.GetComponent<DragCardUI>();
             if (cardUI != null)
             {
@@ -152,65 +154,74 @@ public class CardInventoryUI : MonoBehaviour
                 cardUI.SetupCardUI();
             }
 
-            // Añadir efecto hover
+            // Reset flip ANTES de aplicar colores
+            var flipComponent = cardObj.GetComponent<CardFlip>();
+            if (flipComponent != null)
+                flipComponent.ResetToFront();
+
+            // Hover de escala
             AddHoverEffect(cardObj);
 
-            // Configurar botón de selección
+            // Botón selección
             Button btn = cardObj.GetComponent<Button>();
             if (btn == null) btn = cardObj.AddComponent<Button>();
             btn.onClick.RemoveAllListeners();
 
-            // IMPORTANTE: capturamos variables locales para evitar closures raros
             CardData capturedData = cardData;
             GameObject capturedObj = cardObj;
-
             btn.onClick.AddListener(() => ToggleSelect(capturedObj, capturedData));
 
-            // Mostrar color según estado
-            var img = GetMainImage(cardObj);
-            if (img != null)
-                img.color = selectedCards.Contains(cardData) ? selectedColor : normalColor;
+            // Color selección — siempre al final, con referencia explícita
+            ApplySelectionColor(cardObj, selectedCards.Contains(cardData));
         }
     }
 
-    private int GetTotalPages()
+    // ─── Selección ────────────────────────────────────────────────
+
+    private void ToggleSelect(GameObject cardObj, CardData data)
     {
-        if (cardsPerPage <= 0) return 1;
-        return Mathf.Max(1, Mathf.CeilToInt(availableCards.Count / (float)cardsPerPage));
+        bool isSelected = selectedCards.Contains(data);
+
+        if (isSelected)
+        {
+            selectedCards.Remove(data);
+            ApplySelectionColor(cardObj, false);
+            OnCardDeselected?.Invoke(data);
+        }
+        else
+        {
+            if (selectedCards.Count >= maxSelectedCards) return;
+            selectedCards.Add(data);
+            ApplySelectionColor(cardObj, true);
+            OnCardSelected?.Invoke(data);
+        }
+
+        UpdateCountText();
+        UpdateStartButtonState();
     }
 
-    private void ClampCurrentPage()
+    /// <summary>
+    /// Aplica el color de selección a la Image correcta,
+    /// independientemente de si la carta está flipeada o no.
+    /// </summary>
+    private void ApplySelectionColor(GameObject cardObj, bool selected)
     {
-        int totalPages = GetTotalPages();
-        currentPage = Mathf.Clamp(currentPage, 0, totalPages - 1);
+        Color color = selected ? selectedColor : normalColor;
+
+        // Usar CardSelectionTarget si existe (aplica a front Y back a la vez)
+        var target = cardObj.GetComponent<CardSelectionTarget>();
+        if (target != null)
+        {
+            target.SetSelectionColor(color);
+            return;
+        }
+
+        // Fallback: buscar todas las Images y aplicar a todas
+        foreach (var img in cardObj.GetComponentsInChildren<Image>(true))
+            img.color = color;
     }
 
-    private void GoToPrevPage()
-    {
-        if (isChangingPage || currentPage <= 0) return;
-        StartCoroutine(ChangePageWithSlide(-1));
-    }
-
-    private void GoToNextPage()
-    {
-        int totalPages = GetTotalPages();
-        if (isChangingPage || currentPage >= totalPages - 1) return;
-        StartCoroutine(ChangePageWithSlide(1));
-    }
-
-    private void UpdatePaginationUI()
-    {
-        int totalPages = GetTotalPages();
-
-        if (prevPageButton != null)
-            prevPageButton.interactable = !isChangingPage && currentPage > 0;
-
-        if (nextPageButton != null)
-            nextPageButton.interactable = !isChangingPage && currentPage < totalPages - 1;
-
-        if (pageText != null)
-            pageText.text = $"{currentPage + 1} / {totalPages}";
-    }
+    // ─── Hover escala ─────────────────────────────────────────────
 
     private void AddHoverEffect(GameObject cardObj)
     {
@@ -224,17 +235,14 @@ public class CardInventoryUI : MonoBehaviour
 
         void StartSmoothScale(Vector3 to)
         {
-            if (scaleCoroutine != null)
-                StopCoroutine(scaleCoroutine);
+            if (scaleCoroutine != null) StopCoroutine(scaleCoroutine);
             scaleCoroutine = StartCoroutine(SmoothScale(cardObj.transform, to));
         }
 
-        // Pointer Enter
         var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
         entryEnter.callback.AddListener((_) => StartSmoothScale(targetScale));
         trigger.triggers.Add(entryEnter);
 
-        // Pointer Exit
         var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
         entryExit.callback.AddListener((_) => StartSmoothScale(baseScale));
         trigger.triggers.Add(entryExit);
@@ -244,7 +252,6 @@ public class CardInventoryUI : MonoBehaviour
     {
         Vector3 from = target.localScale;
         float elapsed = 0f;
-
         while (elapsed < hoverSmoothTime)
         {
             elapsed += Time.unscaledDeltaTime;
@@ -252,33 +259,40 @@ public class CardInventoryUI : MonoBehaviour
             target.localScale = Vector3.Lerp(from, to, t);
             yield return null;
         }
-
         target.localScale = to;
     }
 
-    private void ToggleSelect(GameObject cardObj, CardData data)
+    // ─── Paginación ───────────────────────────────────────────────
+
+    private int GetTotalPages()
     {
-        bool isSelected = selectedCards.Contains(data);
-        var img = GetMainImage(cardObj);
+        if (cardsPerPage <= 0) return 1;
+        return Mathf.Max(1, Mathf.CeilToInt(availableCards.Count / (float)cardsPerPage));
+    }
 
-        if (isSelected)
-        {
-            selectedCards.Remove(data);
-            if (img != null) img.color = normalColor;
-            OnCardDeselected?.Invoke(data);
-        }
-        else
-        {
-            if (selectedCards.Count >= maxSelectedCards)
-                return;
+    private void ClampCurrentPage()
+    {
+        currentPage = Mathf.Clamp(currentPage, 0, GetTotalPages() - 1);
+    }
 
-            selectedCards.Add(data);
-            if (img != null) img.color = selectedColor;
-            OnCardSelected?.Invoke(data);
-        }
+    private void GoToPrevPage()
+    {
+        if (isChangingPage || currentPage <= 0) return;
+        StartCoroutine(ChangePageWithSlide(-1));
+    }
 
-        UpdateCountText();
-        UpdateStartButtonState();
+    private void GoToNextPage()
+    {
+        if (isChangingPage || currentPage >= GetTotalPages() - 1) return;
+        StartCoroutine(ChangePageWithSlide(1));
+    }
+
+    private void UpdatePaginationUI()
+    {
+        int totalPages = GetTotalPages();
+        if (prevPageButton != null) prevPageButton.interactable = !isChangingPage && currentPage > 0;
+        if (nextPageButton != null) nextPageButton.interactable = !isChangingPage && currentPage < totalPages - 1;
+        if (pageText != null) pageText.text = $"Página {currentPage + 1} / {totalPages}";
     }
 
     private IEnumerator ChangePageWithSlide(int direction)
@@ -286,14 +300,10 @@ public class CardInventoryUI : MonoBehaviour
         isChangingPage = true;
         UpdatePaginationUI();
 
-        List<RectTransform> visibleCards = GetVisibleCardRects();
-
-        // 👇 Micro desliz direccional
-        yield return StartCoroutine(SlideCards(visibleCards, direction));
+        yield return StartCoroutine(SlideCards(GetVisibleCardRects(), direction));
 
         currentPage += direction;
         ClampCurrentPage();
-
         RefreshInventory();
         ResetAllCardScales();
 
@@ -303,41 +313,26 @@ public class CardInventoryUI : MonoBehaviour
 
     private IEnumerator SlideCards(List<RectTransform> cards, int direction)
     {
-        if (cards == null || cards.Count == 0)
-            yield break;
+        if (cards == null || cards.Count == 0) yield break;
 
-        List<Vector2> originalPositions = new List<Vector2>(cards.Count);
-
-        foreach (var rt in cards)
-            originalPositions.Add(rt.anchoredPosition);
+        var originalPositions = new List<Vector2>(cards.Count);
+        foreach (var rt in cards) originalPositions.Add(rt.anchoredPosition);
 
         float elapsed = 0f;
-
-        // Dirección:
-        // Derecha (+1) → cartas se mueven a la izquierda
-        // Izquierda (-1) → cartas se mueven a la derecha
         float offset = -direction * pageSlideDistance;
 
         while (elapsed < pageSlideDuration)
         {
             elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / pageSlideDuration);
-
-            // curva tipo "punch" (ida y vuelta rápida)
-            float curve = Mathf.Sin(t * Mathf.PI);
-
+            float curve = Mathf.Sin(Mathf.Clamp01(elapsed / pageSlideDuration) * Mathf.PI);
             for (int i = 0; i < cards.Count; i++)
             {
                 if (cards[i] == null) continue;
-
-                cards[i].anchoredPosition =
-                    originalPositions[i] + new Vector2(offset * curve, 0f);
+                cards[i].anchoredPosition = originalPositions[i] + new Vector2(offset * curve, 0f);
             }
-
             yield return null;
         }
 
-        // Reset final
         for (int i = 0; i < cards.Count; i++)
         {
             if (cards[i] == null) continue;
@@ -347,24 +342,22 @@ public class CardInventoryUI : MonoBehaviour
 
     private List<RectTransform> GetVisibleCardRects()
     {
-        List<RectTransform> rects = new List<RectTransform>();
-
+        var rects = new List<RectTransform>();
         if (cardContainer == null) return rects;
-
         foreach (Transform child in cardContainer)
         {
-            RectTransform rt = child as RectTransform;
-            if (rt != null)
-                rects.Add(rt);
+            var rt = child as RectTransform;
+            if (rt != null) rects.Add(rt);
         }
-
         return rects;
     }
 
+    // ─── UI helpers ───────────────────────────────────────────────
+
     private void UpdateCountText()
     {
-        if (selectedCountText != null)
-            selectedCountText.text = $"Select cards to start the game {selectedCards.Count} / {maxSelectedCards}";
+        // if (selectedCountText != null)
+            // selectedCountText.text = $"Select cards to start the game {selectedCards.Count} / {maxSelectedCards}";
     }
 
     private void UpdateStartButtonState()
@@ -375,40 +368,50 @@ public class CardInventoryUI : MonoBehaviour
 
     private void OnStartMatchButtonClicked()
     {
-        if (selectedCards.Count == maxSelectedCards)
-        {
-            OnStartMatch?.Invoke(new List<CardData>(selectedCards));
-            HideInventory();
-        }
+        if (selectedCards.Count != maxSelectedCards) return;
+
+        // ✅ Guardar el deck antes de empezar la partida
+        if (LastDeckManager.Instance != null)
+            LastDeckManager.Instance.SaveDeck(new List<CardData>(selectedCards));
+
+        OnStartMatch?.Invoke(new List<CardData>(selectedCards));
+        HideInventory();
     }
 
-    public List<CardData> GetSelectedCards()
-    {
-        return new List<CardData>(selectedCards);
-    }
+    public List<CardData> GetSelectedCards() => new List<CardData>(selectedCards);
 
     private void ResetAllCardScales()
     {
         if (cardContainer == null) return;
-
         foreach (Transform child in cardContainer)
             child.localScale = cardScale;
+    }
+
+
+    private void UpdateTypeCounters()
+    {
+        int totalPermanent = 0;
+        int totalTemporal = 0;
+
+        foreach (var card in availableCards)
+        {
+            if (card == null) continue;
+            if (card.cardType == CardData.CardType.Permanente) totalPermanent++;
+            else if (card.cardType == CardData.CardType.Temporal) totalTemporal++;
+            // Eventual no cuenta en ninguno de los dos contadores
+        }
+
+        if (permanentCountText != null)
+            permanentCountText.text = $"{totalPermanent} / {totalPermanent}";
+
+        if (temporalCountText != null)
+            temporalCountText.text = $"{totalTemporal} / {totalTemporal}";
     }
 
     private void OnValidate()
     {
         if (cardContainer != null)
-        {
             foreach (Transform child in cardContainer)
                 child.localScale = cardScale;
-        }
-    }
-
-    private Image GetMainImage(GameObject cardObj)
-    {
-        var img = cardObj.GetComponent<Image>();
-        if (img == null)
-            img = cardObj.GetComponentInChildren<Image>();
-        return img;
     }
 }

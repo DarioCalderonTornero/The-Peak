@@ -3,60 +3,101 @@ using UnityEngine;
 
 public class TentInteraction : MonoBehaviour
 {
+    public static TentInteraction Instance { get; private set; }
+
     [Header("Referencias")]
     [SerializeField] private CampGraphBuilder campGraph;
 
     [Header("Configuración de Clics")]
-    [Tooltip("La capa o capas donde están las tiendas de campaña o los colliders invisibles de los campamentos.")]
     [SerializeField] private LayerMask clickableLayers;
 
-    // Guardamos los escaladores que están seleccionados actualmente para poder deseleccionarlos después
     private List<ClimberMovement> currentlySelectedClimbers = new List<ClimberMovement>();
+    private CampGraphBuilder.CampNode lastClickedNode;
+    private int cycleIndex = -1;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     private void Start()
     {
-        // Si no se ha asignado manualmente, lo buscamos en la escena
         if (campGraph == null)
-        {
-            campGraph = FindObjectOfType<CampGraphBuilder>();
-        }
+            campGraph = Object.FindFirstObjectByType<CampGraphBuilder>();
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClimberClickRoute += OnClimberClickRoute;
     }
 
-    private void Update()
+    private void OnDestroy()
     {
-        // Detectar el clic izquierdo del ratón
-        if (Input.GetMouseButtonDown(0))
-        {
-            HandleClick();
-        }
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClimberClickRoute -= OnClimberClickRoute;
+    }
+
+    private void OnClimberClickRoute(object sender, System.EventArgs e)
+    {
+        HandleClick();
     }
 
     private void HandleClick()
     {
-        // Lanzamos un rayo desde la posición del ratón en la pantalla
+        if (Camera.main == null) return;
+
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f, clickableLayers))
         {
-            GameObject clickedObject = hit.collider.gameObject;
-            CampGraphBuilder.CampNode clickedNode = GetNodeFromClickedObject(clickedObject);
+            CampGraphBuilder.CampNode clickedNode = GetNodeFromClickedObject(hit.collider.gameObject);
 
             if (clickedNode != null && clickedNode.HasTent)
-            {
-                // Si hicimos clic en una tienda válida, mostramos las rutas
-                ShowPathsForCamp(clickedNode);
-            }
+                HandleCampClick(clickedNode);
             else
-            {
-                // Si hicimos clic en algo de esa capa pero no es una tienda, limpiamos
-                ClearSelectedPaths();
-            }
+                ClearAll();
         }
         else
         {
-            // Si hicimos clic en el vacío, limpiamos las selecciones
-            ClearSelectedPaths();
+            ClearAll();
         }
+    }
+
+    private void HandleCampClick(CampGraphBuilder.CampNode node)
+    {
+        int climberCount = node.presentClimbers != null ? node.presentClimbers.Count : 0;
+        if (climberCount == 0) return;
+
+        if (lastClickedNode != node)
+        {
+            lastClickedNode = node;
+            cycleIndex = 0;
+            ShowClimberAtIndex(node, cycleIndex);
+            return;
+        }
+
+        int nextIndex = cycleIndex + 1;
+
+        if (nextIndex >= climberCount)
+        {
+            ClearAll();
+            return;
+        }
+
+        cycleIndex = nextIndex;
+        ShowClimberAtIndex(node, cycleIndex);
+    }
+
+    private void ShowClimberAtIndex(CampGraphBuilder.CampNode node, int index)
+    {
+        ClearLines();
+
+        ClimberMovement climber = node.presentClimbers[index];
+        if (climber == null) return;
+
+        climber.SetSelected(true);
+        currentlySelectedClimbers.Add(climber);
+
+        ClimberListUI.Instance?.OnWorldClimberSelected(climber);
     }
 
     private CampGraphBuilder.CampNode GetNodeFromClickedObject(GameObject clickedObject)
@@ -65,51 +106,34 @@ public class TentInteraction : MonoBehaviour
 
         foreach (var node in campGraph.nodes)
         {
-            // Opción 1: Hicimos clic directamente en la tienda instanciada (o un hijo de ella)
             if (node.instantiatedTent != null &&
-               (clickedObject == node.instantiatedTent || clickedObject.transform.IsChildOf(node.instantiatedTent.transform)))
-            {
+               (clickedObject == node.instantiatedTent ||
+                clickedObject.transform.IsChildOf(node.instantiatedTent.transform)))
                 return node;
-            }
 
-            // Opción 2: Hicimos clic en el collider invisible del campamento ("Camp_INVISIBLE")
-            // Comparamos por proximidad al nodo, ya que se instancian en la misma posición
             if (clickedObject.name.Contains("Camp_INVISIBLE") &&
                 Vector3.Distance(clickedObject.transform.position, node.position) < 0.1f)
-            {
                 return node;
-            }
         }
 
         return null;
     }
 
-    private void ShowPathsForCamp(CampGraphBuilder.CampNode node)
-    {
-        // Primero limpiamos cualquier ruta que estuviera dibujada previamente
-        ClearSelectedPaths();
-
-        // Activamos la ruta de todos los escaladores presentes en el campamento
-        foreach (var climber in node.presentClimbers)
-        {
-            if (climber != null)
-            {
-                climber.SetSelected(true);
-                currentlySelectedClimbers.Add(climber);
-            }
-        }
-    }
-
-    private void ClearSelectedPaths()
+    private void ClearLines()
     {
         foreach (var climber in currentlySelectedClimbers)
         {
             if (climber != null)
-            {
-                // Deseleccionamos al escalador para apagar su LineRenderer
                 climber.SetSelected(false);
-            }
         }
         currentlySelectedClimbers.Clear();
+    }
+
+    private void ClearAll()
+    {
+        ClearLines();
+        lastClickedNode = null;
+        cycleIndex = -1;
+        ClimberListUI.Instance?.OnWorldClimberDeselected();
     }
 }

@@ -521,7 +521,7 @@ MonoBehaviour:
   floatOffset: 2
   subdivisionsPerSegment: 6
   reachedThreshold: 0.2
-  maxStamina: 40
+  maxStamina: 80
   baseCostPerMeter: 1
   uphillExtraCostFactor: 1
   minStaminaCost: 0.1
@@ -579,6 +579,7 @@ MonoBehaviour:
   archetype: {fileID: 11400000, guid: 6aaf054321ad4ce4eaf3e210c9254163, type: 2}
   debugEquippedItemNames: []
   helmetRenderer: {fileID: 4366637161274366234}
+  bodyRenderer: {fileID: 6684981615110806887}
   pickaxeAudioClip: {fileID: 8300000, guid: b8d18d9d5b744cd4aa384d6dfe047182, type: 3}
   rockDestroyAudioClip: {fileID: 8300000, guid: 5781afa438855dc419473fa391108a19, type: 3}
   autoInitializeOnAwake: 1

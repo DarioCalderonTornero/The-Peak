@@ -17,6 +17,7 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private string[] debugEquippedItemNames;
 
     [SerializeField] private Renderer helmetRenderer;
+    [SerializeField] private Renderer bodyRenderer;
     public IReadOnlyList<EquipmentInstance> EquippedItems => equippedItems;
 
     [Header("Climber Getters")]
@@ -27,6 +28,9 @@ public class ClimberLoadout : MonoBehaviour
     [Tooltip("Si está activo, el loadout se inicializa automáticamente en Awake usando el archetype (modo normal). " +
              "Si vas a forzar equipo desde el SpawnManager, puedes dejarlo activo: la clase detecta si ya fue inicializada.")]
     [SerializeField] private bool autoInitializeOnAwake = true;
+
+    public event Action<Color> OnHelmetColorChanged;
+    public event Action<EquipmentDefinitionSO> OnEquipmentInitialized;
 
     private bool _isInitialized = false;
 
@@ -154,7 +158,11 @@ public class ClimberLoadout : MonoBehaviour
     private void ChangeClimberColorBasedOnEquipment(EquipmentDefinitionSO equipment)
     {
         if (helmetRenderer != null && equipment != null)
+        {
             helmetRenderer.material.color = equipment.color;
+            OnHelmetColorChanged?.Invoke(equipment.color);
+            OnEquipmentInitialized?.Invoke(equipment);
+        }
     }
 
     private void UpdateDebugNames()
@@ -233,16 +241,24 @@ public class ClimberLoadout : MonoBehaviour
         return Color.white;
     }
 
+    public Color GetBodyColor()
+    {
+        if (bodyRenderer != null)
+            return bodyRenderer.material.color;
+
+        return Color.yellow;
+    }
+
     /// <summary>
     /// Devuelve el icono del primer equipo equipado, o null si no hay ninguno.
     /// Usado por ClimberEntryUI para mostrar el icono en la lista.
     /// </summary>
-    public Sprite GetFirstEquipmentIcon()
+    public EquipmentDefinitionSO GetFirstEquipmentIcon()
     {
         if (equippedDefinitions == null || equippedDefinitions.Count == 0)
             return null;
 
-        return equippedDefinitions[0]?.icon;
+        return equippedDefinitions[0];
     }
 
     public void RequestClimberStop(float duration)

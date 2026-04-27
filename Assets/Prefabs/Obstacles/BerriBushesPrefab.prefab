@@ -134,7 +134,7 @@ MonoBehaviour:
   badBerry: {fileID: 2945980965390045211}
   turnsToFirstGrow: 2
   turnsToRespawn: 3
-  detectionRadius: 4.66
+  detectionRadius: 2.5
   climberLayer:
     serializedVersion: 2
     m_Bits: 512

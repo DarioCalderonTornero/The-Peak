@@ -29,3 +29,11 @@ MonoBehaviour:
   placementCheckExtents: {x: 0.5, y: 2.55, z: 0.5}
   gridSize: {x: 4, y: 2}
   decalOffset: {x: 0, y: 0}
+  cardType: 1
+  backBackground: {fileID: 0}
+  backIllustration: {fileID: 0}
+  loreText: 
+  extendedDescription: 
+  counterIcon: {fileID: 0}
+  counterName: 
+  deckSlotIcon: {fileID: 0}

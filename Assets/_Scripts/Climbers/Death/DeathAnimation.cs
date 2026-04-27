@@ -12,6 +12,7 @@ public class DeathAnimation : MonoBehaviour
     [Header("Referencias")]
     [Tooltip("Renderer del casco para aplicar el color del escalador original.")]
     [SerializeField] private Renderer helmetRenderer;
+    [SerializeField] private Renderer[] bodyRenderer;
 
     [Header("Seguridad")]
     [SerializeField] private float destroyDelay = 5f;
@@ -31,12 +32,13 @@ public class DeathAnimation : MonoBehaviour
 
         switch (deathCause)
         {
-            case DeathCause.Stamina: StartCoroutine(StaminaDeathRoutine()); break;
-            case DeathCause.Mud: StartCoroutine(MudDeathRoutine()); break;
+            case DeathCause.Stamina: StaminaDeathRoutine(); break;
+            case DeathCause.Mud: MudDeathRoutine(); break;
             case DeathCause.Quicksand: StartCoroutine(QuicksandDeathRoutine()); break;
-            case DeathCause.BadBerry: StartCoroutine(BadBerryDeathRoutine()); break;
+            case DeathCause.BadBerry: BadBerryDeathRoutine(); break;
             case DeathCause.Geyser: StartCoroutine(GeyserDeathRoutine()); break;
             case DeathCause.Snow: StartCoroutine(SnowDeathRoutine()); break;
+            case DeathCause.StormyCloud: StormyCloudDeath(); break;
             default: StartCoroutine(DefaultDeathRoutine()); break;
         }
 
@@ -46,31 +48,44 @@ public class DeathAnimation : MonoBehaviour
 
     // ─── Animaciones por tipo ─────────────────────────────────────────────────
 
-    private IEnumerator StaminaDeathRoutine()
+    private void StaminaDeathRoutine()
     {
-        //yield return null;
-        yield return StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, 2f));
-        StartCoroutine(NotifyComplete());
+        float targetAngle = 1.5f;
+        float animDuration = 0.85f;
+        float shakeMagnitude = 0.01f;
+
+        StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude)); // ← orden correcto
+        Invoke(nameof(NotifyComplete), animDuration);
     }
 
-    private IEnumerator MudDeathRoutine()
+    private void MudDeathRoutine()
     {
-        yield return StartCoroutine(FlattenRoutine(1f));
-        StartCoroutine(NotifyComplete());
+        float targetAngle = 1.5f;
+        float animDuration = 1.25f;
+        float shakeMagnitude = 0.01f;
+
+        StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude)); // ← orden correcto
+        Invoke(nameof(NotifyComplete), animDuration);
     }
 
     private IEnumerator QuicksandDeathRoutine()
     {
         yield return StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, 0.5f));
         yield return StartCoroutine(ScaleRoutine(Vector3.zero, 0.2f));
-        StartCoroutine(NotifyComplete());
+        NotifyComplete();
     }
 
-    private IEnumerator BadBerryDeathRoutine()
+    private void BadBerryDeathRoutine()
     {
-        yield return StartCoroutine(ScaleRoutine(transform.localScale * 2.5f, 0.8f));
-        yield return new WaitForSeconds(0.1f);
-        StartCoroutine(NotifyComplete());
+        float animDuration = 2.0f;
+        float shakeMagnitude = 0.01f;
+
+        StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
+        StartCoroutine(BodyColorToRedRoutine(Color.red, animDuration));
+        Invoke(nameof(NotifyComplete), animDuration);
     }
 
     private IEnumerator GeyserDeathRoutine()
@@ -78,34 +93,43 @@ public class DeathAnimation : MonoBehaviour
         // El géiser ya sale volando por física
         // Notificamos inmediatamente para que la explosión ocurra ya
         yield return null;
-        StartCoroutine(NotifyComplete());
+        NotifyComplete();
     }
 
     private IEnumerator SnowDeathRoutine()
     {
         yield return StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, 0.3f));
         yield return StartCoroutine(ScaleRoutine(Vector3.zero, 0.2f));
-        StartCoroutine(NotifyComplete());
+        NotifyComplete();
+    }
+
+    private void StormyCloudDeath()
+    {
+        float animDuration = 1.0f;
+        float shakeMagnitude = 0.01f;
+
+        StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
+        StartCoroutine(BodyColorToRedRoutine(Color.black, animDuration));
+        Invoke(nameof(NotifyComplete), animDuration);
     }
 
     private IEnumerator DefaultDeathRoutine()
     {
         yield return StartCoroutine(FlattenRoutine(0.5f));
-        StartCoroutine(NotifyComplete());
+        NotifyComplete();
     }
 
     // ─── Notify ──────────────────────────────────────────────────────────────
 
-    private IEnumerator NotifyComplete()
+    private void NotifyComplete()
     {
-        yield return null;
-        //yield return new WaitForSeconds(1.0f);
         OnAnimationComplete?.Invoke();
-        // No destruimos aquí — DeathCinematicManager decide cuándo
-        // (la explosión puede tardar un poco más en verse)
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
+
+
 
     private IEnumerator FlattenRoutine(float duration)
     {
@@ -156,5 +180,40 @@ public class DeathAnimation : MonoBehaviour
         }
 
         transform.localPosition = originalPos;
+    }
+
+    private IEnumerator BodyColorToRedRoutine(Color deathColor, float duration)
+    {
+        if (bodyRenderer == null || bodyRenderer.Length == 0) yield break;
+
+        // Recogemos los colores originales de cada renderer
+        Color[] startColors = new Color[bodyRenderer.Length];
+        for (int i = 0; i < bodyRenderer.Length; i++)
+        {
+            if (bodyRenderer[i] != null)
+                startColors[i] = bodyRenderer[i].material.color;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+
+            for (int i = 0; i < bodyRenderer.Length; i++)
+            {
+                if (bodyRenderer[i] != null)
+                    bodyRenderer[i].material.color = Color.Lerp(startColors[i], deathColor, t);
+            }
+
+            yield return null;
+        }
+
+        // Aseguramos que llega a rojo puro al final
+        for (int i = 0; i < bodyRenderer.Length; i++)
+        {
+            if (bodyRenderer[i] != null)
+                bodyRenderer[i].material.color = Color.red;
+        }
     }
 }

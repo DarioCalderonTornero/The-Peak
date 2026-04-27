@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.Rendering.UI;
 
 public class HandleRockObstacle : BaseObstacle
 {
@@ -19,13 +18,15 @@ public class HandleRockObstacle : BaseObstacle
     {
         yield return new WaitForSeconds(delayAfterSpawn);
 
-        GameObject breakRock = Instantiate(
-            breakRockPrefab,
-            transform.position,
-            transform.rotation
-        );
-
-        breakRock.transform.localScale = transform.localScale;
+        if (breakRockPrefab != null)
+        {
+            GameObject breakRock = Instantiate(
+                breakRockPrefab,
+                transform.position,
+                transform.rotation
+            );
+            breakRock.transform.localScale = transform.localScale;
+        }
 
         Destroy(gameObject);
     }

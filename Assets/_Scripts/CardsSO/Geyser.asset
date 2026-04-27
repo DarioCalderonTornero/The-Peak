@@ -16,9 +16,9 @@ MonoBehaviour:
   description: When a climber passes over it, it is blown into the air and is therefore
     instantly eliminated.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  defensePrefab: {fileID: 5606444330844840924, guid: 5105f2b27d7266742b9f4af46045daf8, type: 3}
+  defensePrefab: {fileID: 1391558099927299792, guid: 4920ddcab506aa542aa2eca0d92c85e5, type: 3}
   cost: 2
-  worldSprite: {fileID: 2024314572, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
+  worldSprite: {fileID: -346537186, guid: d776c3bf160ff9d4e847768eed7f1ef0, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}
@@ -29,3 +29,11 @@ MonoBehaviour:
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}
   gridSize: {x: 2, y: 2}
   decalOffset: {x: 0, y: 0}
+  cardType: 0
+  backBackground: {fileID: 0}
+  backIllustration: {fileID: 0}
+  loreText: 
+  extendedDescription: 
+  counterIcon: {fileID: 0}
+  counterName: 
+  deckSlotIcon: {fileID: 1490940440, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}

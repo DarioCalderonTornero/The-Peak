@@ -213,29 +213,43 @@ public class QuicksandDefense : BaseDefense
         {
             Vector3 pos = absorbedClimber.transform.position;
 
-            // --- AHORA USAMOS EL SISTEMA CENTRALIZADO ---
+            var deathInfo = new GameManager.DeathInfo
+            {
+                climber = absorbedClimber,
+                position = pos,
+                cause = DeathCause.Quicksand
+            };
+
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-                {
-                    climber = absorbedClimber,
-                    position = pos,
-                    cause = DeathCause.Quicksand
-                });
+                GameManager.Instance.NotifyClimberDied(deathInfo);
             }
 
             if (ClimberDeathPointsManager.Instance != null) ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
             if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(10);
 
-            // ❌ ELIMINADO: Destroy(absorbedClimber.gameObject); 
-            // La destrucción física ahora la hace el DeathCinematicManager cuando termine la cámara y animación
+            // Esperamos a que termine la cinemática de ESTE escalador para destruir la trampa
+            if (DeathCinematicManager.Instance != null)
+            {
+                void OnThisDeath(GameManager.DeathInfo info)
+                {
+                    if (info.climber == absorbedClimber)
+                    {
+                        DeathCinematicManager.Instance.OnOwnClimberCinematicFinished -= OnThisDeath;
+                        Destroy(gameObject);
+                    }
+                }
+
+                DeathCinematicManager.Instance.OnOwnClimberCinematicFinished += OnThisDeath;
+            }
+            else
+            {
+                Destroy(gameObject, 3f);
+            }
         }
 
-        // NOTA: Destruimos la trampa de arenas movedizas.
-        // Si tienes una animación de muerte donde el escalador se hunde lentamente EN la trampa, 
-        // quizá quieras cambiar este Destroy(gameObject) por un StartCoroutine que la destruya 
-        // 3 o 4 segundos más tarde para que la trampa siga visible durante la cinemática.
-        Destroy(gameObject);
+        absorbedClimber = null;
+        absorbedAgent = null;
     }
 
     private void RescueClimber()

@@ -25,6 +25,9 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private int spawnedCount = 0;
     [SerializeField] public bool isMaxCount = false;
 
+    [Header("Spawn Curve")]
+    [SerializeField] private AnimationCurve spawnAnimationCurve = AnimationCurve.Linear(1, 1, 20, 5);
+
     // Progreso global de la intro (NO se resetea por turno)
     [SerializeField] private int introSpawnIndex = 0;
 
@@ -166,12 +169,16 @@ public class SpawnManager : MonoBehaviour
         isMaxCount = false;
         spawnedPositions.Clear();
 
-        // IMPORTANTE: NO reseteamos introSpawnIndex aquí, porque ResetSpawner se llama cada turno.
+    }
+
+    //Metodo para incrementar el spawn de escaladores de forma controlada
+    public void SetSpawnAmountForTurn(int turn)
+    {
+        amountToSpawn = Mathf.Max(1, Mathf.RoundToInt(spawnAnimationCurve.Evaluate(turn)));
     }
 
     public void ResetIntroSequence()
     {
-        // Llamar SOLO cuando empiece una nueva partida de verdad
         introSpawnIndex = 0;
     }
 

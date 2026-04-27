@@ -8,6 +8,9 @@ using System.Collections.Generic;
 public class ClimberMovement : MonoBehaviour
 {
     public static ClimberMovement Instance { get; private set; }
+
+    public event Action<bool> OnTentStateChanged;
+
     [Header("Referencias")]
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private CampGraphBuilder campGraph;
@@ -78,6 +81,10 @@ public class ClimberMovement : MonoBehaviour
     private bool externallyForcedDone = false;
 
     public bool IsAtCamp => isAtCamp;
+
+    public bool IsInsideTent => isInsideTent;
+    public float GetAltitude() => transform.position.y;
+
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
     public bool isEating = false;
@@ -112,6 +119,8 @@ public class ClimberMovement : MonoBehaviour
 
         if (pathLineRenderer.material != null)
             lineMaterialInstance = pathLineRenderer.material;
+
+        currentStamina = maxStamina;
 
         pathLineRenderer.positionCount = 0;
         pathLineRenderer.enabled = false;
@@ -154,7 +163,6 @@ public class ClimberMovement : MonoBehaviour
 
         if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();
 
-        currentStamina = maxStamina;
         lastFramePosition = transform.position;
         lastFrameHeight = transform.position.y;
 
@@ -281,7 +289,7 @@ public class ClimberMovement : MonoBehaviour
     {
         if (pointsAddedThisTurn) return;
 
-        PointsManager.Instance.AddPoints(10);
+        PointsManager.Instance.AddPoints(5);
         ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
 
         if (GameManager.Instance != null)
@@ -534,6 +542,8 @@ public class ClimberMovement : MonoBehaviour
         if (arrivalFXPrefab != null)
             Instantiate(arrivalFXPrefab, node.position + Vector3.up * 0.2f, Quaternion.identity);
 
+        yield return new WaitForSeconds(2f);
+
         node.occupantsCount++;
 
         if (!node.presentClimbers.Contains(this))
@@ -546,6 +556,8 @@ public class ClimberMovement : MonoBehaviour
         }
 
         isInsideTent = true;
+        OnTentStateChanged?.Invoke(true);
+
         if (climberVisual != null) climberVisual.SetActive(false);
         if (pathLineRenderer != null) pathLineRenderer.enabled = false;
 
@@ -555,6 +567,8 @@ public class ClimberMovement : MonoBehaviour
     private void ExitTent()
     {
         isInsideTent = false;
+        OnTentStateChanged?.Invoke(false);
+
         isAtCamp = false;
 
         if (climberVisual != null) climberVisual.SetActive(true);
@@ -626,6 +640,35 @@ public class ClimberMovement : MonoBehaviour
     {
         currentStamina = Mathf.Clamp(value, 0f, maxStamina);
         NotifyStaminaChanged();
+    }
+
+    public void FreezeInPlace()
+    {
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;       // Detiene el movimiento
+            agent.velocity = Vector3.zero; // Elimina la inercia acumulada
+            agent.ResetPath();            // Olvida a dónde iba para no intentar rotar
+        }
+
+        // Opcional: Desactivamos el flag de actividad para que el Update no lo mueva
+        isActiveThisTurn = false;
+
+        // Seteamos el multiplicador a 0 por seguridad
+        SetExternalSpeedMultiplier(0f);
+    }
+
+    public void MoveToWorldPosition(Vector3 targetPos)
+    {
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(targetPos);
+        }
+
+        // Desactivamos el flag para que el Update del turno no intente 
+        // recalcular su ruta hacia el campamento mientras va al centro de la nube.
+        isActiveThisTurn = false;
     }
 
     public float GetMaxStamina() => maxStamina;

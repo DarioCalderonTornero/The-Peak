@@ -77,9 +77,9 @@ MonoBehaviour:
     position:
       serializedVersion: 2
       x: 2181
-      y: 465
-      width: 843
-      height: 2381
+      y: 464
+      width: 844
+      height: 2372
     contents:
     - model: {fileID: 8926484042661615281}
       id: 0
@@ -110,7 +110,7 @@ MonoBehaviour:
   uiBounds:
     serializedVersion: 2
     x: -103
-    y: 0
+    y: -0
     width: 3128
     height: 2836
 --- !u!114 &114350483966674976
@@ -5931,7 +5931,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615338}
   - {fileID: 8926484042661615342}
   - {fileID: 8926484042661615361}
-  m_UIPosition: {x: 2575, y: 922}
+  m_UIPosition: {x: 2575, y: 920}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
@@ -7183,7 +7183,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 0
+      m_SerializableObject: 1
     m_Space: -1
   m_Property:
     name: DirectionBlend

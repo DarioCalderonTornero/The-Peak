@@ -10,31 +10,22 @@ public class GeyserDefense : BaseDefense
     [SerializeField] private LayerMask climberLayer;
 
     [Header("Capture")]
-    [SerializeField] private float captureDelay = 0.08f;   // cuanto más, más “se mete dentro” antes de pararse
+    [SerializeField] private float captureDelay = 0.08f;
 
     [Header("Hold + Shake (Geyser)")]
     [SerializeField] private float holdSeconds = 3f;
-
-    [Tooltip("Magnitud del temblor al inicio del hold (suave).")]
     [SerializeField] private float shakeMagnitudeStart = 0.02f;
-
-    [Tooltip("Magnitud del temblor al final del hold (fuerte, antes de salir volando).")]
     [SerializeField] private float shakeMagnitudeEnd = 0.10f;
-
     [SerializeField] private float shakeFrequency = 25f;
-
-    [Tooltip("Cómo progresa el temblor de suave->fuerte. X=tiempo normalizado (0..1), Y=mezcla (0..1).")]
     [SerializeField] private AnimationCurve shakeRamp = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Hold + Shake (Climber)")]
     [SerializeField] private bool shakeClimber = true;
-
-    [Tooltip("Multiplicador del temblor aplicado al climber respecto al géiser.")]
     [SerializeField] private float climberShakeMultiplier = 1.0f;
 
     [Header("Launch")]
-    [SerializeField] private float launchForce = 18f;      // ↑ velocidad inicial (más alto = sube más rápido)
-    [SerializeField] private float gravity = 25f;          // ↓ aceleración (más alto = cae más rápido)
+    [SerializeField] private float launchForce = 18f;
+    [SerializeField] private float gravity = 25f;
 
     [Header("Air Spin")]
     [SerializeField] private float minSpinDegPerSec = 250f;
@@ -46,7 +37,9 @@ public class GeyserDefense : BaseDefense
     [Header("Ground detection")]
     [SerializeField] private LayerMask groundMask;
 
-    // --- internal state ---
+    [Header("Death Cinematic Delay")]
+    [SerializeField] private float deathCinematicDelay = 3f;
+
     private bool isBusy = false;
     private bool inCooldown = false;
     private int cooldownRemaining = 0;
@@ -54,18 +47,27 @@ public class GeyserDefense : BaseDefense
     private ClimberMovement capturedClimber;
     private NavMeshAgent capturedAgent;
 
-    private Vector3 originalPos;                 // posición base del géiser
-    private Vector3 capturedClimberBasePos;      // posición base del climber mientras está “retenido”
+    private Vector3 originalPos;
+    private Vector3 capturedClimberBasePos;
 
     private Coroutine holdRoutine;
     private Coroutine captureRoutine;
+
+    // FIX Bug 4: coroutine que mantiene al escalador congelado
+    // mientras espera en la cola de espectáculos
+    private Coroutine keepFrozenRoutine;
+
+    // FIX Bug 2: flag para detectar que el slot fue cancelado
+    // antes de ser concedido (escalador salió del trigger)
+    private bool slotCancelled = false;
+
+    private GameManager.DeathInfo pendingDeathInfo;
 
     [Header("VFX")]
     [SerializeField] private VisualEffect geyserVFX;
     [SerializeField] private float eruptFadeSeconds = 2f;
     [SerializeField] private float eruptHoldSeconds = 3f;
 
-    // IDs
     private static readonly int BubblingID = Shader.PropertyToID("Bubbling");
     private static readonly int EruptingPowerID = Shader.PropertyToID("EruptingPower");
     private static readonly int AlturaEspumaID = Shader.PropertyToID("AlturaEspuma");
@@ -79,7 +81,6 @@ public class GeyserDefense : BaseDefense
     private void OnEnable()
     {
         originalPos = transform.position;
-
         SetBubbling(false);
         SetEruptingPower(0f);
         SetEspumaActiva(false);
@@ -98,13 +99,8 @@ public class GeyserDefense : BaseDefense
     private void OnClimberTurnEnd()
     {
         if (!inCooldown) return;
-
         cooldownRemaining--;
-        if (cooldownRemaining <= 0)
-        {
-            inCooldown = false;
-            cooldownRemaining = 0;
-        }
+        if (cooldownRemaining <= 0) { inCooldown = false; cooldownRemaining = 0; }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -131,7 +127,6 @@ public class GeyserDefense : BaseDefense
         {
             if (climber == null) yield break;
             if (isBusy || inCooldown) yield break;
-
             t += Time.deltaTime;
             yield return null;
         }
@@ -141,8 +136,6 @@ public class GeyserDefense : BaseDefense
 
         capturedClimber = climber;
         capturedAgent = climber.GetComponent<NavMeshAgent>();
-
-        // Guardamos la “base” del climber para poder temblarlo y luego restaurarlo bien
         capturedClimberBasePos = capturedClimber.transform.position;
 
         if (capturedAgent != null)
@@ -153,25 +146,71 @@ public class GeyserDefense : BaseDefense
         }
 
         capturedClimber.SetExternallyDoneThisTurn(true);
+        capturedClimber.SetExternalSpeedMultiplier(0f);
         isBusy = true;
+        slotCancelled = false;
 
-        // --- ¡EL CHIVATAZO TEMPRANO! ---
-        // Avisamos al Manager AHORA para que la cámara venga a ver el temblor y el despegue
+        pendingDeathInfo = new GameManager.DeathInfo
+        {
+            climber = capturedClimber,
+            position = transform.position,
+            cause = DeathCause.Geyser
+        };
+
+        // FIX Bug 4: mantenemos al escalador congelado entre turnos
+        // mientras espera su turno en la cola de espectáculos
+        if (keepFrozenRoutine != null) StopCoroutine(keepFrozenRoutine);
+        keepFrozenRoutine = StartCoroutine(KeepFrozenWhileWaiting());
+
+        DeathCinematicManager.Instance.RequestSpectacleSlot(OnSpectacleSlotGranted);
+    }
+
+    // FIX Bug 4: reaplica el congelado en cada frame mientras espera slot
+    private IEnumerator KeepFrozenWhileWaiting()
+    {
+        while (capturedClimber != null && !slotCancelled)
+        {
+            capturedClimber.SetExternallyDoneThisTurn(true);
+            capturedClimber.SetExternalSpeedMultiplier(0f);
+            yield return new WaitForSeconds(0.1f);
+        }
+        keepFrozenRoutine = null;
+    }
+
+    private void OnSpectacleSlotGranted()
+    {
+        // Paramos el keep-frozen, ya no lo necesitamos
+        if (keepFrozenRoutine != null)
+        {
+            StopCoroutine(keepFrozenRoutine);
+            keepFrozenRoutine = null;
+        }
+
+        // FIX Bug 2: si el slot fue cancelado o el escalador desapareció,
+        // liberamos el slot para evitar el deadlock
+        if (slotCancelled || capturedClimber == null)
+        {
+            isBusy = false;
+            DeathCinematicManager.Instance.ForceReleaseSpectacleSlot();
+            return;
+        }
+
+        // 1. Mover cámara e iniciar estado cinemático
+        DeathCinematicManager.Instance.BeginSpectacleCinematic(capturedClimber);
+
+        // 2. Notificar muerte al GameManager
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-            {
-                climber = capturedClimber,
-                position = transform.position,
-                cause = DeathCause.Geyser
-            });
+            GameManager.Instance.NotifyClimberDied(pendingDeathInfo);
 
-            // Repartimos los puntos directamente aquí
-            if (ClimberDeathPointsManager.Instance != null) ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
-            if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(10);
+            if (ClimberDeathPointsManager.Instance != null)
+                ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+
+            if (PointsManager.Instance != null)
+                PointsManager.Instance.AddPoints(5);
         }
-        // -------------------------------
 
+        // 3. Arrancar secuencia espectacular
         SetBubbling(true);
 
         if (holdRoutine != null) StopCoroutine(holdRoutine);
@@ -182,27 +221,30 @@ public class GeyserDefense : BaseDefense
     {
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
-
-        if (climber == capturedClimber)
-            CancelHold();
+        if (climber == capturedClimber) CancelHold();
     }
 
     private void CancelHold()
     {
-        if (holdRoutine != null)
+        // FIX Bug 2: marcamos el slot como cancelado para que
+        // OnSpectacleSlotGranted libere el slot si llega tarde
+        slotCancelled = true;
+
+        if (keepFrozenRoutine != null)
         {
-            StopCoroutine(holdRoutine);
-            holdRoutine = null;
+            StopCoroutine(keepFrozenRoutine);
+            keepFrozenRoutine = null;
         }
 
-        // Reset géiser
+        if (holdRoutine != null) { StopCoroutine(holdRoutine); holdRoutine = null; }
+
         transform.position = originalPos;
 
-        // Reset climber (por si se quedó con offset de temblor)
         if (capturedClimber != null)
         {
             capturedClimber.transform.position = capturedClimberBasePos;
             capturedClimber.SetExternallyDoneThisTurn(false);
+            capturedClimber.SetExternalSpeedMultiplier(1f);
 
             if (capturedAgent == null)
                 capturedAgent = capturedClimber.GetComponent<NavMeshAgent>();
@@ -211,7 +253,8 @@ public class GeyserDefense : BaseDefense
             {
                 capturedAgent.updatePosition = true;
                 capturedAgent.updateRotation = true;
-                capturedAgent.isStopped = false;
+                if (capturedAgent.enabled && capturedAgent.isOnNavMesh)
+                    capturedAgent.isStopped = false;
             }
         }
 
@@ -230,49 +273,35 @@ public class GeyserDefense : BaseDefense
 
         while (t < holdSeconds)
         {
-            // El manager podría haber destruido al escalador si el jugador saltó la cinemática
-            if (capturedClimber == null)
-            {
-                CancelHold();
-                yield break;
-            }
+            if (capturedClimber == null) { CancelHold(); yield break; }
 
             t += Time.deltaTime;
 
-            // Progreso 0..1 del hold
             float n = (holdSeconds <= 0.0001f) ? 1f : Mathf.Clamp01(t / holdSeconds);
             float mix = (shakeRamp != null) ? Mathf.Clamp01(shakeRamp.Evaluate(n)) : n;
             float mag = Mathf.Lerp(shakeMagnitudeStart, shakeMagnitudeEnd, mix);
 
-            // Normal del suelo bajo el géiser
             Vector3 groundNormal = Vector3.up;
             Vector3 rayOrigin = originalPos + Vector3.up * 1.0f;
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 6f, groundMask, QueryTriggerInteraction.Ignore))
                 groundNormal = hit.normal;
 
-            // Base tangente al plano (t1, t2)
             Vector3 t1 = Vector3.Cross(groundNormal, Vector3.up);
-            if (t1.sqrMagnitude < 0.0001f)
-                t1 = Vector3.Cross(groundNormal, Vector3.right);
+            if (t1.sqrMagnitude < 0.0001f) t1 = Vector3.Cross(groundNormal, Vector3.right);
             t1.Normalize();
             Vector3 t2 = Vector3.Cross(groundNormal, t1).normalized;
 
-            // Offset SOLO en el plano del suelo
             float a = Time.time * shakeFrequency;
             Vector3 offset = (Mathf.Sin(a) * t1 + Mathf.Cos(a) * t2) * mag;
 
-            // Aplicar temblor
             transform.position = originalPos + offset;
 
             if (shakeClimber && capturedClimber != null)
-            {
                 capturedClimber.transform.position = capturedClimberBasePos + (offset * climberShakeMultiplier);
-            }
 
             yield return null;
         }
 
-        // Reset posiciones antes de lanzar
         transform.position = originalPos;
         if (capturedClimber != null)
             capturedClimber.transform.position = capturedClimberBasePos;
@@ -280,32 +309,28 @@ public class GeyserDefense : BaseDefense
         SetBubbling(false);
         TriggerEruptionFade();
 
+        yield return new WaitForSeconds(0.25f);
+
         LaunchCaptured();
 
         inCooldown = true;
         cooldownRemaining = cooldownTurns;
-
         holdRoutine = null;
     }
 
     private void LaunchCaptured()
     {
-        if (capturedClimber == null)
-        {
-            isBusy = false;
-            return;
-        }
+        if (capturedClimber == null) { isBusy = false; return; }
 
         Transform tr = capturedClimber.transform;
 
-        // Apagar NavMesh para que no pelee con la física
         if (capturedAgent != null)
         {
-            capturedAgent.isStopped = true;
+            if (capturedAgent.enabled && capturedAgent.isOnNavMesh)
+                capturedAgent.isStopped = true;
             capturedAgent.enabled = false;
         }
 
-        // Física temporal SOLO durante el vuelo
         Rigidbody rb = tr.GetComponent<Rigidbody>();
         if (rb == null) rb = tr.gameObject.AddComponent<Rigidbody>();
 
@@ -315,79 +340,68 @@ public class GeyserDefense : BaseDefense
         rb.constraints = RigidbodyConstraints.None;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // Impulso direccional
         Vector3 up = transform.up.normalized;
         Vector3 fwdOnPlane = Vector3.ProjectOnPlane(transform.forward, up).normalized;
         if (fwdOnPlane.sqrMagnitude < 0.0001f) fwdOnPlane = Vector3.zero;
 
-        float forwardFactor = 0.15f;
-        Vector3 launchDir = (up + fwdOnPlane * forwardFactor).normalized;
-
+        Vector3 launchDir = (up + fwdOnPlane * 0.15f).normalized;
         rb.linearVelocity = launchDir * launchForce;
 
-        // Spin
         Vector3 randomAxis = Random.onUnitSphere;
         float spin = Random.Range(minSpinDegPerSec, maxSpinDegPerSec);
         rb.angularVelocity = randomAxis * (spin * Mathf.Deg2Rad);
 
-        // Caída más rápida (el bucle se destruirá solo cuando el Manager elimine el GameObject)
         StartCoroutine(ExtraGravityWhileAirborne(tr, rb));
+        StartCoroutine(NotifyDeathAfterDelay(tr, pendingDeathInfo));
 
-        // Limpiar captura (el Géiser se desentiende)
         capturedClimber = null;
         capturedAgent = null;
         isBusy = false;
     }
 
+    private IEnumerator NotifyDeathAfterDelay(Transform climberTransform, GameManager.DeathInfo info)
+    {
+        yield return new WaitForSeconds(deathCinematicDelay);
+
+        if (climberTransform != null)
+            info.position = climberTransform.position;
+
+        if (DeathCinematicManager.Instance != null)
+            DeathCinematicManager.Instance.NotifyReadyToProcess(info);
+    }
+
     private IEnumerator ExtraGravityWhileAirborne(Transform tr, Rigidbody rb)
     {
         float extraG = Mathf.Max(0f, gravity);
-
-        // Como el Manager se encargará de destruirlo, este bucle correrá hasta que el objeto desaparezca
         while (tr != null && rb != null)
         {
             if (extraG > 0f)
                 rb.AddForce(Vector3.down * extraG, ForceMode.Acceleration);
-
-            // Usamos FixedUpdate porque estamos aplicando fuerzas físicas
             yield return new WaitForFixedUpdate();
         }
     }
 
-    // --- MÉTODOS DE VFX INTACTOS ---
+    // ─── VFX ─────────────────────────────────────────────────────────────────
+
     private void SetBubbling(bool value)
-    {
-        if (geyserVFX == null) return;
-        geyserVFX.SetBool(BubblingID, value);
-    }
+    { if (geyserVFX != null) geyserVFX.SetBool(BubblingID, value); }
 
     private void SetEruptingPower(float value)
-    {
-        if (geyserVFX == null) return;
-        geyserVFX.SetFloat(EruptingPowerID, value);
-    }
+    { if (geyserVFX != null) geyserVFX.SetFloat(EruptingPowerID, value); }
 
     private void SetAlturaEspuma(float value)
-    {
-        if (geyserVFX == null) return;
-        geyserVFX.SetFloat(AlturaEspumaID, value);
-    }
+    { if (geyserVFX != null) geyserVFX.SetFloat(AlturaEspumaID, value); }
 
     private void SetEspumaActiva(bool value)
-    {
-        if (geyserVFX == null) return;
-        geyserVFX.SetBool(EspumaArribaID, value);
-    }
+    { if (geyserVFX != null) geyserVFX.SetBool(EspumaArribaID, value); }
 
     private void TriggerEruptionFade()
     {
         if (geyserVFX == null) return;
         SetEruptingPower(1f);
-
         if (eruptFadeRoutine != null) StopCoroutine(eruptFadeRoutine);
         eruptFadeRoutine = StartCoroutine(EruptFadeRoutine());
     }
@@ -395,15 +409,11 @@ public class GeyserDefense : BaseDefense
     private IEnumerator EruptFadeRoutine()
     {
         SetEspumaActiva(true);
-        SetEruptingPower(0f);
-        SetAlturaEspuma(0f);
-
         SetEruptingPower(1f);
         SetAlturaEspuma(0f);
 
         float ramp = Mathf.Max(0f, espumaRampUpSeconds);
         float tr = 0f;
-
         while (tr < ramp)
         {
             tr += Time.deltaTime;
@@ -417,32 +427,23 @@ public class GeyserDefense : BaseDefense
 
         float hold = Mathf.Max(0f, eruptHoldSeconds);
         float th = 0f;
-
-        while (th < hold)
-        {
-            th += Time.deltaTime;
-            yield return null;
-        }
+        while (th < hold) { th += Time.deltaTime; yield return null; }
 
         float fade = Mathf.Max(0.01f, eruptFadeSeconds);
         float tf = 0f;
-
         while (tf < fade)
         {
             tf += Time.deltaTime;
             float n = Mathf.Clamp01(tf / fade);
-
             float v = Mathf.Lerp(1f, 0f, n);
             SetEruptingPower(v);
             SetAlturaEspuma(v * espumaMaxAltura);
-
             yield return null;
         }
 
         SetEruptingPower(0f);
         SetAlturaEspuma(0f);
         SetEspumaActiva(false);
-
         eruptFadeRoutine = null;
     }
 }

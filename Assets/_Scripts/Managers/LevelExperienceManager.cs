@@ -1,5 +1,6 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class LevelExperienceManager : MonoBehaviour
 {
@@ -7,11 +8,15 @@ public class LevelExperienceManager : MonoBehaviour
 
     public event Action OnExperienceChanged;
     public event EventHandler OnLevelUp;
+    public event Action OnCardRewardTriggered;
 
     [Header("Level Data")]
     [SerializeField] private int baseXPToNextLevel = 200;
     [SerializeField] private int xpIncreasePerLevel = 100;
     [SerializeField] private int levelExperienceToAdd = 100;
+
+    [Header("Niveles con recompensa de carta")]
+    [SerializeField] private List<int> rewardLevels = new List<int> { 2, 10 };
 
     private int level = 1;
     private int currentXP = 0;
@@ -21,12 +26,14 @@ public class LevelExperienceManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
+            Debug.LogWarning($"[LevelExperienceManager] Instancia duplicada destruida en {gameObject.scene.name}.");
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        Debug.Log("[LevelExperienceManager] Instancia creada y registrada.");
     }
 
     private void Start()
@@ -38,13 +45,8 @@ public class LevelExperienceManager : MonoBehaviour
     {
         if (DeathCinematicManager.Instance != null)
             DeathCinematicManager.Instance.OnCinematicFinished += DeathCinematicManager_OnCinematicFinished;
-         else
+        else
             Debug.LogWarning("[LevelExperienceManager] DeathCinematicManager.Instance es null en OnEnable.");
-    }
-
-    private void DeathCinematicManager_OnCinematicFinished(object sender, EventArgs e)
-    {
-        AddExperience(levelExperienceToAdd);
     }
 
     private void OnDisable()
@@ -53,10 +55,15 @@ public class LevelExperienceManager : MonoBehaviour
             DeathCinematicManager.Instance.OnCinematicFinished -= DeathCinematicManager_OnCinematicFinished;
     }
 
+    private void DeathCinematicManager_OnCinematicFinished(object sender, EventArgs e)
+    {
+        AddExperience(levelExperienceToAdd);
+    }
 
     private void AddExperience(int amount)
     {
         currentXP += amount;
+        Debug.Log($"[LevelExperienceManager] +{amount} XP → total {currentXP}/{xpToNextLevel} (nivel {level})");
 
         while (currentXP >= xpToNextLevel)
         {
@@ -72,7 +79,15 @@ public class LevelExperienceManager : MonoBehaviour
         level++;
         xpToNextLevel = CalculateXPToNextLevel();
 
+        Debug.Log($"[LevelExperienceManager] ¡Nivel {level}! Suscriptores en OnCardRewardTriggered: {OnCardRewardTriggered?.GetInvocationList().Length ?? 0}");
+
         OnLevelUp?.Invoke(this, EventArgs.Empty);
+
+        if (rewardLevels.Contains(level))
+        {
+            Debug.Log($"[LevelExperienceManager] Nivel {level} es de recompensa → disparando OnCardRewardTriggered.");
+            OnCardRewardTriggered?.Invoke();
+        }
     }
 
     private int CalculateXPToNextLevel()
@@ -81,36 +96,10 @@ public class LevelExperienceManager : MonoBehaviour
     }
 
     // GETTERS
-
-    public float GetExperienceNormalized()
-    {
-        if (xpToNextLevel <= 0) return 0f;
-        return (float)currentXP / xpToNextLevel;
-    }
-
-    public int GetLevel()
-    {
-        return level;
-    }
-
-    public int GetCurrentXp()
-    {
-        return currentXP;
-    }
-
-    public int GetXpToNextLevel()
-    {
-        return xpToNextLevel;
-    }
-
-    public int GetXpToLevel()
-    {
-        return baseXPToNextLevel;
-    }
-
-    public int GetRemainingXpToNextLevel()
-    {
-        return xpToNextLevel - currentXP;
-    }
-
+    public float GetExperienceNormalized() => xpToNextLevel > 0 ? (float)currentXP / xpToNextLevel : 0f;
+    public int GetLevel() => level;
+    public int GetCurrentXp() => currentXP;
+    public int GetXpToNextLevel() => xpToNextLevel;
+    public int GetXpToLevel() => baseXPToNextLevel;
+    public int GetRemainingXpToNextLevel() => xpToNextLevel - currentXP;
 }

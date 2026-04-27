@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0581865a6448894468c747c839913835, type: 3}
   m_Name: LodoRescaled
   m_EditorClassIdentifier: 
-  cardName: Mud
+  cardName: Lodo
   description: Slows enemies while they consume 1.5 times their energy. Triggers
     when they have 20% or less health, and the slow effect ends.
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 9104421247320485007, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
   cost: 4
-  worldSprite: {fileID: 507376643, guid: e287a8fb2565a7f4ea828430810b3999, type: 3}
+  worldSprite: {fileID: 21300000, guid: 4db30c4555c583344ad6fa8f02063d10, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}
@@ -29,3 +29,11 @@ MonoBehaviour:
   placementCheckExtents: {x: 0.5, y: 2.55, z: 0.5}
   gridSize: {x: 2, y: 4}
   decalOffset: {x: 0.5, y: 0.5}
+  cardType: 0
+  backBackground: {fileID: 0}
+  backIllustration: {fileID: 0}
+  loreText: 
+  extendedDescription: 
+  counterIcon: {fileID: 0}
+  counterName: 
+  deckSlotIcon: {fileID: -2132144692, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}

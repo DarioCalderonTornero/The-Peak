@@ -52,15 +52,10 @@ public class GeyserDefense : BaseDefense
 
     private Coroutine holdRoutine;
     private Coroutine captureRoutine;
-
-    // FIX Bug 4: coroutine que mantiene al escalador congelado
-    // mientras espera en la cola de espectáculos
     private Coroutine keepFrozenRoutine;
+    private Coroutine notifyDeathRoutine;
 
-    // FIX Bug 2: flag para detectar que el slot fue cancelado
-    // antes de ser concedido (escalador salió del trigger)
     private bool slotCancelled = false;
-
     private GameManager.DeathInfo pendingDeathInfo;
 
     [Header("VFX")]
@@ -140,7 +135,8 @@ public class GeyserDefense : BaseDefense
 
         if (capturedAgent != null)
         {
-            capturedAgent.isStopped = true;
+            if (capturedAgent.enabled && capturedAgent.isOnNavMesh)
+                capturedAgent.isStopped = true;
             capturedAgent.updatePosition = false;
             capturedAgent.updateRotation = false;
         }
@@ -157,19 +153,23 @@ public class GeyserDefense : BaseDefense
             cause = DeathCause.Geyser
         };
 
-        // FIX Bug 4: mantenemos al escalador congelado entre turnos
-        // mientras espera su turno en la cola de espectáculos
         if (keepFrozenRoutine != null) StopCoroutine(keepFrozenRoutine);
         keepFrozenRoutine = StartCoroutine(KeepFrozenWhileWaiting());
 
         DeathCinematicManager.Instance.RequestSpectacleSlot(OnSpectacleSlotGranted);
     }
 
-    // FIX Bug 4: reaplica el congelado en cada frame mientras espera slot
     private IEnumerator KeepFrozenWhileWaiting()
     {
         while (capturedClimber != null && !slotCancelled)
         {
+            // Comprobamos skip mientras esperamos el slot
+            if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
+            {
+                HandleSkip();
+                yield break;
+            }
+
             capturedClimber.SetExternallyDoneThisTurn(true);
             capturedClimber.SetExternalSpeedMultiplier(0f);
             yield return new WaitForSeconds(0.1f);
@@ -179,15 +179,12 @@ public class GeyserDefense : BaseDefense
 
     private void OnSpectacleSlotGranted()
     {
-        // Paramos el keep-frozen, ya no lo necesitamos
         if (keepFrozenRoutine != null)
         {
             StopCoroutine(keepFrozenRoutine);
             keepFrozenRoutine = null;
         }
 
-        // FIX Bug 2: si el slot fue cancelado o el escalador desapareció,
-        // liberamos el slot para evitar el deadlock
         if (slotCancelled || capturedClimber == null)
         {
             isBusy = false;
@@ -195,10 +192,8 @@ public class GeyserDefense : BaseDefense
             return;
         }
 
-        // 1. Mover cámara e iniciar estado cinemático
         DeathCinematicManager.Instance.BeginSpectacleCinematic(capturedClimber);
 
-        // 2. Notificar muerte al GameManager
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(pendingDeathInfo);
@@ -210,7 +205,6 @@ public class GeyserDefense : BaseDefense
                 PointsManager.Instance.AddPoints(5);
         }
 
-        // 3. Arrancar secuencia espectacular
         SetBubbling(true);
 
         if (holdRoutine != null) StopCoroutine(holdRoutine);
@@ -226,8 +220,6 @@ public class GeyserDefense : BaseDefense
 
     private void CancelHold()
     {
-        // FIX Bug 2: marcamos el slot como cancelado para que
-        // OnSpectacleSlotGranted libere el slot si llega tarde
         slotCancelled = true;
 
         if (keepFrozenRoutine != null)
@@ -237,6 +229,7 @@ public class GeyserDefense : BaseDefense
         }
 
         if (holdRoutine != null) { StopCoroutine(holdRoutine); holdRoutine = null; }
+        if (notifyDeathRoutine != null) { StopCoroutine(notifyDeathRoutine); notifyDeathRoutine = null; }
 
         transform.position = originalPos;
 
@@ -267,6 +260,33 @@ public class GeyserDefense : BaseDefense
         SetAlturaEspuma(0f);
     }
 
+    private void HandleSkip()
+    {
+        if (holdRoutine != null) { StopCoroutine(holdRoutine); holdRoutine = null; }
+        if (notifyDeathRoutine != null) { StopCoroutine(notifyDeathRoutine); notifyDeathRoutine = null; }
+        if (keepFrozenRoutine != null) { StopCoroutine(keepFrozenRoutine); keepFrozenRoutine = null; }
+
+        transform.position = originalPos;
+
+        // Destruimos el escalador si aún existe
+        if (capturedClimber != null)
+        {
+            UnityEngine.Object.Destroy(capturedClimber.gameObject);
+            capturedClimber = null;
+        }
+
+        capturedAgent = null;
+        isBusy = false;
+        inCooldown = true;
+        cooldownRemaining = cooldownTurns;
+
+        SetBubbling(false);
+        SetEspumaActiva(false);
+        SetAlturaEspuma(0f);
+
+        DeathCinematicManager.Instance.ForceEndSpectacle(pendingDeathInfo);
+    }
+
     private IEnumerator HoldThenLaunchRoutine()
     {
         float t = 0f;
@@ -274,6 +294,13 @@ public class GeyserDefense : BaseDefense
         while (t < holdSeconds)
         {
             if (capturedClimber == null) { CancelHold(); yield break; }
+
+            // Comprobar skip durante el hold
+            if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
+            {
+                HandleSkip();
+                yield break;
+            }
 
             t += Time.deltaTime;
 
@@ -355,7 +382,7 @@ public class GeyserDefense : BaseDefense
         rb.angularVelocity = randomAxis * (spin * Mathf.Deg2Rad);
 
         StartCoroutine(ExtraGravityWhileAirborne(tr, rb));
-        StartCoroutine(NotifyDeathAfterDelay(tr, pendingDeathInfo));
+        notifyDeathRoutine = StartCoroutine(NotifyDeathAfterDelay(tr, pendingDeathInfo));
 
         capturedClimber = null;
         capturedAgent = null;
@@ -364,13 +391,31 @@ public class GeyserDefense : BaseDefense
 
     private IEnumerator NotifyDeathAfterDelay(Transform climberTransform, GameManager.DeathInfo info)
     {
-        yield return new WaitForSeconds(deathCinematicDelay);
+        float elapsed = 0f;
+        while (elapsed < deathCinematicDelay)
+        {
+            // Comprobar skip durante el vuelo
+            if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
+            {
+                if (climberTransform != null)
+                    UnityEngine.Object.Destroy(climberTransform.gameObject);
+
+                DeathCinematicManager.Instance.ForceEndSpectacle(info);
+                notifyDeathRoutine = null;
+                yield break;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
 
         if (climberTransform != null)
             info.position = climberTransform.position;
 
         if (DeathCinematicManager.Instance != null)
             DeathCinematicManager.Instance.NotifyReadyToProcess(info);
+
+        notifyDeathRoutine = null;
     }
 
     private IEnumerator ExtraGravityWhileAirborne(Transform tr, Rigidbody rb)

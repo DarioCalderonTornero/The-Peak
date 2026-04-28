@@ -9,7 +9,6 @@ public class CloudKillDefense : BaseDefense
     [SerializeField] private float delayBeforeDeath = 2f;
 
     [Header("References")]
-    [Tooltip("Arrastra aquí el objeto hijo que contiene el modelo 3D de la nube")]
     [SerializeField] private Transform visualChild;
     [SerializeField] private GameObject killVFX;
 
@@ -21,9 +20,6 @@ public class CloudKillDefense : BaseDefense
 
     private bool hasKilled = false;
     private Vector3 originalVisualScale;
-
-    // FIX Bug 2: flag para cancelar si el escalador desaparece antes
-    // de que le llegue el slot
     private bool slotCancelled = false;
 
     private class CloudVictimData
@@ -34,9 +30,8 @@ public class CloudKillDefense : BaseDefense
     private Dictionary<ClimberMovement, CloudVictimData> victims =
         new Dictionary<ClimberMovement, CloudVictimData>();
 
-    // FIX Bug 4: coroutine que mantiene al escalador congelado
-    // mientras espera en la cola de espectáculos
     private Coroutine keepFrozenRoutine;
+    private Coroutine killSequenceRoutine;
 
     private void Awake()
     {
@@ -59,6 +54,7 @@ public class CloudKillDefense : BaseDefense
     private void OnTriggerEnter(Collider other)
     {
         if (hasKilled) return;
+        if (victims.Count > 0) return;
 
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
@@ -79,7 +75,6 @@ public class CloudKillDefense : BaseDefense
             cause = DeathCause.StormyCloud
         };
 
-        // FIX Bug 4: mantenemos al escalador congelado entre turnos
         if (keepFrozenRoutine != null) StopCoroutine(keepFrozenRoutine);
         keepFrozenRoutine = StartCoroutine(KeepFrozenWhileWaiting(climber));
 
@@ -89,11 +84,22 @@ public class CloudKillDefense : BaseDefense
         });
     }
 
-    // FIX Bug 4: reaplica el congelado periódicamente mientras espera slot
     private IEnumerator KeepFrozenWhileWaiting(ClimberMovement climber)
     {
         while (climber != null && !slotCancelled && !hasKilled)
         {
+            // Comprobar skip mientras esperamos el slot
+            if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
+            {
+                HandleSkip(climber, new GameManager.DeathInfo
+                {
+                    climber = climber,
+                    position = climber.transform.position,
+                    cause = DeathCause.StormyCloud
+                });
+                yield break;
+            }
+
             climber.FreezeInPlace();
             yield return new WaitForSeconds(0.1f);
         }
@@ -103,15 +109,12 @@ public class CloudKillDefense : BaseDefense
     private void OnSpectacleSlotGranted(ClimberMovement climber, CloudVictimData data,
         GameManager.DeathInfo deathInfo)
     {
-        // Paramos el keep-frozen
         if (keepFrozenRoutine != null)
         {
             StopCoroutine(keepFrozenRoutine);
             keepFrozenRoutine = null;
         }
 
-        // FIX Bug 2: si el escalador desapareció o la nube ya mató,
-        // liberamos el slot para evitar el deadlock
         if (climber == null || hasKilled || slotCancelled)
         {
             DeathCinematicManager.Instance.ForceReleaseSpectacleSlot();
@@ -120,10 +123,8 @@ public class CloudKillDefense : BaseDefense
 
         data.isBeingKilled = true;
 
-        // 1. Mover cámara e iniciar estado cinemático
         DeathCinematicManager.Instance.BeginSpectacleCinematic(climber);
 
-        // 2. Notificar muerte al GameManager
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(deathInfo);
@@ -131,8 +132,22 @@ public class CloudKillDefense : BaseDefense
             PointsManager.Instance?.AddPoints(5);
         }
 
-        // 3. Arrancar secuencia espectacular
-        StartCoroutine(KillSequence(climber, data, deathInfo));
+        if (killSequenceRoutine != null) StopCoroutine(killSequenceRoutine);
+        killSequenceRoutine = StartCoroutine(KillSequence(climber, data, deathInfo));
+    }
+
+    private void HandleSkip(ClimberMovement climber, GameManager.DeathInfo deathInfo)
+    {
+        if (killSequenceRoutine != null) { StopCoroutine(killSequenceRoutine); killSequenceRoutine = null; }
+        if (keepFrozenRoutine != null) { StopCoroutine(keepFrozenRoutine); keepFrozenRoutine = null; }
+
+        hasKilled = true;
+
+        if (climber != null)
+            UnityEngine.Object.Destroy(climber.gameObject);
+
+        DeathCinematicManager.Instance.ForceEndSpectacle(deathInfo);
+        Destroy(gameObject);
     }
 
     private IEnumerator KillSequence(ClimberMovement climber, CloudVictimData data,
@@ -140,10 +155,21 @@ public class CloudKillDefense : BaseDefense
     {
         if (climber == null) yield break;
 
-        // El escalador camina al centro de la nube
         climber.MoveToWorldPosition(transform.position);
 
-        yield return new WaitForSeconds(delayBeforeDeath);
+        float elapsed = 0f;
+        while (elapsed < delayBeforeDeath)
+        {
+            // Comprobar skip durante la secuencia
+            if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
+            {
+                HandleSkip(climber, deathInfo);
+                yield break;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
 
         if (climber == null) yield break;
 
@@ -155,7 +181,18 @@ public class CloudKillDefense : BaseDefense
         if (Temporal_Sound_Music.Instance != null)
             Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
 
-        yield return new WaitForSeconds(0.5f);
+        float elapsed2 = 0f;
+        while (elapsed2 < 0.5f)
+        {
+            if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
+            {
+                HandleSkip(climber, deathInfo);
+                yield break;
+            }
+
+            elapsed2 += Time.deltaTime;
+            yield return null;
+        }
 
         if (climber != null)
         {
@@ -170,6 +207,7 @@ public class CloudKillDefense : BaseDefense
         yield return new WaitForSeconds(1.5f);
 
         Destroy(gameObject);
+        killSequenceRoutine = null;
     }
 
     private IEnumerator AnimatePop(Transform target, Vector3 start, Vector3 end)

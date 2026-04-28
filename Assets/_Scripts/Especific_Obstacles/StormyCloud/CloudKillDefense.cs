@@ -58,6 +58,15 @@ public class CloudKillDefense : BaseDefense
 
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
+
+        // Comprobar inmunidad
+        var loadout = other.GetComponent<ClimberLoadout>();
+        if (loadout != null && loadout.CanHandleObstacle(ObstacleType.Cloud))
+        {
+            loadout.TryHandleObstacle(ObstacleType.Cloud);
+            return;
+        }
+
         if (victims.ContainsKey(climber)) return;
         if (Random.value > killChance) return;
 
@@ -88,7 +97,6 @@ public class CloudKillDefense : BaseDefense
     {
         while (climber != null && !slotCancelled && !hasKilled)
         {
-            // Comprobar skip mientras esperamos el slot
             if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
             {
                 HandleSkip(climber, new GameManager.DeathInfo
@@ -160,7 +168,6 @@ public class CloudKillDefense : BaseDefense
         float elapsed = 0f;
         while (elapsed < delayBeforeDeath)
         {
-            // Comprobar skip durante la secuencia
             if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
             {
                 HandleSkip(climber, deathInfo);

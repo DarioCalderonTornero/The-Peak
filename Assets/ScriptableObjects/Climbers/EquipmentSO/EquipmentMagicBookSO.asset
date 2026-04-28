@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdc14e7c03cb173468632813ef772795, type: 3}
-  m_Name: EquipmentMudShoesSO
+  m_Name: EquipmentMagicBookSO
   m_EditorClassIdentifier: 
-  equipmentName: Rope
+  equipmentName: MagicBook
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  logicClassName: LodoBreakerEquipment
-  color: {r: 0.037148476, g: 0, b: 1, a: 0}
+  logicClassName: MagicBookEquipment
+  color: {r: 0, g: 1, b: 0.17003727, a: 0}

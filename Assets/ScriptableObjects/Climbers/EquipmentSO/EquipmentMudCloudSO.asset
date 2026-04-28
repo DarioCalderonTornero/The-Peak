@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdc14e7c03cb173468632813ef772795, type: 3}
-  m_Name: EquipmentGeyserSO
+  m_Name: EquipmentMudCloudSO
   m_EditorClassIdentifier: 
-  equipmentName: Mud_Shoes
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  logicClassName: QuickSandBreakerEquipment
-  color: {r: 1, g: 0.7405456, b: 0, a: 0}
+  equipmentName: Por definir
+  icon: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+  logicClassName: MudCloudEquipment
+  color: {r: 0.46009398, g: 0, b: 1, a: 0}

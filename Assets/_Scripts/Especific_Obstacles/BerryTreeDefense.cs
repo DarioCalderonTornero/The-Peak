@@ -1,5 +1,4 @@
-﻿// BerryTreeDefense.cs
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,7 +25,6 @@ public class BerryTreeDefense : BaseDefense
     [Header("Comer")]
     public float eatStopDuration = 1f;
 
-    // Evita que el mismo escalador dispare comer 20 veces
     private readonly Dictionary<ClimberMovement, Coroutine> eatingRoutines = new();
 
     private void OnEnable()
@@ -69,8 +67,6 @@ public class BerryTreeDefense : BaseDefense
     {
         if (goodBerry != null) { goodBerry.SetActive(true); goodBerryAlive = true; }
         if (badBerry != null) { badBerry.SetActive(true); badBerryAlive = true; }
-
-        Debug.Log("🌱 Primer crecimiento: aparecen las dos bayas.");
     }
 
     private void Update()
@@ -87,8 +83,6 @@ public class BerryTreeDefense : BaseDefense
         {
             var climber = hit.GetComponent<ClimberMovement>();
             if (climber == null) continue;
-
-            // Si ya está en proceso o ya comió este turno, nada
             if (climber.hasEatenThisTurn) continue;
             if (climber.isEating) continue;
             if (eatingRoutines.ContainsKey(climber)) continue;
@@ -96,7 +90,7 @@ public class BerryTreeDefense : BaseDefense
             Coroutine c = StartCoroutine(EatSequence(climber));
             eatingRoutines[climber] = c;
 
-            break; // Solo procesa el primero que encuentre
+            break;
         }
     }
 
@@ -105,8 +99,6 @@ public class BerryTreeDefense : BaseDefense
         if (climber == null) yield break;
 
         climber.isEating = true;
-
-        // 1) Primero se para 1s
         climber.StopForSeconds(eatStopDuration);
 
         float tEnd = Time.time + eatStopDuration;
@@ -116,8 +108,13 @@ public class BerryTreeDefense : BaseDefense
             yield return null;
         }
 
-        // 2) Elegimos baya al final de la pausa
-        GameObject berry = ChooseBerryToEat();
+        var loadout = climber.GetComponent<ClimberLoadout>();
+        bool isImmune = loadout != null && loadout.CanHandleObstacle(ObstacleType.BerryTree);
+
+        GameObject berry = isImmune
+            ? ChooseBerryImmuneClimber()
+            : ChooseBerryToEat();
+
         if (berry == null)
         {
             if (climber != null) climber.isEating = false;
@@ -125,7 +122,9 @@ public class BerryTreeDefense : BaseDefense
             yield break;
         }
 
-        // 3) Come
+        if (loadout != null)
+            loadout.TryHandleObstacle(ObstacleType.BerryTree);
+
         ResolveBerry(climber, berry);
 
         if (climber != null) climber.hasEatenThisTurn = true;
@@ -134,12 +133,19 @@ public class BerryTreeDefense : BaseDefense
         eatingRoutines.Remove(climber);
     }
 
+    // Escalador normal: elige según probabilidad normal
     private GameObject ChooseBerryToEat()
     {
         if (goodBerryAlive && !badBerryAlive) return goodBerry;
         if (!goodBerryAlive && badBerryAlive) return badBerry;
-        // La probabilidad de comer la baya buena si ambas están vivas es del 10%
         if (goodBerryAlive && badBerryAlive) return (Random.value < 0.1f) ? goodBerry : badBerry;
+        return null;
+    }
+
+    // Escalador immune: solo come la buena, si no hay no come nada
+    private GameObject ChooseBerryImmuneClimber()
+    {
+        if (goodBerryAlive) return goodBerry;
         return null;
     }
 
@@ -183,7 +189,6 @@ public class BerryTreeDefense : BaseDefense
         StartCoroutine(RespawnBerryAfterTurns(false));
     }
 
-
     private IEnumerator RespawnBerryAfterTurns(bool good)
     {
         int counter = 0;
@@ -199,8 +204,6 @@ public class BerryTreeDefense : BaseDefense
 
         if (good && goodBerry != null) { goodBerry.SetActive(true); goodBerryAlive = true; }
         else if (!good && badBerry != null) { badBerry.SetActive(true); badBerryAlive = true; }
-
-        Debug.Log("🔁 Una baya ha vuelto a crecer.");
     }
 
     private void OnDrawGizmosSelected()

@@ -7,4 +7,5 @@ public enum ObstacleType
     Snow = 4,
     BerryTree = 5,
     Geyser = 6,
+    Cloud = 7,
 }

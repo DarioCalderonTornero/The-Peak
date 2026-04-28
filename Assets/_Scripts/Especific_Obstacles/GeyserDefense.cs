@@ -111,6 +111,14 @@ public class GeyserDefense : BaseDefense
             if ((climberLayer.value & layerBit) == 0) return;
         }
 
+        // Comprobar inmunidad
+        var loadout = other.GetComponent<ClimberLoadout>();
+        if (loadout != null && loadout.CanHandleObstacle(ObstacleType.Geyser))
+        {
+            loadout.TryHandleObstacle(ObstacleType.Geyser);
+            return;
+        }
+
         if (captureRoutine != null) StopCoroutine(captureRoutine);
         captureRoutine = StartCoroutine(CaptureAfterDelay(climber, captureDelay));
     }
@@ -163,7 +171,6 @@ public class GeyserDefense : BaseDefense
     {
         while (capturedClimber != null && !slotCancelled)
         {
-            // Comprobamos skip mientras esperamos el slot
             if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
             {
                 HandleSkip();
@@ -268,7 +275,6 @@ public class GeyserDefense : BaseDefense
 
         transform.position = originalPos;
 
-        // Destruimos el escalador si aún existe
         if (capturedClimber != null)
         {
             UnityEngine.Object.Destroy(capturedClimber.gameObject);
@@ -295,7 +301,6 @@ public class GeyserDefense : BaseDefense
         {
             if (capturedClimber == null) { CancelHold(); yield break; }
 
-            // Comprobar skip durante el hold
             if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
             {
                 HandleSkip();
@@ -394,7 +399,6 @@ public class GeyserDefense : BaseDefense
         float elapsed = 0f;
         while (elapsed < deathCinematicDelay)
         {
-            // Comprobar skip durante el vuelo
             if (DeathCinematicManager.Instance != null && DeathCinematicManager.Instance.SkipRequested)
             {
                 if (climberTransform != null)
@@ -428,8 +432,6 @@ public class GeyserDefense : BaseDefense
             yield return new WaitForFixedUpdate();
         }
     }
-
-    // ─── VFX ─────────────────────────────────────────────────────────────────
 
     private void SetBubbling(bool value)
     { if (geyserVFX != null) geyserVFX.SetBool(BubblingID, value); }

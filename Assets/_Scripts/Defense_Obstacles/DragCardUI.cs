@@ -16,6 +16,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public TextMeshProUGUI costText;
     public TextMeshProUGUI nameText;
     public Image worldSpriteImage;
+    
+    [Header("Counter")]
+    public Image counterIconImage;
+    public Image counterColorImage;
 
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
@@ -121,6 +125,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private Coroutine outlineRoutine;
     private Coroutine glowRoutine;*/
 
+    private bool isClickPlaceMode = false;
+    public static bool AnyCardInClickPlaceMode = false;
+    private bool _clickConsumedThisFrame = false;
+
 
     private void Awake()
     {
@@ -200,6 +208,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         var backSetup = GetComponentInChildren<CardBackSetup>(true);
         if (backSetup != null)
             backSetup.Setup(cardData);
+
+        if (counterIconImage != null && cardData.counterIcon != null)
+            counterIconImage.sprite = cardData.counterIcon;
+
+        if (counterColorImage != null && cardData.counterColorSprite != null)
+            counterColorImage.sprite = cardData.counterColorSprite;
     }
 
     public void SetupVisualOnly()
@@ -243,22 +257,190 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private void Update()
     {
+        // ── Modo click-to-place — SIEMPRE primero ────────────────────
+        if (isClickPlaceMode)
+        {
+            if (Input.GetMouseButtonDown(1))
+            {
+                CancelClickPlaceMode();
+                return;
+            }
+
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, placementMask)
+                && hit.normal.y >= 0.4f)
+            {
+                if (!inPlacementMode)
+                    EnterPlacementMode();
+
+                hasLastPlacementHit = true;
+                lastPlacementHit = hit;
+
+                if (previewInstance == null)
+                {
+                    previewInstance = Instantiate(cardData.defensePrefab);
+                    DisablePreviewLogic(previewInstance);
+                    originalPreviewScale = previewInstance.transform.localScale;
+                    if (originalPreviewScale.sqrMagnitude == 0)
+                        originalPreviewScale = Vector3.one;
+
+                    var visualizer = previewInstance.AddComponent<RuntimeGridVisualizer>();
+                    visualizer.Setup(cardData.gridSize);
+                    ApplyScaleFactorToPreview(currentScaleFactor);
+                    currentPreviewIsValid = false;
+                    ApplyPreviewMaterial(false);
+                }
+
+                UpdatePlacementFromHit(hit);
+
+                // ── Marcadores de casillas (igual que en OnDrag) ──────────────
+                if (AvailableCellMarkerManager.Instance != null && previewInstance != null)
+                {
+                    AvailableCellMarkerManager.Instance.UpdateAvailableAround(
+                        centerWorldPos: previewInstance.transform.position,
+                        range: occupiedMarkerRange,
+                        segmentSearchRadius: occupiedMarkerRange * 2f,
+                        placementMask: placementMask,
+                        maskData: PlacementMaskManager.Instance != null
+                            ? PlacementMaskManager.Instance.data
+                            : null
+                    );
+                }
+
+                if (OccupiedCellMarkerManager.Instance != null)
+                {
+                    if (usingSegmentGrid && activeSegment != null)
+                    {
+                        OccupiedCellMarkerManager.Instance.UpdateMarkersAroundSegment(
+                            activeSegment,
+                            previewInstance.transform.position,
+                            occupiedMarkerRange,
+                            placementMask
+                        );
+                    }
+                    else
+                    {
+                        OccupiedCellMarkerManager.Instance.UpdateMarkersAroundWorld(
+                            previewInstance.transform.position,
+                            occupiedMarkerRange,
+                            placementMask
+                        );
+                    }
+                }
+            }
+            else if (inPlacementMode)
+            {
+                CleanupPreview();
+                inPlacementMode = false;
+                canvasGroup.alpha = 0.5f;
+                canvasGroup.blocksRaycasts = false;
+            }
+
+            if (Input.GetMouseButtonDown(0) && inPlacementMode && previewInstance != null)
+            {
+                _clickConsumedThisFrame = true;
+                TryPlaceFromClickMode();
+            }
+
+            // Rotación con R también en click mode
+            if (Input.GetKeyDown(KeyCode.R) && inPlacementMode
+                && previewInstance != null && !useFixedPosition)
+            {
+                currentRotationDegrees += 90f;
+                if (currentRotationDegrees >= 360f) currentRotationDegrees = 0f;
+                ApplyRotationFromNormalAndYaw();
+                if (hasLastPlacementHit)
+                    UpdatePlacementFromHit(lastPlacementHit);
+            }
+
+            return;
+        }
+
+        // ── Modo drag normal ─────────────────────────────────────────
         if (!inPlacementMode || previewInstance == null || useFixedPosition) return;
 
-        // --- ROTACIÓN POR PASOS (90 GRADOS) ---
         if (Input.GetKeyDown(KeyCode.R))
         {
             currentRotationDegrees += 90f;
             if (currentRotationDegrees >= 360f) currentRotationDegrees = 0f;
-
-            // ✅ Forzamos que se actualice la rotación con la inclinación actual
             ApplyRotationFromNormalAndYaw();
-
             if (hasLastPlacementHit)
                 UpdatePlacementFromHit(lastPlacementHit);
         }
+    }
 
-        // ❌ BORRA ESTA LÍNEA: previewInstance.transform.rotation = targetRotation;
+    private void TryPlaceFromClickMode()
+    {
+        Vector3 finalPosition = previewInstance.transform.position;
+        Quaternion finalRotation = previewInstance.transform.rotation;
+        Vector3 finalNormal = lastHitNormal;
+
+        string placementReason = CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
+        if (placementReason != "Válido")
+        {
+            StartCoroutine(ShakeCard());
+            return;
+        }
+
+        bool placedOk = PointsManager.Instance != null
+                     && PointsManager.Instance.SpendPoints(cardData.cost);
+        if (!placedOk)
+        {
+            StartCoroutine(ShakeCard());
+            return;
+        }
+
+        Vector3 finalScale = originalPreviewScale * currentScaleFactor;
+
+        GameObject placed = DefensePlacer.Instance.PlaceDefense(
+            cardData.defensePrefab,
+            finalPosition,
+            finalRotation,
+            beforeInitialize: (go) => { },
+            afterInitialize: (go) =>
+            {
+                var lodo = go.GetComponent<LodoDefense>();
+                if (lodo != null) { lodo.ApplyExternalScale(finalScale); return; }
+
+                var arena = go.GetComponent<QuicksandDefense>();
+                if (arena != null) { arena.ApplyExternalScale(finalScale); return; }
+
+                go.transform.localScale = finalScale;
+            }
+        );
+
+        if (placed == null)
+        {
+            if (PointsManager.Instance != null)
+                PointsManager.Instance.AddPoints(cardData.cost);
+            StartCoroutine(ShakeCard());
+            CancelClickPlaceMode();
+            return;
+        }
+
+        if (GridOccupancyManager.Instance != null)
+        {
+            var occ = placed.GetComponent<GridOccupant>();
+            if (occ == null) occ = placed.AddComponent<GridOccupant>();
+            occ.Init(new List<CellKey>(currentFootprintKeys));
+        }
+
+        Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
+        CameraShake.Instance.ShakeMainCamera(4.0f, 5.5f, 0.2f);
+
+        if (DefensePlacementManager.Instance != null)
+            DefensePlacementManager.Instance.RegisterPlaced(placed);
+
+        OnCardUsed?.Invoke(this);
+        ResetPersistentTransform();
+        CleanupPreview();
+        ResetTransientStates();
+
+        // Salir del modo al colocar
+        AnyCardInClickPlaceMode = false;
+        isClickPlaceMode = false;
+        canvasGroup.blocksRaycasts = true;
+        canvasGroup.alpha = 1f;
     }
 
     private void ApplyRotationFromNormalAndYaw()
@@ -361,6 +543,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (AnyCardInClickPlaceMode) return;
+
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
 
@@ -979,7 +1163,62 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        replacementCallback?.Invoke(this);
+        if (_clickConsumedThisFrame) return;
+        if (AnyCardInClickPlaceMode && !isClickPlaceMode) return;
+        // Click derecho → cancelar modo click-to-place
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            if (isClickPlaceMode)
+                CancelClickPlaceMode();
+            return;
+        }
+
+        // Doble click izquierdo → activar modo click-to-place
+        if (eventData.button == PointerEventData.InputButton.Left
+            && eventData.clickCount == 2)
+        {
+            if (!isClickPlaceMode)
+                EnterClickPlaceMode();
+            return;
+        }
+
+        // Click simple izquierdo → callback de selección (comportamiento anterior)
+        if (eventData.button == PointerEventData.InputButton.Left
+            && eventData.clickCount == 1)
+        {
+            replacementCallback?.Invoke(this);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        _clickConsumedThisFrame = false;
+    }
+
+    private void EnterClickPlaceMode()
+    {
+        if (PointsManager.Instance != null && !PointsManager.Instance.CanAfford(cardData.cost))
+        {
+            StartCoroutine(ShakeCard());
+            return;
+        }
+
+        AnyCardInClickPlaceMode = true;
+        isClickPlaceMode = true;
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.alpha = 0.5f;
+        ResetTransientStates();
+        CleanupPreview();
+    }
+
+    private void CancelClickPlaceMode()
+    {
+        AnyCardInClickPlaceMode = false;
+        isClickPlaceMode = false;
+        canvasGroup.blocksRaycasts = true;
+        canvasGroup.alpha = 1f;
+        CleanupPreview();
+        ResetTransientStates();
     }
 
     [Header("Hover Animation")]
@@ -992,6 +1231,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (AnyCardInClickPlaceMode && !isClickPlaceMode) return;
         if (isHovering) return;
         isHovering = true;
         if (hoverRoutine != null) StopCoroutine(hoverRoutine);

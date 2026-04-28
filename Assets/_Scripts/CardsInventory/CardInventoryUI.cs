@@ -277,16 +277,23 @@ public class CardInventoryUI : MonoBehaviour
 
     private IEnumerator SmoothScale(Transform target, Vector3 to)
     {
+        if (target == null) yield break;
+
         Vector3 from = target.localScale;
         float elapsed = 0f;
         while (elapsed < hoverSmoothTime)
         {
+            // Comprobar que el objeto no fue destruido entre frames
+            if (target == null) yield break;
+
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0, 1, elapsed / hoverSmoothTime);
             target.localScale = Vector3.Lerp(from, to, t);
             yield return null;
         }
-        target.localScale = to;
+
+        if (target != null)
+            target.localScale = to;
     }
 
     // ─── Paginación ───────────────────────────────────────────────

@@ -46,8 +46,8 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
             return;
 
         // Solo si NO estamos en juego (DragCardUI desactivado = inventario)
-        if (dragCardUI != null && dragCardUI.enabled)
-            return;
+        // if (dragCardUI != null && dragCardUI.enabled)
+            // return;
 
         // Evitar doble click mientras anima
         if (isAnimating)

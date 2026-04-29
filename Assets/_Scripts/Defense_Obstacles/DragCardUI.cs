@@ -140,6 +140,19 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canvas = GetComponentInParent<Canvas>();
         cardButton = GetComponent<Button>();
 
+        // Desactivar el Glow en gameplay
+        var glowTransform = transform.Find("Glow");
+        if (glowTransform != null)
+        {
+            var glowImg = glowTransform.GetComponent<Image>();
+            if (glowImg != null)
+            {
+                Color c = glowImg.color;
+                c.a = 0f;
+                glowImg.color = c;
+            }
+        }
+
         // ── Auto-detectar outlines si no están asignados ──
         /* if (frontOutlineController == null || backOutlineController == null)
         {

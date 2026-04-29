@@ -3099,6 +3099,7 @@ MonoBehaviour:
   pageSlideDistance: 15
   permanentCountText: {fileID: 532499761}
   temporalCountText: {fileID: 1053620612}
+  glowFadeDuration: 0.3
 --- !u!4 &895229883
 Transform:
   m_ObjectHideFlags: 0
@@ -6290,7 +6291,7 @@ MonoBehaviour:
     m_Top: 274
     m_Bottom: 0
   m_ChildAlignment: 4
-  m_Spacing: 137.83
+  m_Spacing: 207.71
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0

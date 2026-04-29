@@ -55,6 +55,9 @@ public class CardInventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI permanentCountText;  // muestra "X / X"
     [SerializeField] private TextMeshProUGUI temporalCountText;   // muestra "X / X"
 
+    [Header("Glow hover")]
+    [SerializeField] private float glowFadeDuration = 0.15f;
+
     private void Start()
     {
         if (startMatchButton != null)
@@ -281,7 +284,7 @@ public class CardInventoryUI : MonoBehaviour
     private IEnumerator FadeGlow(Image img, float toAlpha)
     {
         float fromAlpha = img.color.a;
-        float duration = 0.15f;
+        float duration = glowFadeDuration;
         float t = 0f;
 
         while (t < duration)

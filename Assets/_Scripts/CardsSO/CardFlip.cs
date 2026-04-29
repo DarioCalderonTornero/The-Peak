@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 /// <summary>
@@ -27,6 +28,7 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
 
     [Header("Carta pendiente de desbloqueo")]
     [SerializeField] private GameObject pendingCard;
+    private Image pendingCardImage;
 
     private void Awake()
     {
@@ -39,6 +41,9 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
         if (cardFront != null) cardFront.SetActive(true);
         if (cardBack != null) cardBack.SetActive(false);
         isFlipped = false;
+
+        if (pendingCard != null)
+            pendingCardImage = pendingCard.GetComponent<Image>();
     }
 
     // ─── CLICK DERECHO ────────────────────────────────────────────
@@ -62,6 +67,14 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
             if (child.gameObject == cardBack) continue;
             child.gameObject.SetActive(!pending);
         }
+    }
+
+    public void SetPendingSprite(Sprite sprite)
+    {
+        if (pendingCardImage == null && pendingCard != null)
+            pendingCardImage = pendingCard.GetComponent<Image>();
+        if (pendingCardImage != null && sprite != null)
+            pendingCardImage.sprite = sprite;
     }
 
     public void OnPointerClick(PointerEventData eventData)

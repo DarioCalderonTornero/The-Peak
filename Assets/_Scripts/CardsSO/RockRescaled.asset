@@ -29,7 +29,7 @@ MonoBehaviour:
   gridSize: {x: 2, y: 2}
   decalOffset: {x: 0, y: 0}
   cardType: 0
-  backBackground: {fileID: 766581205, guid: 9623d882cc5807f4398904ae37cf9f52, type: 3}
+  backBackground: {fileID: 855669260, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
   backIllustration: {fileID: 0}
   loreText: Lore Text
   extendedDescription: Description

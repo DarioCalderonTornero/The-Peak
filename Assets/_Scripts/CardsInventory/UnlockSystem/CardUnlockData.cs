@@ -60,10 +60,9 @@ public class CardUnlockData : ScriptableObject
         foreach (var e in entries)
         {
             if (e.card == null) continue;
-            PlayerPrefs.SetInt($"CardUnlock_{e.card.name}", (int)e.currentState);
+            PlayerPrefs.SetInt($"CardUnlock_{e.card.cardName}", (int)e.currentState);
         }
         PlayerPrefs.Save();
-        Debug.Log("[CardUnlockData] Datos guardados en PlayerPrefs.");
     }
 
     public void SetState(CardData card, CardUnlockState state)
@@ -113,7 +112,7 @@ public class CardUnlockData : ScriptableObject
         foreach (var e in entries)
         {
             if (e.card == null) continue;
-            PlayerPrefs.DeleteKey($"CardUnlock_{e.card.name}");
+            PlayerPrefs.DeleteKey($"CardUnlock_{e.card.cardName}");
             e.currentState = e.defaultState;
         }
         PlayerPrefs.Save();
@@ -136,7 +135,7 @@ public class CardUnlockData : ScriptableObject
         {
             if (e.card == null) continue;
 
-            string key = $"CardUnlock_{e.card.name}";
+            string key = $"CardUnlock_{e.card.cardName}";
 
             if (PlayerPrefs.HasKey(key))
             {

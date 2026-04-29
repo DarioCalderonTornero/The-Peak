@@ -194,7 +194,7 @@ public class CardInventoryUI : MonoBehaviour
 
             if (state == CardUnlockState.Pending)
             {
-                SetupPendingCard(cardObj, cardData, pendingSprite);
+                SetupPendingCard(cardObj, cardData);
                 continue;
             }
 
@@ -225,6 +225,9 @@ public class CardInventoryUI : MonoBehaviour
         }
     }
 
+    [SerializeField] private Sprite pendingSpritePermanente;
+    [SerializeField] private Sprite pendingSpriteTemporal;
+
     private void SetupLockedCard(GameObject cardObj, Sprite sprite)
     {
         var drag = cardObj.GetComponent<DragCardUI>();
@@ -238,7 +241,7 @@ public class CardInventoryUI : MonoBehaviour
         HideAllExceptSprite(cardObj, sprite);
     }
 
-    private void SetupPendingCard(GameObject cardObj, CardData cardData, Sprite sprite)
+    private void SetupPendingCard(GameObject cardObj, CardData cardData)
     {
         var drag = cardObj.GetComponent<DragCardUI>();
         if (drag != null) drag.enabled = false;
@@ -255,10 +258,12 @@ public class CardInventoryUI : MonoBehaviour
         var flip = cardObj.GetComponent<CardFlip>();
         if (flip != null)
         {
-            var pendingImg = cardObj.transform.Find("PendingCard")?.GetComponent<Image>();
-            if (pendingImg != null && sprite != null)
-                pendingImg.sprite = sprite;
+            // Elegir sprite según tipo
+            Sprite pendingSprite = cardData.cardType == CardData.CardType.Permanente
+                ? pendingSpritePermanente
+                : pendingSpriteTemporal;
 
+            flip.SetPendingSprite(pendingSprite);
             flip.SetPending(true);
             // Pasar la escala base para la animación
             flip._unlockBaseScale = cardScale;

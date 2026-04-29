@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class FreeCameraMovement : MonoBehaviour
@@ -8,7 +9,6 @@ public class FreeCameraMovement : MonoBehaviour
     // =========================================================
 
     [Header("Fly (RMB)")]
-    [Tooltip("Velocidad lineal del vuelo (WASD + Q/E) cuando holdeas RMB.")]
     [SerializeField] private float flySpeed = 25f;
 
     [Header("Pan (MMB)")]
@@ -20,7 +20,7 @@ public class FreeCameraMovement : MonoBehaviour
     [Header("Zoom (Always)")]
     [SerializeField] private float zoomSpeed = 5f;
 
-    [Header("Zoom IN Collision (acercarse ilimitado hasta casi chocar)")]
+    [Header("Zoom IN Collision")]
     [SerializeField] private string mountainTag = "Mountain";
     [SerializeField] private float zoomInStopDistance = 1.0f;
     [SerializeField] private float zoomInCastRadius = 0.25f;
@@ -44,14 +44,8 @@ public class FreeCameraMovement : MonoBehaviour
 
     [Header("Snap To Preset")]
     [SerializeField] private float snapDuration = 0.35f;
-
-    [Tooltip("Distancia a partir de la cual consideramos que ya hemos llegado y cortamos el snap.")]
     [SerializeField] private float snapPositionEpsilon = 0.05f;
-
-    [Tooltip("Ángulo (grados) a partir del cual consideramos que ya hemos llegado y cortamos el snap.")]
     [SerializeField] private float snapAngleEpsilon = 0.75f;
-
-    [Tooltip("Para evitar cortar demasiado pronto, solo permitimos corte temprano cuando el snap ya ha avanzado X%.")]
     [Range(0f, 1f)]
     [SerializeField] private float snapEarlyCompleteMinT = 0.85f;
 
@@ -60,7 +54,28 @@ public class FreeCameraMovement : MonoBehaviour
     private Vector3 snapStartPos, snapTargetPos;
     private Quaternion snapStartRot, snapTargetRot;
 
-    // Valores base del inspector — fuente de verdad para los multiplicadores
+    // =========================================================
+    //  CAMERA BOUNDS
+    // =========================================================
+
+    [Header("Camera Bounds")]
+    [SerializeField] private bool enableBounds = true;
+    [SerializeField] private Vector3 minBounds = new Vector3(-100f, 5f, -100f);
+    [SerializeField] private Vector3 maxBounds = new Vector3(100f, 80f, 100f);
+
+    [Header("Boundary Feedback")]
+    [SerializeField] private Transform mountainCenter;
+    [SerializeField] private float bounceDuration = 0.75f;
+    [SerializeField] private float bounceStrength = 5f;
+    [SerializeField] private float lookAtSpeed = 5f;
+
+    private bool isBouncing = false;
+    private Coroutine bounceRoutine;
+
+    // =========================================================
+    //  SPEED
+    // =========================================================
+
     private float baseFlySpeed;
     private float basePanSpeed;
 
@@ -70,11 +85,9 @@ public class FreeCameraMovement : MonoBehaviour
 
     private void Start()
     {
-        // Guardar valores del inspector ANTES de aplicar cualquier preferencia
         baseFlySpeed = flySpeed;
         basePanSpeed = panSpeed;
 
-        // Aplicar multiplicadores guardados si existen
         if (PlayerPrefs.HasKey("CameraSpeedMultiplier"))
             flySpeed = baseFlySpeed * PlayerPrefs.GetFloat("CameraSpeedMultiplier");
 
@@ -83,7 +96,6 @@ public class FreeCameraMovement : MonoBehaviour
 
         Vector3 currentEuler = transform.eulerAngles;
         yaw = currentEuler.y;
-
         pitch = currentEuler.x;
         if (pitch > 180f) pitch -= 360f;
 
@@ -122,17 +134,14 @@ public class FreeCameraMovement : MonoBehaviour
 
         if (InputManager.Instance == null) return;
 
-        // 1) Zoom siempre activo (rueda)
+        // Durante el bounce bloqueamos todo input de cámara
+        if (isBouncing) return;
+
         HandleZoomAlways();
-
-        // 2) Paneo (MMB hold)
         HandlePanMMB();
-
-        // 3) Cámara libre estilo Unity (RMB hold)
         HandleFlyRMB();
-
-        // 4) Snap a presets (si está activo, manda al final del frame)
         HandleSnap();
+        HandleBounds();
     }
 
     // =========================================================
@@ -146,7 +155,7 @@ public class FreeCameraMovement : MonoBehaviour
     private void InputManager_OnTopView(object sender, EventArgs e) => StartSnap(presetTop);
 
     // =========================================================
-    //  ZOOM (SIEMPRE)
+    //  ZOOM
     // =========================================================
 
     private void HandleZoomAlways()
@@ -218,19 +227,14 @@ public class FreeCameraMovement : MonoBehaviour
 
         float x = -delta.x * panSpeed;
         float z = -delta.y * panSpeed;
-
         float ySign = invertPanY ? 1f : -1f;
         float y = delta.y * panSpeed * ySign * panVerticalMultiplier;
 
         Vector3 upAxis = panVerticalUsesWorldUp ? Vector3.up : transform.up;
-
         Vector3 move = (right * x) + (forwardOnGround * z) + (upAxis * y);
 
         if (InputManager.Instance.isCameraPanSpeedMultiplierHold())
-        {
-            float panSpeedMultiplier = 2f;
-            move *= panSpeedMultiplier;
-        }
+            move *= 2f;
 
         transform.position += move;
     }
@@ -269,7 +273,86 @@ public class FreeCameraMovement : MonoBehaviour
     }
 
     // =========================================================
-    //  SNAP (presets)
+    //  BOUNDS
+    // =========================================================
+
+    private void HandleBounds()
+    {
+        if (!enableBounds) return;
+
+        Vector3 pos = transform.position;
+        Vector3 clamped = new Vector3(
+            Mathf.Clamp(pos.x, minBounds.x, maxBounds.x),
+            Mathf.Clamp(pos.y, minBounds.y, maxBounds.y),
+            Mathf.Clamp(pos.z, minBounds.z, maxBounds.z)
+        );
+
+        // Clamp siempre para impedir traspasar físicamente el límite
+        transform.position = clamped;
+
+        bool wasOutOfBounds = (pos != clamped);
+        if (wasOutOfBounds && !isBouncing)
+        {
+            if (bounceRoutine != null)
+                StopCoroutine(bounceRoutine);
+            bounceRoutine = StartCoroutine(BounceRoutine(clamped));
+        }
+    }
+
+    private IEnumerator BounceRoutine(Vector3 clampedPos)
+    {
+        isBouncing = true;
+
+        Vector3 startPos = clampedPos;
+
+        Vector3 dirToCenter = mountainCenter != null
+            ? (mountainCenter.position - clampedPos).normalized
+            : Vector3.zero;
+
+        Vector3 bounceTarget = clampedPos + dirToCenter * bounceStrength;
+        bounceTarget = new Vector3(
+            Mathf.Clamp(bounceTarget.x, minBounds.x, maxBounds.x),
+            Mathf.Clamp(bounceTarget.y, minBounds.y, maxBounds.y),
+            Mathf.Clamp(bounceTarget.z, minBounds.z, maxBounds.z)
+        );
+
+        Quaternion startRot = transform.rotation;
+        Quaternion targetRot = startRot;
+
+        if (mountainCenter != null)
+        {
+            Vector3 dirToMountain = (mountainCenter.position - clampedPos).normalized;
+            if (dirToMountain.sqrMagnitude > 0.001f)
+                targetRot = Quaternion.LookRotation(dirToMountain);
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < bounceDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Smooth01(Mathf.Clamp01(elapsed / bounceDuration));
+
+            // Posición — efecto goma elástica
+            transform.position = Vector3.Lerp(startPos, bounceTarget, t);
+
+            // Rotación — giro suave y consistente usando t directamente
+            transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+
+            yield return null;
+        }
+
+        // Al terminar el bounce la cámara mira exactamente al mountainCenter
+        transform.rotation = targetRot;
+
+        SyncRotation();
+
+        isBouncing = false;
+        bounceRoutine = null;
+    }
+
+    // =========================================================
+    //  SNAP
     // =========================================================
 
     private void StartSnap(Transform target)
@@ -296,12 +379,7 @@ public class FreeCameraMovement : MonoBehaviour
         transform.position = snapTargetPos;
         transform.rotation = snapTargetRot;
 
-        Vector3 euler = transform.eulerAngles;
-        yaw = euler.y;
-
-        pitch = euler.x;
-        if (pitch > 180f) pitch -= 360f;
-
+        SyncRotation();
         isSnapping = false;
     }
 
@@ -338,8 +416,6 @@ public class FreeCameraMovement : MonoBehaviour
 
     public float GetCameraSpeed() => flySpeed;
     public float GetCameraPan() => panSpeed;
-
-    /// <summary>Devuelve el multiplicador actual (relativo al valor del inspector).</summary>
     public float GetCameraSpeedMultiplier() => baseFlySpeed > 0f ? flySpeed / baseFlySpeed : 1f;
     public float GetCameraPanMultiplier() => basePanSpeed > 0f ? panSpeed / basePanSpeed : 1f;
 
@@ -350,10 +426,6 @@ public class FreeCameraMovement : MonoBehaviour
     public void SetCameraSpeed(float speed) => flySpeed = speed;
     public void SetCameraPan(float pan) => panSpeed = pan;
 
-    /// <summary>
-    /// Aplica un multiplicador sobre el valor base del inspector.
-    /// El slider de ajustes debe usar este método.
-    /// </summary>
     public void SetCameraSpeedMultiplier(float multiplier)
     {
         flySpeed = baseFlySpeed * multiplier;
@@ -368,12 +440,32 @@ public class FreeCameraMovement : MonoBehaviour
     {
         transform.position = position;
         transform.rotation = rotation;
+        SyncRotation();
+    }
 
-        Vector3 euler = rotation.eulerAngles;
+    // =========================================================
+    //  HELPERS
+    // =========================================================
 
+    private void SyncRotation()
+    {
+        Vector3 euler = transform.eulerAngles;
         yaw = euler.y;
         pitch = euler.x;
+        if (pitch > 180f) pitch -= 360f;
+    }
 
-        if (pitch > 180) pitch -= 360;
+    private void OnDrawGizmosSelected()
+    {
+        if (!enableBounds) return;
+
+        Vector3 center = (minBounds + maxBounds) * 0.5f;
+        Vector3 size = maxBounds - minBounds;
+
+        Gizmos.color = new Color(0f, 1f, 0.5f, 0.15f);
+        Gizmos.DrawCube(center, size);
+
+        Gizmos.color = new Color(0f, 1f, 0.5f, 0.8f);
+        Gizmos.DrawWireCube(center, size);
     }
 }

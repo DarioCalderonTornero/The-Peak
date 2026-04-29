@@ -78,7 +78,7 @@ Material:
     - _ConservativeDepthOffsetEnable: 0
     - _CullMode: 2
     - _CullModeForward: 2
-    - _Density: 3.1
+    - _Density: -165
     - _DepthOffsetEnable: 0
     - _DistortionAmount: 0.05
     - _DoubleSidedEnable: 0
@@ -95,7 +95,7 @@ Material:
     - _NoiseIntensity: 0.05
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0
-    - _Power: 4.5
+    - _Power: 3.16
     - _RenderQueueType: 1
     - _Speed: 1.8
     - _SrcBlend: 1
@@ -125,7 +125,7 @@ Material:
     - _EdgeFoamColor: {r: 0.74056596, g: 0.9699082, b: 1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _FresnelColor: {r: 0.48998755, g: 0.7072014, b: 0.7264151, a: 0}
-    - _NoiseSpeed: {r: 0.2, g: 0.1, b: 0, a: 0}
+    - _NoiseSpeed: {r: 0.001, g: 0.001, b: 0, a: 0}
     - _NoiseSpeedA: {r: 0.5, g: 0.1, b: 0, a: 0}
     - _NoiseSpeedB: {r: -0.3, g: -0.12, b: 0, a: 0}
     - _NoiseTiling: {r: 3, g: 3, b: 0, a: 0}

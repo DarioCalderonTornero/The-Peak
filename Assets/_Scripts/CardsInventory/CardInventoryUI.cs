@@ -58,6 +58,18 @@ public class CardInventoryUI : MonoBehaviour
     [Header("Glow hover")]
     [SerializeField] private float glowFadeDuration = 0.15f;
 
+    [Header("Card Unlock")]
+    [SerializeField] private CardUnlockData cardUnlockData;
+    [SerializeField] private Sprite lockedSprite; 
+    [SerializeField] private Sprite pendingSprite;
+
+
+    private void Awake()
+    {
+        if (cardUnlockData != null)
+            cardUnlockData.Load();
+    }
+
     private void Start()
     {
         if (startMatchButton != null)
@@ -83,7 +95,6 @@ public class CardInventoryUI : MonoBehaviour
 
         ClampCurrentPage();
         RefreshInventory();
-        UpdateCountText();
         UpdatePaginationUI();
         UpdateTypeCounters();
     }
@@ -112,7 +123,6 @@ public class CardInventoryUI : MonoBehaviour
         currentPage = 0;
         ClampCurrentPage();
         RefreshInventory();
-        UpdateCountText();
         ResetAllCardScales();
         UpdatePaginationUI();
         UpdateTypeCounters();
@@ -124,14 +134,41 @@ public class CardInventoryUI : MonoBehaviour
             inventoryPanel.SetActive(false);
     }
 
+    #if UNITY_EDITOR
+        [ContextMenu("Reset Card Unlock States")]
+        private void ResetCardUnlockStates()
+        {
+            if (cardUnlockData != null)
+            {
+                cardUnlockData.ResetAll();
+                Debug.Log("[CardInventoryUI] Estados de desbloqueo reseteados.");
+            }
+        }
+    #endif
+
+    [ContextMenu("Debug PlayerPrefs")]
+    private void DebugPlayerPrefs()
+    {
+        if (cardUnlockData == null) return;
+        foreach (var card in cardUnlockData.GetAllCards())
+        {
+            string key = $"CardUnlock_{card.name}";
+            Debug.Log($"[PlayerPrefs] {key} = {PlayerPrefs.GetInt(key, -999)}");
+        }
+    }
+
     private void RefreshInventory()
     {
         if (cardContainer == null || cardPrefab == null) return;
-
         foreach (Transform child in cardContainer)
             Destroy(child.gameObject);
 
-        int total = availableCards.Count;
+        // Usar todas las cartas del CardUnlockData si está asignado
+        var allCards = cardUnlockData != null
+            ? cardUnlockData.GetAllCards()
+            : availableCards;
+
+        int total = allCards.Count;
         if (total <= 0) return;
 
         int startIndex = currentPage * cardsPerPage;
@@ -139,18 +176,32 @@ public class CardInventoryUI : MonoBehaviour
 
         for (int i = startIndex; i < endExclusive; i++)
         {
-            var cardData = availableCards[i];
+            var cardData = allCards[i];
             if (cardData == null) continue;
+
+            var state = cardUnlockData != null
+                ? cardUnlockData.GetState(cardData)
+                : CardUnlockState.Unlocked;
 
             GameObject cardObj = Instantiate(cardPrefab, cardContainer);
             cardObj.transform.localScale = cardScale;
 
-            // Desactivar drag en inventario
-            var dragComponent = cardObj.GetComponent<DragCardUI>();
-            if (dragComponent != null)
-                dragComponent.enabled = false;
+            if (state == CardUnlockState.Locked)
+            {
+                SetupLockedCard(cardObj, lockedSprite);
+                continue; // no añadir hover ni botón
+            }
 
-            // Configurar UI
+            if (state == CardUnlockState.Pending)
+            {
+                SetupPendingCard(cardObj, cardData, pendingSprite);
+                continue;
+            }
+
+            // Estado normal — código existente
+            var dragComponent = cardObj.GetComponent<DragCardUI>();
+            if (dragComponent != null) dragComponent.enabled = false;
+
             var cardUI = cardObj.GetComponent<DragCardUI>();
             if (cardUI != null)
             {
@@ -158,25 +209,160 @@ public class CardInventoryUI : MonoBehaviour
                 cardUI.SetupCardUI();
             }
 
-            // Reset flip ANTES de aplicar colores
             var flipComponent = cardObj.GetComponent<CardFlip>();
-            if (flipComponent != null)
-                flipComponent.ResetToFront();
+            if (flipComponent != null) flipComponent.ResetToFront();
 
-            // Hover de escala
             AddHoverEffect(cardObj);
 
-            // Botón selección
             Button btn = cardObj.GetComponent<Button>();
             if (btn == null) btn = cardObj.AddComponent<Button>();
             btn.onClick.RemoveAllListeners();
-
             CardData capturedData = cardData;
             GameObject capturedObj = cardObj;
             btn.onClick.AddListener(() => ToggleSelect(capturedObj, capturedData));
 
             SetCardStar(cardObj, selectedCards.Contains(cardData));
         }
+    }
+
+    private void SetupLockedCard(GameObject cardObj, Sprite sprite)
+    {
+        var drag = cardObj.GetComponent<DragCardUI>();
+        if (drag != null) drag.enabled = false;
+
+        var cg = cardObj.GetComponent<CanvasGroup>();
+        if (cg == null) cg = cardObj.AddComponent<CanvasGroup>();
+        cg.interactable = false;
+        cg.blocksRaycasts = false;
+
+        HideAllExceptSprite(cardObj, sprite);
+    }
+
+    private void SetupPendingCard(GameObject cardObj, CardData cardData, Sprite sprite)
+    {
+        var drag = cardObj.GetComponent<DragCardUI>();
+        if (drag != null) drag.enabled = false;
+
+        // Configurar datos reales en la carta (para que estén listos cuando se voltee)
+        var dragUI = cardObj.GetComponent<DragCardUI>();
+        if (dragUI != null)
+        {
+            dragUI.cardData = cardData;
+            dragUI.SetupCardUI();
+        }
+
+        // Activar estado pendiente en CardFlip
+        var flip = cardObj.GetComponent<CardFlip>();
+        if (flip != null)
+        {
+            var pendingImg = cardObj.transform.Find("PendingCard")?.GetComponent<Image>();
+            if (pendingImg != null && sprite != null)
+                pendingImg.sprite = sprite;
+
+            flip.SetPending(true);
+            // Pasar la escala base para la animación
+            flip._unlockBaseScale = cardScale;
+
+            flip.OnUnlockFlipComplete += () =>
+            {
+                // Reactivar explícitamente todos los hijos de la raíz
+                foreach (Transform child in cardObj.transform)
+                    child.gameObject.SetActive(true);
+
+                var backCard = cardObj.transform.Find("BackCard");
+                if (backCard != null) backCard.gameObject.SetActive(false);
+
+                // Resetear Glow a alpha 0 para que AddHoverEffect lo encuentre activo
+                var glowTransform = cardObj.transform.Find("Glow");
+                if (glowTransform != null)
+                {
+                    glowTransform.gameObject.SetActive(true);
+                    var glowImg = glowTransform.GetComponent<Image>();
+                    if (glowImg != null)
+                    {
+                        Color c = glowImg.color;
+                        c.a = 0f;
+                        glowImg.color = c;
+                    }
+                }
+
+                cardUnlockData.SetState(cardData, CardUnlockState.Unlocked);
+                if (!availableCards.Contains(cardData))
+                    availableCards.Add(cardData);
+
+                var btn = cardObj.GetComponent<Button>();
+                if (btn != null)
+                {
+                    btn.interactable = true;
+                    btn.onClick.RemoveAllListeners();
+                    btn.onClick.AddListener(() => ToggleSelect(cardObj, cardData));
+                }
+
+                AddHoverEffect(cardObj);
+                SetCardStar(cardObj, selectedCards.Contains(cardData));
+            };
+        }
+
+        // Hover de escala solamente mientras está pendiente
+        AddScaleOnlyHover(cardObj);
+
+        // Botón para capturar el click izquierdo (CardFlip lo gestiona via OnPointerClick)
+        var btnSetup = cardObj.GetComponent<Button>();
+        if (btnSetup == null) btnSetup = cardObj.AddComponent<Button>();
+        btnSetup.onClick.RemoveAllListeners();
+        // El click lo maneja CardFlip.OnPointerClick directamente
+    }
+
+    private void AddScaleOnlyHover(GameObject cardObj)
+    {
+        Vector3 baseScale = cardObj.transform.localScale;
+        Vector3 targetScale = baseScale * hoverScaleMultiplier;
+        Coroutine scaleCoroutine = null;
+
+        EventTrigger trigger = cardObj.GetComponent<EventTrigger>();
+        if (trigger == null) trigger = cardObj.AddComponent<EventTrigger>();
+        trigger.triggers.Clear();
+
+        var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        entryEnter.callback.AddListener((_) =>
+        {
+            if (scaleCoroutine != null) StopCoroutine(scaleCoroutine);
+            scaleCoroutine = StartCoroutine(SmoothScale(cardObj.transform, targetScale));
+        });
+        trigger.triggers.Add(entryEnter);
+
+        var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        entryExit.callback.AddListener((_) =>
+        {
+            if (scaleCoroutine != null) StopCoroutine(scaleCoroutine);
+            scaleCoroutine = StartCoroutine(SmoothScale(cardObj.transform, baseScale));
+        });
+        trigger.triggers.Add(entryExit);
+    }
+
+    private void HideAllExceptSprite(GameObject cardObj, Sprite sprite)
+    {
+        // Desactivar todos los hijos de la raíz excepto FrontCard
+        foreach (Transform child in cardObj.transform)
+        {
+            if (child.name != "FrontCard")
+                child.gameObject.SetActive(false);
+        }
+
+        // Dentro de FrontCard, desactivar todo excepto FrontImage
+        var frontCard = cardObj.transform.Find("FrontCard");
+        if (frontCard == null) return;
+
+        foreach (Transform child in frontCard)
+        {
+            if (child.name != "FrontImage")
+                child.gameObject.SetActive(false);
+        }
+
+        // Asignar el sprite al FrontImage
+        var frontImage = frontCard.Find("FrontImage")?.GetComponent<Image>();
+        if (frontImage != null && sprite != null)
+            frontImage.sprite = sprite;
     }
 
     // ─── Selección ────────────────────────────────────────────────
@@ -199,7 +385,6 @@ public class CardInventoryUI : MonoBehaviour
             OnCardSelected?.Invoke(data);
         }
 
-        UpdateCountText();
         UpdateStartButtonState();
     }
 
@@ -442,12 +627,6 @@ public class CardInventoryUI : MonoBehaviour
     }
 
     // ─── UI helpers ───────────────────────────────────────────────
-
-    private void UpdateCountText()
-    {
-        // if (selectedCountText != null)
-            // selectedCountText.text = $"Select cards to start the game {selectedCards.Count} / {maxSelectedCards}";
-    }
 
     private void UpdateStartButtonState()
     {

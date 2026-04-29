@@ -35,7 +35,14 @@ public class CardRewardUI : MonoBehaviour
         if (rewardPanel != null) rewardPanel.SetActive(false);
     }
 
-    private void Start() => TrySubscribe();
+    private void Start()
+    {
+        TrySubscribe();
+
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnPlayerTurnStart += HandlePlayerTurnStart;
+    }
+
     private void OnEnable() => TrySubscribe();
 
     private void OnDisable()
@@ -45,6 +52,16 @@ public class CardRewardUI : MonoBehaviour
             LevelExperienceManager.Instance.OnCardRewardTriggered -= HandleCardRewardTriggered;
             subscribed = false;
         }
+
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnPlayerTurnStart -= HandlePlayerTurnStart;
+    }
+
+    private void HandlePlayerTurnStart()
+    {
+        if (!rewardPending) return;
+        rewardPending = false;
+        ShowReward();
     }
 
     private void TrySubscribe()
@@ -69,17 +86,24 @@ public class CardRewardUI : MonoBehaviour
         }
     }
 
+    [SerializeField] private CardUnlockData cardUnlockData;
+
+    private bool rewardPending = false;
+
     private void HandleCardRewardTriggered()
     {
-        if (CardGameManager.Instance == null) return;
+        List<CardData> locked = cardUnlockData != null
+            ? cardUnlockData.GetLockedCards()
+            : (CardGameManager.Instance?.GetRewardCandidates() ?? new());
 
-        List<CardData> candidates = CardGameManager.Instance.GetRewardCandidates();
-        if (candidates == null || candidates.Count == 0) return;
+        if (locked == null || locked.Count == 0) return;
 
-        optionA = candidates[0];
-        optionB = candidates.Count > 1 ? candidates[1] : candidates[0];
+        locked.Sort((a, b) => UnityEngine.Random.Range(-1, 2));
+        optionA = locked[0];
+        optionB = locked.Count > 1 ? locked[1] : locked[0];
 
-        ShowReward();
+        // No mostrar ahora — guardar para el próximo turno de jugador
+        rewardPending = true;
     }
 
     private void ShowReward()
@@ -109,6 +133,12 @@ public class CardRewardUI : MonoBehaviour
     {
         Time.timeScale = 1f;
         if (rewardPanel != null) rewardPanel.SetActive(false);
+
+        // Pasar a estado pendiente
+        if (cardUnlockData != null)
+            cardUnlockData.SetState(chosen, CardUnlockState.Pending);
+
+        Debug.Log("Pasada a Pending: " + chosen.cardName);
 
         OnCardChosen?.Invoke(chosen);
 

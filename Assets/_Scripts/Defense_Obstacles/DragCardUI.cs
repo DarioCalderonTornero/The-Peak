@@ -46,6 +46,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [SerializeField] private LayerMask defenseMask;
     [SerializeField] private LayerMask campMask;
     [SerializeField] private AudioClip defensePlacementAudioClip;
+    [SerializeField] private AudioClip cardPointerAudioClip;
 
     // ✅ PERSISTENTES (se quedan aunque vuelvas a slots)
     [Header("Persisted Transform (per-card)")]
@@ -1249,7 +1250,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         isHovering = true;
         if (hoverRoutine != null) StopCoroutine(hoverRoutine);
         hoverRoutine = StartCoroutine(AnimateHoverLift(true));
-
+        Temporal_Sound_Music.Instance.Play2DSound(cardPointerAudioClip, 0.3f);
         // ── NUEVO: Activar efectos hover ──
         TriggerHoverFX(true);
     }

@@ -5779,6 +5779,7 @@ MonoBehaviour:
   xpIncreasePerLevel: 100
   levelExperienceToAdd: 200
   rewardLevels: 05000000
+  levelUpAudioclip: {fileID: 8300000, guid: eedda614962de494dbc77ae2425d0507, type: 3}
 --- !u!1 &1358668564
 GameObject:
   m_ObjectHideFlags: 0

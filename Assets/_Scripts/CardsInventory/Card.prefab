@@ -1470,6 +1470,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   defensePlacementAudioClip: {fileID: 8300000, guid: f940afd3a5f69ae4e9b0faad03ce64dc, type: 3}
+  cardPointerAudioClip: {fileID: 8300000, guid: 3f69144e0db24f647bdf5fbd5ec8a0ce, type: 3}
   currentRotationDegrees: 0
   currentScaleFactor: 1
   previewValidMaterial: {fileID: 2100000, guid: e0dff9f766b27cb4eb098c913e86ac4b, type: 2}

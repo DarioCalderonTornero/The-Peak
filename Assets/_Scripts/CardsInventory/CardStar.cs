@@ -34,10 +34,13 @@ public class CardStar : MonoBehaviour
 
     private Coroutine appearRoutine;
 
+    private Vector3 originalScale;
+
     // ─── Init ─────────────────────────────────────────────────────
 
     private void Awake()
     {
+        // Ya no guardamos originalScale aquí
         SetAlpha(0f);
         transform.localScale = Vector3.zero;
         if (glowImage != null) glowImage.color = new Color(glowColorA.r, glowColorA.g, glowColorA.b, 0f);
@@ -52,7 +55,7 @@ public class CardStar : MonoBehaviour
         pulseT += Time.unscaledDeltaTime * pulseSpeed;
         float s = Mathf.Lerp(pulseMinScale, pulseMaxScale,
             (Mathf.Sin(pulseT * Mathf.PI * 2f) + 1f) * 0.5f);
-        transform.localScale = Vector3.one * s;
+        transform.localScale = originalScale * s;
         transform.Rotate(0f, 0f, idleRotSpeed * Time.unscaledDeltaTime);
 
         if (glowImage != null)
@@ -97,10 +100,21 @@ public class CardStar : MonoBehaviour
 
     // ─── Mostrar / Ocultar ────────────────────────────────────────
 
+    private bool scaleInitialized = false;
+
     private void Show()
     {
-        // Activar el GameObject antes de lanzar la coroutine
         gameObject.SetActive(true);
+
+        // Guardar escala la primera vez que se muestra, cuando ya está activo
+        if (!scaleInitialized)
+        {
+            originalScale = transform.localScale;
+            if (originalScale == Vector3.zero)
+                originalScale = Vector3.one; // fallback de seguridad
+            scaleInitialized = true;
+        }
+
         isVisible = true;
         if (appearRoutine != null) StopCoroutine(appearRoutine);
         appearRoutine = StartCoroutine(AppearAnim());
@@ -129,20 +143,20 @@ public class CardStar : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float n = EaseOutBack(Mathf.Clamp01(t / appearDuration));
-            transform.localScale = Vector3.one * n;
+            transform.localScale = originalScale * n;
             transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(-rotateDegrees, 0f, n));
             SetAlpha(n);
             yield return null;
         }
 
-        transform.localScale = Vector3.one;
+        transform.localScale = originalScale;
         transform.localRotation = Quaternion.identity;
         SetAlpha(1f);
     }
 
     private IEnumerator DisappearAnim()
     {
-        float startScale = transform.localScale.x;
+        Vector3 startScale = transform.localScale; // guardar escala actual completa
         float t = 0f;
         float dur = appearDuration * 0.6f;
 
@@ -150,7 +164,7 @@ public class CardStar : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float n = 1f - Mathf.Clamp01(t / dur);
-            transform.localScale = Vector3.one * (startScale * n);
+            transform.localScale = startScale * n;
             SetAlpha(n);
             yield return null;
         }

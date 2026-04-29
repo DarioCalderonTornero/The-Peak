@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 1e2cb78bc2e4f834ba018b6736d0728c
+guid: e650e3019449768458ff8e27eea4e1cb
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -21,7 +21,7 @@ TextureImporter:
     heightScale: 0.25
     normalMapFilter: 0
     flipGreenChannel: 0
-  isReadable: 0
+  isReadable: 1
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
@@ -110,10 +110,10 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_0
+      name: BotonesIconosCounter_Puntuacion_0
       rect:
         serializedVersion: 2
-        x: 297
+        x: 287
         y: 751
         width: 38
         height: 35
@@ -125,14 +125,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9d84feba1d1e67b4098aa0a124482578
-      internalID: 438267782
+      spriteID: 43aa59893e24d694fb4cc95a80c50994
+      internalID: 1290112092
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_1
+      name: BotonesIconosCounter_Puntuacion_1
       rect:
         serializedVersion: 2
         x: 371
@@ -147,14 +147,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5a664c0c89854ca44882ac88fb442720
-      internalID: -528014446
+      spriteID: 60e88a416bd475042917f093ed9b94ee
+      internalID: -1574946980
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_2
+      name: BotonesIconosCounter_Puntuacion_2
       rect:
         serializedVersion: 2
         x: 480
@@ -169,14 +169,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6c43dbcd1ef02d747b4af748cdc47179
-      internalID: 834525656
+      spriteID: 428b408d6740c7f4a8a55a1da63eea31
+      internalID: 1373193114
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_3
+      name: BotonesIconosCounter_Puntuacion_3
       rect:
         serializedVersion: 2
         x: 583
@@ -191,14 +191,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0bed8a1cc8adb244ab7aed5465dbfa52
-      internalID: 250511656
+      spriteID: 2a28d1a132d067a4d81f204fa9bce77a
+      internalID: 1009883442
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_4
+      name: BotonesIconosCounter_Puntuacion_4
       rect:
         serializedVersion: 2
         x: 721
@@ -213,14 +213,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6b9bd0a1a71d6294498c4a9d2a951b7a
-      internalID: -420495422
+      spriteID: 46a307fd0ffab5646bb202ef8996d532
+      internalID: 75287842
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_5
+      name: BotonesIconosCounter_Puntuacion_5
       rect:
         serializedVersion: 2
         x: 866
@@ -235,18 +235,18 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5a97651135cc62a46bb6248fcb7e4e31
-      internalID: 1672907056
+      spriteID: 38bf5b0251762f94e83a95c20005b61b
+      internalID: -1514559692
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_6
+      name: BotonesIconosCounter_Puntuacion_6
       rect:
         serializedVersion: 2
-        x: 291
-        y: 666
+        x: 280
+        y: 692
         width: 50
         height: 32
       alignment: 0
@@ -257,14 +257,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c6d243a53eb22064bb991238d20da2af
-      internalID: -1773237723
+      spriteID: eb773498616f67743864f109830b71ab
+      internalID: 264506223
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_7
+      name: BotonesIconosCounter_Puntuacion_7
       rect:
         serializedVersion: 2
         x: 371
@@ -279,14 +279,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: dfa4f5c14202ce54cbc084f1e5b69e96
-      internalID: -1537469185
+      spriteID: c1b7420417383664eb9e032049cf5864
+      internalID: -973223281
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_8
+      name: BotonesIconosCounter_Puntuacion_8
       rect:
         serializedVersion: 2
         x: 480
@@ -301,14 +301,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0f67fc248d2df484ab08e718261f9edc
-      internalID: -2135197016
+      spriteID: 1a16dd9f50acb2e4da9a827a58a04e7f
+      internalID: -2097609500
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_9
+      name: BotonesIconosCounter_Puntuacion_9
       rect:
         serializedVersion: 2
         x: 583
@@ -323,14 +323,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 679a02a55958bf04cbde936cbb015e54
-      internalID: 933457420
+      spriteID: 42990f2e37e3cbe4d953b65da306e5b7
+      internalID: -188214508
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_10
+      name: BotonesIconosCounter_Puntuacion_10
       rect:
         serializedVersion: 2
         x: 721
@@ -345,14 +345,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9721051ede00948468fb1553071a9e1f
-      internalID: 424364838
+      spriteID: f325ee78e70e9114ab0c52cdcd72e786
+      internalID: 1147296619
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_11
+      name: BotonesIconosCounter_Puntuacion_11
       rect:
         serializedVersion: 2
         x: 864
@@ -367,14 +367,58 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2fda76c50c24e4f4fa5a21b5ba0eec3a
-      internalID: -1333543454
+      spriteID: fcb013ada61591744b40d6abf6221aa7
+      internalID: -905091326
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: iconosybotones2Dcounterspuntuacion_12
+      name: BotonesIconosCounter_Puntuacion_12
+      rect:
+        serializedVersion: 2
+        x: 276
+        y: 623
+        width: 49
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4f4592d8b82e5224bb32e5acf38b9651
+      internalID: 964691463
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BotonesIconosCounter_Puntuacion_13
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 551
+        width: 46
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f2fec29b7bf79349a2ed524ecb8bfd7
+      internalID: 909301126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BotonesIconosCounter_Puntuacion_14
       rect:
         serializedVersion: 2
         x: 466
@@ -389,8 +433,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 73c8dd8a0828fc54f90406aca5414cbc
-      internalID: -1754198710
+      spriteID: 5d1b612242e12c34ba20f7045125ac4d
+      internalID: -1819707385
       vertices: []
       indices: 
       edges: []
@@ -399,7 +443,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 3b611e8e0bfd20f40838d6e2ebfc6b21
+    spriteID: 025cbaac5711cf440adbc35ebeb0ae0b
     internalID: 0
     vertices: []
     indices: 
@@ -409,19 +453,21 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      iconosybotones2Dcounterspuntuacion_0: 438267782
-      iconosybotones2Dcounterspuntuacion_1: -528014446
-      iconosybotones2Dcounterspuntuacion_10: 424364838
-      iconosybotones2Dcounterspuntuacion_11: -1333543454
-      iconosybotones2Dcounterspuntuacion_12: -1754198710
-      iconosybotones2Dcounterspuntuacion_2: 834525656
-      iconosybotones2Dcounterspuntuacion_3: 250511656
-      iconosybotones2Dcounterspuntuacion_4: -420495422
-      iconosybotones2Dcounterspuntuacion_5: 1672907056
-      iconosybotones2Dcounterspuntuacion_6: -1773237723
-      iconosybotones2Dcounterspuntuacion_7: -1537469185
-      iconosybotones2Dcounterspuntuacion_8: -2135197016
-      iconosybotones2Dcounterspuntuacion_9: 933457420
+      BotonesIconosCounter_Puntuacion_0: 1290112092
+      BotonesIconosCounter_Puntuacion_1: -1574946980
+      BotonesIconosCounter_Puntuacion_10: 1147296619
+      BotonesIconosCounter_Puntuacion_11: -905091326
+      BotonesIconosCounter_Puntuacion_12: 964691463
+      BotonesIconosCounter_Puntuacion_13: 909301126
+      BotonesIconosCounter_Puntuacion_14: -1819707385
+      BotonesIconosCounter_Puntuacion_2: 1373193114
+      BotonesIconosCounter_Puntuacion_3: 1009883442
+      BotonesIconosCounter_Puntuacion_4: 75287842
+      BotonesIconosCounter_Puntuacion_5: -1514559692
+      BotonesIconosCounter_Puntuacion_6: 264506223
+      BotonesIconosCounter_Puntuacion_7: -973223281
+      BotonesIconosCounter_Puntuacion_8: -2097609500
+      BotonesIconosCounter_Puntuacion_9: -188214508
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

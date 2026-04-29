@@ -34,8 +34,8 @@ MonoBehaviour:
   backIllustration: {fileID: 0}
   loreText: 
   extendedDescription: 
-  counterIcon: {fileID: 438267782, guid: 1e2cb78bc2e4f834ba018b6736d0728c, type: 3}
+  counterIcon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterName: 
-  counterColorSprite: {fileID: 834525656, guid: 1e2cb78bc2e4f834ba018b6736d0728c, type: 3}
+  counterColorSprite: {fileID: -1574946980, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 1490940440, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
   explanationVideo: {fileID: 0}

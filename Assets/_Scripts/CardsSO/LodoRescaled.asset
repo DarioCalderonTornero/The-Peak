@@ -36,6 +36,6 @@ MonoBehaviour:
   extendedDescription: 
   counterIcon: {fileID: -1773237723, guid: 1e2cb78bc2e4f834ba018b6736d0728c, type: 3}
   counterName: 
-  counterColorSprite: {fileID: 250511656, guid: 1e2cb78bc2e4f834ba018b6736d0728c, type: 3}
+  counterColorSprite: {fileID: 1373193114, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: -2132144692, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
   explanationVideo: {fileID: 32900000, guid: 2ab7b60625c18d1458b7f88d619e27d4, type: 3}

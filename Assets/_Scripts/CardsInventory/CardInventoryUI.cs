@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -215,7 +216,7 @@ public class CardInventoryUI : MonoBehaviour
 
     // ─── Hover escala + estrella ──────────────────────────────────
 
-    private void AddHoverEffect(GameObject cardObj)
+    void AddHoverEffect(GameObject cardObj)
     {
         EventTrigger trigger = cardObj.GetComponent<EventTrigger>();
         if (trigger == null) trigger = cardObj.AddComponent<EventTrigger>();
@@ -224,6 +225,22 @@ public class CardInventoryUI : MonoBehaviour
         Vector3 baseScale = cardObj.transform.localScale;
         Vector3 targetScale = baseScale * hoverScaleMultiplier;
         Coroutine scaleCoroutine = null;
+        Coroutine glowCoroutine = null;
+
+        // Buscar la Image del Glow por nombre
+        Image glowImage = null;
+        var glowTransform = cardObj.transform.Find("Glow");
+        if (glowTransform != null)
+        {
+            glowImage = glowTransform.GetComponent<Image>();
+            // Empezar invisible
+            if (glowImage != null)
+            {
+                Color c = glowImage.color;
+                c.a = 0f;
+                glowImage.color = c;
+            }
+        }
 
         void StartSmoothScale(Vector3 to)
         {
@@ -231,25 +248,60 @@ public class CardInventoryUI : MonoBehaviour
             scaleCoroutine = StartCoroutine(SmoothScale(cardObj.transform, to));
         }
 
-        // Pointer Enter: escala + estrella hover
+        void StartGlowFade(float toAlpha)
+        {
+            if (glowCoroutine != null) StopCoroutine(glowCoroutine);
+            if (glowImage != null)
+                glowCoroutine = StartCoroutine(FadeGlow(glowImage, toAlpha));
+        }
+
+        // Pointer Enter
         var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
         entryEnter.callback.AddListener((_) =>
         {
             StartSmoothScale(targetScale);
+            StartGlowFade(1f);
             foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
                 star.OnHoverEnter();
         });
         trigger.triggers.Add(entryEnter);
 
-        // Pointer Exit: escala + estrella exit
+        // Pointer Exit
         var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
         entryExit.callback.AddListener((_) =>
         {
             StartSmoothScale(baseScale);
+            StartGlowFade(0f);
             foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
                 star.OnHoverExit();
         });
         trigger.triggers.Add(entryExit);
+    }
+
+    private IEnumerator FadeGlow(Image img, float toAlpha)
+    {
+        float fromAlpha = img.color.a;
+        float duration = 0.15f;
+        float t = 0f;
+
+        while (t < duration)
+        {
+            if (img == null) yield break;
+            t += Time.unscaledDeltaTime;
+            float n = Mathf.Clamp01(t / duration);
+            n = 1f - Mathf.Pow(1f - n, 2f); // EaseOut
+            Color c = img.color;
+            c.a = Mathf.Lerp(fromAlpha, toAlpha, n);
+            img.color = c;
+            yield return null;
+        }
+
+        if (img != null)
+        {
+            Color c = img.color;
+            c.a = toAlpha;
+            img.color = c;
+        }
     }
 
     /// <summary>

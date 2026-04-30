@@ -5,12 +5,8 @@ public static class SceneLoader
 {
     public enum Scene
     {
-        MenuScene,
+        MainMenuScenee,
         DarioScene,
-        MRScene,
-        AlexScene,
-        JuanScene,
-        TutorialScene
     }
 
     public static void LoadScene(Scene scene)

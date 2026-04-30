@@ -36,7 +36,7 @@ public class GamePauseUI : MonoBehaviour
         backToMenuButton.onClick.AddListener(() =>
         {
             Time.timeScale = 1.0f;
-            SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
+            SceneLoader.LoadScene(SceneLoader.Scene.MainMenuScenee);
         });
 
         cinematicModeToggleButton.onClick.AddListener(() =>

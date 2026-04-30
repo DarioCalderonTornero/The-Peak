@@ -21,6 +21,10 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
     [Header("Ref al drag (para detectar si estamos en inventario)")]
     [SerializeField] private DragCardUI dragCardUI;   // auto-detect en Awake si se deja vacío
 
+    [Header("Sounds")]
+    [SerializeField] private AudioClip flipSound;   
+
+
     private RectTransform rt;
     private bool isFlipped = false;
     private bool isAnimating = false;
@@ -198,6 +202,7 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
 
         // Cambiar cara
         isFlipped = !isFlipped;
+        Temporal_Sound_Music.Instance.Play2DSound(flipSound, 1.0f);
         if (cardFront != null) cardFront.SetActive(!isFlipped);
         if (cardBack != null) cardBack.SetActive(isFlipped);
 

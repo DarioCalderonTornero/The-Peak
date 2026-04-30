@@ -37,4 +37,4 @@ MonoBehaviour:
   counterName: 
   counterColorSprite: {fileID: -973223281, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 1729673018, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
-  explanationVideo: {fileID: 0}
+  explanationVideo: {fileID: 32900000, guid: 2ab7b60625c18d1458b7f88d619e27d4, type: 3}

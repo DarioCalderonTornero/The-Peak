@@ -89,13 +89,13 @@ Material:
     - _EnableBlendModePreserveSpecularLighting: 0
     - _EnableFogOnTransparent: 1
     - _ExcludeFromTUAndAA: 0
-    - _FoamIntensity: 1
-    - _FresnelPower: 4
+    - _FoamIntensity: 6.47
+    - _FresnelPower: 5.12
     - _GlobalTimeScale: 1
     - _NoiseIntensity: 0.05
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0
-    - _Power: 3.16
+    - _Power: 10
     - _RenderQueueType: 1
     - _Speed: 1.8
     - _SrcBlend: 1
@@ -128,7 +128,7 @@ Material:
     - _NoiseSpeed: {r: 0.001, g: 0.001, b: 0, a: 0}
     - _NoiseSpeedA: {r: 0.5, g: 0.1, b: 0, a: 0}
     - _NoiseSpeedB: {r: -0.3, g: -0.12, b: 0, a: 0}
-    - _NoiseTiling: {r: 3, g: 3, b: 0, a: 0}
+    - _NoiseTiling: {r: 2.34, g: 2.25, b: 0, a: 0}
     - _WaterColor: {r: 0, g: 0.7031784, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -30,11 +30,11 @@ MonoBehaviour:
   gridSize: {x: 2, y: 4}
   decalOffset: {x: 0.5, y: 0.5}
   cardType: 0
-  backBackground: {fileID: -62586561, guid: 6a49c11bab3a19d46aa9b03c155a7f46, type: 3}
+  backBackground: {fileID: -1353826277, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
   backIllustration: {fileID: 0}
   loreText: 
   extendedDescription: 
-  counterIcon: {fileID: -1773237723, guid: 1e2cb78bc2e4f834ba018b6736d0728c, type: 3}
+  counterIcon: {fileID: 964691463, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterName: 
   counterColorSprite: {fileID: 1373193114, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: -2132144692, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}

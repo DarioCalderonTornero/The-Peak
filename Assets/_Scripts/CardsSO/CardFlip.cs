@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 /// <summary>
@@ -20,10 +21,18 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
     [Header("Ref al drag (para detectar si estamos en inventario)")]
     [SerializeField] private DragCardUI dragCardUI;   // auto-detect en Awake si se deja vacío
 
+    [Header("Sounds")]
+    [SerializeField] private AudioClip flipSound;   
+
+
     private RectTransform rt;
     private bool isFlipped = false;
     private bool isAnimating = false;
     private Coroutine flipRoutine;
+
+    [Header("Carta pendiente de desbloqueo")]
+    [SerializeField] private GameObject pendingCard;
+    private Image pendingCardImage;
 
     private void Awake()
     {
@@ -36,25 +45,150 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
         if (cardFront != null) cardFront.SetActive(true);
         if (cardBack != null) cardBack.SetActive(false);
         isFlipped = false;
+
+        if (pendingCard != null)
+            pendingCardImage = pendingCard.GetComponent<Image>();
     }
 
     // ─── CLICK DERECHO ────────────────────────────────────────────
+    private bool isLocked = false;
+    public void SetLocked(bool locked) { isLocked = locked; }
+
+    private bool isPending = false;
+    public void SetPending(bool pending)
+    {
+        isPending = pending;
+
+        if (pendingCard != null) pendingCard.SetActive(pending);
+        if (cardFront != null) cardFront.SetActive(!pending);
+        if (cardBack != null) cardBack.SetActive(false);
+
+        // Ocultar el resto de hijos de la raíz mientras está pendiente
+        foreach (Transform child in transform)
+        {
+            if (child.gameObject == pendingCard) continue;
+            if (child.gameObject == cardFront) continue;
+            if (child.gameObject == cardBack) continue;
+            child.gameObject.SetActive(!pending);
+        }
+    }
+
+    public void SetPendingSprite(Sprite sprite)
+    {
+        if (pendingCardImage == null && pendingCard != null)
+            pendingCardImage = pendingCard.GetComponent<Image>();
+        if (pendingCardImage != null && sprite != null)
+            pendingCardImage.sprite = sprite;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
-        // Solo click derecho
-        if (eventData.button != PointerEventData.InputButton.Right)
+        if (isLocked) return;
+
+        // Click izquierdo en estado pendiente → animación de desbloqueo
+        if (isPending && eventData.button == PointerEventData.InputButton.Left)
+        {
+            if (isAnimating) return;
+            // La escala base la pasa CardInventoryUI al configurar la carta
+            StartUnlockAnimation(_unlockBaseScale);
             return;
+        }
 
-        // Solo si NO estamos en juego (DragCardUI desactivado = inventario)
-        // if (dragCardUI != null && dragCardUI.enabled)
-            // return;
-
-        // Evitar doble click mientras anima
-        if (isAnimating)
-            return;
-
+        // Click derecho → flip normal (solo si no está pendiente)
+        if (eventData.button != PointerEventData.InputButton.Right) return;
+        if (isAnimating) return;
         if (flipRoutine != null) StopCoroutine(flipRoutine);
         flipRoutine = StartCoroutine(FlipAnimation());
+    }
+
+    public event System.Action OnUnlockFlipComplete;
+
+    public Vector3 _unlockBaseScale;
+    private Vector3 _unlockBigScale;
+
+    public void StartUnlockAnimation(Vector3 baseScale)
+    {
+        _unlockBaseScale = baseScale;
+        _unlockBigScale = baseScale * 1.25f;
+        if (isAnimating) return;
+        if (flipRoutine != null) StopCoroutine(flipRoutine);
+        flipRoutine = StartCoroutine(UnlockFlipAnimation());
+    }
+
+    private IEnumerator UnlockFlipAnimation()
+    {
+        isAnimating = true;
+
+        var trigger = GetComponent<EventTrigger>();
+        if (trigger != null) trigger.enabled = false;
+
+        float half = flipDuration * 0.5f;
+
+        // ── Fase 1: hacerse grande ────────────────────────────────────
+        float riseTime = 0.2f;
+        float t = 0f;
+        while (t < riseTime)
+        {
+            t += Time.unscaledDeltaTime;
+            float n = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / riseTime), 2f);
+            transform.localScale = Vector3.Lerp(_unlockBaseScale, _unlockBigScale, n);
+            yield return null;
+        }
+
+        // ── Fase 2: flip primera mitad ────────────────────────────────
+        yield return AnimateRotationY(0f, 90f, half, EaseInQuad);
+
+        // Cambio de cara
+        if (pendingCard != null) pendingCard.SetActive(false);
+        if (cardFront != null) cardFront.SetActive(true);
+        if (cardBack != null) cardBack.SetActive(false);
+
+        // ── Fase 3: flip segunda mitad ────────────────────────────────
+        yield return AnimateRotationY(90f, 0f, half, EaseOutQuad);
+
+        // ── Fase 4: caer con impacto ──────────────────────────────────
+        float fallTime = 0.3f;
+        t = 0f;
+        while (t < fallTime)
+        {
+            t += Time.unscaledDeltaTime;
+            float n = Mathf.Clamp01(t / fallTime);
+            float scaleCurve = n < 0.7f
+                ? Mathf.Lerp(1.25f, 0.92f, n / 0.7f)
+                : Mathf.Lerp(0.92f, 1f, (n - 0.7f) / 0.3f);
+            transform.localScale = _unlockBaseScale * scaleCurve;
+            yield return null;
+        }
+
+        transform.localScale = _unlockBaseScale;
+
+        isAnimating = false;
+        isPending = false;
+
+        if (pendingCard != null)
+        {
+            Destroy(pendingCard);
+            pendingCard = null;
+        }
+
+        var trigger2 = GetComponent<EventTrigger>();
+        if (trigger2 != null) trigger2.enabled = true;
+
+        OnUnlockFlipComplete?.Invoke();
+    }
+
+    public IEnumerator FlipWithCallback(System.Action onMidFlip)
+    {
+        isAnimating = true;
+        float half = flipDuration * 0.5f;
+
+        yield return AnimateRotationY(0f, 90f, half, EaseInQuad);
+
+        onMidFlip?.Invoke();
+
+        yield return AnimateRotationY(90f, 0f, half, EaseOutQuad);
+
+        isAnimating = false;
     }
 
     // ─── ANIMACIÓN FLIP 3D ────────────────────────────────────────
@@ -68,6 +202,7 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
 
         // Cambiar cara
         isFlipped = !isFlipped;
+        Temporal_Sound_Music.Instance.Play2DSound(flipSound, 1.0f);
         if (cardFront != null) cardFront.SetActive(!isFlipped);
         if (cardBack != null) cardBack.SetActive(isFlipped);
 

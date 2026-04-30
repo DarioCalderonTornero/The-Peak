@@ -82,6 +82,19 @@ public class WorldClimberUI : MonoBehaviour
     {
         if (climberMovement == null || currentStaminaImage == null) return;
 
+        /*
+        bool shouldHide = climberMovement.agent.isStopped;
+
+        if (shouldHide)
+        {
+            Hide();
+        }
+        else if (!shouldHide)
+        {
+            Show();
+        }
+        */
+
         float max = climberMovement.GetMaxStamina();
         if (max <= 0f) return;
 

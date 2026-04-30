@@ -12,7 +12,7 @@ public class ClimberMovement : MonoBehaviour
     public event Action<bool> OnTentStateChanged;
 
     [Header("Referencias")]
-    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] public NavMeshAgent agent;
     [SerializeField] private CampGraphBuilder campGraph;
     [SerializeField] private Transform summit;
     [SerializeField] private ClimberLoadout loadout;

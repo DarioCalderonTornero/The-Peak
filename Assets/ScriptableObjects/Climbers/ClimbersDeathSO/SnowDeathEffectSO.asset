@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e4a26fb0e5971b4d931f3eaf14a78eb, type: 3}
   m_Name: SnowDeathEffectSO
   m_EditorClassIdentifier: 
-  deathCause: 7
+  deathCause: 9
   deathAudioClip: {fileID: 8300000, guid: 90e4bfa79882a444b8f8b3bbe536ae00, type: 3}
   deathVisualPrefab: {fileID: 253284601063518662, guid: 20ffa80d78f8bf8449b4d48bab1898eb, type: 3}
   deathVFX_Effect: {fileID: 1487853291997279668, guid: 48e38bae4f8f2644fa5bb558e8500057, type: 3}

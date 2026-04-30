@@ -30,7 +30,7 @@ MonoBehaviour:
   gridSize: {x: 2, y: 4}
   decalOffset: {x: 0, y: 0}
   cardType: 1
-  backBackground: {fileID: -1962708961, guid: cf0f055e20eda2341b6c0e3b00b44a2e, type: 3}
+  backBackground: {fileID: 935000647, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
   backIllustration: {fileID: 0}
   loreText: 
   extendedDescription: 
@@ -38,4 +38,4 @@ MonoBehaviour:
   counterName: 
   counterColorSprite: {fileID: -2097609500, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: -1226723852, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
-  explanationVideo: {fileID: 0}
+  explanationVideo: {fileID: 32900000, guid: d7cf49bc2613b2248bb951125cfd0480, type: 3}

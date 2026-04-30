@@ -892,7 +892,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 369893f3d3adf5549bed6cbbddf07c7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turnsToKill: 2
+  turnsToKill: 3
   centerLerpSpeed: 6
   rescueRadius: 3
   climberLayer:

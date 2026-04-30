@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d6430ae2e0df51439010a320dea6f78, type: 3}
+  m_Name: CardUnlockData
+  m_EditorClassIdentifier: 
+  entries:
+  - card: {fileID: 11400000, guid: 659e4c6cffe64814fa48d561db32f7a6, type: 2}
+    defaultState: 2
+  - card: {fileID: 11400000, guid: 2ea0e1a9ce889354ea7a06306d92bc33, type: 2}
+    defaultState: 0
+  - card: {fileID: 11400000, guid: ff7324c04c6fa6542b3f1025eb1d93ca, type: 2}
+    defaultState: 0
+  - card: {fileID: 11400000, guid: 8691fa1db76ed334db2dbe27375bdb1f, type: 2}
+    defaultState: 2
+  - card: {fileID: 11400000, guid: 0cf55efb4a688e642abc4f23ff15c39f, type: 2}
+    defaultState: 1
+  - card: {fileID: 11400000, guid: 1e5e43a2db2ce844d856910d790669ba, type: 2}
+    defaultState: 0
+  - card: {fileID: 11400000, guid: 47362b00288441e49a59a6677321d422, type: 2}
+    defaultState: 0

@@ -30,7 +30,7 @@ MonoBehaviour:
   gridSize: {x: 2, y: 2}
   decalOffset: {x: 0, y: 0}
   cardType: 0
-  backBackground: {fileID: 1632166229, guid: 9c3a9548e0f73884fa074357df4dfc9e, type: 3}
+  backBackground: {fileID: -1779182069, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
   backIllustration: {fileID: 0}
   loreText: 
   extendedDescription: 

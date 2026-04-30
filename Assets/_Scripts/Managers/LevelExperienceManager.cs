@@ -18,6 +18,8 @@ public class LevelExperienceManager : MonoBehaviour
     [Header("Niveles con recompensa de carta")]
     [SerializeField] private List<int> rewardLevels = new List<int> { 2, 10 };
 
+    [SerializeField] private AudioClip levelUpAudioclip;
+
     private int level = 1;
     private int currentXP = 0;
     private int xpToNextLevel;
@@ -80,6 +82,8 @@ public class LevelExperienceManager : MonoBehaviour
         xpToNextLevel = CalculateXPToNextLevel();
 
         Debug.Log($"[LevelExperienceManager] ¡Nivel {level}! Suscriptores en OnCardRewardTriggered: {OnCardRewardTriggered?.GetInvocationList().Length ?? 0}");
+
+        Temporal_Sound_Music.Instance.Play2DSound(levelUpAudioclip, 1.0f);
 
         OnLevelUp?.Invoke(this, EventArgs.Empty);
 

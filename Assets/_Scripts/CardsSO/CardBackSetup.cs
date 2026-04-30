@@ -10,11 +10,11 @@ public class CardBackSetup : MonoBehaviour
 {
     [Header("Referencias UI del reverso")]
     [SerializeField] private Image backgroundImage;          // fondo del reverso
-    [SerializeField] private Image illustrationImage;        // icono/ilustración grande
-    [SerializeField] private TextMeshProUGUI titleText;      // título (nombre carta)
-    [SerializeField] private TextMeshProUGUI typeText;       // "🏔 PERMANENTE · COSTE 3"
-    [SerializeField] private TextMeshProUGUI loreText;       // frase de lore
-    [SerializeField] private TextMeshProUGUI descriptionText;// descripción extendida
+    // [SerializeField] private Image illustrationImage;        // icono/ilustración grande
+    // [SerializeField] private TextMeshProUGUI titleText;      // título (nombre carta)
+    // [SerializeField] private TextMeshProUGUI typeText;       // "🏔 PERMANENTE · COSTE 3"
+    // [SerializeField] private TextMeshProUGUI loreText;       // frase de lore
+    // [SerializeField] private TextMeshProUGUI descriptionText;// descripción extendida
 
     [Header("Counter (opcional)")]
     [SerializeField] private GameObject counterGroup;        // contenedor del counter
@@ -37,7 +37,7 @@ public class CardBackSetup : MonoBehaviour
             backgroundImage.sprite = data.backBackground;
 
         // ── Ilustración grande ──
-        if (illustrationImage != null)
+        /* if (illustrationImage != null)
         {
             if (data.backIllustration != null)
             {
@@ -54,10 +54,10 @@ public class CardBackSetup : MonoBehaviour
             {
                 illustrationImage.gameObject.SetActive(false);
             }
-        }
+        }*/
 
         // ── Título (nombre carta) ──
-        if (titleText != null)
+        /*if (titleText != null)
             titleText.text = data.cardName.ToUpper();
 
         // ── Tipo + coste ──
@@ -101,7 +101,7 @@ public class CardBackSetup : MonoBehaviour
                 : data.description;
 
             descriptionText.text = desc;
-        }
+        }*/
 
         // ── Counter ──
         bool hasCounter = data.counterIcon != null || !string.IsNullOrEmpty(data.counterName);

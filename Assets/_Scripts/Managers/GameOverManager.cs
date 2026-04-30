@@ -34,11 +34,8 @@ public class GameOverManager : MonoBehaviour
     {
         OnGameOver?.Invoke(this, EventArgs.Empty);
         StartCoroutine(GetClimberSound());
-        //Climber
         ClimberMovement.Instance.SetExternalSpeedMultiplier(0f);
-        //Camera
         gameOverCinemachineCam.Priority = 100;
-        //Effects
         Time.timeScale = 1f;
     }
 

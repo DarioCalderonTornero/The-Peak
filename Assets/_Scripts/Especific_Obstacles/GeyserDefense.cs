@@ -40,6 +40,9 @@ public class GeyserDefense : BaseDefense
     [Header("Death Cinematic Delay")]
     [SerializeField] private float deathCinematicDelay = 3f;
 
+    [Header("Geyser Sounds")]
+    [SerializeField] private AudioClip climberScreamSound;
+
     private bool isBusy = false;
     private bool inCooldown = false;
     private int cooldownRemaining = 0;
@@ -355,6 +358,8 @@ public class GeyserDefense : BaseDefense
         if (capturedClimber == null) { isBusy = false; return; }
 
         Transform tr = capturedClimber.transform;
+
+        Temporal_Sound_Music.Instance.Play2DSound(climberScreamSound, 0.5f);
 
         if (capturedAgent != null)
         {

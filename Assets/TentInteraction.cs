@@ -11,6 +11,8 @@ public class TentInteraction : MonoBehaviour
     [Header("Configuración de Clics")]
     [SerializeField] private LayerMask clickableLayers;
 
+    [SerializeField] private AudioClip clickTentAudioClip;
+
     private List<ClimberMovement> currentlySelectedClimbers = new List<ClimberMovement>();
     private CampGraphBuilder.CampNode lastClickedNode;
     private int cycleIndex = -1;
@@ -52,7 +54,10 @@ public class TentInteraction : MonoBehaviour
             CampGraphBuilder.CampNode clickedNode = GetNodeFromClickedObject(hit.collider.gameObject);
 
             if (clickedNode != null && clickedNode.HasTent)
+            {
                 HandleCampClick(clickedNode);
+                Temporal_Sound_Music.Instance.Play2DSound(clickTentAudioClip, 1f);
+            }
             else
                 ClearAll();
         }

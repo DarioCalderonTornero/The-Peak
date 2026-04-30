@@ -5,14 +5,14 @@ public class ClimberEquipmentVisuals : MonoBehaviour
     [Header("Espalda")]
     [SerializeField] private GameObject backPickaxe;
     [SerializeField] private GameObject backMagicBook;
-    [SerializeField] private GameObject backSnowshoes;
-    [SerializeField] private GameObject backMudObject;
+    [SerializeField] private GameObject backPala;
+    [SerializeField] private GameObject backCuerno;
 
     [Header("Mano")]
     [SerializeField] private GameObject handPickaxe;
     [SerializeField] private GameObject handMagicBook;
-    [SerializeField] private GameObject handSnowshoes;
-    [SerializeField] private GameObject handMudObject;
+    [SerializeField] private GameObject handPala;
+    [SerializeField] private GameObject handCuerno;
 
     private ClimberLoadout loadout;
 
@@ -63,12 +63,12 @@ public class ClimberEquipmentVisuals : MonoBehaviour
                 activeHandObject = handMagicBook;
                 break;
             case nameof(SnowshoesEquipment):
-                activeBackObject = backSnowshoes;
-                activeHandObject = handSnowshoes;
+                activeBackObject = backPala;
+                activeHandObject = handPala;
                 break;
             case nameof(MudCloudEquipment):
-                activeBackObject = backMudObject;
-                activeHandObject = handMudObject;
+                activeBackObject = backCuerno;
+                activeHandObject = handCuerno;
                 break;
             default:
                 activeBackObject = null;
@@ -120,13 +120,13 @@ public class ClimberEquipmentVisuals : MonoBehaviour
     {
         if (backPickaxe != null) backPickaxe.SetActive(false);
         if (backMagicBook != null) backMagicBook.SetActive(false);
-        if (backSnowshoes != null) backSnowshoes.SetActive(false);
-        if (backMudObject != null) backMudObject.SetActive(false);
+        if (backPala != null) backPala.SetActive(false);
+        if (backCuerno != null) backCuerno.SetActive(false);
 
         if (handPickaxe != null) handPickaxe.SetActive(false);
         if (handMagicBook != null) handMagicBook.SetActive(false);
-        if (handSnowshoes != null) handSnowshoes.SetActive(false);
-        if (handMudObject != null) handMudObject.SetActive(false);
+        if (handPala != null) handPala.SetActive(false);
+        if (handCuerno != null) handCuerno.SetActive(false);
 
         activeBackObject = null;
         activeHandObject = null;

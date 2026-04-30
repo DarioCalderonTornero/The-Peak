@@ -168,6 +168,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   deathCinematicDelay: 0.75
+  climberScreamSound: {fileID: 8300000, guid: 4a9dd07eb21f5254bab57443df0296b5, type: 3}
   geyserVFX: {fileID: 8414889602308928615}
   eruptFadeSeconds: 2
   eruptHoldSeconds: 2

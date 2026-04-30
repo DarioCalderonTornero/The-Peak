@@ -217,7 +217,7 @@ public class QuicksandDefense : BaseDefense
             {
                 climber = absorbedClimber,
                 position = pos,
-                cause = DeathCause.Quicksand
+                cause = DeathCause.Snow
             };
 
             if (GameManager.Instance != null)

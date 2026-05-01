@@ -150,7 +150,7 @@ Transform:
   m_Children:
   - {fileID: 9157834220697207789}
   - {fileID: 4461951018055284261}
-  m_Father: {fileID: 4485760709519042262}
+  m_Father: {fileID: 8322863346289681276}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2836442118893178010
 GameObject:
@@ -303,6 +303,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8322863346289681276}
+  - component: {fileID: 5899417830659951145}
   m_Layer: 0
   m_Name: ClimberVisual
   m_TagString: Untagged
@@ -330,8 +331,29 @@ Transform:
   - {fileID: 4816362521359077613}
   - {fileID: 1003129374914434366}
   - {fileID: 3115168269464317909}
+  - {fileID: 8724122982636317912}
   m_Father: {fileID: 4485760709519042262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5899417830659951145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3989725419049320024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa6c987cf83e6f459b52fc9fa558d84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  backPickaxe: {fileID: 9151141373121350161}
+  backMagicBook: {fileID: 3709771340772058891}
+  backPala: {fileID: 5725968505003578794}
+  backCuerno: {fileID: 4135962350590837349}
+  handPickaxe: {fileID: 3404069657913764415}
+  handMagicBook: {fileID: 1774641815100849587}
+  handPala: {fileID: 1906925445586608666}
+  handCuerno: {fileID: 5359760822888186400}
 --- !u!1 &4162578474424946795
 GameObject:
   m_ObjectHideFlags: 0
@@ -590,7 +612,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8322863346289681276}
-  - {fileID: 8724122982636317912}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &4274721090101795705

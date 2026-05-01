@@ -76,15 +76,14 @@ public class ClimberMovement : MonoBehaviour
     private bool isGoingToFirstCamp = true;
     private bool reachedSummit = false;
     private bool hasStartedThisTurn = false;
+    private bool waitingFirstTurn = true;
 
     private Dictionary<int, int> nodeVisitCount = new Dictionary<int, int>();
     private bool externallyForcedDone = false;
 
     public bool IsAtCamp => isAtCamp;
-
     public bool IsInsideTent => isInsideTent;
     public float GetAltitude() => transform.position.y;
-
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
     public bool isEating = false;
@@ -103,12 +102,7 @@ public class ClimberMovement : MonoBehaviour
     public Transform CamLookAt => camLookAt != null ? camLookAt : transform;
     public Transform InspectAnchor => inspectAnchor != null ? inspectAnchor : transform;
 
-    // ─── Eventos públicos ────────────────────────────────────────────────────
-
-    /// <summary>Stamina normalizada (0..1). Se dispara cada vez que cambia.</summary>
     public event Action<float> OnStaminaChanged;
-
-    // ────────────────────────────────────────────────────────────────────────
 
     private void Awake()
     {
@@ -197,10 +191,6 @@ public class ClimberMovement : MonoBehaviour
 
     // ─── Stamina ─────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Punto único para notificar cambios de stamina.
-    /// Calcula la normalización y dispara el evento.
-    /// </summary>
     private void NotifyStaminaChanged()
     {
         float normalized = maxStamina > 0f ? currentStamina / maxStamina : 0f;
@@ -272,7 +262,6 @@ public class ClimberMovement : MonoBehaviour
         if (lineMaterialInstance != null)
         {
             float textureOffset = Time.time * -animationSpeed;
-            // reservado para animar offset de textura si se implementa
         }
     }
 
@@ -357,6 +346,11 @@ public class ClimberMovement : MonoBehaviour
     private void HandlePlayerTurnStart()
     {
         if (reachedSummit || externallyForcedDone) return;
+
+        // Si acaba de terminar su primer turno de espera, limpiamos isAtCamp
+        if (!waitingFirstTurn && isAtCamp && currentNode == null)
+            isAtCamp = false;
+
         pointsAddedThisTurn = false;
         PlanNextMove();
         if (isSelected) UpdatePathVisualization();
@@ -378,6 +372,14 @@ public class ClimberMovement : MonoBehaviour
 
     private void HandleClimberTurnStart()
     {
+        // Primer turno — espera sin moverse
+        if (waitingFirstTurn)
+        {
+            waitingFirstTurn = false;
+            isAtCamp = true;
+            return;
+        }
+
         if (reachedSummit || agent == null || externallyForcedDone) return;
 
         hasStartedThisTurn = true;
@@ -527,7 +529,6 @@ public class ClimberMovement : MonoBehaviour
 
         isGoingToFirstCamp = false;
 
-        // Restaurar stamina al llegar al campamento
         currentStamina = maxStamina;
         NotifyStaminaChanged();
 
@@ -646,15 +647,12 @@ public class ClimberMovement : MonoBehaviour
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            agent.isStopped = true;       // Detiene el movimiento
-            agent.velocity = Vector3.zero; // Elimina la inercia acumulada
-            agent.ResetPath();            // Olvida a dónde iba para no intentar rotar
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
         }
 
-        // Opcional: Desactivamos el flag de actividad para que el Update no lo mueva
         isActiveThisTurn = false;
-
-        // Seteamos el multiplicador a 0 por seguridad
         SetExternalSpeedMultiplier(0f);
     }
 
@@ -666,8 +664,6 @@ public class ClimberMovement : MonoBehaviour
             agent.SetDestination(targetPos);
         }
 
-        // Desactivamos el flag para que el Update del turno no intente 
-        // recalcular su ruta hacia el campamento mientras va al centro de la nube.
         isActiveThisTurn = false;
     }
 
@@ -706,11 +702,9 @@ public class ClimberMovement : MonoBehaviour
     {
         if (!gameObject.activeInHierarchy) return;
 
-        // Guardamos el multiplicador solo en el primer stop
         if (temporaryStopRoutine == null)
             _cachedMultiplierBeforeStop = externalSpeedMultiplier;
 
-        // Siempre extendemos el tiempo, nunca cortamos un stop en curso
         _resumeTime = Mathf.Max(_resumeTime, Time.time + duration);
 
         if (temporaryStopRoutine == null)

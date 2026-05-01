@@ -160,6 +160,10 @@ public class FreeCameraMovement : MonoBehaviour
 
     private void HandleZoomAlways()
     {
+        if (UnityEngine.EventSystems.EventSystem.current != null &&
+        UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            return;
+
         Vector2 zoomDelta = InputManager.Instance.GetCameraZoom();
         if (Mathf.Abs(zoomDelta.y) < 0.01f) return;
 

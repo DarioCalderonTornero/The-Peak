@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: EquipmentPickaxeSO
   m_EditorClassIdentifier: 
   equipmentName: Pickaxe
-  icon: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
+  icon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   logicClassName: PickaxeEquipment
-  color: {r: 1, g: 0, b: 0, a: 0}
+  color: {r: 0.8000001, g: 0.0627451, b: 0.08627451, a: 1}
+  climberIcon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}

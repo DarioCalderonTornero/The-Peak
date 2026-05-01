@@ -7,11 +7,12 @@ public class EquipmentDefinitionSO : ScriptableObject
     public string equipmentName;
     public Sprite icon;
 
-    [Header("Which obstacle does this counter?")]
-    //public ObstacleType obstacleType;
-
     [Header("Logic Class (equipment behavior)")]
     public string logicClassName;
 
     public Color color;
+
+    [Header("Viñeta UI")]
+    [Tooltip("Icono que representa este tipo de escalador en la lista de viñetas")]
+    public Sprite climberIcon;
 }

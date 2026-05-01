@@ -60,7 +60,7 @@ public class ClimberEntryUI : MonoBehaviour
         UpdateStateBadge();
 
         // Urgencia desactivada por defecto
-        SetUrgent(false);
+        //SetUrgent(false);
 
         // Eventos
         climber.OnStaminaChanged += UpdateStamina;
@@ -76,7 +76,7 @@ public class ClimberEntryUI : MonoBehaviour
     {
         if (equipmentDefinition == null) return;
         if (equipmentIcon != null)
-            equipmentIcon.sprite = equipmentDefinition.icon;
+            equipmentIcon.sprite = equipmentDefinition.climberIcon;
     }
 
     private void OnHelmetColorChanged(Color color)
@@ -126,6 +126,7 @@ public class ClimberEntryUI : MonoBehaviour
 
     // ─── Urgencia ─────────────────────────────────────────────────────────────
 
+    /*
     public void SetUrgent(bool urgent)
     {
         if (isUrgent == urgent) return;
@@ -134,6 +135,7 @@ public class ClimberEntryUI : MonoBehaviour
         if (urgencyBorder != null)
             urgencyBorder.color = urgent ? urgencyColor : urgencyInactiveColor;
     }
+    */
 
     // ─── Selección ────────────────────────────────────────────────────────────
 

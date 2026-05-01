@@ -15,4 +15,4 @@ MonoBehaviour:
   equipmentName: SnowShoes
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   logicClassName: SnowshoesEquipment
-  color: {r: 1, g: 0.7405456, b: 0, a: 0}
+  color: {r: 0.8117648, g: 0.6901961, b: 0.13725491, a: 1}

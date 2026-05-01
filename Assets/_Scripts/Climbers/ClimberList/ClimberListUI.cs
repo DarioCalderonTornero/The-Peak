@@ -130,7 +130,7 @@ public class ClimberListUI : MonoBehaviour
             if (!entries.TryGetValue(climber, out ClimberEntryUI entry)) continue;
 
             entry.transform.SetSiblingIndex(i);
-            entry.SetUrgent(climber == mostDangerous);
+            //entry.SetUrgent(climber == mostDangerous);
             entry.RefreshState();
         }
     }

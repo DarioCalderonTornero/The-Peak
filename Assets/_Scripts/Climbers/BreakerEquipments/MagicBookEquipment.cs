@@ -15,6 +15,13 @@ public class MagicBookEquipment : EquipmentInstance
             OnCounterFail(obstacleType);
     }
 
+    public override void OnCounterSuccess(ObstacleType type)
+    {
+        base.OnCounterSuccess(type);
+        if (ownerLoadout == null) return;
+        ownerLoadout.StartEquipmentSequence(2f);
+    }
+
     public override bool CanHandleObstacle(ObstacleType obstacleType)
     {
         return obstacleType == ObstacleType.BerryTree || obstacleType == ObstacleType.Bramble;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,8 +10,6 @@ public class ClimberLoadout : MonoBehaviour
 
     [Header("Equipamiento asignado en runtime (solo lectura)")]
     private readonly List<EquipmentInstance> equippedItems = new List<EquipmentInstance>();
-
-    // Guardamos también los SOs para poder acceder a sus datos (icono, etc.)
     private readonly List<EquipmentDefinitionSO> equippedDefinitions = new List<EquipmentDefinitionSO>();
 
     [Header("DEBUG – Equipo visible en Inspector (no tocar)")]
@@ -25,8 +24,6 @@ public class ClimberLoadout : MonoBehaviour
     [SerializeField] private AudioClip rockDestroyAudioClip;
 
     [Header("Initialization")]
-    [Tooltip("Si está activo, el loadout se inicializa automáticamente en Awake usando el archetype (modo normal). " +
-             "Si vas a forzar equipo desde el SpawnManager, puedes dejarlo activo: la clase detecta si ya fue inicializada.")]
     [SerializeField] private bool autoInitializeOnAwake = true;
 
     public event Action<Color> OnHelmetColorChanged;
@@ -36,11 +33,13 @@ public class ClimberLoadout : MonoBehaviour
 
     private ClimberMovement climberMovement;
     private Animator climberAnimator;
+    private ClimberEquipmentVisuals equipmentVisuals;
 
     private void Awake()
     {
         climberMovement = GetComponent<ClimberMovement>();
         climberAnimator = GetComponentInChildren<Animator>();
+        equipmentVisuals = GetComponent<ClimberEquipmentVisuals>();
 
         if (climberMovement == null)
             Debug.LogError($"[ClimberLoadout] Sin ClimberMovement en {gameObject.name}");
@@ -57,10 +56,6 @@ public class ClimberLoadout : MonoBehaviour
 
     // ─── Inicialización ───────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Inicializa el loadout de forma random según el archetype,
-    /// pero solo si aún no está inicializado.
-    /// </summary>
     public void InitializeRandomLoadoutIfNeeded()
     {
         if (_isInitialized) return;
@@ -68,10 +63,6 @@ public class ClimberLoadout : MonoBehaviour
         _isInitialized = true;
     }
 
-    /// <summary>
-    /// Fuerza que el escalador lleve EXACTAMENTE 1 equipo concreto (sin random),
-    /// y marca el loadout como inicializado.
-    /// </summary>
     public void InitializeForcedSingleEquipment(EquipmentDefinitionSO forcedEquipment)
     {
         equippedItems.Clear();
@@ -98,9 +89,6 @@ public class ClimberLoadout : MonoBehaviour
         _isInitialized = true;
     }
 
-    /// <summary>
-    /// Permite re-inicializar si algún día haces pooling.
-    /// </summary>
     public void ResetLoadoutState()
     {
         _isInitialized = false;
@@ -231,13 +219,41 @@ public class ClimberLoadout : MonoBehaviour
         return false;
     }
 
+    // ─── Equipment Sequence ───────────────────────────────────────────────────
+
+    /// <summary>
+    /// Para al escalador, saca el equipo a la mano, espera y lo guarda.
+    /// Llamado desde OnCounterSuccess de cada EquipmentInstance.
+    /// </summary>
+    public void StartEquipmentSequence(float duration)
+    {
+        if (!gameObject.activeInHierarchy) return;
+        StartCoroutine(EquipmentSequenceRoutine(duration));
+    }
+
+    private IEnumerator EquipmentSequenceRoutine(float duration)
+    {
+        // 1. Parar al escalador
+        RequestClimberStop(duration);
+
+        // 2. Sacar equipo a la mano
+        if (equipmentVisuals != null)
+            equipmentVisuals.MoveEquipmentToHand();
+
+        // 3. Esperar la duración
+        yield return new WaitForSeconds(duration);
+
+        // 4. Guardar equipo en la espalda
+        if (equipmentVisuals != null)
+            equipmentVisuals.MoveEquipmentToBack();
+    }
+
     // ─── API pública / Getters ────────────────────────────────────────────────
 
     public Color GetHelmetColor()
     {
         if (helmetRenderer != null)
             return helmetRenderer.material.color;
-
         return Color.white;
     }
 
@@ -245,19 +261,13 @@ public class ClimberLoadout : MonoBehaviour
     {
         if (bodyRenderer != null)
             return bodyRenderer.material.color;
-
         return Color.yellow;
     }
 
-    /// <summary>
-    /// Devuelve el icono del primer equipo equipado, o null si no hay ninguno.
-    /// Usado por ClimberEntryUI para mostrar el icono en la lista.
-    /// </summary>
     public EquipmentDefinitionSO GetFirstEquipmentIcon()
     {
         if (equippedDefinitions == null || equippedDefinitions.Count == 0)
             return null;
-
         return equippedDefinitions[0];
     }
 

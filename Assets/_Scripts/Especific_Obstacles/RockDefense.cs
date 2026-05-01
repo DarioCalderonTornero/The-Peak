@@ -14,7 +14,7 @@ public class RockDefense : BaseDefense
     public override void Initialize()
     {
         base.Initialize();
-        SetupNavMeshObstacle();
+        //SetupNavMeshObstacle();
         PlaySpawnVfx();
     }
 

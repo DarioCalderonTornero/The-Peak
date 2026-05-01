@@ -16,3 +16,4 @@ MonoBehaviour:
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   logicClassName: SnowshoesEquipment
   color: {r: 0.8117648, g: 0.6901961, b: 0.13725491, a: 1}
+  climberIcon: {fileID: 909301126, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}

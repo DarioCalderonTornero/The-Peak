@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EquipmentEmptySO
   m_EditorClassIdentifier: 
   equipmentName: Empty
-  icon: {fileID: 0}
-  logicClassName: 
-  color: {r: 1, g: 1, b: 1, a: 1}
-  climberIcon: {fileID: 0}
+  icon: {fileID: 2029970771, guid: 572ef39ff9f6fb74a9af19e2fe9667b4, type: 3}
+  logicClassName: EmptyEquipment
+  color: {r: 0.7075472, g: 0.7075472, b: 0.7075472, a: 1}
+  climberIcon: {fileID: 2029970771, guid: 572ef39ff9f6fb74a9af19e2fe9667b4, type: 3}

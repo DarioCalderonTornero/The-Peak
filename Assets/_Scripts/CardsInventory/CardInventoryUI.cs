@@ -663,22 +663,48 @@ public class CardInventoryUI : MonoBehaviour
 
     private void UpdateTypeCounters()
     {
-        int totalPermanent = 0;
-        int totalTemporal = 0;
-
-        foreach (var card in availableCards)
+        if (cardUnlockData == null)
         {
-            if (card == null) continue;
-            if (card.cardType == CardData.CardType.Permanente) totalPermanent++;
-            else if (card.cardType == CardData.CardType.Temporal) totalTemporal++;
-            // Eventual no cuenta en ninguno de los dos contadores
+            Debug.LogWarning("CardUnlockData no está asignado en el inspector.");
+            return;
         }
 
+        int unlockedPermanent = 0;
+        int totalPermanent = 0;
+        int unlockedTemporal = 0;
+        int totalTemporal = 0;
+
+        // Obtenemos todas las cartas registradas en el sistema de desbloqueo
+        List<CardData> allCards = cardUnlockData.GetAllCards();
+
+        foreach (var card in allCards)
+        {
+            if (card == null) continue;
+
+            // Consultamos el estado actual de esta carta específica
+            CardUnlockState state = cardUnlockData.GetState(card);
+
+            if (card.cardType == CardData.CardType.Permanente)
+            {
+                totalPermanent++;
+                // Contamos como "conseguida" si su estado es Unlocked
+                if (state == CardUnlockState.Unlocked)
+                    unlockedPermanent++;
+            }
+            else if (card.cardType == CardData.CardType.Temporal)
+            {
+                totalTemporal++;
+                if (state == CardUnlockState.Unlocked)
+                    unlockedTemporal++;
+            }
+        }
+
+        // Actualizamos los textos con el formato: Desbloqueadas / Totales
         if (permanentCountText != null)
-            permanentCountText.text = $"{totalPermanent} / {totalPermanent}";
+            permanentCountText.text = $"{unlockedPermanent} / {totalPermanent}";
 
         if (temporalCountText != null)
-            temporalCountText.text = $"{totalTemporal} / {totalTemporal}";
+            temporalCountText.text = $"{unlockedTemporal} / {totalTemporal}";
     }
 
     private void OnValidate()

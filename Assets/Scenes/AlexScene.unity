@@ -1086,8 +1086,8 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: -420495422, guid: 1e2cb78bc2e4f834ba018b6736d0728c, type: 3}
-    m_PressedSprite: {fileID: 2105883374, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
+    m_HighlightedSprite: {fileID: -1385658491, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
+    m_PressedSprite: {fileID: -1267540289, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
     m_SelectedSprite: {fileID: 0}
     m_DisabledSprite: {fileID: 702707779, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
   m_AnimationTriggers:
@@ -1121,7 +1121,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 752295024, guid: 91c34f80238e3b0499cfae59bde63bcb, type: 3}
+  m_Sprite: {fileID: 2105883374, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1498,7 +1498,6 @@ GameObject:
   - component: {fileID: 281424691}
   - component: {fileID: 281424692}
   - component: {fileID: 281424693}
-  - component: {fileID: 281424694}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -1645,18 +1644,6 @@ MonoBehaviour:
   imageB: {fileID: 477110704}
   nameTextB: {fileID: 1995232659}
   cardUnlockData: {fileID: 11400000, guid: dbe84acad1b0ae54fbb3f64b94d3f7ff, type: 2}
---- !u!114 &281424694
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 281424682}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99e6a07867886034dbb7c3e4d42048fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &349445178
 GameObject:
   m_ObjectHideFlags: 0
@@ -5205,8 +5192,8 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 1672907056, guid: 1e2cb78bc2e4f834ba018b6736d0728c, type: 3}
-    m_PressedSprite: {fileID: 1715624243, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
+    m_HighlightedSprite: {fileID: -1646677187, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
+    m_PressedSprite: {fileID: -1285476209, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
     m_SelectedSprite: {fileID: 0}
     m_DisabledSprite: {fileID: -1069613197, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
   m_AnimationTriggers:
@@ -5240,7 +5227,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -1701072854, guid: 91c34f80238e3b0499cfae59bde63bcb, type: 3}
+  m_Sprite: {fileID: 1715624243, guid: ec0b1fb54565b6147acf0728cff65626, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

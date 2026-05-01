@@ -17,7 +17,7 @@ MonoBehaviour:
     instantly eliminated.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 1391558099927299792, guid: 4920ddcab506aa542aa2eca0d92c85e5, type: 3}
-  cost: 2
+  cost: 4
   worldSprite: {fileID: -832806478, guid: 45574b990458b1942aea8e161209adec, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

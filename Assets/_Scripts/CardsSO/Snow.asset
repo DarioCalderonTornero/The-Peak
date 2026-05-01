@@ -29,7 +29,7 @@ MonoBehaviour:
   placementCheckExtents: {x: 0.5, y: 3.65, z: 0.5}
   gridSize: {x: 2, y: 4}
   decalOffset: {x: 0, y: 0}
-  cardType: 1
+  cardType: 0
   backBackground: {fileID: 935000647, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
   backIllustration: {fileID: 0}
   loreText: 

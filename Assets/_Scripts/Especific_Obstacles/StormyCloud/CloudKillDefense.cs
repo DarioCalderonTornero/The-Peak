@@ -13,7 +13,7 @@ public class CloudKillDefense : BaseDefense
     [SerializeField] private GameObject killVFX;
 
     [Header("Pop Settings")]
-    [SerializeField] private float popDuration = 0.5f;
+    [SerializeField] private float popCloudDuration = 0.5f;
     [SerializeField] private AnimationCurve popCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [SerializeField] private AudioClip VFXSound;
@@ -222,10 +222,10 @@ public class CloudKillDefense : BaseDefense
         if (target == null) yield break;
 
         float elapsed = 0;
-        while (elapsed < popDuration)
+        while (elapsed < popCloudDuration)
         {
             elapsed += Time.deltaTime;
-            float percent = elapsed / popDuration;
+            float percent = elapsed / popCloudDuration;
             target.localScale = Vector3.Lerp(start, end, popCurve.Evaluate(percent));
             yield return null;
         }

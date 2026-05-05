@@ -3,91 +3,84 @@ using UnityEngine;
 
 public class RuntimeGridVisualizer : MonoBehaviour
 {
-    [SerializeField] private float lineWidth = 0.08f;
-    [SerializeField] private float yOffset = 0.1f;
+    [SerializeField] private float yOffset = 0.05f;
 
-    private readonly List<LineRenderer> lines = new List<LineRenderer>();
-    private Material lineMat;
+    private readonly List<GameObject> cells = new();
+    private Material validMaterial;
+    private Material invalidMaterial;
+    private bool isValid = false;
 
-    public void Setup(Vector2Int gridSize)
+    public void Setup(Vector2Int gridSize, GameObject cellPrefab, Material valid, Material invalid)
     {
         Clear();
 
-        // Material que ignore profundidad (como estabas usando)
-        lineMat = new Material(Shader.Find("Sprites/Default"));
+        validMaterial = valid;
+        invalidMaterial = invalid;
 
-        float halfW = gridSize.x / 2f;
-        float halfH = gridSize.y / 2f;
+        float startX = -(gridSize.x / 2f) + 0.5f;
+        float startZ = -(gridSize.y / 2f) + 0.5f;
 
-        // ----- BORDE EXTERIOR (4 lados) -----
-        AddLine(new Vector3(-halfW, yOffset, -halfH), new Vector3(halfW, yOffset, -halfH)); // abajo
-        AddLine(new Vector3(halfW, yOffset, -halfH), new Vector3(halfW, yOffset, halfH)); // derecha
-        AddLine(new Vector3(halfW, yOffset, halfH), new Vector3(-halfW, yOffset, halfH)); // arriba
-        AddLine(new Vector3(-halfW, yOffset, halfH), new Vector3(-halfW, yOffset, -halfH)); // izquierda
-
-        // ----- LÍNEAS INTERNAS -----
-        // Verticales (separan columnas): i = 1..gridSize.x-1
-        for (int i = 1; i < gridSize.x; i++)
+        for (int x = 0; x < gridSize.x; x++)
         {
-            float x = -halfW + i;
-            AddLine(
-                new Vector3(x, yOffset, -halfH),
-                new Vector3(x, yOffset, halfH)
-            );
+            for (int z = 0; z < gridSize.y; z++)
+            {
+                GameObject go = cellPrefab != null
+                    ? Instantiate(cellPrefab)
+                    : CreateDefaultCube();
+
+                go.name = $"Cell_{x}_{z}";
+                go.transform.SetParent(transform, false);
+                go.transform.localPosition = new Vector3(startX + x, yOffset, startZ + z);
+
+                // Quitar collider para no interferir con raycasts
+                foreach (var col in go.GetComponentsInChildren<Collider>())
+                    Destroy(col);
+
+                cells.Add(go);
+            }
         }
 
-        // Horizontales (separan filas): j = 1..gridSize.y-1
-        for (int j = 1; j < gridSize.y; j++)
-        {
-            float z = -halfH + j;
-            AddLine(
-                new Vector3(-halfW, yOffset, z),
-                new Vector3(halfW, yOffset, z)
-            );
-        }
+        // Aplicar material inicial (inválido por defecto)
+        ApplyMaterial(invalidMaterial);
     }
 
     public void SetColor(Color color)
     {
-        color.a = 0.8f;
-        for (int i = 0; i < lines.Count; i++)
+        // Determina si es verde (válido) o rojo (inválido) por el canal G
+        bool valid = color.g > color.r;
+        if (valid == isValid) return;
+        isValid = valid;
+        ApplyMaterial(isValid ? validMaterial : invalidMaterial);
+    }
+
+    private void ApplyMaterial(Material mat)
+    {
+        if (mat == null) return;
+        foreach (var go in cells)
         {
-            if (lines[i] == null) continue;
-            lines[i].startColor = color;
-            lines[i].endColor = color;
+            if (go == null) continue;
+            foreach (var mr in go.GetComponentsInChildren<MeshRenderer>())
+                mr.material = mat;
         }
     }
 
-    private void AddLine(Vector3 a, Vector3 b)
+    private GameObject CreateDefaultCube()
     {
-        var go = new GameObject("GridLine");
-        go.transform.SetParent(transform, false);
-
-        var lr = go.AddComponent<LineRenderer>();
-        lr.material = lineMat;
-        lr.startWidth = lineWidth;
-        lr.endWidth = lineWidth;
-        lr.useWorldSpace = false;
-        lr.loop = false;
-        lr.positionCount = 2;
-        lr.SetPosition(0, a);
-        lr.SetPosition(1, b);
-
-        lines.Add(lr);
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.transform.localScale = new Vector3(0.92f, 0.15f, 0.92f);
+        Destroy(go.GetComponent<Collider>());
+        var mr = go.GetComponent<MeshRenderer>();
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        mr.receiveShadows = false;
+        return go;
     }
 
     private void Clear()
     {
-        for (int i = 0; i < lines.Count; i++)
-        {
-            if (lines[i] != null) Destroy(lines[i].gameObject);
-        }
-        lines.Clear();
+        foreach (var c in cells)
+            if (c != null) Destroy(c);
+        cells.Clear();
     }
 
-    private void OnDestroy()
-    {
-        // Por si acaso, evita materiales “colgados”
-        if (lineMat != null) Destroy(lineMat);
-    }
+    private void OnDestroy() => Clear();
 }

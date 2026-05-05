@@ -56,8 +56,7 @@ public class LastDeckSlotsUI : MonoBehaviour
             {
                 // Usa deckSlotIcon si existe, si no worldSprite como fallback
                 Sprite icon = lastDeck[i].deckSlotIcon != null
-                    ? lastDeck[i].deckSlotIcon
-                    : lastDeck[i].worldSprite;
+                    ? lastDeck[i].deckSlotIcon: lastDeck[i].icon;
 
                 if (icon != null)
                 {

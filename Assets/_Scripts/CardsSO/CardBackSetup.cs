@@ -104,7 +104,7 @@ public class CardBackSetup : MonoBehaviour
         }*/
 
         // ── Counter ──
-        bool hasCounter = data.counterIcon != null || !string.IsNullOrEmpty(data.counterName);
+        bool hasCounter = data.counterIcon != null; // || !string.IsNullOrEmpty(data.counterName);
 
         if (counterGroup != null)
             counterGroup.SetActive(hasCounter);
@@ -117,8 +117,8 @@ public class CardBackSetup : MonoBehaviour
                 counterIconImage.gameObject.SetActive(true);
             }
 
-            if (counterNameText != null)
-                counterNameText.text = data.counterName;
+            // if (counterNameText != null)
+                // counterNameText.text = data.counterName;
         }
 
         var playButton = GetComponentInChildren<CardPlayButton>(true);

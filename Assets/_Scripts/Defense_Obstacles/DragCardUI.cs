@@ -130,6 +130,15 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public static bool AnyCardInClickPlaceMode = false;
     private bool _clickConsumedThisFrame = false;
 
+    [Header("Grid Visualizer")]
+    [SerializeField] private GameObject gridCellPrefab;
+    [SerializeField] private Material gridValidMaterial;
+    [SerializeField] private Material gridInvalidMaterial;
+
+    private Vector3 lastValidPreviewPos;
+    private Quaternion lastValidPreviewRot;
+    private bool hasValidPreviewPos = false;
+
 
     private void Awake()
     {
@@ -299,7 +308,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                         originalPreviewScale = Vector3.one;
 
                     var visualizer = previewInstance.AddComponent<RuntimeGridVisualizer>();
-                    visualizer.Setup(cardData.gridSize);
+                    visualizer.Setup(cardData.gridSize, gridCellPrefab, gridValidMaterial, gridInvalidMaterial);
                     ApplyScaleFactorToPreview(currentScaleFactor);
                     currentPreviewIsValid = false;
                     ApplyPreviewMaterial(false);
@@ -420,6 +429,14 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 if (arena != null) { arena.ApplyExternalScale(finalScale); return; }
 
                 go.transform.localScale = finalScale;
+
+                go.transform.localScale = finalScale;
+
+                if (cardData.cardType == CardData.CardType.Temporal)
+                {
+                    var temp = go.AddComponent<TemporaryDefense>();
+                    temp.Initialize(cardData.temporalTurns);
+                }
             }
         );
 
@@ -657,7 +674,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (originalPreviewScale.sqrMagnitude == 0) originalPreviewScale = Vector3.one;
 
             var visualizer = previewInstance.AddComponent<RuntimeGridVisualizer>();
-            visualizer.Setup(cardData.gridSize);
+            visualizer.Setup(cardData.gridSize, gridCellPrefab, gridValidMaterial, gridInvalidMaterial);
 
             ApplyScaleFactorToPreview(currentScaleFactor);
 
@@ -805,6 +822,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 }
 
                 go.transform.localScale = finalScale;
+
+                if (cardData.cardType == CardData.CardType.Temporal)
+                {
+                    var temp = go.AddComponent<TemporaryDefense>();
+                    temp.Initialize(cardData.temporalTurns);
+                }
             }
         );
         Debug.Log("PLACED POS: " + placed.transform.position);
@@ -1581,39 +1604,31 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         // Detectar si estamos en un segmento con grid
         SegmentGridSettings seg = hit.collider.GetComponentInParent<SegmentGridSettings>();
 
-        // A) SEGMENTO => grid real del segmento
         if (seg != null)
         {
             activeSegment = seg;
             usingSegmentGrid = true;
 
             if (TrySnapOnSegmentGrid(seg, hit.point, currentRotationDegrees, cardData.gridSize,
-        out var pos, out var rot, out var nrm,
-        currentFootprintKeys, out var snapReason))
+                out var pos, out var rot, out var nrm,
+                currentFootprintKeys, out var snapReason))
             {
-                previewInstance.transform.SetPositionAndRotation(pos, rot);
-                lastHitNormal = nrm;
-
-                // Si el snap ya dice que es inválido (bloqueado / fuera / sin suelo),
-                // mostramos rojo sin más checks
-                if (snapReason != "Válido")
+                if (snapReason == "Válido")
                 {
-                    currentPreviewIsValid = false;
-                    ApplyPreviewMaterial(false);
-                    return;
-                }
+                    if (!previewInstance.activeSelf)
+                        previewInstance.SetActive(true);
 
-                // Si snap es válido, ahora sí pasamos por los checks de ocupación/campamento/soporte, etc.
-                string validity = CheckPlacementValidity(pos, nrm, rot);
-                currentPreviewIsValid = (validity == "Válido");
-                ApplyPreviewMaterial(currentPreviewIsValid);
+                    previewInstance.transform.SetPositionAndRotation(pos, rot);
+                    lastHitNormal = nrm;
+                    lastValidPreviewPos = pos;
+                    lastValidPreviewRot = rot;
+                    hasValidPreviewPos = true;
+                    currentPreviewIsValid = true;
+                    ApplyPreviewMaterial(true);
+                }
+                // Cualquier otro resultado → no hacer nada, preview se queda donde estaba
             }
-            else
-            {
-                // No se pudo ni posicionar preview
-                currentPreviewIsValid = false;
-                ApplyPreviewMaterial(false);
-            }
+            // Snap fallido → no hacer nada
 
             return;
         }
@@ -1648,15 +1663,15 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
 
     private bool TrySnapOnSegmentGrid(
-    SegmentGridSettings seg,
-    Vector3 hitPoint,
-    float yawDegrees,
-    Vector2Int baseGridSize,
-    out Vector3 snappedPos,
-    out Quaternion snappedRot,
-    out Vector3 avgNormal,
-    List<CellKey> outFootprintKeys,
-    out string reason)
+SegmentGridSettings seg,
+Vector3 hitPoint,
+float yawDegrees,
+Vector2Int baseGridSize,
+out Vector3 snappedPos,
+out Quaternion snappedRot,
+out Vector3 avgNormal,
+List<CellKey> outFootprintKeys,
+out string reason)
     {
         snappedPos = default;
         snappedRot = default;
@@ -1667,6 +1682,16 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         seg.EnsureMask();
         seg.GetPlaneBasis(out Vector3 U, out Vector3 V, out Vector3 N);
+
+        // Obtener la normal REAL de la superficie del segmento original en el punto del cursor
+        Vector3 segmentNormal = N;
+        Vector3 probeOrigin = hitPoint + N * 0.5f;
+        if (Physics.Raycast(probeOrigin, -N, out RaycastHit probeHit, 5f, placementMask))
+        {
+            var probeSeg = probeHit.collider.GetComponentInParent<SegmentGridSettings>();
+            if (probeSeg == seg)
+                segmentNormal = probeHit.normal;
+        }
 
         float cs = Mathf.Max(0.01f, seg.cellSize);
         Vector3 origin = seg.OriginWorld;
@@ -1699,7 +1724,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         };
 
         bool anyBlocked = false;
-
         Vector3 sumPos = Vector3.zero;
         Vector3 sumN = Vector3.zero;
         int count = 0;
@@ -1717,7 +1741,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 Vector3 planeCenter = origin + (i + 0.5f) * cs * U + (j + 0.5f) * cs * V;
                 Vector3 rayOrigin = planeCenter + N * 5f;
 
-                // ✅ Sin superficie → fallo inmediato
                 if (!Physics.Raycast(rayOrigin, -N, out RaycastHit cellHit, 30f, placementMask))
                 {
                     reason = "Fuera del suelo";
@@ -1726,26 +1749,35 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
                 var realSeg = cellHit.collider.GetComponentInParent<SegmentGridSettings>();
 
-                if (realSeg != null)
+                if (realSeg == null)
                 {
-                    // ✅ Fuera de bounds del segmento → fallo inmediato
-                    if (!realSeg.TryWorldToCell(cellHit.point, out int ri, out int rj))
-                    {
-                        reason = "Fuera del segmento";
-                        return false;
-                    }
-
-                    outFootprintKeys.Add(new CellKey(realSeg.GetInstanceID(), ri, rj));
-
-                    if (realSeg.IsBlocked(ri, rj))
-                        anyBlocked = true;
-                }
-                else
-                {
-                    // ✅ La celda cae sobre suelo que no es segmento → fallo inmediato
                     reason = "Fuera del suelo";
                     return false;
                 }
+
+                realSeg.GetPlaneBasis(out _, out _, out Vector3 realN);
+                if (Vector3.Dot(realN, N) < 0.7f)
+                {
+                    reason = "Fuera del segmento";
+                    return false;
+                }
+
+                if (!realSeg.TryWorldToCell(cellHit.point, out int ri, out int rj))
+                {
+                    reason = "Fuera del segmento";
+                    return false;
+                }
+
+                if (!realSeg.InBounds(ri, rj))
+                {
+                    reason = "Fuera del segmento";
+                    return false;
+                }
+
+                outFootprintKeys.Add(new CellKey(realSeg.GetInstanceID(), ri, rj));
+
+                if (realSeg.IsBlocked(ri, rj))
+                    anyBlocked = true;
 
                 sumPos += cellHit.point;
                 sumN += cellHit.normal;
@@ -1753,27 +1785,20 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             }
         }
 
-        // Si llegamos aquí, todas las celdas tienen superficie válida
         if (count == 0)
         {
             reason = "Fuera del suelo";
             return false;
         }
 
-        // Calcular posición y normal snapeadas desde el centro del footprint
-        Vector3 gridCenter = origin + centerU * cs * U + centerV * cs * V;
-        Vector3 centerRayOrigin = gridCenter + N * 5f;
+        snappedPos = sumPos / count;
 
-        if (Physics.Raycast(centerRayOrigin, -N, out RaycastHit centerHit, 30f, placementMask))
-        {
+        // Proyectar a la superficie usando la normal del segmento original
+        Vector3 centerRayOrigin = snappedPos + segmentNormal * 2f;
+        if (Physics.Raycast(centerRayOrigin, -segmentNormal, out RaycastHit centerHit, 10f, placementMask))
             snappedPos = centerHit.point;
-            avgNormal = centerHit.normal;
-        }
-        else
-        {
-            snappedPos = gridCenter;
-            avgNormal = N;
-        }
+
+        avgNormal = segmentNormal;
 
         Vector3 fwdOnPlane = Vector3.ProjectOnPlane(fwdBase, avgNormal).normalized;
         if (fwdOnPlane.sqrMagnitude < 0.0001f)

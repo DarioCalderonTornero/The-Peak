@@ -38,9 +38,6 @@ public class CardData : ScriptableObject
     // NUEVO: Tamaño en casillas (Ej: 1x1, 2x2, 3x1)
     public Vector2Int gridSize = new Vector2Int(1, 1);
 
-    [Header("Decal Grid Offset")]
-    public Vector2 decalOffset = Vector2.zero;
-
     // ═══════════════════════════════════════════════════════════════
     // NUEVO: DATOS DEL REVERSO DE LA CARTA
     // ═══════════════════════════════════════════════════════════════
@@ -49,26 +46,17 @@ public class CardData : ScriptableObject
     [Header("─── REVERSO DE LA CARTA ───")]
     public CardType cardType = CardType.Permanente;
 
+    [Header("─── DEFENSA TEMPORAL ───")]
+    [Tooltip("Solo para cartas Temporales. Turnos antes de destruirse automáticamente.")]
+    public int temporalTurns = 3;
+
+    [Header("─── ILUSTRACIÓN TRASERA ───")]
     [Tooltip("Imagen de fondo del reverso (opcional - normalmente diferente del frente)")]
     public Sprite backBackground;
-
-    [Tooltip("Ilustración o icono grande del reverso (opcional)")]
-    public Sprite backIllustration;
-
-    [Tooltip("Frase temática / lore que aparece en el reverso")]
-    [TextArea(2, 4)]
-    public string loreText;
-
-    [Tooltip("Descripción extendida del reverso (más detallada que la del frente)")]
-    [TextArea(2, 5)]
-    public string extendedDescription;
 
     [Header("─── COUNTER (equipamiento que contrarresta) ───")]
     [Tooltip("Icono del equipamiento counter (pico, pantalón, etc.)")]
     public Sprite counterIcon;
-
-    [Tooltip("Nombre del counter (ej: 'Pico', 'Pantalón')")]
-    public string counterName;
 
     [Tooltip("Color o variante visual del counter")]
     public Sprite counterColorSprite;
@@ -83,6 +71,7 @@ public class CardData : ScriptableObject
     public VideoClip explanationVideo;
 
     [Tooltip("Texto corto que describe la función de la carta (para el panel de vídeo)")]
+    [TextArea(2, 3)]
     public string functionText;
     
     [Tooltip("Descripción de cómo el counter neutraliza esta carta")]

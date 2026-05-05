@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6651538022001139168}
   - component: {fileID: 8971837571459164152}
   - component: {fileID: 1349457102523509971}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NubeDeRayosPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -49,6 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01cffa86be604454990603200a295070, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  outlineObject: {fileID: 0}
   killChance: 1
   delayBeforeDeath: 2
   visualChild: {fileID: 3992534062283769811}
@@ -151,7 +152,7 @@ GameObject:
   - component: {fileID: 4286444325403584632}
   - component: {fileID: 1276723685337112249}
   - component: {fileID: 3704288757447299138}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: vfx_Rayo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -312,6 +313,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 57c5e27d99291724e9da92bdd76033f8, type: 3}
       propertyPath: m_Name
       value: NubePicuda
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 57c5e27d99291724e9da92bdd76033f8, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

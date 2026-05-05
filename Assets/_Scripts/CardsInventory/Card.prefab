@@ -635,8 +635,8 @@ RectTransform:
   m_Children:
   - {fileID: 8560398479378404970}
   - {fileID: 3863532451240672406}
-  - {fileID: 930886414658305026}
   - {fileID: 1679195130011720676}
+  - {fileID: 930886414658305026}
   m_Father: {fileID: 8253300860835210879}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1274,7 +1274,10 @@ MonoBehaviour:
   freeScaleSensitivity: 0.005
   occupiedCellMarkerPrefab: {fileID: 3889820358834879660, guid: 0ac483a1a4c0b384bbdf3def7bfaf468, type: 3}
   occupiedMarkerRange: 8
-  hoverLiftY: 150
+  gridCellPrefab: {fileID: 5540961906101783297, guid: 77b4acb40d3d03246a1be6dce2c86520, type: 3}
+  gridValidMaterial: {fileID: 2100000, guid: e0dff9f766b27cb4eb098c913e86ac4b, type: 2}
+  gridInvalidMaterial: {fileID: 2100000, guid: d2a6bf9422f31f643a8fab253028fd07, type: 2}
+  hoverLiftY: 200
   hoverDuration: 0.2
   showGlobalGrid: 1
   gridViewRange: 20
@@ -1734,7 +1737,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -76.5, y: 65.4}
+  m_AnchoredPosition: {x: -76.5, y: 57.8}
   m_SizeDelta: {x: 50, y: 54.152}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5439195233784647897

@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 /// Adjuntar a la raíz del prefab de la carta.
 /// </summary>
 [RequireComponent(typeof(RectTransform))]
-public class CardFlip : MonoBehaviour, IPointerClickHandler
+public class CardFlip : MonoBehaviour, IPointerClickHandler, IPointerExitHandler, IPointerEnterHandler
 {
     [Header("Caras de la carta")]
     [SerializeField] private GameObject cardFront;
@@ -96,6 +96,22 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
 
         // Click derecho → flip normal (solo si no está pendiente)
         if (eventData.button != PointerEventData.InputButton.Right) return;
+        if (isAnimating) return;
+        if (flipRoutine != null) StopCoroutine(flipRoutine);
+        flipRoutine = StartCoroutine(FlipAnimation());
+    }
+
+    private bool isPointerOver = false;
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        isPointerOver = true;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        isPointerOver = false;
+        if (!isFlipped) return;
         if (isAnimating) return;
         if (flipRoutine != null) StopCoroutine(flipRoutine);
         flipRoutine = StartCoroutine(FlipAnimation());
@@ -197,19 +213,22 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler
         isAnimating = true;
         float half = flipDuration * 0.5f;
 
-        // Primera mitad: rotar de 0° a 90°
         yield return AnimateRotationY(0f, 90f, half, EaseInQuad);
 
-        // Cambiar cara
         isFlipped = !isFlipped;
-        Temporal_Sound_Music.Instance.Play2DSound(flipSound, 1.0f);
         if (cardFront != null) cardFront.SetActive(!isFlipped);
         if (cardBack != null) cardBack.SetActive(isFlipped);
 
-        // Segunda mitad: rotar de 90° a 0°
         yield return AnimateRotationY(90f, 0f, half, EaseOutQuad);
 
         isAnimating = false;
+
+        // Si terminó el flip hacia el reverso pero el ratón ya no está encima → volver al frente
+        if (isFlipped && !isPointerOver)
+        {
+            if (flipRoutine != null) StopCoroutine(flipRoutine);
+            flipRoutine = StartCoroutine(FlipAnimation());
+        }
     }
 
     private IEnumerator AnimateRotationY(float from, float to, float dur, System.Func<float, float> ease)

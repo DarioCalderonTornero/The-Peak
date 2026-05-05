@@ -1,24 +1,16 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-/// <summary>
-/// Botón "Play" en el reverso de la carta.
-/// Al pulsarlo abre el overlay con el vídeo de esta carta.
-/// NO hay VideoPlayer por carta — todo va al overlay centralizado.
-///
-/// Adjunta al BackCard (o al botón Play directamente).
-/// </summary>
 public class CardPlayButton : MonoBehaviour
 {
-    [Header("Botón Play")]
+    [Header("BotÃ³n Play")]
     [SerializeField] private Button playButton;
 
-    [Header("Overlay (se busca automáticamente si se deja vacío)")]
+    [Header("Overlay (se busca automÃ¡ticamente si se deja vacÃ­o)")]
     [SerializeField] private CardVideoOverlay videoOverlay;
 
-    // El clip se asigna desde CardBackSetup al configurar la carta
-    private VideoClip assignedClip;
+    private CardData assignedCardData;
 
     private void Awake()
     {
@@ -29,27 +21,28 @@ public class CardPlayButton : MonoBehaviour
             playButton.onClick.AddListener(OnPlayPressed);
     }
 
-    public void SetClip(UnityEngine.Video.VideoClip clip)
+    public void SetCardData(CardData cardData)
     {
-        assignedClip = clip;
+        assignedCardData = cardData;
 
-        // Si no hay clip, desactivar el botón
+        // Si no hay vÃ­deo, desactivar el botÃ³n
         if (playButton != null)
-            playButton.gameObject.SetActive(clip != null);
+            playButton.gameObject.SetActive(cardData != null && cardData.explanationVideo != null);
     }
+
+    // Mantener compatibilidad si algo llama al SetClip antiguo
+    public void SetClip(VideoClip clip) { }
 
     private void OnPlayPressed()
     {
-        if (assignedClip == null) return;
+        Debug.Log($"[CardPlayButton] OnPlayPressed | assignedCardData={assignedCardData?.cardName ?? "NULL"}");
+        if (assignedCardData == null) return;
 
         if (videoOverlay == null)
         {
-            // FindFirstObjectByType no encuentra objetos inactivos,
-            // hay que usar Resources o buscar en todos los objetos
             var all = Resources.FindObjectsOfTypeAll<CardVideoOverlay>();
             foreach (var o in all)
             {
-                // Filtramos assets (solo queremos instancias en escena)
                 if (o.gameObject.scene.isLoaded)
                 {
                     videoOverlay = o;
@@ -59,8 +52,8 @@ public class CardPlayButton : MonoBehaviour
         }
 
         if (videoOverlay != null)
-            videoOverlay.Open(assignedClip);
+            videoOverlay.Open(assignedCardData);
         else
-            Debug.LogWarning("[CardPlayButton] No se encontró CardVideoOverlay en la escena.");
+            Debug.LogWarning("[CardPlayButton] No se encontrÃ³ CardVideoOverlay en la escena.");
     }
 }

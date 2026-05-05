@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -20,6 +21,9 @@ public class CardVideoOverlay : MonoBehaviour
     [SerializeField] private RawImage overlayRawImage;
     [SerializeField] private Button closeButton;
     [SerializeField] private VideoPlayer videoPlayer;
+    [SerializeField] private TextMeshProUGUI cardNameText;
+    [SerializeField] private TextMeshProUGUI functionText;
+    [SerializeField] private TextMeshProUGUI counterInfoText;
 
     [Header("Animación")]
     [SerializeField] private float fadeDuration = 0.2f;
@@ -48,38 +52,64 @@ public class CardVideoOverlay : MonoBehaviour
 
         overlayRawImage.texture = rt;
 
-        videoPlayer.prepareCompleted += _ => videoPlayer.Play();
-
         if (closeButton != null)
             closeButton.onClick.AddListener(Close);
     }
 
     private void OnDestroy()
     {
+        if (videoPlayer != null && videoPlayer.isPlaying)
+            videoPlayer.Stop();
+
         if (rt != null) { rt.Release(); Destroy(rt); }
     }
 
     // ─── API pública ──────────────────────────────────────────────
 
-    public void Open(VideoClip clip)
+    public void Open(CardData data)
     {
-        if (clip == null) return;
+        if (data == null || data.explanationVideo == null) return;
+
+        // Textos
+        if (cardNameText != null) cardNameText.text = data.cardName;
+        if (functionText != null) functionText.text = data.functionText;
+        if (counterInfoText != null) counterInfoText.text = data.counterInfo;
 
         gameObject.SetActive(true);
+        cg.alpha = 0f;
+        cg.interactable = false;
+        cg.blocksRaycasts = false;
 
         videoPlayer.Stop();
-        videoPlayer.clip = clip;
-        videoPlayer.Prepare();
+        videoPlayer.clip = data.explanationVideo;
 
+        // No hacer fade hasta que el vídeo esté listo
+        videoPlayer.prepareCompleted -= OnPrepareCompleted;
+        videoPlayer.prepareCompleted += OnPrepareCompleted;
+        videoPlayer.Prepare();
+    }
+
+    private void OnPrepareCompleted(VideoPlayer vp)
+    {
+        vp.Play();
         if (fadeRoutine != null) StopCoroutine(fadeRoutine);
         fadeRoutine = StartCoroutine(Fade(0f, 1f, true));
     }
 
     public void Close()
     {
-        videoPlayer.Stop();
         if (fadeRoutine != null) StopCoroutine(fadeRoutine);
-        fadeRoutine = StartCoroutine(Fade(1f, 0f, false));
+        fadeRoutine = StartCoroutine(CloseRoutine());
+    }
+
+    private IEnumerator CloseRoutine()
+    {
+        // Primero hacer fade out
+        yield return StartCoroutine(Fade(cg.alpha, 0f, false));
+
+        // Luego parar el vídeo cuando ya no se ve
+        videoPlayer.Stop();
+        videoPlayer.clip = null;
     }
 
     // ─── Fade ─────────────────────────────────────────────────────
@@ -104,4 +134,5 @@ public class CardVideoOverlay : MonoBehaviour
         cg.interactable = interactive;
         cg.blocksRaycasts = interactive;
     }
+
 }

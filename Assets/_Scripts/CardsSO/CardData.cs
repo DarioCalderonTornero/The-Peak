@@ -81,4 +81,11 @@ public class CardData : ScriptableObject
     [Header("─── VÍDEO EXPLICATIVO ───")]
     [Tooltip("Vídeo explicativo que se muestra en el reverso de la carta.")]
     public VideoClip explanationVideo;
+
+    [Tooltip("Texto corto que describe la función de la carta (para el panel de vídeo)")]
+    public string functionText;
+    
+    [Tooltip("Descripción de cómo el counter neutraliza esta carta")]
+    [TextArea(2, 3)]
+    public string counterInfo;
 }

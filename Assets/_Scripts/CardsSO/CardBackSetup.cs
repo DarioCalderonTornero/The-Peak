@@ -123,6 +123,6 @@ public class CardBackSetup : MonoBehaviour
 
         var playButton = GetComponentInChildren<CardPlayButton>(true);
         if (playButton != null)
-            playButton.SetClip(data.explanationVideo);
+            playButton.SetCardData(data);
     }
 }

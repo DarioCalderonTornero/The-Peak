@@ -34,7 +34,7 @@ public class DeathAnimation : MonoBehaviour
         {
             case DeathCause.Stamina: StaminaDeathRoutine(); break;
             case DeathCause.Mud: MudDeathRoutine(); break;
-            case DeathCause.Quicksand: StartCoroutine(QuicksandDeathRoutine()); break;
+            //case DeathCause.Quicksand: StartCoroutine(QuicksandDeathRoutine()); break;
             case DeathCause.BadBerry: BadBerryDeathRoutine(); break;
             case DeathCause.Geyser: StartCoroutine(GeyserDeathRoutine()); break;
             case DeathCause.Snow: StartCoroutine(SnowDeathRoutine()); break;

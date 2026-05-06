@@ -382,7 +382,7 @@ MonoBehaviour:
     invertFade: 0
     distanceFadeStart: 10000
     distanceFadeEnd: 10000
-    textureOffset: {x: -9.167329, y: -0, z: -4.5836644}
+    textureOffset: {x: -0, y: -0, z: -0}
     falloffMode: 1
     maskMode: 0
     materialMask: {fileID: 0}
@@ -995,12 +995,12 @@ GameObject:
   - component: {fileID: 952841061}
   - component: {fileID: 952841060}
   m_Layer: 4
-  m_Name: Cube
+  m_Name: Mar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &952841060
 BoxCollider:
   m_ObjectHideFlags: 0

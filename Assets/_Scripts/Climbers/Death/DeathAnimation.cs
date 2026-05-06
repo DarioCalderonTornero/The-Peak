@@ -17,6 +17,8 @@ public class DeathAnimation : MonoBehaviour
     [Header("Seguridad")]
     [SerializeField] private float destroyDelay = 5f;
 
+    private DeathClimberExplosion climberExplosion;
+
     /// <summary>
     /// Se dispara cuando la animación de muerte termina.
     /// DeathClimberExplosion y DeathCinematicManager escuchan esto.
@@ -30,10 +32,15 @@ public class DeathAnimation : MonoBehaviour
         if (helmetRenderer != null)
             helmetRenderer.material.color = helmetColor;
 
+        climberExplosion = GetComponent<DeathClimberExplosion>();
+        if (climberExplosion != null)
+            climberExplosion.SetDeathCause(deathCause);
+
         switch (deathCause)
         {
-            case DeathCause.Stamina: StaminaDeathRoutine(); break;
+            case DeathCause.Stamina: StaminaDeathRoutine(0.5f); break;
             case DeathCause.Mud: MudDeathRoutine(); break;
+            case DeathCause.Bramble: StaminaDeathRoutine(1.5f); break;
             //case DeathCause.Quicksand: StartCoroutine(QuicksandDeathRoutine()); break;
             case DeathCause.BadBerry: BadBerryDeathRoutine(); break;
             case DeathCause.Geyser: StartCoroutine(GeyserDeathRoutine()); break;
@@ -48,9 +55,8 @@ public class DeathAnimation : MonoBehaviour
 
     // ─── Animaciones por tipo ─────────────────────────────────────────────────
 
-    private void StaminaDeathRoutine()
+    private void StaminaDeathRoutine(float targetAngle)
     {
-        float targetAngle = 1.5f;
         float animDuration = 0.85f;
         float shakeMagnitude = 0.01f;
 
@@ -61,6 +67,7 @@ public class DeathAnimation : MonoBehaviour
 
     private void MudDeathRoutine()
     {
+        /*
         float targetAngle = 1.5f;
         float animDuration = 1.25f;
         float shakeMagnitude = 0.01f;
@@ -68,6 +75,8 @@ public class DeathAnimation : MonoBehaviour
         StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));
         StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude)); // ← orden correcto
         Invoke(nameof(NotifyComplete), animDuration);
+        */
+        Invoke(nameof(NotifyComplete), 0f);
     }
 
     private IEnumerator QuicksandDeathRoutine()
@@ -105,11 +114,11 @@ public class DeathAnimation : MonoBehaviour
 
     private void StormyCloudDeath()
     {
-        float animDuration = 1.0f;
+        float animDuration = .75f;
         float shakeMagnitude = 0.01f;
 
-        StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
-        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
+        //StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
+        //StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
         StartCoroutine(BodyColorToRedRoutine(Color.black, animDuration));
         Invoke(nameof(NotifyComplete), animDuration);
     }
@@ -128,8 +137,6 @@ public class DeathAnimation : MonoBehaviour
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
-
-
 
     private IEnumerator FlattenRoutine(float duration)
     {

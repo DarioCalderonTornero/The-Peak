@@ -18,7 +18,7 @@ public class WorldClimberUI : MonoBehaviour
 
     private void Awake()
     {
-        isStaminaHide = false;
+        //isStaminaHide = false;
     }
 
     private void Start()

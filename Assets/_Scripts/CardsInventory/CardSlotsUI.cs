@@ -12,6 +12,11 @@ public class CardSlotsUI : MonoBehaviour
 
     private readonly List<DragCardUI> currentCards = new List<DragCardUI>();
 
+    [Header("Efecto mano de cartas")]
+    [SerializeField] private float cardRotationAngle = 8f;   // grados de rotación lateral
+    [SerializeField] private float cardLiftAmount = 15f;      // píxeles que sube cada carta lateral
+    [SerializeField] private Vector2 cardSpacing = new Vector2(220f, 0f); // separación entre cartas
+
     private void Awake()
     {
         Instance = this;    
@@ -61,6 +66,8 @@ public class CardSlotsUI : MonoBehaviour
         }
 
         currentCards.Add(dragCard);
+
+        ApplyHandLayout();
     }
 
     /// <summary>
@@ -86,6 +93,8 @@ public class CardSlotsUI : MonoBehaviour
 
         Destroy(currentCards[index].gameObject);
         currentCards.RemoveAt(index);
+
+        ApplyHandLayout();
     }
 
     /// <summary>
@@ -133,6 +142,8 @@ public class CardSlotsUI : MonoBehaviour
 
         // Actualiza la lista lógica
         currentCards[index] = dragCard;
+
+        ApplyHandLayout();
     }
 
     public void ShowSlotContainer()
@@ -143,5 +154,38 @@ public class CardSlotsUI : MonoBehaviour
     public void HideSlotContainer()
     {
         slotsContainer.gameObject.SetActive(false);
+    }
+
+    private void ApplyHandLayout()
+    {
+        int count = currentCards.Count;
+        if (count == 0) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (currentCards[i] == null) continue;
+
+            RectTransform rt = currentCards[i].GetComponent<RectTransform>();
+            if (rt == null) continue;
+
+            float center = (count - 1) / 2f;
+            float relIndex = i - center;
+
+            float angle = -relIndex * cardRotationAngle;
+            float angleRad = angle * Mathf.Deg2Rad;
+
+            // Dirección en que apunta la carta (perpendicular a su eje local)
+            // sin(angle) es el componente X, cos(angle) es el componente Y
+            float liftX = Mathf.Sin(angleRad) * cardLiftAmount;
+            float liftY = Mathf.Cos(angleRad) * cardLiftAmount;
+
+            rt.localRotation = Quaternion.Euler(0f, 0f, angle);
+            currentCards[i].handRotationAngle = angle;
+
+            var pos = rt.anchoredPosition;
+            pos.x += liftX;
+            pos.y = liftY;
+            rt.anchoredPosition = pos;
+        }
     }
 }

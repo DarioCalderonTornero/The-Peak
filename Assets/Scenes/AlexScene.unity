@@ -1338,6 +1338,9 @@ MonoBehaviour:
   slotsContainer: {fileID: 1832778368}
   cardPrefab: {fileID: 6781065058651717317, guid: 481e41b82fd4e0848aa9426e6965403a, type: 3}
   startingCards: []
+  cardRotationAngle: 8
+  cardLiftAmount: 15
+  cardSpacing: {x: 1000, y: 0}
 --- !u!114 &281424688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3963,7 +3966,7 @@ MonoBehaviour:
   cardsPerPage: 6
   selectedColor: {r: 1, g: 1, b: 1, a: 1}
   normalColor: {r: 0.2627451, g: 0.2627451, b: 0.2627451, a: 1}
-  cardScale: {x: 1.3, y: 1.14, z: 1.3}
+  cardScale: {x: 1.2, y: 1.2, z: 1.2}
   hoverScaleMultiplier: 1.1
   hoverSmoothTime: 0.1
   availableCards:

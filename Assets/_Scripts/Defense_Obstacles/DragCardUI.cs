@@ -592,7 +592,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canDragThisTime = true;
         canvasGroup.blocksRaycasts = false;
 
-        // Guardar desde dónde empieza el drag (puede ser desde hover lifted)
+        if (hoverRoutine != null) StopCoroutine(hoverRoutine);
         dragStartY = rectTransform.anchoredPosition.y;
 
         ResetTransientStates();
@@ -604,16 +604,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (eventData.button != PointerEventData.InputButton.Left || !canDragThisTime)
             return;
 
-        // Movimiento de la carta UI, solo se mueve en Y
         Vector2 newPos = rectTransform.anchoredPosition;
-
-        // SOLO movimiento vertical
         newPos.y += eventData.delta.y / canvas.scaleFactor;
-
-        // Bloqueamos X para que no se mueva lateralmente
-        newPos.x = originalPosition.x;
-
-        // Establecemos la nueva posición
+        // newPos.x = originalPosition.x;
         rectTransform.anchoredPosition = newPos;
 
         float distanceUp = rectTransform.anchoredPosition.y - dragStartY;
@@ -622,7 +615,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         bool overUI = IsPointerOverUI();
 
-        // Si no está en modo de colocación y se ha superado el umbral de colocación, cambiamos al modo de colocación
         if (!inPlacementMode && distanceUp >= placementThreshold && !overUI)
             EnterPlacementMode();
 
@@ -732,7 +724,9 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
 
-        rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
+        // Animar vuelta a posición original en diagonal
+        if (hoverRoutine != null) StopCoroutine(hoverRoutine);
+        hoverRoutine = StartCoroutine(AnimateHoverLift(false));
 
         // Si sueltas encima de UI -> no colocar
         if (IsPointerOverUI())
@@ -742,7 +736,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             return;
         }
 
-        rectTransform.anchoredPosition = new Vector2(originalPosition.x, originalPosition.y);
+        StartCoroutine(AnimateHoverLift(false));
 
         if (!inPlacementMode || previewInstance == null)
         {
@@ -871,6 +865,18 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         ResetTransientStates();
     }
 
+    private IEnumerator FadeCanvasGroup(CanvasGroup cg, float from, float to, float duration)
+    {
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            cg.alpha = Mathf.Lerp(from, to, Mathf.Clamp01(t / duration));
+            yield return null;
+        }
+        cg.alpha = to;
+    }
+
     private void EnterPlacementMode()
     {
         inPlacementMode = true;
@@ -886,7 +892,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         if (globalDecal != null)
             globalDecal.enabled = true;
-        canvasGroup.alpha = 0f;
+        // canvasGroup.alpha = 0f;
 
         lastHitNormal = Vector3.up;
         currentPreviewIsValid = false;
@@ -1147,6 +1153,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (b is BlockFaceOnPlacement) continue;
             if (b is RockDefense) continue;
             if (b is BrambleDefense) continue;
+            if (b is CloudDefensePreview) continue;
             Destroy(b);
         }
 
@@ -1261,6 +1268,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     [Header("Hover Animation")]
     [SerializeField] private float hoverLiftY = 120f;   // cuánto sube (px de canvas)
     [SerializeField] private float hoverDuration = 0.2f;
+    [HideInInspector] public float handRotationAngle = 0f;
 
     private Coroutine hoverRoutine;
     private bool isHovering = false;
@@ -1305,7 +1313,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (glowImage != null) {  }
         if (sparkleObject != null) sparkleObject.SetActive(active);*/
     }
-    
+
 
     /*private IEnumerator AnimateGlow(float fromA, float toA, float dur)
     {
@@ -1327,8 +1335,21 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private IEnumerator AnimateHoverLift(bool lifting)
     {
         Vector2 startPos = rectTransform.anchoredPosition;
+
+        Vector2 liftDir;
+        if (Mathf.Abs(handRotationAngle) > 0.1f)
+        {
+            // Dirección en que apunta la carta según su rotación
+            float rad = handRotationAngle * Mathf.Deg2Rad;
+            liftDir = new Vector2(-Mathf.Sin(rad), Mathf.Cos(rad));
+        }
+        else
+        {
+            liftDir = Vector2.up;
+        }
+
         Vector2 targetPos = lifting
-            ? new Vector2(originalPosition.x, originalPosition.y + hoverLiftY)
+            ? originalPosition + liftDir * hoverLiftY
             : originalPosition;
 
         float elapsed = 0f;
@@ -1336,7 +1357,6 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / hoverDuration;
-            // EaseOut: desacelera al llegar
             float smooth = 1f - Mathf.Pow(1f - Mathf.Clamp01(t), 3f);
             rectTransform.anchoredPosition = Vector2.LerpUnclamped(startPos, targetPos, smooth);
             yield return null;

@@ -10,6 +10,7 @@ public class CloudKillDefense : BaseDefense
 
     [Header("References")]
     [SerializeField] private Transform visualChild;
+    [SerializeField] private Transform rainObject;
     [SerializeField] private GameObject killVFX;
 
     [Header("Pop Settings")]
@@ -45,10 +46,51 @@ public class CloudKillDefense : BaseDefense
             originalVisualScale = visualChild.localScale;
     }
 
+    [SerializeField] private float cloudHeight = 5f;
+    [SerializeField] private Vector3 cloudOffset = new Vector3(0.5f, 0f, 0f);
+    [SerializeField] private float RainHeight = 4f;
+
+
     private void Start()
     {
         if (visualChild != null)
+        {
+            // Raycast hacia arriba para encontrar el punto "en el aire" sobre el obstáculo
+            Vector3 rayOrigin = transform.position;
+
+            // Subir directamente en Y world, ignorando la normal del suelo
+            Vector3 cloudPosition = transform.position + Vector3.up * cloudHeight + cloudOffset;
+
+            visualChild.position = cloudPosition;
+            visualChild.rotation = Quaternion.Euler(-90f, 0f, 0f);
+
             StartCoroutine(AnimatePop(visualChild, Vector3.zero, originalVisualScale));
+        }
+
+        if (rainObject != null)
+        {
+            // Raycast hacia arriba para encontrar el punto "en el aire" sobre el obstáculo
+            Vector3 rayOrigin = transform.position;
+
+            // Subir directamente en Y world, ignorando la normal del suelo
+            Vector3 cloudPosition = rayOrigin + Vector3.up * RainHeight;
+
+            rainObject.position = cloudPosition;
+            rainObject.rotation = Quaternion.Euler(0f, 0f, 0f);
+        }
+
+        // Destruir el componente preview ya que ahora está colocado de verdad
+        var preview = GetComponent<CloudDefensePreview>();
+        if (preview != null) Destroy(preview);
+    }
+
+    private void Update()
+    {
+        if (visualChild != null)
+            visualChild.rotation = Quaternion.Euler(-90f, 0f, 0f);
+
+        if (rainObject != null)
+            rainObject.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
     }
 
     private void OnTriggerEnter(Collider other)

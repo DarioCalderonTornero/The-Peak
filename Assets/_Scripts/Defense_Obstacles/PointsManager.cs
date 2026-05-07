@@ -15,6 +15,8 @@ public class PointsManager : MonoBehaviour
 
     [SerializeField] private AudioClip audioClip;
 
+    public int GetCurrentPoints() => currentPoints;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

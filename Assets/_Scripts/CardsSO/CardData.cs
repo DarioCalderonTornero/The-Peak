@@ -77,4 +77,8 @@ public class CardData : ScriptableObject
     [Tooltip("Descripción de cómo el counter neutraliza esta carta")]
     [TextArea(2, 3)]
     public string counterInfo;
+
+    [Header("─── DESBLOQUEO ───")]
+    [Tooltip("Texto que aparece al intentar usar una carta bloqueada")]
+    public string lockedMessage;
 }

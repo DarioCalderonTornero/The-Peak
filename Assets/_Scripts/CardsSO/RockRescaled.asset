@@ -27,14 +27,13 @@ MonoBehaviour:
   supportYOffset: 0.1
   placementCheckExtents: {x: 2, y: 2, z: 2}
   gridSize: {x: 2, y: 2}
-  decalOffset: {x: 0, y: 0}
   cardType: 0
+  temporalTurns: 3
   backBackground: {fileID: 855669260, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
-  backIllustration: {fileID: 0}
-  loreText: Lore Text
-  extendedDescription: Description
   counterIcon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
-  counterName: 
   counterColorSprite: {fileID: -1574946980, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 328779695, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
   explanationVideo: {fileID: 0}
+  functionText: 
+  counterInfo: 
+  lockedMessage: Se desbloquea en el nivel 5

@@ -54,6 +54,12 @@ public class CardInventoryUI : MonoBehaviour
     [Header("Contadores de tipos de carta")]
     [SerializeField] private TextMeshProUGUI permanentCountText;  // muestra "X / X"
     [SerializeField] private TextMeshProUGUI temporalCountText;   // muestra "X / X"
+    [SerializeField] private Image permanentIcon;        // ← nuevo
+    [SerializeField] private Image temporalIcon;         // ← nuevo
+    [SerializeField] private Sprite permanentIconNormal; // ← nuevo
+    [SerializeField] private Sprite permanentIconPending;// ← nuevo
+    [SerializeField] private Sprite temporalIconNormal;  // ← nuevo
+    [SerializeField] private Sprite temporalIconPending; // ← nuevo
 
     [Header("Glow hover")]
     [SerializeField] private float glowFadeDuration = 0.15f;
@@ -188,7 +194,7 @@ public class CardInventoryUI : MonoBehaviour
 
             if (state == CardUnlockState.Locked)
             {
-                SetupLockedCard(cardObj, lockedSprite);
+                SetupLockedCard(cardObj, cardData, lockedSprite);
                 continue; // no añadir hover ni botón
             }
 
@@ -228,17 +234,47 @@ public class CardInventoryUI : MonoBehaviour
     [SerializeField] private Sprite pendingSpritePermanente;
     [SerializeField] private Sprite pendingSpriteTemporal;
 
-    private void SetupLockedCard(GameObject cardObj, Sprite sprite)
+    private void SetupLockedCard(GameObject cardObj, CardData cardData, Sprite sprite)
     {
         var drag = cardObj.GetComponent<DragCardUI>();
         if (drag != null) drag.enabled = false;
 
         var cg = cardObj.GetComponent<CanvasGroup>();
         if (cg == null) cg = cardObj.AddComponent<CanvasGroup>();
-        cg.interactable = false;
-        cg.blocksRaycasts = false;
+        cg.interactable = true;  // sí interactuable para capturar el click
+        cg.blocksRaycasts = true;
 
         HideAllExceptSprite(cardObj, sprite);
+
+        // Click → temblor + mensaje
+        Button btn = cardObj.GetComponent<Button>();
+        if (btn == null) btn = cardObj.AddComponent<Button>();
+        btn.onClick.RemoveAllListeners();
+        btn.onClick.AddListener(() =>
+        {
+            StartCoroutine(ShakeCard(cardObj));
+            if (!string.IsNullOrEmpty(cardData.lockedMessage))
+                LockedCardMessage.Instance?.Show(cardData.lockedMessage);
+        });
+    }
+
+    private IEnumerator ShakeCard(GameObject cardObj)
+    {
+        RectTransform rt = cardObj.GetComponent<RectTransform>();
+        Vector2 originalPos = rt.anchoredPosition;
+        float duration = 0.3f;
+        float magnitude = 8f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float offsetX = UnityEngine.Random.Range(-1f, 1f) * magnitude;
+            rt.anchoredPosition = originalPos + new Vector2(offsetX, 0f);
+            yield return null;
+        }
+
+        rt.anchoredPosition = originalPos;
     }
 
     private void SetupPendingCard(GameObject cardObj, CardData cardData)
@@ -305,6 +341,7 @@ public class CardInventoryUI : MonoBehaviour
 
                 AddHoverEffect(cardObj);
                 SetCardStar(cardObj, selectedCards.Contains(cardData));
+                UpdateTypeCounters();
             };
         }
 
@@ -663,48 +700,46 @@ public class CardInventoryUI : MonoBehaviour
 
     private void UpdateTypeCounters()
     {
-        if (cardUnlockData == null)
-        {
-            Debug.LogWarning("CardUnlockData no está asignado en el inspector.");
-            return;
-        }
+        if (cardUnlockData == null) return;
 
         int unlockedPermanent = 0;
         int totalPermanent = 0;
         int unlockedTemporal = 0;
         int totalTemporal = 0;
+        bool hasPendingPermanent = false;
+        bool hasPendingTemporal = false;
 
-        // Obtenemos todas las cartas registradas en el sistema de desbloqueo
-        List<CardData> allCards = cardUnlockData.GetAllCards();
-
-        foreach (var card in allCards)
+        foreach (var card in cardUnlockData.GetAllCards())
         {
             if (card == null) continue;
-
-            // Consultamos el estado actual de esta carta específica
             CardUnlockState state = cardUnlockData.GetState(card);
 
             if (card.cardType == CardData.CardType.Permanente)
             {
                 totalPermanent++;
-                // Contamos como "conseguida" si su estado es Unlocked
-                if (state == CardUnlockState.Unlocked)
-                    unlockedPermanent++;
+                if (state == CardUnlockState.Unlocked) unlockedPermanent++;
+                if (state == CardUnlockState.Pending) hasPendingPermanent = true;
             }
             else if (card.cardType == CardData.CardType.Temporal)
             {
                 totalTemporal++;
-                if (state == CardUnlockState.Unlocked)
-                    unlockedTemporal++;
+                if (state == CardUnlockState.Unlocked) unlockedTemporal++;
+                if (state == CardUnlockState.Pending) hasPendingTemporal = true;
             }
         }
 
-        // Actualizamos los textos con el formato: Desbloqueadas / Totales
         if (permanentCountText != null)
             permanentCountText.text = $"{unlockedPermanent} / {totalPermanent}";
 
         if (temporalCountText != null)
             temporalCountText.text = $"{unlockedTemporal} / {totalTemporal}";
+
+        // Iconos: pending = icono especial, sin pending = normal
+        if (permanentIcon != null)
+            permanentIcon.sprite = hasPendingPermanent ? permanentIconPending : permanentIconNormal;
+
+        if (temporalIcon != null)
+            temporalIcon.sprite = hasPendingTemporal ? temporalIconPending : temporalIconNormal;
     }
 
     private void OnValidate()

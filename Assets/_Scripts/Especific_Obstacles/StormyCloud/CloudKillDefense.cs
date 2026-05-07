@@ -65,6 +65,7 @@ public class CloudKillDefense : BaseDefense
 
     private void Start()
     {
+        if (GetComponent<CloudDefensePreview>() != null) return;
         // Si ya fue inicializado desde afterInitialize, no hacer nada
         if (!initialized)
             Initialize();

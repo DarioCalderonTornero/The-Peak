@@ -1147,6 +1147,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (b is RockDefense) continue;
             if (b is BrambleDefense) continue;
             if (b is CloudDefensePreview) continue;
+            if (b is CloudKillDefense) continue;
             Destroy(b);
         }
 

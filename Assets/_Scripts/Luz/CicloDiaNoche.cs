@@ -11,7 +11,7 @@ public class CicloDiaNocheHDRP : MonoBehaviour
 
     [Header("Configuración")]
     [Tooltip("Velocidad de rotación en grados por segundo.")]
-    public float rotationSpeed = 1.0f;
+    public float rotationSpeed = 0.4f;
 
     private HDRISky hdriSky;
 

@@ -399,36 +399,37 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         Vector3 finalNormal = lastHitNormal;
 
         string placementReason = CheckPlacementValidity(finalPosition, finalNormal, finalRotation);
-        if (placementReason != "Válido")
-        {
-            StartCoroutine(ShakeCard());
-            return;
-        }
+        if (placementReason != "Válido") { StartCoroutine(ShakeCard()); return; }
 
-        bool placedOk = PointsManager.Instance != null
-                     && PointsManager.Instance.SpendPoints(cardData.cost);
-        if (!placedOk)
-        {
-            StartCoroutine(ShakeCard());
-            return;
-        }
+        bool placedOk = PointsManager.Instance != null && PointsManager.Instance.SpendPoints(cardData.cost);
+        if (!placedOk) { StartCoroutine(ShakeCard()); return; }
 
         Vector3 finalScale = originalPreviewScale * currentScaleFactor;
 
+        // Guardar yaw ANTES de que PlaceDefense destruya el preview
+        float cloudPreviewYaw = 0f;
+        var cloudPreviewComp = previewInstance.GetComponent<CloudDefensePreview>();
+        Debug.Log($"[Cloud] cloudPreviewComp={cloudPreviewComp} | yaw={cloudPreviewComp?.GetCurrentYaw()}");
+        if (cloudPreviewComp != null)
+            cloudPreviewYaw = cloudPreviewComp.GetCurrentYaw();
+
         GameObject placed = DefensePlacer.Instance.PlaceDefense(
-            cardData.defensePrefab,
-            finalPosition,
-            finalRotation,
+            cardData.defensePrefab, finalPosition, finalRotation,
             beforeInitialize: (go) => { },
             afterInitialize: (go) =>
             {
+                var cloudDefense = go.GetComponent<CloudKillDefense>();
+                if (cloudDefense != null)
+                {
+                    cloudDefense.SetPlacedYaw(cloudPreviewYaw);
+                    cloudDefense.Initialize();
+                }
+
                 var lodo = go.GetComponent<LodoDefense>();
                 if (lodo != null) { lodo.ApplyExternalScale(finalScale); return; }
 
                 var arena = go.GetComponent<QuicksandDefense>();
                 if (arena != null) { arena.ApplyExternalScale(finalScale); return; }
-
-                go.transform.localScale = finalScale;
 
                 go.transform.localScale = finalScale;
 
@@ -442,8 +443,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         if (placed == null)
         {
-            if (PointsManager.Instance != null)
-                PointsManager.Instance.AddPoints(cardData.cost);
+            if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(cardData.cost);
             StartCoroutine(ShakeCard());
             CancelClickPlaceMode();
             return;
@@ -458,16 +458,12 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         Temporal_Sound_Music.Instance.PlaySound(defensePlacementAudioClip, 1f);
         CameraShake.Instance.ShakeMainCamera(4.0f, 5.5f, 0.2f);
-
-        if (DefensePlacementManager.Instance != null)
-            DefensePlacementManager.Instance.RegisterPlaced(placed);
+        if (DefensePlacementManager.Instance != null) DefensePlacementManager.Instance.RegisterPlaced(placed);
 
         OnCardUsed?.Invoke(this);
         ResetPersistentTransform();
         CleanupPreview();
         ResetTransientStates();
-
-        // Salir del modo al colocar
         AnyCardInClickPlaceMode = false;
         isClickPlaceMode = false;
         canvasGroup.blocksRaycasts = true;
@@ -776,54 +772,51 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         // ✅ Escala final
         Vector3 finalScale = originalPreviewScale * currentScaleFactor;
 
+        // Guardar yaw ANTES de que PlaceDefense destruya el preview
+        float cloudPreviewYaw = 0f;
+        var cloudPreviewComp = previewInstance.GetComponent<CloudDefensePreview>();
+        Debug.Log($"[Cloud] cloudPreviewComp={cloudPreviewComp} | yaw={cloudPreviewComp?.GetCurrentYaw()}");
+        if (cloudPreviewComp != null)
+            cloudPreviewYaw = cloudPreviewComp.GetCurrentYaw();
+
         GameObject placed = DefensePlacer.Instance.PlaceDefense(
-            cardData.defensePrefab,
-            finalPosition,
-            finalRotation,
-            beforeInitialize: (go) =>
+    cardData.defensePrefab, finalPosition, finalRotation,
+    beforeInitialize: (go) => { },
+    afterInitialize: (go) =>
+    {
+        var cloudDefense = go.GetComponent<CloudKillDefense>();
+        if (cloudDefense != null)
+        {
+            cloudDefense.SetPlacedYaw(cloudPreviewYaw);
+            cloudDefense.Initialize();
+        }
+
+        var lodo = go.GetComponent<LodoDefense>();
+        if (lodo != null) { lodo.ApplyExternalScale(finalScale); return; }
+
+        var arena = go.GetComponent<QuicksandDefense>();
+        if (arena != null) { arena.ApplyExternalScale(finalScale); return; }
+
+        var log = go.GetComponent<RollingLogDefense>();
+        if (log != null)
+        {
+            if (usingSegmentGrid && activeSegment != null && currentFootprintKeys.Count > 0)
             {
-
-            },
-            afterInitialize: (go) =>
-            {
-                var lodo = go.GetComponent<LodoDefense>();
-                if (lodo != null)
-                {
-                    lodo.ApplyExternalScale(finalScale);
-                    return;
-                }
-
-                var arena = go.GetComponent<QuicksandDefense>();
-                if (arena != null)
-                {
-                    arena.ApplyExternalScale(finalScale);
-                    return;
-                }
-
-                var log = go.GetComponent<RollingLogDefense>();
-                if (log != null)
-                {
-                    if (usingSegmentGrid && activeSegment != null && currentFootprintKeys.Count > 0)
-                    {
-                        var key = currentFootprintKeys[0]; // centro aproximado
-                        var seg = SegmentRegistry.Get(key.segmentId);
-
-                        if (seg != null)
-                        {
-                            log.InitializeFromPlacement(seg, new Vector2Int(key.x, key.y));
-                        }
-                    }
-                }
-
-                go.transform.localScale = finalScale;
-
-                if (cardData.cardType == CardData.CardType.Temporal)
-                {
-                    var temp = go.AddComponent<TemporaryDefense>();
-                    temp.Initialize(cardData.temporalTurns);
-                }
+                var key = currentFootprintKeys[0];
+                var seg = SegmentRegistry.Get(key.segmentId);
+                if (seg != null) log.InitializeFromPlacement(seg, new Vector2Int(key.x, key.y));
             }
-        );
+        }
+
+        go.transform.localScale = finalScale;
+
+        if (cardData.cardType == CardData.CardType.Temporal)
+        {
+            var temp = go.AddComponent<TemporaryDefense>();
+            temp.Initialize(cardData.temporalTurns);
+        }
+    }
+);
         Debug.Log("PLACED POS: " + placed.transform.position);
 
 

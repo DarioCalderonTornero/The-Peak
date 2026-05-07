@@ -26,6 +26,12 @@ public class TemporaryDefense : MonoBehaviour
         Debug.Log($"[TemporaryDefense] {gameObject.name} — turnos restantes: {turnsRemaining}");
 
         if (turnsRemaining <= 0)
-            Destroy(gameObject);
+        {
+            var cloud = GetComponent<CloudKillDefense>();
+            if (cloud != null)
+                StartCoroutine(cloud.DisappearAndDestroy());
+            else
+                Destroy(gameObject);
+        }
     }
 }

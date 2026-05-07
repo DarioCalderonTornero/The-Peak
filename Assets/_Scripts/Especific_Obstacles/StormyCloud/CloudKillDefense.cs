@@ -11,6 +11,7 @@ public class CloudKillDefense : BaseDefense
     [Header("References")]
     [SerializeField] private Transform visualChild;
     [SerializeField] private Transform rainObject;
+    [SerializeField] private Transform rayObject;
     [SerializeField] private GameObject killVFX;
 
     [Header("Pop Settings")]
@@ -51,47 +52,69 @@ public class CloudKillDefense : BaseDefense
     [SerializeField] private float RainHeight = 4f;
 
 
+    private float placedYaw = 0f;
+
+    public void SetPlacedYaw(float yaw)
+    {
+        placedYaw = yaw;
+        var preview = GetComponent<CloudDefensePreview>();
+        if (preview != null) preview.StopPreview();
+    }
+
+    private bool initialized = false;
+
     private void Start()
     {
-        if (visualChild != null)
-        {
-            // Raycast hacia arriba para encontrar el punto "en el aire" sobre el obstáculo
-            Vector3 rayOrigin = transform.position;
-
-            // Subir directamente en Y world, ignorando la normal del suelo
-            Vector3 cloudPosition = transform.position + Vector3.up * cloudHeight + cloudOffset;
-
-            visualChild.position = cloudPosition;
-            visualChild.rotation = Quaternion.Euler(-90f, 0f, 0f);
-
-            StartCoroutine(AnimatePop(visualChild, Vector3.zero, originalVisualScale));
-        }
-
-        if (rainObject != null)
-        {
-            // Raycast hacia arriba para encontrar el punto "en el aire" sobre el obstáculo
-            Vector3 rayOrigin = transform.position;
-
-            // Subir directamente en Y world, ignorando la normal del suelo
-            Vector3 cloudPosition = rayOrigin + Vector3.up * RainHeight;
-
-            rainObject.position = cloudPosition;
-            rainObject.rotation = Quaternion.Euler(0f, 0f, 0f);
-        }
-
-        // Destruir el componente preview ya que ahora está colocado de verdad
-        var preview = GetComponent<CloudDefensePreview>();
-        if (preview != null) Destroy(preview);
+        // Si ya fue inicializado desde afterInitialize, no hacer nada
+        if (!initialized)
+            Initialize();
     }
 
     private void Update()
     {
         if (visualChild != null)
-            visualChild.rotation = Quaternion.Euler(-90f, 0f, 0f);
+            visualChild.rotation = Quaternion.Euler(-90f, placedYaw, 0f);
 
         if (rainObject != null)
-            rainObject.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            rainObject.rotation = Quaternion.Euler(0f, placedYaw, 0f);
+
+        if (rayObject != null)
+            rayObject.rotation = Quaternion.Euler(0f, placedYaw, 0f);
     }
+
+    public void Initialize()
+    {
+        initialized = true;
+        var preview = GetComponent<CloudDefensePreview>();
+        if (preview != null) Destroy(preview);
+
+        Vector3 rotatedOffset = Quaternion.Euler(0f, placedYaw, 0f) * cloudOffset;
+        Vector3 cloudPosition = transform.position + Vector3.up * cloudHeight + rotatedOffset;
+
+        if (visualChild != null)
+        {
+            visualChild.SetParent(null);
+            visualChild.position = cloudPosition;
+            visualChild.rotation = Quaternion.Euler(-90f, placedYaw, 0f);
+            StartCoroutine(AnimateAppear(visualChild));
+        }
+
+        if (rainObject != null)
+        {
+            rainObject.SetParent(null);
+            rainObject.position = transform.position + Vector3.up * RainHeight;
+            rainObject.rotation = Quaternion.Euler(0f, placedYaw, 0f);
+        }
+
+        if (rayObject != null)
+        {
+            rayObject.SetParent(null);
+            rayObject.position = transform.position + Vector3.up * cloudHeight;
+            rayObject.rotation = Quaternion.Euler(0f, placedYaw, 0f);
+        }
+    }
+
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -254,24 +277,79 @@ public class CloudKillDefense : BaseDefense
         hasKilled = true;
 
         yield return new WaitForSeconds(1.5f);
+        isDisappearing = true;
+        bool disappeared = false;
+        StartCoroutine(AnimateDisappear(visualChild, () => disappeared = true));
+        yield return new WaitUntil(() => disappeared);
 
+        // Ahora sí destruir visualChild manualmente
+        if (visualChild != null) Destroy(visualChild.gameObject);
         Destroy(gameObject);
         killSequenceRoutine = null;
     }
-
-    private IEnumerator AnimatePop(Transform target, Vector3 start, Vector3 end)
+    
+    private IEnumerator AnimateAppear(Transform target)
     {
         if (target == null) yield break;
 
-        float elapsed = 0;
+        var renderer = target.GetComponent<Renderer>();
+        if (renderer == null) yield break;
+
+        // Instanciar material para no afectar al prefab
+        Material mat = renderer.material;
+
+        float elapsed = 0f;
         while (elapsed < popCloudDuration)
         {
             elapsed += Time.deltaTime;
-            float percent = elapsed / popCloudDuration;
-            target.localScale = Vector3.Lerp(start, end, popCurve.Evaluate(percent));
+            float t = Mathf.Clamp01(elapsed / popCloudDuration);
+            mat.SetFloat("_AlphaClip", Mathf.Lerp(1f, 0f, t));
             yield return null;
         }
+        mat.SetFloat("_AlphaClip", 0f);
+    }
 
-        target.localScale = end;
+    private IEnumerator AnimateDisappear(Transform target, System.Action onComplete)
+    {
+        if (target == null) { onComplete?.Invoke(); yield break; }
+
+        var renderer = target.GetComponent<Renderer>();
+        if (renderer == null) { onComplete?.Invoke(); yield break; }
+
+        Material mat = renderer.material;
+
+        float elapsed = 0f;
+        while (elapsed < popCloudDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / popCloudDuration);
+            mat.SetFloat("_AlphaClip", Mathf.Lerp(0f, 1f, t));
+            yield return null;
+        }
+        mat.SetFloat("_AlphaClip", 1f);
+        onComplete?.Invoke();
+    }
+
+    public IEnumerator DisappearAndDestroy()
+    {
+        isDisappearing = true;
+        bool done = false;
+        StartCoroutine(AnimateDisappear(visualChild, () => done = true));
+        yield return new WaitUntil(() => done);
+        if (visualChild != null) Destroy(visualChild.gameObject);
+        Destroy(gameObject);
+    }
+
+    private bool isDisappearing = false;
+
+    private void OnDestroy()
+    {
+        // Solo destruir visualChild si no está haciendo la animación de desaparición
+        if (!isDisappearing && visualChild != null)
+            Destroy(visualChild.gameObject);
+        if (rainObject != null)
+            Destroy(rainObject.gameObject);
+        if (rayObject != null)
+            Destroy(rayObject.gameObject);
     }
 }

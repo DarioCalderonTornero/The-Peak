@@ -73,6 +73,23 @@ public class FreeCameraMovement : MonoBehaviour
     private Coroutine bounceRoutine;
 
     // =========================================================
+    //  COLLISION DETECTION
+    // =========================================================
+
+    [Header("Collision Detection (Fly + Zoom)")]
+    [SerializeField] private bool enableCollisionDetection = true;
+    // Capas contra las que colisiona. En el Inspector, selecciona
+    // únicamente las capas que sean geometría sólida (ej: Mountain, Terrain).
+    [SerializeField] private LayerMask collisionMask = ~0;
+    // Radio de la esfera de detección. Debe ser similar al "grosor" visual
+    // de la cámara (0.2 - 0.5 suele funcionar bien).
+    [SerializeField] private float collisionRadius = 0.3f;
+    // Distancia mínima que la cámara mantiene con cualquier obstáculo.
+    [SerializeField] private float minDistanceToObstacle = 0.6f;
+    // A partir de qué distancia empieza a frenar (debe ser > minDistanceToObstacle).
+    [SerializeField] private float slowdownStartDistance = 2.5f;
+
+    // =========================================================
     //  SPEED
     // =========================================================
 
@@ -134,7 +151,6 @@ public class FreeCameraMovement : MonoBehaviour
 
         if (InputManager.Instance == null) return;
 
-        // Durante el bounce bloqueamos todo input de cámara
         if (isBouncing) return;
 
         HandleZoomAlways();
@@ -155,13 +171,78 @@ public class FreeCameraMovement : MonoBehaviour
     private void InputManager_OnTopView(object sender, EventArgs e) => StartSnap(presetTop);
 
     // =========================================================
+    //  COLLISION HELPERS
+    // =========================================================
+
+    /// <summary>
+    /// Dado un movimiento deseado, devuelve el movimiento real tras aplicar
+    /// la detección de colisión con frenado progresivo.
+    /// - Si no hay obstáculo en esa dirección: movimiento completo.
+    /// - Si hay obstáculo pero aún lejos (> slowdownStartDistance): movimiento completo.
+    /// - Si hay obstáculo en la zona de frenado: movimiento escalado hacia 0.
+    /// - Si ya está dentro de minDistanceToObstacle: movimiento 0.
+    /// </summary>
+    private Vector3 ApplyCollision(Vector3 desiredMove)
+    {
+        if (!enableCollisionDetection || desiredMove.sqrMagnitude < 0.000001f)
+            return desiredMove;
+
+        Vector3 dir = desiredMove.normalized;
+        float dist = desiredMove.magnitude;
+
+        float checkDist = Mathf.Max(dist, slowdownStartDistance) + collisionRadius;
+
+        bool hit = Physics.SphereCast(
+            transform.position,
+            collisionRadius,
+            dir,
+            out RaycastHit hitInfo,
+            checkDist,
+            collisionMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        if (!hit) return desiredMove;
+
+        // Distancia real entre el borde de la esfera y el obstáculo
+        float distToObstacle = hitInfo.distance;
+
+        // Ya estamos demasiado cerca: bloqueamos completamente
+        if (distToObstacle <= minDistanceToObstacle)
+            return Vector3.zero;
+
+        // Dentro de la zona de frenado: escalamos el movimiento
+        if (distToObstacle < slowdownStartDistance)
+        {
+            // t va de 0 (pegado al obstáculo) a 1 (inicio de la zona de frenado)
+            float t = (distToObstacle - minDistanceToObstacle) /
+                      (slowdownStartDistance - minDistanceToObstacle);
+
+            // Smoothstep para que el frenado sea suave, no lineal
+            t = t * t * (3f - 2f * t);
+
+            // Además, el movimiento nunca puede superar la distancia disponible
+            float allowedDist = Mathf.Min(dist * t, distToObstacle - minDistanceToObstacle);
+            return dir * allowedDist;
+        }
+
+        // Fuera de la zona de frenado pero el SphereCast detectó algo más lejos:
+        // permitimos el movimiento pero lo limitamos a no entrar en la zona
+        float maxAllowed = distToObstacle - minDistanceToObstacle;
+        if (dist > maxAllowed)
+            return dir * maxAllowed;
+
+        return desiredMove;
+    }
+
+    // =========================================================
     //  ZOOM
     // =========================================================
 
     private void HandleZoomAlways()
     {
         if (UnityEngine.EventSystems.EventSystem.current != null &&
-        UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             return;
 
         Vector2 zoomDelta = InputManager.Instance.GetCameraZoom();
@@ -172,32 +253,24 @@ public class FreeCameraMovement : MonoBehaviour
 
         if (step > 0f)
         {
+            // Zoom IN: lógica original de tag Mountain + colisión general
             float castDist = step + zoomInStopDistance;
+            bool blocked;
             RaycastHit hit;
 
-            bool blocked;
             if (zoomInCastRadius > 0f)
             {
                 blocked = Physics.SphereCast(
-                    transform.position,
-                    zoomInCastRadius,
-                    forward,
-                    out hit,
-                    castDist,
-                    zoomInCollisionMask,
-                    QueryTriggerInteraction.Ignore
-                );
+                    transform.position, zoomInCastRadius, forward,
+                    out hit, castDist, zoomInCollisionMask,
+                    QueryTriggerInteraction.Ignore);
             }
             else
             {
                 blocked = Physics.Raycast(
-                    transform.position,
-                    forward,
-                    out hit,
-                    castDist,
-                    zoomInCollisionMask,
-                    QueryTriggerInteraction.Ignore
-                );
+                    transform.position, forward,
+                    out hit, castDist, zoomInCollisionMask,
+                    QueryTriggerInteraction.Ignore);
             }
 
             if (blocked && hit.collider != null && hit.collider.CompareTag(mountainTag))
@@ -207,17 +280,20 @@ public class FreeCameraMovement : MonoBehaviour
             }
             else
             {
-                transform.position += forward * step;
+                // Aplicamos colisión general con frenado progresivo
+                Vector3 move = ApplyCollision(forward * step);
+                transform.position += move;
             }
         }
         else
         {
+            // Zoom OUT: sin colisión (nos alejamos del obstáculo)
             transform.position += forward * step;
         }
     }
 
     // =========================================================
-    //  PAN (MMB)
+    //  PAN (MMB)  — sin colisión, según preferencia
     // =========================================================
 
     private void HandlePanMMB()
@@ -268,12 +344,15 @@ public class FreeCameraMovement : MonoBehaviour
         if (fly2D.sqrMagnitude < 0.000001f && Mathf.Abs(upDown) < 0.000001f)
             return;
 
-        Vector3 move =
+        Vector3 desiredMove =
             (transform.right * fly2D.x) +
             (transform.forward * fly2D.y) +
             (Vector3.up * upDown);
 
-        transform.position += move * (flySpeed * Time.deltaTime);
+        desiredMove *= flySpeed * Time.deltaTime;
+
+        // Aplicamos colisión con frenado progresivo
+        transform.position += ApplyCollision(desiredMove);
     }
 
     // =========================================================
@@ -291,7 +370,6 @@ public class FreeCameraMovement : MonoBehaviour
             Mathf.Clamp(pos.z, minBounds.z, maxBounds.z)
         );
 
-        // Clamp siempre para impedir traspasar físicamente el límite
         transform.position = clamped;
 
         bool wasOutOfBounds = (pos != clamped);
@@ -337,18 +415,13 @@ public class FreeCameraMovement : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = Smooth01(Mathf.Clamp01(elapsed / bounceDuration));
 
-            // Posición — efecto goma elástica
             transform.position = Vector3.Lerp(startPos, bounceTarget, t);
-
-            // Rotación — giro suave y consistente usando t directamente
             transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
 
             yield return null;
         }
 
-        // Al terminar el bounce la cámara mira exactamente al mountainCenter
         transform.rotation = targetRot;
-
         SyncRotation();
 
         isBouncing = false;
@@ -373,10 +446,7 @@ public class FreeCameraMovement : MonoBehaviour
         snapTargetRot = target.rotation;
     }
 
-    private static float Smooth01(float t)
-    {
-        return t * t * (3f - 2f * t);
-    }
+    private static float Smooth01(float t) => t * t * (3f - 2f * t);
 
     private void FinishSnap()
     {
@@ -430,15 +500,8 @@ public class FreeCameraMovement : MonoBehaviour
     public void SetCameraSpeed(float speed) => flySpeed = speed;
     public void SetCameraPan(float pan) => panSpeed = pan;
 
-    public void SetCameraSpeedMultiplier(float multiplier)
-    {
-        flySpeed = baseFlySpeed * multiplier;
-    }
-
-    public void SetCameraPanMultiplier(float multiplier)
-    {
-        panSpeed = basePanSpeed * multiplier;
-    }
+    public void SetCameraSpeedMultiplier(float multiplier) => flySpeed = baseFlySpeed * multiplier;
+    public void SetCameraPanMultiplier(float multiplier) => panSpeed = basePanSpeed * multiplier;
 
     public void TeleportTo(Vector3 position, Quaternion rotation)
     {
@@ -461,15 +524,27 @@ public class FreeCameraMovement : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (!enableBounds) return;
+        // Bounds
+        if (enableBounds)
+        {
+            Vector3 center = (minBounds + maxBounds) * 0.5f;
+            Vector3 size = maxBounds - minBounds;
 
-        Vector3 center = (minBounds + maxBounds) * 0.5f;
-        Vector3 size = maxBounds - minBounds;
+            Gizmos.color = new Color(0f, 1f, 0.5f, 0.15f);
+            Gizmos.DrawCube(center, size);
 
-        Gizmos.color = new Color(0f, 1f, 0.5f, 0.15f);
-        Gizmos.DrawCube(center, size);
+            Gizmos.color = new Color(0f, 1f, 0.5f, 0.8f);
+            Gizmos.DrawWireCube(center, size);
+        }
 
-        Gizmos.color = new Color(0f, 1f, 0.5f, 0.8f);
-        Gizmos.DrawWireCube(center, size);
+        // Collision radius
+        if (enableCollisionDetection)
+        {
+            Gizmos.color = new Color(1f, 0.4f, 0f, 0.8f);
+            Gizmos.DrawWireSphere(transform.position, collisionRadius);
+
+            Gizmos.color = new Color(1f, 0.9f, 0f, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, slowdownStartDistance);
+        }
     }
 }

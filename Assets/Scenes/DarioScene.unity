@@ -4738,7 +4738,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089094620
 Transform:
   m_ObjectHideFlags: 0
@@ -5666,6 +5666,13 @@ MonoBehaviour:
   bounceDuration: 0.75
   bounceStrength: 10
   lookAtSpeed: 3
+  enableCollisionDetection: 1
+  collisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  collisionRadius: 1.5
+  minDistanceToObstacle: 0.6
+  slowdownStartDistance: 2.5
 --- !u!1 &1300961564
 GameObject:
   m_ObjectHideFlags: 0
@@ -7619,7 +7626,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 119300011}
   m_HandleRect: {fileID: 119300010}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:

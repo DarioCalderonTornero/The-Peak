@@ -2397,9 +2397,9 @@ MonoBehaviour:
   mountainLayer:
     serializedVersion: 2
     m_Bits: 64
-  cameraDistance: 0.5
-  heightOffset: 5
-  sideOffset: 5
+  cameraDistance: 0.3
+  heightOffset: 6
+  sideOffset: 7
   blendInTime: 1
   delayAfterExplosion: 1.25
   delayAfterBlendCameras: 0.25

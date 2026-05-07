@@ -5033,6 +5033,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   VFXSound: {fileID: 8300000, guid: 0a218261762ba61459a42ed5d6a41700, type: 3}
+  audioDelay: 0.85
+  cloudDisappearDelay: 2.5
   cloudHeight: 5
   cloudOffset: {x: 0, y: 0, z: -0.8}
   RainHeight: 4

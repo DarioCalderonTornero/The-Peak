@@ -18,7 +18,12 @@ public class CloudKillDefense : BaseDefense
     [SerializeField] private float popCloudDuration = 0.5f;
     [SerializeField] private AnimationCurve popCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
+    [Header("Audio")]
     [SerializeField] private AudioClip VFXSound;
+    [SerializeField] private float audioDelay = 0f;
+
+    [Header("Cloud Disappear")]
+    [SerializeField] private float cloudDisappearDelay = 2.5f;
 
     private bool hasKilled = false;
     private Vector3 originalVisualScale;
@@ -51,7 +56,6 @@ public class CloudKillDefense : BaseDefense
     [SerializeField] private Vector3 cloudOffset = new Vector3(0.5f, 0f, 0f);
     [SerializeField] private float RainHeight = 4f;
 
-
     private float placedYaw = 0f;
 
     public void SetPlacedYaw(float yaw)
@@ -66,7 +70,6 @@ public class CloudKillDefense : BaseDefense
     private void Start()
     {
         if (GetComponent<CloudDefensePreview>() != null) return;
-        // Si ya fue inicializado desde afterInitialize, no hacer nada
         if (!initialized)
             Initialize();
     }
@@ -115,8 +118,6 @@ public class CloudKillDefense : BaseDefense
         }
     }
 
-
-
     private void OnTriggerEnter(Collider other)
     {
         if (hasKilled) return;
@@ -125,7 +126,6 @@ public class CloudKillDefense : BaseDefense
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
-        // Comprobar inmunidad
         var loadout = other.GetComponent<ClimberLoadout>();
         if (loadout != null && loadout.CanHandleObstacle(ObstacleType.Cloud))
         {
@@ -248,11 +248,12 @@ public class CloudKillDefense : BaseDefense
 
         climber.FreezeInPlace();
 
+        // Activar VFX
         if (killVFX != null)
             killVFX.SetActive(true);
 
-        if (Temporal_Sound_Music.Instance != null)
-            Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
+        // Sonido con delay configurable respecto al VFX
+        StartCoroutine(PlaySoundDelayed(audioDelay));
 
         float elapsed2 = 0f;
         while (elapsed2 < 0.5f)
@@ -277,18 +278,28 @@ public class CloudKillDefense : BaseDefense
 
         hasKilled = true;
 
-        yield return new WaitForSeconds(1.5f);
+        // Esperar antes de desaparecer la nube
+        yield return new WaitForSeconds(cloudDisappearDelay);
+
         isDisappearing = true;
         bool disappeared = false;
         StartCoroutine(AnimateDisappear(visualChild, () => disappeared = true));
         yield return new WaitUntil(() => disappeared);
 
-        // Ahora sí destruir visualChild manualmente
         if (visualChild != null) Destroy(visualChild.gameObject);
         Destroy(gameObject);
         killSequenceRoutine = null;
     }
-    
+
+    private IEnumerator PlaySoundDelayed(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        if (Temporal_Sound_Music.Instance != null)
+            Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
+    }
+
     private IEnumerator AnimateAppear(Transform target)
     {
         if (target == null) yield break;
@@ -296,7 +307,6 @@ public class CloudKillDefense : BaseDefense
         var renderer = target.GetComponent<Renderer>();
         if (renderer == null) yield break;
 
-        // Instanciar material para no afectar al prefab
         Material mat = renderer.material;
 
         float elapsed = 0f;
@@ -345,7 +355,6 @@ public class CloudKillDefense : BaseDefense
 
     private void OnDestroy()
     {
-        // Solo destruir visualChild si no está haciendo la animación de desaparición
         if (!isDisappearing && visualChild != null)
             Destroy(visualChild.gameObject);
         if (rainObject != null)

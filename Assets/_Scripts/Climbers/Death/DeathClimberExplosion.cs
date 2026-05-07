@@ -36,13 +36,13 @@ public class DeathClimberExplosion : MonoBehaviour
     private void OnEnable()
     {
         if (deathAnimation != null)
-            deathAnimation.OnAnimationComplete += HandleAnimationComplete;
+            deathAnimation.OnReadyForExplosion += HandleAnimationComplete;
     }
 
     private void OnDisable()
     {
         if (deathAnimation != null)
-            deathAnimation.OnAnimationComplete -= HandleAnimationComplete;
+            deathAnimation.OnReadyForExplosion -= HandleAnimationComplete;
     }
 
     public void SetDeathCause(DeathCause cause)
@@ -66,7 +66,7 @@ public class DeathClimberExplosion : MonoBehaviour
             case DeathCause.Snow:
                 ClimberExplosion(); break;
             case DeathCause.StormyCloud:
-                ClimberExplosion(); break;
+                ClimberToBlackColor(); break;
             default:
                 ClimberExplosion();
                 break;
@@ -94,7 +94,24 @@ public class DeathClimberExplosion : MonoBehaviour
 
         Destroy(gameObject, lifeTime);
     }
+    private void ClimberToBlackColor()
+    {
+        float shakeMagnitude = 0.01f;
+        float animDuration = 0.75f;
 
+        StartCoroutine(deathAnimation.ScaleRoutine(transform.localScale * 1.5f, animDuration));
+        StartCoroutine(deathAnimation.ShakeRoutine(animDuration, shakeMagnitude));
+        StartCoroutine(deathAnimation.BodyColorToRedRoutine(Color.black, animDuration));
+
+        StartCoroutine(BlackColorSequence(animDuration));
+    }
+
+    private IEnumerator BlackColorSequence(float animDuration)
+    {
+        yield return new WaitForSeconds(animDuration);
+        deathAnimation.NotifyComplete();
+        ClimberExplosion();
+    }
 
     private IEnumerator MeltRoutine()
     {

@@ -17,6 +17,9 @@ public class DeathAnimation : MonoBehaviour
     [Header("Seguridad")]
     [SerializeField] private float destroyDelay = 5f;
 
+    [Header("StormyCloud")]
+    [SerializeField] private float stormyCloudAnimDelay = 0.5f;
+
     private DeathClimberExplosion climberExplosion;
 
     /// <summary>
@@ -24,6 +27,7 @@ public class DeathAnimation : MonoBehaviour
     /// DeathClimberExplosion y DeathCinematicManager escuchan esto.
     /// </summary>
     public event Action OnAnimationComplete;
+    public event Action OnReadyForExplosion;
 
     // ─── Entrada ─────────────────────────────────────────────────────────────
 
@@ -111,16 +115,9 @@ public class DeathAnimation : MonoBehaviour
         yield return StartCoroutine(ScaleRoutine(Vector3.zero, 0.2f));
         NotifyComplete();
     }
-
     private void StormyCloudDeath()
     {
-        float animDuration = .75f;
-        float shakeMagnitude = 0.01f;
-
-        //StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
-        //StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
-        StartCoroutine(BodyColorToRedRoutine(Color.black, animDuration));
-        Invoke(nameof(NotifyComplete), animDuration);
+        Invoke(nameof(NotifyReadyForExplosion), stormyCloudAnimDelay);
     }
 
     private IEnumerator DefaultDeathRoutine()
@@ -131,9 +128,14 @@ public class DeathAnimation : MonoBehaviour
 
     // ─── Notify ──────────────────────────────────────────────────────────────
 
-    private void NotifyComplete()
+    public void NotifyComplete()
     {
         OnAnimationComplete?.Invoke();
+    }
+
+    public void NotifyReadyForExplosion()
+    {
+        OnReadyForExplosion?.Invoke();
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -156,7 +158,7 @@ public class DeathAnimation : MonoBehaviour
         transform.localScale = targetScale;
     }
 
-    private IEnumerator ScaleRoutine(Vector3 targetScale, float duration)
+    public IEnumerator ScaleRoutine(Vector3 targetScale, float duration)
     {
         Vector3 startScale = transform.localScale;
         float elapsed = 0f;
@@ -172,7 +174,7 @@ public class DeathAnimation : MonoBehaviour
         transform.localScale = targetScale;
     }
 
-    private IEnumerator ShakeRoutine(float duration, float magnitude)
+    public IEnumerator ShakeRoutine(float duration, float magnitude)
     {
         Vector3 originalPos = transform.localPosition;
         float elapsed = 0f;
@@ -189,7 +191,7 @@ public class DeathAnimation : MonoBehaviour
         transform.localPosition = originalPos;
     }
 
-    private IEnumerator BodyColorToRedRoutine(Color deathColor, float duration)
+    public IEnumerator BodyColorToRedRoutine(Color deathColor, float duration)
     {
         if (bodyRenderer == null || bodyRenderer.Length == 0) yield break;
 

@@ -282,6 +282,7 @@ MonoBehaviour:
   - {fileID: 6637011021774158210}
   - {fileID: 6000075628774388916}
   destroyDelay: 3
+  stormyDelay: 2
 --- !u!136 &4989636344134590157
 CapsuleCollider:
   m_ObjectHideFlags: 0

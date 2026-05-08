@@ -5660,7 +5660,7 @@ MonoBehaviour:
   snapAngleEpsilon: 0.75
   snapEarlyCompleteMinT: 0.85
   enableBounds: 1
-  minBounds: {x: 140, y: 5, z: 130}
+  minBounds: {x: 140, y: 0, z: 130}
   maxBounds: {x: 280, y: 55, z: 270}
   mountainCenter: {fileID: 1738578964}
   bounceDuration: 0.75
@@ -5671,7 +5671,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   collisionRadius: 1.5
-  minDistanceToObstacle: 0.6
+  minDistanceToObstacle: 1.2
   slowdownStartDistance: 2.5
 --- !u!1 &1300961564
 GameObject:

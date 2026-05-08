@@ -204,35 +204,36 @@ public class FreeCameraMovement : MonoBehaviour
 
         if (!hit) return desiredMove;
 
-        // Distancia real entre el borde de la esfera y el obstáculo
         float distToObstacle = hitInfo.distance;
 
-        // Ya estamos demasiado cerca: bloqueamos completamente
+        // Calculamos el factor de frenado (igual que antes)
+        float t = 1f;
         if (distToObstacle <= minDistanceToObstacle)
-            return Vector3.zero;
-
-        // Dentro de la zona de frenado: escalamos el movimiento
-        if (distToObstacle < slowdownStartDistance)
+            t = 0f;
+        else if (distToObstacle < slowdownStartDistance)
         {
-            // t va de 0 (pegado al obstáculo) a 1 (inicio de la zona de frenado)
-            float t = (distToObstacle - minDistanceToObstacle) /
-                      (slowdownStartDistance - minDistanceToObstacle);
-
-            // Smoothstep para que el frenado sea suave, no lineal
-            t = t * t * (3f - 2f * t);
-
-            // Además, el movimiento nunca puede superar la distancia disponible
-            float allowedDist = Mathf.Min(dist * t, distToObstacle - minDistanceToObstacle);
-            return dir * allowedDist;
+            t = (distToObstacle - minDistanceToObstacle) /
+                (slowdownStartDistance - minDistanceToObstacle);
+            t = t * t * (3f - 2f * t); // smoothstep
         }
 
-        // Fuera de la zona de frenado pero el SphereCast detectó algo más lejos:
-        // permitimos el movimiento pero lo limitamos a no entrar en la zona
-        float maxAllowed = distToObstacle - minDistanceToObstacle;
-        if (dist > maxAllowed)
-            return dir * maxAllowed;
+        // Componente hacia el obstáculo (bloqueada con frenado)
+        Vector3 blocked = Vector3.Project(desiredMove, hitInfo.normal) * -1f;
+        float blockedMag = blocked.magnitude * (1f - t); // cuánto bloqueamos
 
-        return desiredMove;
+        // Componente lateral (slide) — sin frenado, velocidad completa
+        Vector3 slide = Vector3.ProjectOnPlane(desiredMove, hitInfo.normal);
+
+        // Si es una cara lateral vertical, liberamos la componente Y completamente
+        // para que la cámara pueda subir por encima del bloque sin trabarse
+        bool isVerticalWall = hitInfo.normal.y < 0.3f;
+        if (isVerticalWall)
+        {
+            slide.y = desiredMove.y;
+        }
+
+        // Resultado: slide completo + lo que queda de la componente de entrada
+        return slide + dir * (dist * t - blockedMag);
     }
 
     // =========================================================

@@ -5443,6 +5443,7 @@ GameObject:
   - component: {fileID: 1299652167}
   - component: {fileID: 1299652169}
   - component: {fileID: 1299652168}
+  - component: {fileID: 1299652170}
   m_Layer: 0
   m_Name: MainCinemachineVCAM
   m_TagString: Untagged
@@ -5672,7 +5673,26 @@ MonoBehaviour:
     m_Bits: 4294967295
   collisionRadius: 1.5
   minDistanceToObstacle: 1.2
-  slowdownStartDistance: 2.5
+  slowdownStartDistance: 4
+--- !u!114 &1299652170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1299652159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0494ac83c872de3418fa539993d0bc63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windAudioSource: {fileID: 1299652168}
+  maxVolume: 1
+  volumeFadeSpeed: 3
+  minPitch: 0.8
+  maxPitch: 1.4
+  pitchFadeSpeed: 2
+  maxReferenceSpeed: 15
 --- !u!1 &1300961564
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,6 +22,8 @@ public class Temporal_Sound_Music : MonoBehaviour
     private Queue<GameObject> sfxPool = new Queue<GameObject>();
     private const int INITIAL_POOL_SIZE = 10;
 
+    private float baseMusicVolume = 0.15f;
+
     private void Awake()
     {
         // ARREGLO BUG #3: Singleton seguro
@@ -207,7 +209,7 @@ public class Temporal_Sound_Music : MonoBehaviour
 
     private void UpdateVolumes()
     {
-        if (musicSource) musicSource.volume = masterVolume * musicVolume;
+        if (musicSource) musicSource.volume = baseMusicVolume * masterVolume * musicVolume;
     }
 
     private void SaveVolume()
@@ -233,5 +235,10 @@ public class Temporal_Sound_Music : MonoBehaviour
     public float GetSoundVolume()
     {
         return effectsVolume;
+    }
+
+    public float GetMasterVolume()
+    {
+        return masterVolume;
     }
 }

@@ -4897,6 +4897,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0027b24972f453e40bfd02eb327b143a, type: 2}
   - {fileID: 11400000, guid: ae05d3a870e920b479c2b178780aad28, type: 2}
   - {fileID: 11400000, guid: 3f208c60cc967dc45b094185a2abb408, type: 2}
+  - {fileID: 11400000, guid: cc11345560138754eacd5d1d556f19b8, type: 2}
   currentState: 0
   turnManager: {fileID: 675079561}
   spawnManager: {fileID: 1116203805}
@@ -5056,6 +5057,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 41da79e3bafc14f4eba8a607d0933c84, type: 3}
   - {fileID: 8300000, guid: 16dd7390f3684b1408124cf443eeb206, type: 3}
   - {fileID: 8300000, guid: a941e480f3aa40c438d1914c0b1ce607, type: 3}
+  baseMusicVolume: 0.6
 --- !u!82 &1124537433
 AudioSource:
   m_ObjectHideFlags: 0

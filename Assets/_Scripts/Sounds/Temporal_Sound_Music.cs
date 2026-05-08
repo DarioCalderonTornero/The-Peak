@@ -22,7 +22,7 @@ public class Temporal_Sound_Music : MonoBehaviour
     private Queue<GameObject> sfxPool = new Queue<GameObject>();
     private const int INITIAL_POOL_SIZE = 10;
 
-    private float baseMusicVolume = 0.15f;
+    [SerializeField] private float baseMusicVolume = 0.15f;
 
     private void Awake()
     {

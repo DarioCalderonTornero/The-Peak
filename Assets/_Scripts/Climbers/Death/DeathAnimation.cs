@@ -42,9 +42,9 @@ public class DeathAnimation : MonoBehaviour
 
         switch (deathCause)
         {
-            case DeathCause.Stamina: StaminaDeathRoutine(0.5f); break;
+            case DeathCause.Stamina: StaminaDeathRoutine(); break;
             case DeathCause.Mud: MudDeathRoutine(); break;
-            case DeathCause.Bramble: StaminaDeathRoutine(1.5f); break;
+            case DeathCause.Bramble: BrambleDeathRoutine(); break;
             //case DeathCause.Quicksand: StartCoroutine(QuicksandDeathRoutine()); break;
             case DeathCause.BadBerry: BadBerryDeathRoutine(); break;
             case DeathCause.Geyser: StartCoroutine(GeyserDeathRoutine()); break;
@@ -59,28 +59,34 @@ public class DeathAnimation : MonoBehaviour
 
     // ─── Animaciones por tipo ─────────────────────────────────────────────────
 
-    private void StaminaDeathRoutine(float targetAngle)
+    private void StaminaDeathRoutine()
     {
+        float targetAngle = 0.5f;
         float animDuration = 0.85f;
         float shakeMagnitude = 0.01f;
 
-        StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));
-        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude)); // ← orden correcto
+        Shake_ScaleRoutine(targetAngle, animDuration, shakeMagnitude);
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude)); 
+        Invoke(nameof(NotifyReadyForExplosion), animDuration);
         Invoke(nameof(NotifyComplete), animDuration);
+    }
+
+    private void BrambleDeathRoutine()
+    {
+        NotifyComplete();
+        NotifyReadyForExplosion();
+    }
+
+    private void Shake_ScaleRoutine(float targetAngle, float animDuration, float shakeMagnitude)
+    {
+        StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));
+        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
     }
 
     private void MudDeathRoutine()
     {
-        /*
-        float targetAngle = 1.5f;
-        float animDuration = 1.25f;
-        float shakeMagnitude = 0.01f;
-
-        StartCoroutine(ScaleRoutine(transform.localScale * targetAngle, animDuration));
-        StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude)); // ← orden correcto
-        Invoke(nameof(NotifyComplete), animDuration);
-        */
-        Invoke(nameof(NotifyComplete), 0f);
+        NotifyComplete();
+        NotifyReadyForExplosion();
     }
 
     private IEnumerator QuicksandDeathRoutine()
@@ -99,6 +105,7 @@ public class DeathAnimation : MonoBehaviour
         StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
         StartCoroutine(BodyColorToRedRoutine(Color.red, animDuration));
         Invoke(nameof(NotifyComplete), animDuration);
+        Invoke(nameof(NotifyReadyForExplosion), animDuration);
     }
 
     private IEnumerator GeyserDeathRoutine()
@@ -107,6 +114,7 @@ public class DeathAnimation : MonoBehaviour
         // Notificamos inmediatamente para que la explosión ocurra ya
         yield return null;
         NotifyComplete();
+        NotifyReadyForExplosion();
     }
 
     private IEnumerator SnowDeathRoutine()

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e4a26fb0e5971b4d931f3eaf14a78eb, type: 3}
+  m_Name: BrambleDeathEffectSO
+  m_EditorClassIdentifier: 
+  deathCause: 7
+  deathAudioClip: {fileID: 8300000, guid: 1b72d089def84d949bac4bcd266be4bd, type: 3}
+  deathVisualPrefab: {fileID: 253284601063518662, guid: 20ffa80d78f8bf8449b4d48bab1898eb, type: 3}
+  deathVFX_Effect: {fileID: 1487853291997279668, guid: 48e38bae4f8f2644fa5bb558e8500057, type: 3}

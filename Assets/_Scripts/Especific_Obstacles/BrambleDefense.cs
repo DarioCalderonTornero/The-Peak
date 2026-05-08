@@ -78,6 +78,8 @@ public class BrambleDefense : BaseDefense
                     ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
                     PointsManager.Instance?.AddPoints(5);
 
+                    brambleAudioSource.Stop();
+
                     climber.SuppressStaminaDeath();
                     staminaTracked.Remove(climber);
                     continue;

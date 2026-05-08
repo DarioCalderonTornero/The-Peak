@@ -59,6 +59,8 @@ public class DeathClimberExplosion : MonoBehaviour
                 break;
             case DeathCause.Stamina:
                 ClimberExplosion(); break;
+            case DeathCause.Bramble:
+                ClimberBrambleCut(); break;
             case DeathCause.BadBerry:
                 ClimberExplosion(); break;
             case DeathCause.Geyser:
@@ -90,6 +92,20 @@ public class DeathClimberExplosion : MonoBehaviour
             randomDir.y = Mathf.Abs(randomDir.y) * 0.3f;
             rb.AddForce(randomDir.normalized * randomImpulse, ForceMode.Impulse);
             rb.AddTorque(Random.onUnitSphere * randomSpin, ForceMode.Impulse);
+        }
+
+        Destroy(gameObject, lifeTime);
+    }
+
+    private void ClimberBrambleCut()
+    {
+        Rigidbody[] rbs = GetComponentsInChildren<Rigidbody>();
+
+        foreach (Rigidbody rb in rbs)
+        {
+            if (rb == null) continue;
+            rb.isKinematic = false;
+            rb.useGravity = true;
         }
 
         Destroy(gameObject, lifeTime);

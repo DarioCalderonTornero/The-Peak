@@ -233,7 +233,7 @@ public class FreeCameraMovement : MonoBehaviour
         }
 
         // Resultado: slide completo + lo que queda de la componente de entrada
-        return slide + dir * (dist * t - blockedMag);
+        return slide;
     }
 
     // =========================================================
@@ -281,9 +281,34 @@ public class FreeCameraMovement : MonoBehaviour
             }
             else
             {
-                // Aplicamos colisión general con frenado progresivo
-                Vector3 move = ApplyCollision(forward * step);
-                transform.position += move;
+                // Zoom: solo frenado progresivo, sin slide
+                float checkDist = Mathf.Max(step, slowdownStartDistance) + collisionRadius;
+                bool hitAnything = Physics.SphereCast(
+                    transform.position, collisionRadius, forward,
+                    out RaycastHit genericHit, checkDist, collisionMask,
+                    QueryTriggerInteraction.Ignore);
+
+                if (hitAnything)
+                {
+                    float distToObstacle = genericHit.distance;
+                    if (distToObstacle <= minDistanceToObstacle)
+                        return;
+
+                    float t = 1f;
+                    if (distToObstacle < slowdownStartDistance)
+                    {
+                        t = (distToObstacle - minDistanceToObstacle) /
+                            (slowdownStartDistance - minDistanceToObstacle);
+                        t = t * t * (3f - 2f * t);
+                    }
+
+                    float allowedDist = Mathf.Min(step * t, distToObstacle - minDistanceToObstacle);
+                    transform.position += forward * allowedDist;
+                }
+                else
+                {
+                    transform.position += forward * step;
+                }
             }
         }
         else

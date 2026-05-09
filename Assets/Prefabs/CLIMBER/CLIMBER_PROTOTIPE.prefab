@@ -664,9 +664,8 @@ MonoBehaviour:
   subdivisionsPerSegment: 6
   reachedThreshold: 0.2
   maxStamina: 80
-  baseCostPerMeter: 1
-  uphillExtraCostFactor: 1
-  minStaminaCost: 0.1
+  staminaDrainPerSecond: 2
+  slowDownSlopeFactor: 2
   externalSpeedMultiplier: 0.3
   revisitPenaltyPerVisit: 200
   maxVisitsToDie: 3

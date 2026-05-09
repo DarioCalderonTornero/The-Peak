@@ -34,9 +34,8 @@ public class ClimberMovement : MonoBehaviour
 
     [Header("Estamina")]
     [SerializeField] private float maxStamina = 100f;
-    [SerializeField] private float baseCostPerMeter = 1f;
-    [SerializeField] private float uphillExtraCostFactor = 2f;
-    [SerializeField] private float minStaminaCost = 0.1f;
+    [SerializeField] private float staminaDrainPerSecond = 2f;
+    [SerializeField] private float slowDownSlopeFactor = 0.5f;
 
     [Header("Velocidad / efectos externos")]
     [SerializeField] private float externalSpeedMultiplier = 1f;
@@ -321,21 +320,31 @@ public class ClimberMovement : MonoBehaviour
         float frameHeight = currentPos.y;
         float heightDelta = frameHeight - lastFrameHeight;
 
-        if (frameDistance > 0.0001f)
+        // --- LÓGICA DE VELOCIDAD POR PENDIENTE ---
+        float currentSlopeMultiplier = 1f;
+        if (frameDistance > 0.001f)
         {
+            
             float uphill = Mathf.Max(heightDelta, 0f);
             float slope = uphill / frameDistance;
-            float frameCost = frameDistance * baseCostPerMeter * (1f + slope * uphillExtraCostFactor);
-            frameCost = Mathf.Max(frameCost, minStaminaCost * Time.deltaTime);
 
-            currentStamina = Mathf.Max(0f, currentStamina - frameCost);
-            NotifyStaminaChanged();
-
-            lastFramePosition = currentPos;
-            lastFrameHeight = frameHeight;
+            
+            currentSlopeMultiplier = Mathf.Clamp(1f - (slope * slowDownSlopeFactor), 0.2f, 1f);
         }
 
-        agent.speed = originalSpeed * externalSpeedMultiplier;
+        agent.speed = originalSpeed * currentSlopeMultiplier * externalSpeedMultiplier;
+
+       
+        if (agent.velocity.magnitude > 0.1f)
+        {
+            currentStamina -= staminaDrainPerSecond * Time.deltaTime;
+            currentStamina = Mathf.Max(0f, currentStamina);
+            NotifyStaminaChanged();
+        }
+
+       
+        lastFramePosition = currentPos;
+        lastFrameHeight = frameHeight;
 
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + reachedThreshold)
             HandleReachedCamp();
@@ -624,10 +633,15 @@ public class ClimberMovement : MonoBehaviour
     private float CalculateStaminaCost(CampGraphBuilder.CampEdge edge)
     {
         if (edge == null) return 0f;
-        float distance = edge.pathLength;
-        if (distance <= 0.01f) return minStaminaCost;
-        float climb = Mathf.Max(edge.heightDelta, 0f);
-        return Mathf.Max(distance * baseCostPerMeter * (1f + (climb / distance) * uphillExtraCostFactor), minStaminaCost);
+
+        float slope = Mathf.Max(edge.heightDelta, 0f) / edge.pathLength;
+        float estimatedSpeed = originalSpeed * Mathf.Clamp(1f - (slope * slowDownSlopeFactor), 0.2f, 1f);
+
+       
+        float estimatedTime = edge.pathLength / estimatedSpeed;
+
+        
+        return estimatedTime * staminaDrainPerSecond;
     }
 
     // ─── API pública ─────────────────────────────────────────────────────────

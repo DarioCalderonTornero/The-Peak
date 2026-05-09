@@ -19,8 +19,9 @@ public class CloudKillDefense : BaseDefense
     [SerializeField] private AnimationCurve popCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Audio")]
-    [SerializeField] private AudioClip VFXSound;
+    [SerializeField] private AudioClip VFXAudioClip;
     [SerializeField] private float audioDelay = 0f;
+    [SerializeField] private AudioClip counterAirAudioClip;
 
     [Header("Cloud Disappear")]
     [SerializeField] private float cloudDisappearDelay = 2.5f;
@@ -130,6 +131,7 @@ public class CloudKillDefense : BaseDefense
         if (loadout != null && loadout.CanHandleObstacle(ObstacleType.Cloud))
         {
             loadout.TryHandleObstacle(ObstacleType.Cloud);
+            StartCoroutine(DelayedDisappear());
             return;
         }
 
@@ -157,6 +159,18 @@ public class CloudKillDefense : BaseDefense
         {
             OnSpectacleSlotGranted(climber, data, deathInfo);
         });
+    }
+
+    private IEnumerator DelayedDisappear()
+    {
+        float maxAudioDistance = 30f;
+
+        if (Temporal_Sound_Music.Instance != null && counterAirAudioClip != null)
+        {
+            Temporal_Sound_Music.Instance.Play3DSound(counterAirAudioClip, transform.position, 1f, 15f, maxAudioDistance);
+        }
+        yield return new WaitForSeconds(1f);
+        StartCoroutine(DisappearAndDestroy());
     }
 
     private IEnumerator KeepFrozenWhileWaiting(ClimberMovement climber)
@@ -297,7 +311,7 @@ public class CloudKillDefense : BaseDefense
             yield return new WaitForSeconds(delay);
 
         if (Temporal_Sound_Music.Instance != null)
-            Temporal_Sound_Music.Instance.Play2DSound(VFXSound, 1.0f);
+            Temporal_Sound_Music.Instance.Play2DSound(VFXAudioClip, 1.0f);
     }
 
     private IEnumerator AnimateAppear(Transform target)

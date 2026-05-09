@@ -135,7 +135,7 @@ public class Temporal_Sound_Music : MonoBehaviour
     public void PauseMusic() { if (musicSource) musicSource.Pause(); }
     public void UnPauseMusic() { if (musicSource) musicSource.UnPause(); }
 
-    public void Play3DSound(AudioClip clip, Vector3 position, float volume = 1.0f)
+    public void Play3DSound(AudioClip clip, Vector3 position, float volume = 1.0f, float minDist = 30f, float maxDist = 100f)
     {
         if (clip == null) return;
 
@@ -150,19 +150,14 @@ public class Temporal_Sound_Music : MonoBehaviour
         AudioSource aSource = audioObj.GetComponent<AudioSource>();
         aSource.clip = clip;
         aSource.volume = volume * masterVolume * effectsVolume;
+        aSource.minDistance = minDist;
+        aSource.maxDistance = maxDist;
 
         // --- CONFIGURACIÓN 3D ARREGLADA ---
         aSource.spatialBlend = 1.0f; // 100% 3D
 
         // Usamos Linear para que el volumen baje de forma suave y predecible
         aSource.rolloffMode = AudioRolloffMode.Linear;
-
-        // Mientras la cámara esté a menos de 10 metros, se escuchará al 100% de volumen
-        aSource.minDistance = 30;
-
-        // El sonido desaparecerá por completo si la cámara se aleja a más de 50 metros
-        aSource.maxDistance = 150;
-        // ----------------------------------
 
         aSource.Play();
 

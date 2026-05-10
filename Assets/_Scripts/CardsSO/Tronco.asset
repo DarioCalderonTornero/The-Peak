@@ -27,14 +27,13 @@ MonoBehaviour:
   supportYOffset: 2.14
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}
   gridSize: {x: 2, y: 1}
-  decalOffset: {x: 0, y: 0}
   cardType: 1
+  temporalTurns: 3
   backBackground: {fileID: 0}
-  backIllustration: {fileID: 0}
-  loreText: 
-  extendedDescription: 
-  counterIcon: {fileID: 909301126, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
-  counterName: 
+  counterIcon: {fileID: 461859431, guid: 572ef39ff9f6fb74a9af19e2fe9667b4, type: 3}
   counterColorSprite: {fileID: -2097609500, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 0}
   explanationVideo: {fileID: 0}
+  functionText: 
+  counterInfo: 
+  lockedMessage: 

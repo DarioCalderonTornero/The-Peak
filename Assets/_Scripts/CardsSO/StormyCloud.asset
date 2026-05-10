@@ -30,9 +30,10 @@ MonoBehaviour:
   cardType: 1
   temporalTurns: 3
   backBackground: {fileID: 1530882626, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
-  counterIcon: {fileID: 964691463, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
+  counterIcon: {fileID: 461859431, guid: 572ef39ff9f6fb74a9af19e2fe9667b4, type: 3}
   counterColorSprite: {fileID: 1373193114, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: -1783629522, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
   explanationVideo: {fileID: 0}
   functionText: 
   counterInfo: 
+  lockedMessage: 

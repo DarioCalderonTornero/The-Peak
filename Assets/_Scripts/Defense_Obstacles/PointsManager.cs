@@ -64,7 +64,7 @@ public class PointsManager : MonoBehaviour
     {
         if (pointsText != null)
         {
-            pointsText.text = $"Puntos: {currentPoints}";
+            pointsText.text = $"{currentPoints}";
         }
 
         OnPointsChanged?.Invoke(currentPoints);

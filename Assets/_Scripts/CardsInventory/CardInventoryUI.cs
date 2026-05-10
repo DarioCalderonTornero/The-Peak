@@ -252,9 +252,15 @@ public class CardInventoryUI : MonoBehaviour
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(() =>
         {
+            RectTransform cardRT = cardObj.GetComponent<RectTransform>();
+            Vector3[] corners = new Vector3[4];
+            cardRT.GetWorldCorners(corners);
+            Vector3 capturedCenter = (corners[0] + corners[2]) / 2f;
+
             StartCoroutine(ShakeCard(cardObj));
+
             if (!string.IsNullOrEmpty(cardData.lockedMessage))
-                LockedCardMessage.Instance?.Show(cardData.lockedMessage);
+                LockedCardMessage.Instance?.Show(cardData.lockedMessage, capturedCenter);
         });
     }
 

@@ -14,43 +14,51 @@ public class LockedCardMessage : MonoBehaviour
     [SerializeField] private float holdDuration = 1.2f;
     [SerializeField] private float fadeDuration = 0.4f;
 
+    [SerializeField] private float riseAmount = 80f;
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
 
-    public void Show(string message)
+    public void Show(string message, Vector3 worldCenter)
     {
-        StartCoroutine(ShowRoutine(message));
+        StartCoroutine(ShowRoutine(message, worldCenter));
     }
 
-    private IEnumerator ShowRoutine(string message)
+    private IEnumerator ShowRoutine(string message, Vector3 worldCenter)
     {
-        // Instanciar
         GameObject obj = Instantiate(messagePrefab, spawnParent);
         RectTransform rt = obj.GetComponent<RectTransform>();
         TextMeshProUGUI text = obj.GetComponent<TextMeshProUGUI>();
 
-        rt.anchoredPosition = spawnPosition;
+        Vector2 cardScreenPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            spawnParent,
+            RectTransformUtility.WorldToScreenPoint(null, worldCenter),
+            null,
+            out cardScreenPos
+        );
+
+        Vector2 startPos = new Vector2(cardScreenPos.x, cardScreenPos.y);
+        Vector2 stopPos = startPos + new Vector2(0f, riseAmount);
+
+        rt.anchoredPosition = startPos;
         text.text = message;
         text.alpha = 1f;
 
-        // ── Subir hasta stopPosition ──────────────────────────
         float t = 0f;
         while (t < riseDuration)
         {
             t += Time.unscaledDeltaTime;
-            float n = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / riseDuration), 3f); // EaseOut
-            rt.anchoredPosition = Vector2.Lerp(spawnPosition, stopPosition, n);
+            float n = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / riseDuration), 3f);
+            rt.anchoredPosition = Vector2.Lerp(startPos, stopPos, n);
             yield return null;
         }
-        rt.anchoredPosition = stopPosition;
+        rt.anchoredPosition = stopPos;
 
-        // ── Esperar ───────────────────────────────────────────
         yield return new WaitForSecondsRealtime(holdDuration);
 
-        // ── Fade out ──────────────────────────────────────────
         t = 0f;
         while (t < fadeDuration)
         {

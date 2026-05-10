@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &7874550876003177908
+--- !u!1 &3929853979816170759
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,23 +8,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1481363828536645270}
-  - component: {fileID: 206355645360827911}
-  - component: {fileID: 6460456935763817567}
+  - component: {fileID: 6127602815940718045}
+  - component: {fileID: 5443873131097952414}
+  - component: {fileID: 865025103495692647}
   m_Layer: 5
-  m_Name: LockedMessage
+  m_Name: LockedMessage (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &1481363828536645270
+--- !u!224 &6127602815940718045
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7874550876003177908}
+  m_GameObject: {fileID: 3929853979816170759}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -34,24 +34,24 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 3.946, y: -434}
-  m_SizeDelta: {x: 1909.511, y: 50}
+  m_AnchoredPosition: {x: 210.3591, y: 63}
+  m_SizeDelta: {x: 194.355, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &206355645360827911
+--- !u!222 &5443873131097952414
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7874550876003177908}
+  m_GameObject: {fileID: 3929853979816170759}
   m_CullTransparentMesh: 1
---- !u!114 &6460456935763817567
+--- !u!114 &865025103495692647
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7874550876003177908}
+  m_GameObject: {fileID: 3929853979816170759}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Texto para el desbloqueo
+  m_text: Se desbloquea en el nivel 5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: db3544d32c2f69d43b40ed7a033fc3af, type: 2}
   m_sharedMaterial: {fileID: -2863344505734528426, guid: db3544d32c2f69d43b40ed7a033fc3af, type: 2}
@@ -92,8 +92,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 20.94
+  m_fontSizeBase: 20.94
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

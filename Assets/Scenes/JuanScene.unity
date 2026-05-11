@@ -371,18 +371,18 @@ MonoBehaviour:
     volumeMask: {fileID: 11700000, guid: 7e1cc774c55df914f8f38903f032d2cb, type: 3}
     textureScrollingSpeed: {x: 0.1, y: 0, z: 0.05}
     textureTiling: {x: 6, y: 2, z: 6}
-    positiveFade: {x: 0, y: 0, z: 0}
-    negativeFade: {x: 0, y: 0.0007991772, z: 0}
+    positiveFade: {x: 0, y: 0.6592694, z: 0}
+    negativeFade: {x: 0, y: 0.0007992382, z: 0}
     m_EditorUniformFade: 1.6746604
-    m_EditorPositiveFade: {x: 0, y: 0, z: 0}
-    m_EditorNegativeFade: {x: 0, y: 0.0007991772, z: 0}
+    m_EditorPositiveFade: {x: 0, y: 0.6592694, z: 0}
+    m_EditorNegativeFade: {x: 0, y: 0.0007992382, z: 0}
     m_EditorAdvancedFade: 1
     scaleMode: 0
     size: {x: 649.2798, y: 125.11723, z: 705.9122}
     invertFade: 0
     distanceFadeStart: 10000
     distanceFadeEnd: 10000
-    textureOffset: {x: -23.576067, y: -0, z: -11.7880335}
+    textureOffset: {x: -104.70385, y: -0, z: -52.351925}
     falloffMode: 1
     maskMode: 0
     materialMask: {fileID: 0}
@@ -1032,7 +1032,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &952841060
 BoxCollider:
   m_ObjectHideFlags: 0

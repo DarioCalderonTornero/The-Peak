@@ -250,21 +250,26 @@ public class CardInventoryUI : MonoBehaviour
         Button btn = cardObj.GetComponent<Button>();
         if (btn == null) btn = cardObj.AddComponent<Button>();
         btn.onClick.RemoveAllListeners();
+        bool isShaking = false; // ← flag local por carta
+
         btn.onClick.AddListener(() =>
         {
+            if (isShaking) return; // ← ignorar si ya está vibrando
+
             RectTransform cardRT = cardObj.GetComponent<RectTransform>();
             Vector3[] corners = new Vector3[4];
             cardRT.GetWorldCorners(corners);
             Vector3 capturedCenter = (corners[0] + corners[2]) / 2f;
 
-            StartCoroutine(ShakeCard(cardObj));
+            StartCoroutine(ShakeCardLocked(cardObj, () => isShaking = false));
+            isShaking = true;
 
             if (!string.IsNullOrEmpty(cardData.lockedMessage))
                 LockedCardMessage.Instance?.Show(cardData.lockedMessage, capturedCenter);
         });
     }
 
-    private IEnumerator ShakeCard(GameObject cardObj)
+    private IEnumerator ShakeCardLocked(GameObject cardObj, System.Action onComplete)
     {
         RectTransform rt = cardObj.GetComponent<RectTransform>();
         Vector2 originalPos = rt.anchoredPosition;
@@ -281,6 +286,7 @@ public class CardInventoryUI : MonoBehaviour
         }
 
         rt.anchoredPosition = originalPos;
+        onComplete?.Invoke();
     }
 
     private void SetupPendingCard(GameObject cardObj, CardData cardData)

@@ -15,7 +15,8 @@ GameObject:
   - component: {fileID: 6429657745609790404}
   - component: {fileID: 9130914961434038233}
   - component: {fileID: 1330875467500482199}
-  m_Layer: 0
+  - component: {fileID: -8916834539328707958}
+  m_Layer: 7
   m_Name: GeyserPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -125,6 +126,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ba2c19344d5d6741a1e6b624b36fd07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  popScale: 1.15
+  shovelPopDuration: 0.15
   climberLayer:
     serializedVersion: 2
     m_Bits: 512
@@ -214,6 +217,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   obstacleType: 6
+--- !u!114 &-8916834539328707958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1391558099927299792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eced2f8492827c408b23cea636f0efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardData: {fileID: 11400000, guid: 1e5e43a2db2ce844d856910d790669ba, type: 2}
+  infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}
 --- !u!1 &1800222856040933684
 GameObject:
   m_ObjectHideFlags: 0
@@ -225,7 +242,7 @@ GameObject:
   - component: {fileID: 8981274890947569691}
   - component: {fileID: 8414889602308928615}
   - component: {fileID: 193506623556897025}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: vfx_Geyser
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -401,6 +418,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 92589f2d79548af4f93a58948f90d97e, type: 3}
       propertyPath: m_Name
       value: GeiserObstaculo
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 92589f2d79548af4f93a58948f90d97e, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

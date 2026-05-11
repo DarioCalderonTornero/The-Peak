@@ -426,16 +426,17 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 }
 
                 var lodo = go.GetComponent<LodoDefense>();
-                if (lodo != null) { lodo.ApplyExternalScale(finalScale); return; }
+                if (lodo != null) { lodo.ApplyExternalScale(finalScale);}
 
                 var arena = go.GetComponent<QuicksandDefense>();
-                if (arena != null) { arena.ApplyExternalScale(finalScale); return; }
+                if (arena != null) { arena.ApplyExternalScale(finalScale);}
 
                 go.transform.localScale = finalScale;
 
                 if (cardData.cardType == CardData.CardType.Temporal)
                 {
-                    var temp = go.AddComponent<TemporaryDefense>();
+                    var temp = go.GetComponent<TemporaryDefense>();
+                    if (temp == null) temp = go.AddComponent<TemporaryDefense>();
                     temp.Initialize(cardData.temporalTurns);
                 }
             }
@@ -792,10 +793,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
 
         var lodo = go.GetComponent<LodoDefense>();
-        if (lodo != null) { lodo.ApplyExternalScale(finalScale); return; }
+        if (lodo != null) { lodo.ApplyExternalScale(finalScale);}
 
         var arena = go.GetComponent<QuicksandDefense>();
-        if (arena != null) { arena.ApplyExternalScale(finalScale); return; }
+        if (arena != null) { arena.ApplyExternalScale(finalScale);}
 
         var log = go.GetComponent<RollingLogDefense>();
         if (log != null)

@@ -742,6 +742,7 @@ GameObject:
   - component: {fileID: 1851972778595047772}
   - component: {fileID: -232483701889047724}
   - component: {fileID: -158187287109305426}
+  - component: {fileID: -9125083257597627176}
   m_Layer: 7
   m_Name: SnowPrefabRescaled
   m_TagString: Untagged
@@ -892,6 +893,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 369893f3d3adf5549bed6cbbddf07c7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  popScale: 1.15
+  shovelPopDuration: 0.15
   turnsToKill: 3
   centerLerpSpeed: 6
   rescueRadius: 3
@@ -899,6 +902,20 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   spawnDuration: 0.25
+--- !u!114 &-9125083257597627176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9104421247320485007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eced2f8492827c408b23cea636f0efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardData: {fileID: 11400000, guid: ff7324c04c6fa6542b3f1025eb1d93ca, type: 2}
+  infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}
 --- !u!1001 &1291543825288040690
 PrefabInstance:
   m_ObjectHideFlags: 0

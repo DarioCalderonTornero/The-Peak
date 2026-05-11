@@ -102,6 +102,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f56dc0b2e74aa454ca320a7c488e8c1d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3653686631558448835}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f56dc0b2e74aa454ca320a7c488e8c1d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -7184733536499057186}
   m_SourcePrefab: {fileID: 100100000, guid: f56dc0b2e74aa454ca320a7c488e8c1d, type: 3}
 --- !u!1 &1863183457221247532 stripped
 GameObject:
@@ -296,3 +299,17 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &-7184733536499057186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863183457221247532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eced2f8492827c408b23cea636f0efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardData: {fileID: 11400000, guid: 0cf55efb4a688e642abc4f23ff15c39f, type: 2}
+  infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}

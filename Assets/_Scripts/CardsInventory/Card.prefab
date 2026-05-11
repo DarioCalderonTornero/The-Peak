@@ -905,7 +905,7 @@ GameObject:
   - component: {fileID: 8890965786466511224}
   - component: {fileID: 1541527688781124706}
   m_Layer: 5
-  m_Name: Image
+  m_Name: IconoCounter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1279,6 +1279,7 @@ MonoBehaviour:
   gridInvalidMaterial: {fileID: 2100000, guid: d2a6bf9422f31f643a8fab253028fd07, type: 2}
   hoverLiftY: 200
   hoverDuration: 0.2
+  handRotationAngle: 0
   showGlobalGrid: 1
   gridViewRange: 20
 --- !u!225 &2838217454017087479

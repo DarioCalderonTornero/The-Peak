@@ -81,6 +81,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7559047358828205400}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 630302824212444364}
   m_SourcePrefab: {fileID: 100100000, guid: 797a47ea338cf0b48bbc59672af07e9f, type: 3}
 --- !u!1 &2945980965390045211 stripped
 GameObject:
@@ -130,6 +133,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9130906a616cc7c49a4a95664fc15873, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  popScale: 1.15
+  shovelPopDuration: 0.15
   goodBerry: {fileID: 6342092089532596202}
   badBerry: {fileID: 2945980965390045211}
   turnsToFirstGrow: 2
@@ -152,3 +157,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   obstacleType: 5
+--- !u!114 &630302824212444364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7238312057479520051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eced2f8492827c408b23cea636f0efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardData: {fileID: 11400000, guid: 47362b00288441e49a59a6677321d422, type: 2}
+  infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}

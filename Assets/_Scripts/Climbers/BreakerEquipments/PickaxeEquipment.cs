@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PickaxeEquipment : EquipmentInstance
 {
@@ -19,7 +20,8 @@ public class PickaxeEquipment : EquipmentInstance
     {
         base.OnCounterSuccess(type);
         if (ownerLoadout == null) return;
-        ownerLoadout.StartEquipmentSequence(2f);
+        ownerLoadout.StartEquipmentSequence(2f, obstacleType: type);
+        OwnerLoadout.TriggerAnimation("Geyser");
     }
 
     public override bool CanHandleObstacle(ObstacleType obstacleType)

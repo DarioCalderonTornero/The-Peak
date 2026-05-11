@@ -341,7 +341,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3989725419049320024}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1aa6c987cf83e6f459b52fc9fa558d84, type: 3}
   m_Name: 
@@ -726,6 +726,7 @@ MonoBehaviour:
   pickaxeAudioClip: {fileID: 8300000, guid: b8d18d9d5b744cd4aa384d6dfe047182, type: 3}
   rockDestroyAudioClip: {fileID: 8300000, guid: 5781afa438855dc419473fa391108a19, type: 3}
   autoInitializeOnAwake: 1
+  climberAnimator: {fileID: 7752139572246176441}
 --- !u!95 &7752139572246176441
 Animator:
   serializedVersion: 7
@@ -1530,7 +1531,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6583665417253339434, guid: 94a9744ce3dc6f24b8396a6e15425cf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

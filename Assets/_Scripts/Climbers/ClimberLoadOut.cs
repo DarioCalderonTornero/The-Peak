@@ -32,13 +32,13 @@ public class ClimberLoadout : MonoBehaviour
     private bool _isInitialized = false;
 
     private ClimberMovement climberMovement;
-    private Animator climberAnimator;
+    [SerializeField] private Animator climberAnimator;
     private ClimberEquipmentVisuals equipmentVisuals;
 
     private void Awake()
     {
         climberMovement = GetComponent<ClimberMovement>();
-        climberAnimator = GetComponentInChildren<Animator>();
+        //climberAnimator = GetComponentInChildren<Animator>();
         equipmentVisuals = GetComponent<ClimberEquipmentVisuals>();
 
         if (climberMovement == null)

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc14e7c03cb173468632813ef772795, type: 3}
   m_Name: EquipmentMudCloudSO
   m_EditorClassIdentifier: 
-  equipmentName: Por definir
+  equipmentName: Cuerno
   icon: {fileID: 964691463, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   logicClassName: MudCloudEquipment
   color: {r: 0.3647059, g: 0, b: 0.5803922, a: 1}

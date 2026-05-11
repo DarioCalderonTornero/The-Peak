@@ -14,7 +14,7 @@ public class MountainVision : MonoBehaviour
     [SerializeField] private List<GameObject> objectsToToggle = new List<GameObject>();
 
     private bool isVisionActive = false;
-    private List<Renderer> climberRenderers = new List<Renderer>();
+    private Dictionary<Renderer, Color> climberRayProperties = new Dictionary<Renderer, Color>();
 
     private void Awake()
     {
@@ -53,16 +53,12 @@ public class MountainVision : MonoBehaviour
     void UpdateAllClimbers()
     {
         float intensity = isVisionActive ? 1.0f : 0.0f;
+        var keys = new List<Renderer>(climberRayProperties.Keys);
 
-        for (int i = climberRenderers.Count - 1; i >= 0; i--)
+        foreach (Renderer r in keys)
         {
-            Renderer r = climberRenderers[i];
-            if (r == null)
-            {
-                climberRenderers.RemoveAt(i);
-                continue;
-            }
-            ApplyVisualEffect(r, intensity);
+            if (r == null) { climberRayProperties.Remove(r); continue; }
+            ApplyVisualEffect(r, intensity, climberRayProperties[r]);
         }
     }
 
@@ -78,28 +74,30 @@ public class MountainVision : MonoBehaviour
         }
     }
 
-    void ApplyVisualEffect(Renderer r, float intensity)
+    void ApplyVisualEffect(Renderer r, float intensity, Color xRayColor)
     {
         // Se mantiene el índice 1 para el material de efecto
         r.GetPropertyBlock(propBlock, 1);
         propBlock.SetFloat(boolPropertyName, intensity);
+        propBlock.SetColor("_XRayColor", xRayColor);
         r.SetPropertyBlock(propBlock, 1);
     }
 
-    public void RegisterClimber(Renderer r)
+    public void RegisterClimber(Renderer renderer, Color xRayColor)
     {
-        if (!climberRenderers.Contains(r))
+        if (!climberRayProperties.ContainsKey(renderer))
         {
-            climberRenderers.Add(r);
-            if (isVisionActive) ApplyVisualEffect(r, 1.0f);
+            climberRayProperties[renderer] = xRayColor;
+
+            if (isVisionActive)
+            {
+                ApplyVisualEffect(renderer, 1.0f, xRayColor);
+            }
         }
     }
 
-    public void UnregisterClimber(Renderer r)
+    public void UnregisterClimber(Renderer renderer)
     {
-        if (climberRenderers.Contains(r))
-        {
-            climberRenderers.Remove(r);
-        }
+        climberRayProperties.Remove(renderer);
     }
 }

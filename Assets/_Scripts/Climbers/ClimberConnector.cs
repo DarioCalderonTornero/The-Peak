@@ -17,6 +17,8 @@ public class ClimberConnector : MonoBehaviour
             return;
         }
 
+        ClimberLoadout climberLoadout = GetComponent<ClimberLoadout>();
+        Color xRayColor = climberLoadout != null ? climberLoadout.GetHelmetColor() : Color.grey;
         
         if (MountainVision.Instance != null)
         {
@@ -31,7 +33,7 @@ public class ClimberConnector : MonoBehaviour
                 }
                
                 myRenderers.Add(r);
-                MountainVision.Instance.RegisterClimber(r);
+                MountainVision.Instance.RegisterClimber(r, xRayColor);
             }
 
             Debug.Log($"Escalador registrado con {myRenderers.Count} partes del cuerpo.");

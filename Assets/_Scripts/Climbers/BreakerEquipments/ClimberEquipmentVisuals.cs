@@ -2,17 +2,22 @@
 
 public class ClimberEquipmentVisuals : MonoBehaviour
 {
-    [Header("Espalda")]
+    [Header("Back")]
     [SerializeField] private GameObject backPickaxe;
     [SerializeField] private GameObject backMagicBook;
     [SerializeField] private GameObject backPala;
     [SerializeField] private GameObject backCuerno;
 
-    [Header("Mano")]
+    [Header("Hand")]
     [SerializeField] private GameObject handPickaxe;
     [SerializeField] private GameObject handMagicBook;
     [SerializeField] private GameObject handPala;
     [SerializeField] private GameObject handCuerno;
+
+    [Header("VFX_Hand")]
+    [SerializeField] private GameObject lodoVFX;
+    [SerializeField] private GameObject nubeVFX;
+
 
     private ClimberLoadout loadout;
 
@@ -80,6 +85,7 @@ public class ClimberEquipmentVisuals : MonoBehaviour
             activeBackObject.SetActive(true);
     }
 
+
     // ─── API pública para cuando el escalador usa el equipo ──────────────────
 
     /// <summary>
@@ -106,6 +112,20 @@ public class ClimberEquipmentVisuals : MonoBehaviour
 
         if (activeBackObject != null)
             activeBackObject.SetActive(true);
+    }
+
+    public void PlayHandEffect(ObstacleType type)
+    {
+        switch(type)
+        {
+            case ObstacleType.Mud:
+                if (lodoVFX != null) lodoVFX.gameObject.SetActive(true);
+                break;
+            case ObstacleType.Cloud:
+                if (nubeVFX != null) nubeVFX.gameObject.SetActive(true);
+                break;
+             
+        }
     }
 
     /// <summary>

@@ -19,7 +19,7 @@ public class MudCloudEquipment : EquipmentInstance
     {
         base.OnCounterSuccess(type);
         if (ownerLoadout == null) return;
-        ownerLoadout.StartEquipmentSequence(2f);
+        ownerLoadout.StartEquipmentSequence(2f, obstacleType: type);
     }
 
     public override bool CanHandleObstacle(ObstacleType obstacleType)

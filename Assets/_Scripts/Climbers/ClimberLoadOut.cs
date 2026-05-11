@@ -225,20 +225,23 @@ public class ClimberLoadout : MonoBehaviour
     /// Para al escalador, saca el equipo a la mano, espera y lo guarda.
     /// Llamado desde OnCounterSuccess de cada EquipmentInstance.
     /// </summary>
-    public void StartEquipmentSequence(float duration)
+    public void StartEquipmentSequence(float duration, ObstacleType obstacleType = ObstacleType.None)
     {
-        if (!gameObject.activeInHierarchy) return;
-        StartCoroutine(EquipmentSequenceRoutine(duration));
+        //if (!gameObject.activeInHierarchy) return;
+        StartCoroutine(EquipmentSequenceRoutine(duration, obstacleType));
     }
 
-    private IEnumerator EquipmentSequenceRoutine(float duration)
+    private IEnumerator EquipmentSequenceRoutine(float duration, ObstacleType obstacleType = ObstacleType.None)
     {
         // 1. Parar al escalador
         RequestClimberStop(duration);
 
         // 2. Sacar equipo a la mano
         if (equipmentVisuals != null)
+        {
             equipmentVisuals.MoveEquipmentToHand();
+            equipmentVisuals.PlayHandEffect(obstacleType);
+        }
 
         // 3. Esperar la duración
         yield return new WaitForSeconds(duration);

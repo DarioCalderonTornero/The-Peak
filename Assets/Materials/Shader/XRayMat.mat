@@ -63,6 +63,7 @@ Material:
     - _EnableBlendModePreserveSpecularLighting: 0
     - _EnableFogOnTransparent: 1
     - _ExcludeFromTUAndAA: 0
+    - _Intensity: 1
     - _IsActive: 0
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0

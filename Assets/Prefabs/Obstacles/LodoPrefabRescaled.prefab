@@ -978,6 +978,9 @@ MonoBehaviour:
   restoreSpeed: 1.5
   deathAbsorbSpeed: 4
   deathExtraSinkDepth: 0.5
+  counterAirAudioClip: {fileID: 8300000, guid: e784a9a1144e47140a7eaa43cfbfe6f8, type: 3}
+  lodoVFX: {fileID: 2442905362685598411}
+  cooldownTurns: 2
 --- !u!54 &1851972778595047772
 Rigidbody:
   m_ObjectHideFlags: 0

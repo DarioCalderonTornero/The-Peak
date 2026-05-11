@@ -21,6 +21,18 @@ public class LodoDefense : BaseDefense
     [SerializeField] private float deathAbsorbSpeed = 4f;
     [SerializeField] private float deathExtraSinkDepth = 0.5f;
 
+    [Header("Sounds")]
+    [SerializeField] private AudioClip counterAirAudioClip;
+
+    [Header("VFX")]
+    [SerializeField] private GameObject lodoVFX;
+
+    [Header("Cooldown")]
+    [SerializeField] private int cooldownTurns = 2;
+
+    private bool inCooldown = false;
+    private int cooldownTurnsRemaining = 0;
+
     private Coroutine spawnRoutine;
     private Vector3 spawnTargetLocalScale;
 
@@ -44,6 +56,34 @@ public class LodoDefense : BaseDefense
     {
         var col = GetComponent<Collider>();
         if (col != null) col.isTrigger = true;
+    }
+
+    private void OnEnable()
+    {
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnClimberTurnEnd += HandleClimberTurnEnd;
+    }
+
+    private void OnDisable()
+    {
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnClimberTurnEnd -= HandleClimberTurnEnd;
+    }
+
+    private void HandleClimberTurnEnd()
+    {
+        if (!inCooldown) return;
+
+        cooldownTurnsRemaining--;
+
+        if (cooldownTurnsRemaining <= 0)
+        {
+            inCooldown = false;
+            cooldownTurnsRemaining = 0;
+
+            if (lodoVFX != null)
+                lodoVFX.SetActive(true);
+        }
     }
 
     public override void Initialize()
@@ -81,16 +121,27 @@ public class LodoDefense : BaseDefense
         if (climber == null) return;
 
         var loadout = other.GetComponent<ClimberLoadout>();
-        bool isImmune = false;
+        bool isImmune = loadout != null && loadout.CanHandleObstacle(ObstacleType.Mud);
 
         if (loadout != null)
-        {
             loadout.TryHandleObstacle(ObstacleType.Mud);
-            isImmune = loadout.CanHandleObstacle(ObstacleType.Mud);
-        }
 
         if (isImmune)
+        {
+            if (Temporal_Sound_Music.Instance != null && counterAirAudioClip != null)
+                Temporal_Sound_Music.Instance.Play3DSound(counterAirAudioClip, transform.position, 1f, 15f, 30f);
+
+            inCooldown = true;
+            cooldownTurnsRemaining = cooldownTurns;
+
+            if (lodoVFX != null)
+                lodoVFX.SetActive(false);
+
             return;
+        }
+        // Si está en cooldown solo dejamos pasar al counter
+        // El counter ya se gestiona desde BaseObstacle → OnHandleBy
+        if (inCooldown) return;
 
         climber.SetExternalSpeedMultiplier(slowFactor);
 
@@ -160,8 +211,7 @@ public class LodoDefense : BaseDefense
 
     private void LateUpdate()
     {
-        if (tracked.Count == 0)
-            return;
+        if (tracked.Count == 0) return;
 
         var keys = new List<ClimberMovement>(tracked.Keys);
 
@@ -173,9 +223,7 @@ public class LodoDefense : BaseDefense
                 continue;
             }
 
-            if (!tracked.TryGetValue(climber, out MudClimberData data))
-                continue;
-
+            if (!tracked.TryGetValue(climber, out MudClimberData data)) continue;
             if (data.isDying) continue;
             if (!data.inside) continue;
 
@@ -199,7 +247,6 @@ public class LodoDefense : BaseDefense
             }
 
             data.lastStamina = current;
-
             ApplyIdleSink(data);
 
             if (max > 0f && current <= max * deathThresholdPercent)
@@ -270,14 +317,10 @@ public class LodoDefense : BaseDefense
 
         if (DeathCinematicManager.Instance != null)
         {
-            // Cacheamos el climber en una variable local capturada por el lambda
-            // para que no dependa del struct que puede llegar con climber = null
             ClimberMovement cachedClimber = climber;
 
             void OnThisDeath(GameManager.DeathInfo info)
             {
-                // Comparamos contra la referencia cacheada, no contra info.climber
-                // porque cuando se salta la cinemática info.climber ya es null
                 DeathCinematicManager.Instance.OnOwnClimberCinematicFinished -= OnThisDeath;
                 Destroy(gameObject);
             }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.VFX;
 
 public class LodoDefense : BaseDefense
 {
@@ -82,7 +83,14 @@ public class LodoDefense : BaseDefense
             cooldownTurnsRemaining = 0;
 
             if (lodoVFX != null)
-                lodoVFX.SetActive(true);
+            {
+                var vfx = lodoVFX.GetComponent<LodoVFXController>();
+
+                if (vfx != null)
+                {
+                    vfx.SetBubbles(true);
+                }
+            }
         }
     }
 
@@ -135,7 +143,14 @@ public class LodoDefense : BaseDefense
             cooldownTurnsRemaining = cooldownTurns;
 
             if (lodoVFX != null)
-                lodoVFX.SetActive(false);
+            {
+                var vfx = lodoVFX.GetComponent<LodoVFXController>();    
+                
+                if (vfx != null)
+                {
+                    vfx.SetBubbles(false);
+                }
+            }
 
             return;
         }

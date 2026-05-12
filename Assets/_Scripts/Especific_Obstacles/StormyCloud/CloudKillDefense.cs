@@ -98,7 +98,7 @@ public class CloudKillDefense : BaseDefense
 
         if (visualChild != null)
         {
-            visualChild.SetParent(null);
+            // visualChild.SetParent(null);
             visualChild.position = cloudPosition;
             visualChild.rotation = Quaternion.Euler(-90f, placedYaw, 0f);
             StartCoroutine(AnimateAppear(visualChild));

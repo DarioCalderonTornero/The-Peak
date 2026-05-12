@@ -76,6 +76,9 @@ public class GeyserDefense : BaseDefense
 
     private Coroutine eruptFadeRoutine;
 
+    public bool IsInCooldown() => inCooldown;
+    public int GetCooldownRemaining() => cooldownRemaining;
+
     private void OnEnable()
     {
         originalPos = transform.position;

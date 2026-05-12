@@ -1438,12 +1438,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 281424682}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c1e4a11395ac78341a54f400cddd9beb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  occupiedCellMarkerPrefab: {fileID: 3889820358834879660, guid: 0ac483a1a4c0b384bbdf3def7bfaf468, type: 3}
+  occupiedCellMarkerPrefab: {fileID: 0}
 --- !u!114 &281424692
 MonoBehaviour:
   m_ObjectHideFlags: 0

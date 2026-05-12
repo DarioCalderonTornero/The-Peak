@@ -17,6 +17,12 @@ public class DefenseInfoUI : MonoBehaviour
 
     private Camera mainCamera;
 
+    private bool justOpened = false;
+
+    [Header("Estado Géiser")]
+    [SerializeField] private Sprite geyserActiveSprite;   // sprite verde
+    [SerializeField] private Sprite geyserCooldownSprite; // sprite rojo
+
     private void Start()
     {
         mainCamera = Camera.main ?? FindFirstObjectByType<Camera>();
@@ -43,7 +49,12 @@ public class DefenseInfoUI : MonoBehaviour
     {
         if (!isOpen) return;
 
-        // Click fuera de la defensa → cerrar
+        if (justOpened)
+        {
+            justOpened = false; // ← ignorar el primer frame
+            return;
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -51,7 +62,6 @@ public class DefenseInfoUI : MonoBehaviour
                 Close();
         }
 
-        // Billboard + seguir la defensa
         if (panelInstance != null)
         {
             panelInstance.transform.position = transform.position + Vector3.up * 2.5f;
@@ -95,7 +105,38 @@ public class DefenseInfoUI : MonoBehaviour
             }
         }
 
+        var geyser = GetComponent<GeyserDefense>();
+        var geyserIcon = panelInstance.transform.Find("GeyserStatus")?.GetComponent<Image>();
+        var geyserTurns = panelInstance.transform.Find("GeyserTurns")?.GetComponent<TextMeshProUGUI>();
+
+        if (geyser != null && geyserIcon != null)
+        {
+            geyserIcon.gameObject.SetActive(true);
+
+            if (geyser.IsInCooldown())
+            {
+                if (geyserCooldownSprite != null) geyserIcon.sprite = geyserCooldownSprite;
+                if (geyserTurns != null)
+                {
+                    geyserTurns.text = geyser.GetCooldownRemaining().ToString();
+                    geyserTurns.gameObject.SetActive(true);
+                }
+            }
+            else
+            {
+                if (geyserActiveSprite != null) geyserIcon.sprite = geyserActiveSprite;
+                if (geyserTurns != null)
+                    geyserTurns.gameObject.SetActive(false);
+            }
+        }
+        else if (geyserIcon != null)
+        {
+            geyserIcon.gameObject.SetActive(false);
+            if (geyserTurns != null) geyserTurns.gameObject.SetActive(false);
+        }
+
         isOpen = true;
+        justOpened = true;
         currentOpen = this;
         StartCoroutine(AnimateOpen(panelInstance));
     }
@@ -112,16 +153,21 @@ public class DefenseInfoUI : MonoBehaviour
 
     private IEnumerator AnimateOpen(GameObject panel)
     {
+        if (panel == null) yield break;
+
         float t = 0f;
         float dur = 0.15f;
         panel.transform.localScale = Vector3.zero;
         while (t < dur)
         {
+            if (panel == null) yield break; // ← check cada frame
             t += Time.deltaTime;
             float n = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / dur), 3f);
             panel.transform.localScale = Vector3.one * n;
             yield return null;
         }
+
+        if (panel == null) yield break;
         panel.transform.localScale = Vector3.one;
     }
 

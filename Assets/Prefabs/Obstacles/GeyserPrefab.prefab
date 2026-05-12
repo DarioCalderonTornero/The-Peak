@@ -231,6 +231,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardData: {fileID: 11400000, guid: 1e5e43a2db2ce844d856910d790669ba, type: 2}
   infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}
+  geyserActiveSprite: {fileID: -973223281, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
+  geyserCooldownSprite: {fileID: -1574946980, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
 --- !u!1 &1800222856040933684
 GameObject:
   m_ObjectHideFlags: 0

@@ -665,7 +665,7 @@ MonoBehaviour:
   floatOffset: 2
   subdivisionsPerSegment: 6
   reachedThreshold: 0.2
-  maxStamina: 80
+  maxStamina: 5
   staminaDrainPerSecond: 2
   slowDownSlopeFactor: 2
   externalSpeedMultiplier: 0.3
@@ -1531,7 +1531,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6583665417253339434, guid: 94a9744ce3dc6f24b8396a6e15425cf7, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

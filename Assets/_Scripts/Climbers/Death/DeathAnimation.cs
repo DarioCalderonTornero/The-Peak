@@ -61,7 +61,7 @@ public class DeathAnimation : MonoBehaviour
 
     private void StaminaDeathRoutine()
     {
-        float targetAngle = 0.5f;
+        float targetAngle = 1.5f;
         float animDuration = 0.85f;
         float shakeMagnitude = 0.01f;
 

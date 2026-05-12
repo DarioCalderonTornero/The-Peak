@@ -26020,6 +26020,62 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Float.m_Array.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[0].m_Name
+      value: Desactivado
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[1].m_Name
+      value: Derecha
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[2].m_Name
+      value: SeMueven
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[0].m_Value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[1].m_Value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[2].m_Value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Name
+      value: CantidadBurbujas
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[0].m_Overridden
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[1].m_Overridden
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[2].m_Overridden
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8480426105654040867, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
+      propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Overridden
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9104421247320485007, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
       propertyPath: m_Name
       value: LodoPrefabRescaled
@@ -29430,11 +29486,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3842754293876445924, guid: 2deef3cb07790c14faf848bfba29d0a9, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135297806923367754, guid: 2deef3cb07790c14faf848bfba29d0a9, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135297806923367754, guid: 2deef3cb07790c14faf848bfba29d0a9, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[0].m_Name
+      value: DefensaLodo
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135297806923367754, guid: 2deef3cb07790c14faf848bfba29d0a9, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[0].m_Value
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135297806923367754, guid: 2deef3cb07790c14faf848bfba29d0a9, type: 3}
+      propertyPath: m_PropertySheet.m_Bool.m_Array.Array.data[0].m_Overridden
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9154554503950454252, guid: 2deef3cb07790c14faf848bfba29d0a9, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

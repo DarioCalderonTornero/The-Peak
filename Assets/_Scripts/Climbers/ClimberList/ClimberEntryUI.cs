@@ -8,7 +8,7 @@ public class ClimberEntryUI : MonoBehaviour
     [SerializeField] private Image staminaBarFill;
     [SerializeField] private Image equipmentIcon;
     [SerializeField] private Image stateBadgeIcon;
-    [SerializeField] private Image urgencyBorder;
+    [SerializeField] private Image clickedIcon;
     [SerializeField] private Image background;
     [SerializeField] private Button selectButton;
 
@@ -141,12 +141,12 @@ public class ClimberEntryUI : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
-        if (urgencyBorder == null) return;
+        if (clickedIcon == null) return;
 
         if (selected)
-            urgencyBorder.color = selectedBorderColor;
+            background.color = selectedBorderColor;
         else
-            urgencyBorder.color = isUrgent ? urgencyColor : urgencyInactiveColor;
+            background.color = Color.white;
     }
 
     private void OnSelectClicked()

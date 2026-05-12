@@ -103,7 +103,7 @@ public class DeathAnimation : MonoBehaviour
 
         StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, animDuration));
         StartCoroutine(ShakeRoutine(animDuration, shakeMagnitude));
-        StartCoroutine(BodyColorToRedRoutine(Color.red, animDuration));
+        StartCoroutine(BodyColorToRedRoutine(new Color(148f / 255f, 0f / 255f, 211f / 255f), animDuration));
         Invoke(nameof(NotifyComplete), animDuration);
         Invoke(nameof(NotifyReadyForExplosion), animDuration);
     }

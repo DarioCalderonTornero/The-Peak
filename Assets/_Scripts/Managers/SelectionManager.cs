@@ -59,7 +59,10 @@ public class SelectionManager : MonoBehaviour
         if (Camera.main == null) return null;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, climberLayer))
+        {
+            Debug.Log("ClimberViñeta");
             return hit.collider.GetComponentInParent<ClimberMovement>();
+        }
         return null;
     }
 

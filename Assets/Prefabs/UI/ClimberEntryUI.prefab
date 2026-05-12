@@ -133,7 +133,7 @@ MonoBehaviour:
   staminaBarFill: {fileID: 2152711596404052669}
   equipmentIcon: {fileID: 1208162210431393672}
   stateBadgeIcon: {fileID: 4360941849581859631}
-  urgencyBorder: {fileID: 9178465644225448916}
+  clickedIcon: {fileID: 9178465644225448916}
   background: {fileID: 3441761572301612483}
   selectButton: {fileID: 5291531747746730885}
   staminaHighColor: {r: 0.24, g: 0.81, b: 0.45, a: 1}
@@ -143,7 +143,7 @@ MonoBehaviour:
   iconInTent: {fileID: -706511741, guid: fc2424be383ce5440b7af13370da37dd, type: 3}
   urgencyColor: {r: 1, g: 1, b: 1, a: 1}
   urgencyInactiveColor: {r: 1, g: 1, b: 1, a: 0}
-  selectedBorderColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedBorderColor: {r: 0.5394562, g: 0.3915094, b: 1, a: 1}
 --- !u!1 &1612663429302111684
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,7 +668,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0.023192883, a: 0}
+  m_Color: {r: 1, g: 0, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

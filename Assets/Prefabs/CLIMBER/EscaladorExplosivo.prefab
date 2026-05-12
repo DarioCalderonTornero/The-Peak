@@ -281,6 +281,7 @@ MonoBehaviour:
   - {fileID: 7221681582751432723}
   - {fileID: 6637011021774158210}
   - {fileID: 6000075628774388916}
+  berryTreeColor: {r: 0.5393897, g: 0, b: 0.7735849, a: 0}
   destroyDelay: 3
   stormyCloudAnimDelay: 0.5
 --- !u!136 &4989636344134590157

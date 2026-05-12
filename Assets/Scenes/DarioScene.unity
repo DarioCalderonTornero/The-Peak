@@ -4919,6 +4919,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boolPropertyName: _IsActive
   objectsToToggle: []
+  xrayMaterial: {fileID: 2100000, guid: 62003b4dd34b8f349ad434cf050bbd41, type: 2}
 --- !u!1 &1116203803
 GameObject:
   m_ObjectHideFlags: 0

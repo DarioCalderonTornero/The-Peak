@@ -78,7 +78,7 @@ Material:
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0
     - _RenderQueueType: 1
-    - _Scale: 30.8
+    - _Scale: 6.8
     - _SrcBlend: 1
     - _StencilRef: 0
     - _StencilRefDepth: 1
@@ -101,9 +101,9 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - _Color1: {r: 0, g: 0.34117648, b: 0.06274508, a: 1}
-    - _Color2: {r: 0, g: 0.36792448, b: 0.22075465, a: 1}
-    - _Color3: {r: 0.5019608, g: 0.18039218, b: 0.17647055, a: 1}
+    - _Color1: {r: 0.6886792, g: 0.22986116, b: 0.068218224, a: 1}
+    - _Color2: {r: 0.3773585, g: 0.19529544, b: 0.12993948, a: 1}
+    - _Color3: {r: 0.1509434, g: 0.078491256, b: 0.07760769, a: 1}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

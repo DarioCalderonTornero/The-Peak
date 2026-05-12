@@ -16,6 +16,18 @@ public class MountainVision : MonoBehaviour
     private bool isVisionActive = false;
     private Dictionary<Renderer, Color> climberRayProperties = new Dictionary<Renderer, Color>();
 
+    public Material xrayMaterial;
+
+    void Update()
+    {
+        // Comprobamos que tenemos el material asignado y una cámara principal
+        if (xrayMaterial != null && Camera.main != null)
+        {
+            // Le enviamos la posición de la cámara SOLO a tu material XRayMat
+            xrayMaterial.SetVector("_MainCameraPosition", Camera.main.transform.position);
+        }
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

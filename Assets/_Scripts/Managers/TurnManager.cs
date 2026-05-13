@@ -161,6 +161,7 @@ public class TurnManager : MonoBehaviour
 
     private void StartPlayerTurn()
     {
+        Debug.Log("[TurnManager] StartPlayerTurn llamado");
         pointsAddedThisTurn = false; 
         CurrentTurnState = TurnState.PlayerTurn;
         currentTurnNumber++;
@@ -234,6 +235,7 @@ public class TurnManager : MonoBehaviour
 
     private void EndClimberTurn()
     {
+        Debug.Log("[TurnManager] EndClimberTurn llamado");
         if (CurrentTurnState != TurnState.ClimberTurn)
             return;
 

@@ -2,10 +2,15 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class SettingsUI : MonoBehaviour
 {
     public event EventHandler OnSettingsClose;
+
+    [Header("Panel")]
+    [SerializeField] private RectTransform panel;
+    [SerializeField] private TextMeshProUGUI titleText;
 
     [Header("Sliders")]
     [SerializeField] private Slider musicSlider;
@@ -31,6 +36,11 @@ public class SettingsUI : MonoBehaviour
     [SerializeField] private GameObject volumeSettingsPanel;
     [SerializeField] private GameObject cameraSettingsPanel;
 
+    [Header("Animación")]
+    [SerializeField] private float panelSpawnDuration = 0.3f;
+    [SerializeField] private float buttonSpawnDuration = 0.25f;
+    [SerializeField] private float buttonSpawnDelay = 0.1f;
+
     private void Awake()
     {
         backToNormalGamepauseButton.onClick.AddListener(() =>
@@ -45,18 +55,26 @@ public class SettingsUI : MonoBehaviour
         ShowMainButtons();
     }
 
+    private void OnEnable()
+    {
+        if (panel != null)
+        {
+            panel.localScale = Vector3.zero;
+            panel.DOScale(Vector3.one, panelSpawnDuration)
+                .SetEase(Ease.OutBack)
+                .SetUpdate(true);
+        }
+    }
+
     public void ShowMainButtons()
     {
-        // 1. Mostrar solo los botones principales
-        backToNormalGamepauseButton.gameObject.SetActive(true);
-        volumeSettingsButton.gameObject.SetActive(true);
-        generalSettingsButton.gameObject.SetActive(true);
+        SetTitle("SETTINGS");
 
-        // 2. MUY IMPORTANTE: Apagar los paneles de los sub-menús
+        backToNormalGamepauseButton.gameObject.SetActive(true);
+
         if (volumeSettingsPanel != null) volumeSettingsPanel.SetActive(false);
         if (cameraSettingsPanel != null) cameraSettingsPanel.SetActive(false);
 
-        // 3. Ocultar sliders y textos para asegurar limpieza
         musicSlider.gameObject.SetActive(false);
         effectsSlider.gameObject.SetActive(false);
         musicVolumeText.gameObject.SetActive(false);
@@ -66,34 +84,38 @@ public class SettingsUI : MonoBehaviour
         cameraPanSlider.gameObject.SetActive(false);
         cameraSpeedText.gameObject.SetActive(false);
         cameraPanText.gameObject.SetActive(false);
+
+        // Desactivar antes de animar para resetear escala
+        generalSettingsButton.gameObject.SetActive(false);
+        volumeSettingsButton.gameObject.SetActive(false);
+
+        AnimateButton(generalSettingsButton, 0, panelSpawnDuration);
+        AnimateButton(volumeSettingsButton, 1, panelSpawnDuration);
     }
 
     public void ShowGeneralSettings()
     {
+        SetTitle("CAMERA");
+
         volumeSettingsButton.gameObject.SetActive(false);
         generalSettingsButton.gameObject.SetActive(false);
 
-        // Gestionar Paneles
         if (volumeSettingsPanel != null) volumeSettingsPanel.SetActive(false);
         if (cameraSettingsPanel != null) cameraSettingsPanel.SetActive(true);
 
-        // Activar UI de Cámara
         cameraSpeedSlider.gameObject.SetActive(true);
         cameraPanSlider.gameObject.SetActive(true);
         cameraSpeedText.gameObject.SetActive(true);
         cameraPanText.gameObject.SetActive(true);
 
-        // Desactivar UI de Música
         musicSlider.gameObject.SetActive(false);
         effectsSlider.gameObject.SetActive(false);
         musicVolumeText.gameObject.SetActive(false);
         effectsVolumeText.gameObject.SetActive(false);
 
-        // Limpiar listeners anteriores para evitar que se multipliquen
         cameraSpeedSlider.onValueChanged.RemoveAllListeners();
         cameraPanSlider.onValueChanged.RemoveAllListeners();
 
-        // Asignar nuevos listeners
         cameraSpeedSlider.onValueChanged.AddListener(value =>
         {
             freeCameraController.SetCameraSpeedMultiplier(value);
@@ -106,45 +128,37 @@ public class SettingsUI : MonoBehaviour
             PlayerPrefs.SetFloat("CameraPanMultiplier", value);
         });
 
-        // Setear slider en el multiplicador guardado (o 1 si no existe)
-        float savedSpeedMult = PlayerPrefs.GetFloat("CameraSpeedMultiplier", 1f);
-        float savedPanMult = PlayerPrefs.GetFloat("CameraPanMultiplier", 1f);
-
-        cameraSpeedSlider.SetValueWithoutNotify(savedSpeedMult);
-        cameraPanSlider.SetValueWithoutNotify(savedPanMult);
+        cameraSpeedSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("CameraSpeedMultiplier", 1f));
+        cameraPanSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("CameraPanMultiplier", 1f));
     }
 
     public void ShowVolumeSettings()
     {
+        SetTitle("VOLUME");
+
         volumeSettingsButton.gameObject.SetActive(false);
         generalSettingsButton.gameObject.SetActive(false);
 
-        // CORRECCIÓN: Gestionar Paneles correctamente
         if (cameraSettingsPanel != null) cameraSettingsPanel.SetActive(false);
         if (volumeSettingsPanel != null) volumeSettingsPanel.SetActive(true);
 
-        // Activar UI de Música
         musicSlider.gameObject.SetActive(true);
         effectsSlider.gameObject.SetActive(true);
         musicVolumeText.gameObject.SetActive(true);
         effectsVolumeText.gameObject.SetActive(true);
 
-        // Limpiar listeners anteriores para evitar que se multipliquen
         musicSlider.onValueChanged.RemoveAllListeners();
         effectsSlider.onValueChanged.RemoveAllListeners();
 
-        // Asignar nuevos listeners
         musicSlider.onValueChanged.AddListener(Temporal_Sound_Music.Instance.SetMusicVolume);
         effectsSlider.onValueChanged.AddListener(Temporal_Sound_Music.Instance.SetEffectsVolume);
 
-        // Setear valores actuales sin disparar los eventos
         musicSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("MusicVolume", 1.0f));
         effectsSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("EffectsVolume", 1.0f));
     }
 
     private void HideSettings()
     {
-        // Limpiamos de forma segura todos los listeners antes de apagar
         musicSlider.onValueChanged.RemoveAllListeners();
         effectsSlider.onValueChanged.RemoveAllListeners();
         cameraSpeedSlider.onValueChanged.RemoveAllListeners();
@@ -153,9 +167,30 @@ public class SettingsUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    private void SetTitle(string title)
+    {
+        if (titleText != null)
+            titleText.text = title;
+    }
+
+    private void AnimateButton(Button btn, int index, float delayOffset = 0f)
+    {
+        btn.gameObject.SetActive(true);
+        btn.transform.localScale = Vector3.zero;
+        btn.transform.DOKill();
+        btn.transform
+            .DOScale(Vector3.one, buttonSpawnDuration)
+            .SetEase(Ease.OutBack)
+            .SetDelay(delayOffset + index * buttonSpawnDelay)
+            .SetUpdate(true);
+    }
+
     private void Update()
     {
-        cameraSpeedText.text = "Camera Speed: " + cameraSpeedSlider.value.ToString("F1");
-        cameraPanText.text = "Camera Pan: " + cameraPanSlider.value.ToString("F1");
+        if (cameraSettingsPanel != null && cameraSettingsPanel.activeSelf)
+        {
+            cameraSpeedText.text = "Camera Speed: " + cameraSpeedSlider.value.ToString("F1");
+            cameraPanText.text = "Camera Pan: " + cameraPanSlider.value.ToString("F1");
+        }
     }
 }

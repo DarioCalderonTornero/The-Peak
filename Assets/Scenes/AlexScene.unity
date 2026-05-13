@@ -1475,12 +1475,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rewardPanel: {fileID: 12770122}
-  buttonA: {fileID: 1572423473}
-  imageA: {fileID: 1572423471}
-  nameTextA: {fileID: 933333464}
-  buttonB: {fileID: 477110706}
-  imageB: {fileID: 477110704}
-  nameTextB: {fileID: 1995232659}
+  cardContainerA: {fileID: 1572423470}
+  cardContainerB: {fileID: 477110703}
+  cardPrefab: {fileID: 6781065058651717317, guid: 481e41b82fd4e0848aa9426e6965403a, type: 3}
+  cardScale: {x: 1, y: 1, z: 1}
+  hoverScaleMultiplier: 1.1
+  hoverSmoothTime: 0.12
+  glowFadeDuration: 0.15
   cardUnlockData: {fileID: 11400000, guid: dbe84acad1b0ae54fbb3f64b94d3f7ff, type: 2}
 --- !u!1 &285755366
 GameObject:
@@ -2011,7 +2012,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 477110702}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -3250,63 +3251,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 702301532}
   m_CullTransparentMesh: 1
---- !u!1001 &745403741
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 197.06631
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 4.010702
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 198.4609
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1337722845093877910, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1863183457221247532, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
-      propertyPath: m_Name
-      value: ZarzaObstaculo
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
 --- !u!1 &760877650
 GameObject:
   m_ObjectHideFlags: 0
@@ -6543,7 +6487,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1572423469}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -9364,4 +9308,3 @@ SceneRoots:
   - {fileID: 421653288}
   - {fileID: 1256628113}
   - {fileID: 78481102}
-  - {fileID: 745403741}

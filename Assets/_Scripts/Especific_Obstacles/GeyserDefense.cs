@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.VFX;
@@ -79,6 +80,62 @@ public class GeyserDefense : BaseDefense
     public bool IsInCooldown() => inCooldown;
     public int GetCooldownRemaining() => cooldownRemaining;
 
+    [Header("Indicador cooldown")]
+    [SerializeField] private GameObject cooldownIndicatorPrefab; // prefab con Image + TMP
+    [SerializeField] private float indicatorHeight = 2f;
+
+    private GameObject cooldownIndicatorInstance;
+    private Camera mainCamera;
+
+    private void Start()
+    {
+        mainCamera = Camera.main ?? FindFirstObjectByType<Camera>();
+    }
+
+    private void Update()
+    {
+        if (cooldownIndicatorInstance != null)
+            BillboardToCamera(cooldownIndicatorInstance.transform);
+    }
+
+    private void BillboardToCamera(Transform t)
+    {
+        if (mainCamera == null) return;
+        t.LookAt(t.position + mainCamera.transform.rotation * Vector3.forward,
+                 mainCamera.transform.rotation * Vector3.up);
+    }
+
+    private void ShowCooldownIndicator()
+    {
+        if (cooldownIndicatorPrefab == null) return;
+        if (cooldownIndicatorInstance != null) Destroy(cooldownIndicatorInstance);
+
+        cooldownIndicatorInstance = Instantiate(cooldownIndicatorPrefab);
+        cooldownIndicatorInstance.transform.position = transform.position + Vector3.up * indicatorHeight;
+        UpdateCooldownIndicator();
+    }
+
+    private void UpdateCooldownIndicator()
+    {
+        if (cooldownIndicatorInstance == null) return;
+        var text = cooldownIndicatorInstance.GetComponentInChildren<TextMeshProUGUI>();
+        if (text != null) text.text = cooldownRemaining.ToString();
+    }
+
+    private void HideCooldownIndicator()
+    {
+        if (cooldownIndicatorInstance != null)
+        {
+            Destroy(cooldownIndicatorInstance);
+            cooldownIndicatorInstance = null;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        HideCooldownIndicator();
+    }
+
     private void OnEnable()
     {
         originalPos = transform.position;
@@ -101,7 +158,16 @@ public class GeyserDefense : BaseDefense
     {
         if (!inCooldown) return;
         cooldownRemaining--;
-        if (cooldownRemaining <= 0) { inCooldown = false; cooldownRemaining = 0; }
+        if (cooldownRemaining <= 0)
+        {
+            inCooldown = false;
+            cooldownRemaining = 0;
+            HideCooldownIndicator(); // ← añadir
+        }
+        else
+        {
+            UpdateCooldownIndicator(); // ← actualizar número
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -291,6 +357,7 @@ public class GeyserDefense : BaseDefense
         isBusy = false;
         inCooldown = true;
         cooldownRemaining = cooldownTurns;
+        ShowCooldownIndicator();
 
         SetBubbling(false);
         SetEspumaActiva(false);
@@ -353,6 +420,7 @@ public class GeyserDefense : BaseDefense
 
         inCooldown = true;
         cooldownRemaining = cooldownTurns;
+        ShowCooldownIndicator();
         holdRoutine = null;
     }
 

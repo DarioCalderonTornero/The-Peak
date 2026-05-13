@@ -258,6 +258,8 @@ public class CardFlip : MonoBehaviour, IPointerClickHandler, IPointerExitHandler
     /// </summary>
     public void ResetToFront()
     {
+        if (rt == null) rt = GetComponent<RectTransform>(); // ← añadir
+
         if (flipRoutine != null) StopCoroutine(flipRoutine);
         isAnimating = false;
         isFlipped = false;

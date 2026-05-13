@@ -109,30 +109,27 @@ public class DefenseInfoUI : MonoBehaviour
         var geyserIcon = panelInstance.transform.Find("GeyserStatus")?.GetComponent<Image>();
         var geyserTurns = panelInstance.transform.Find("GeyserTurns")?.GetComponent<TextMeshProUGUI>();
 
-        if (geyser != null && geyserIcon != null)
+        if (geyserIcon != null)
         {
-            geyserIcon.gameObject.SetActive(true);
-
-            if (geyser.IsInCooldown())
+            if (geyser != null && geyser.IsInCooldown())
             {
-                if (geyserCooldownSprite != null) geyserIcon.sprite = geyserCooldownSprite;
-                if (geyserTurns != null)
-                {
-                    geyserTurns.text = geyser.GetCooldownRemaining().ToString();
-                    geyserTurns.gameObject.SetActive(true);
-                }
+                // En cooldown: no mostrar nada en el panel
+                geyserIcon.gameObject.SetActive(false);
+                if (geyserTurns != null) geyserTurns.gameObject.SetActive(false);
+            }
+            else if (geyser != null)
+            {
+                // Activo: mostrar sprite verde
+                if (geyserActiveSprite != null) geyserIcon.sprite = geyserActiveSprite;
+                geyserIcon.gameObject.SetActive(true);
+                if (geyserTurns != null) geyserTurns.gameObject.SetActive(false);
             }
             else
             {
-                if (geyserActiveSprite != null) geyserIcon.sprite = geyserActiveSprite;
-                if (geyserTurns != null)
-                    geyserTurns.gameObject.SetActive(false);
+                // No es géiser: ocultar
+                geyserIcon.gameObject.SetActive(false);
+                if (geyserTurns != null) geyserTurns.gameObject.SetActive(false);
             }
-        }
-        else if (geyserIcon != null)
-        {
-            geyserIcon.gameObject.SetActive(false);
-            if (geyserTurns != null) geyserTurns.gameObject.SetActive(false);
         }
 
         isOpen = true;

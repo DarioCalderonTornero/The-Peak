@@ -13,6 +13,8 @@ public class ShovelUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     [Header("Animación retorno")]
     [SerializeField] private float returnDuration = 0.3f;
 
+    [SerializeField] private AudioClip shovelAudioClip;
+
     private RectTransform rt;
     private Vector2 originalPosition;
     private Coroutine returnRoutine;
@@ -109,6 +111,7 @@ public class ShovelUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         if (hoveredDefense != null)
         {
             hoveredDefense.SetShovelHover(false);
+            Temporal_Sound_Music.Instance.Play2DSound(shovelAudioClip, 1f);
             Destroy(hoveredDefense.gameObject);
             hoveredDefense = null;
 

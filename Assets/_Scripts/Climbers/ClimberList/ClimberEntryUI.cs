@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DG.Tweening;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class ClimberEntryUI : MonoBehaviour
@@ -27,6 +28,9 @@ public class ClimberEntryUI : MonoBehaviour
 
     [Header("Configuración selección")]
     [SerializeField] private Color selectedBorderColor = new Color(1f, 1f, 1f, 1f);
+
+    [Header("Animación entrada")]
+    [SerializeField] private float spawnDuration = 0.3f;
 
     private ClimberMovement climber;
     private ClimberLoadout loadout;
@@ -68,6 +72,9 @@ public class ClimberEntryUI : MonoBehaviour
 
         if (selectButton != null)
             selectButton.onClick.AddListener(OnSelectClicked);
+
+        transform.localScale = Vector3.zero;
+        transform.DOScale(Vector3.one, spawnDuration).SetEase(Ease.OutBack);
     }
 
     // ─── Updates desde eventos ────────────────────────────────────────────────
@@ -163,6 +170,8 @@ public class ClimberEntryUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        transform.DOKill();
+
         if (climber != null)
         {
             climber.OnStaminaChanged -= UpdateStamina;

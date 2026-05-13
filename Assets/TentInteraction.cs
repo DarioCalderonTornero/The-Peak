@@ -8,10 +8,6 @@ public class TentInteraction : MonoBehaviour
     [Header("Referencias")]
     [SerializeField] private CampGraphBuilder campGraph;
 
-    [Header("Configuración de Clics")]
-    [SerializeField] private LayerMask clickableLayers;
-
-    [SerializeField] private AudioClip clickTentAudioClip;
 
     private List<ClimberMovement> currentlySelectedClimbers = new List<ClimberMovement>();
     private CampGraphBuilder.CampNode lastClickedNode;
@@ -27,47 +23,18 @@ public class TentInteraction : MonoBehaviour
     {
         if (campGraph == null)
             campGraph = Object.FindFirstObjectByType<CampGraphBuilder>();
-
-        if (InputManager.Instance != null)
-            InputManager.Instance.OnClimberClickRoute += OnClimberClickRoute;
     }
 
-    private void OnDestroy()
+    public void HandleCampClick(GameObject clickedObject)
     {
-        if (InputManager.Instance != null)
-            InputManager.Instance.OnClimberClickRoute -= OnClimberClickRoute;
-    }
-
-    private void OnClimberClickRoute(object sender, System.EventArgs e)
-    {
-        HandleClick();
-    }
-
-    private void HandleClick()
-    {
-        if (Camera.main == null) return;
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, clickableLayers))
+        CampGraphBuilder.CampNode clickedNode = GetNodeFromClickedObject(clickedObject);
+        if (clickedNode != null && clickedNode.HasTent)
         {
-            CampGraphBuilder.CampNode clickedNode = GetNodeFromClickedObject(hit.collider.gameObject);
-
-            if (clickedNode != null && clickedNode.HasTent)
-            {
-                HandleCampClick(clickedNode);
-                Temporal_Sound_Music.Instance.Play2DSound(clickTentAudioClip, 1f);
-            }
-            else
-                ClearAll();
-        }
-        else
-        {
-            ClearAll();
+            HandleCampClickInternal(clickedNode);
         }
     }
 
-    private void HandleCampClick(CampGraphBuilder.CampNode node)
+    private void HandleCampClickInternal(CampGraphBuilder.CampNode node)
     {
         int climberCount = node.presentClimbers != null ? node.presentClimbers.Count : 0;
         if (climberCount == 0) return;
@@ -134,7 +101,7 @@ public class TentInteraction : MonoBehaviour
         currentlySelectedClimbers.Clear();
     }
 
-    private void ClearAll()
+    public void ClearAll()
     {
         ClearLines();
         lastClickedNode = null;

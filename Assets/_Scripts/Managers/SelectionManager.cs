@@ -1,18 +1,12 @@
 using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class SelectionManager : MonoBehaviour
 {
     public static SelectionManager Instance { get; private set; }
 
-    [Header("Configuración")]
-    [SerializeField] private LayerMask climberLayer;
-    [SerializeField] private LayerMask tentLayer;
-
     public event Action<ClimberMovement> OnClimberSelected;
     public event Action OnClimberDeselected;
-    public event Action<ClimberMovement> OnClimberInspectRequested;
 
     private ClimberMovement currentSelectedClimber;
     public ClimberMovement CurrentSelected => currentSelectedClimber;
@@ -24,75 +18,25 @@ public class SelectionManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    private void Start()
+    public void HandleClimberClicked(ClimberMovement clicked)
     {
-        if (InputManager.Instance != null)
-            InputManager.Instance.OnClimberClickRoute += (_, __) => HandleTapSelection();
-    }
-
-    private bool IsPointerOverUI()
-    {
-        if (EventSystem.current == null) return false;
-
-        // Fix para el nuevo Input System:
-        // IsPointerOverGameObject() con -1 funciona correctamente
-        // desde callbacks del Input System
-        var pointerData = new UnityEngine.EventSystems.PointerEventData(EventSystem.current)
-        {
-            position = UnityEngine.InputSystem.Mouse.current.position.ReadValue()
-        };
-
-        var results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
-        EventSystem.current.RaycastAll(pointerData, results);
-        return results.Count > 0;
-    }
-
-    private bool IsPointerOverTent()
-    {
-        if (Camera.main == null) return false;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        return Physics.Raycast(ray, Mathf.Infinity, tentLayer);
-    }
-
-    private ClimberMovement RaycastClimberUnderMouse()
-    {
-        if (Camera.main == null) return null;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, climberLayer))
-        {
-            Debug.Log("ClimberViñeta");
-            return hit.collider.GetComponentInParent<ClimberMovement>();
-        }
-        return null;
-    }
-
-    private void HandleTapSelection()
-    {
-        if (IsPointerOverUI()) return;
-        if (IsPointerOverTent()) return;
-
-        ClimberMovement clicked = RaycastClimberUnderMouse();
-        if (clicked == null) return;
-        if (clicked.IsInsideTent) return;
-
         if (currentSelectedClimber == clicked)
-            DeselectCurrent();
+            Deselect();
         else
-            SelectClimber(clicked, showRoute: true);
+            SelectClimber(clicked);
     }
 
-    private void SelectClimber(ClimberMovement newClimber, bool showRoute)
+    private void SelectClimber(ClimberMovement climber)
     {
         if (currentSelectedClimber != null)
             currentSelectedClimber.SetSelected(false);
 
-        currentSelectedClimber = newClimber;
-
-        if (showRoute)
-            currentSelectedClimber.SetSelected(true);
-
+        currentSelectedClimber = climber;
+        currentSelectedClimber.SetSelected(true);
         OnClimberSelected?.Invoke(currentSelectedClimber);
     }
+
+    public void Deselect() => DeselectCurrent();
 
     private void DeselectCurrent()
     {
@@ -102,8 +46,5 @@ public class SelectionManager : MonoBehaviour
         OnClimberDeselected?.Invoke();
     }
 
-    public void ForceDeselect()
-    {
-        DeselectCurrent();
-    }
+    public void ForceDeselect() => DeselectCurrent();
 }

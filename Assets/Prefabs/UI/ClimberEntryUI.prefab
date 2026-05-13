@@ -144,6 +144,7 @@ MonoBehaviour:
   urgencyColor: {r: 1, g: 1, b: 1, a: 1}
   urgencyInactiveColor: {r: 1, g: 1, b: 1, a: 0}
   selectedBorderColor: {r: 0.5394562, g: 0.3915094, b: 1, a: 1}
+  spawnDuration: 0.4
 --- !u!1 &1612663429302111684
 GameObject:
   m_ObjectHideFlags: 0

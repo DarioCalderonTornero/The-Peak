@@ -13,6 +13,8 @@ public class ClimberListUI : MonoBehaviour
     [SerializeField] private Button hidepanel;
     [SerializeField] private Button showPanel;
 
+    private Vector2 showPanelOriginalPos;
+
     private readonly Dictionary<ClimberMovement, ClimberEntryUI> entries = new();
     private ClimberMovement selectedClimber;
 
@@ -29,43 +31,61 @@ public class ClimberListUI : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
-        showPanel.gameObject.SetActive(false);
+        RectTransform showRectTransform = showPanel.GetComponent<RectTransform>();
+        showPanelOriginalPos = showRectTransform.anchoredPosition;
+
+        //showPanel.gameObject.SetActive(false);
 
         hidepanel.onClick.AddListener(() => ShowHideGameObject());
-        showPanel.onClick.AddListener(() => ShowHideGameObject());  
+        showPanel.onClick.AddListener(() => ShowHideGameObject());
     }
 
     private void ShowHideGameObject()
-    {
-        RectTransform rect = GetComponent<RectTransform>();
+    { 
+
+        RectTransform gameObjectRect = GetComponent<RectTransform>();
+
+        RectTransform showButtonRect = showPanel.GetComponent<RectTransform>();
 
         Sequence seq = DOTween.Sequence();
 
         if (!isHidden)
         {
-            // Ocultar panel
+            float leftAnimDuration = 0.15f;
+            // Left
             seq.Append(
-                rect.DOAnchorPosX(rect.anchoredPosition.x - 20f, 0.12f)
+                gameObjectRect.DOAnchorPosX(gameObjectRect.anchoredPosition.x - 20f, leftAnimDuration)
                     .SetEase(Ease.OutQuad)
             );
 
+            float rightAnimDuration = 0.45f;
+            //Right
             seq.Append(
-                rect.DOAnchorPosX(200f, 0.45f)
-                    .SetEase(Ease.InOutCubic)
+                gameObjectRect.DOAnchorPosX(200f, rightAnimDuration)
+                    .SetEase(Ease.InOutCubic)           
             );
 
-            StartCoroutine(ShowButton());
+            seq.Join(showButtonRect.DOAnchorPosX(showPanelOriginalPos.x - 60f, 0.5f)
+                .SetEase(Ease.OutQuad)
+                );
+
+            //StartCoroutine(ShowButton());
         }
         else
         {
             // Mostrar panel
             seq.Append(
-                rect.DOAnchorPosX(-200f, 0.5f)
+                gameObjectRect.DOAnchorPosX(-200f, 0.5f)
                     .SetEase(Ease.OutBack, 0.8f)
             );
-
-            hidepanel.gameObject.SetActive(true);
-            showPanel.gameObject.SetActive(false);
+            seq.Join(
+                     showButtonRect.DOAnchorPosX(
+                         showPanelOriginalPos.x,
+                         0.25f)
+                     .SetEase(Ease.OutQuad)
+                 );
+            //hidepanel.gameObject.SetActive(true);
+            //showPanel.gameObject.SetActive(false);
         }
 
         isHidden = !isHidden;

@@ -6056,6 +6056,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2429842291802180537, guid: ab2c44b33b7652f499ec27432c4a8b3b, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.7
+      objectReference: {fileID: 0}
     - target: {fileID: 3195897847232883967, guid: ab2c44b33b7652f499ec27432c4a8b3b, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -14723,7 +14727,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2622406922754066138, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
       propertyPath: ShapeModule.m_Position.y
-      value: 0.84
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 2622406922754066138, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
       propertyPath: InitialModule.startSize.scalar

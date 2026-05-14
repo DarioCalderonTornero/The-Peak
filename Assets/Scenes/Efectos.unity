@@ -5993,7 +5993,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2115345734856539229, guid: ab2c44b33b7652f499ec27432c4a8b3b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3195897847232883967, guid: ab2c44b33b7652f499ec27432c4a8b3b, type: 3}
       propertyPath: m_IsActive
@@ -6038,6 +6038,14 @@ PrefabInstance:
     - target: {fileID: 3459385112449536427, guid: ab2c44b33b7652f499ec27432c4a8b3b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8459654449444321613, guid: ab2c44b33b7652f499ec27432c4a8b3b, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9072084852218211025, guid: ab2c44b33b7652f499ec27432c4a8b3b, type: 3}
+      propertyPath: m_VelocityScale
+      value: 1.13
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -14650,7 +14658,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2182945553310340217, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2622406922754066138, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 2622406922754066138, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2622406922754066138, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: InitialModule.startSize.minScalar
+      value: 0.04
+      objectReference: {fileID: 0}
+    - target: {fileID: 2622406922754066138, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
+      propertyPath: InitialModule.startSpeed.minScalar
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 3055834226310139621, guid: 6e89618bfafb5a14a866c55c33946eea, type: 3}
       propertyPath: retrasOjos

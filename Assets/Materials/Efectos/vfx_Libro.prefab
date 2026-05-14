@@ -32,6 +32,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2001821314692659690}
+  - {fileID: 2360099127175962967}
   m_Father: {fileID: 3459385112449536427}
   m_LocalEulerAnglesHint: {x: -100.257, y: 0, z: 0}
 --- !u!198 &8459654449444321613
@@ -288,7 +289,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.03
+      scalar: 0.1
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -5028,8 +5029,8 @@ ParticleSystemRenderer:
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
-  m_VelocityScale: 0.19
-  m_LengthScale: 1.78
+  m_VelocityScale: -1.06
+  m_LengthScale: 0.08
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -5085,7 +5086,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8867980425821994010}
-  - {fileID: 2360099127175962967}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2627407119602605085
@@ -5191,7 +5191,7 @@ Light:
   m_BounceIntensity: 10
   m_ColorTemperature: 6570
   m_UseColorTemperature: 1
-  m_BoundingSphereOverride: {x: 7.325e-42, y: 2.524355e-29, z: 0, w: 2.7470774e+20}
+  m_BoundingSphereOverride: {x: 2.6643e-41, y: 2.524355e-29, z: 0, w: 5.750839e-39}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -5368,12 +5368,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7233737143221112560}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.298, z: 0.226}
+  m_LocalRotation: {x: 0.7674847, y: -0, z: -0, w: 0.6410673}
+  m_LocalPosition: {x: 0, y: -0.077023156, z: -0.018003017}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3459385112449536427}
+  m_Father: {fileID: 8867980425821994010}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!198 &2429842291802180537
 ParticleSystem:

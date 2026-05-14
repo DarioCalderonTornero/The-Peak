@@ -103,6 +103,7 @@ public class CardInventoryUI : MonoBehaviour
         RefreshInventory();
         UpdatePaginationUI();
         UpdateTypeCounters();
+        UpdateStartButtonState();
     }
 
     public void AddCard(CardData card)
@@ -503,8 +504,8 @@ public class CardInventoryUI : MonoBehaviour
         {
             StartSmoothScale(targetScale);
             StartGlowFade(1f);
-            foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
-                star.OnHoverEnter();
+            // foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
+                // star.OnHoverEnter();
         });
         trigger.triggers.Add(entryEnter);
 
@@ -514,8 +515,8 @@ public class CardInventoryUI : MonoBehaviour
         {
             StartSmoothScale(baseScale);
             StartGlowFade(0f);
-            foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
-                star.OnHoverExit();
+            // foreach (var star in cardObj.GetComponentsInChildren<CardStar>(true))
+                // star.OnHoverExit();
         });
         trigger.triggers.Add(entryExit);
     }
@@ -686,6 +687,10 @@ public class CardInventoryUI : MonoBehaviour
     {
         if (startMatchButton != null)
             startMatchButton.interactable = selectedCards.Count == maxSelectedCards;
+
+        // Actualizar texto de cartas seleccionadas
+        if (selectedCountText != null)
+            selectedCountText.text = $"{selectedCards.Count} / {maxSelectedCards}";
     }
 
     private void OnStartMatchButtonClicked()

@@ -204,4 +204,22 @@ public class BalloonEventManager : MonoBehaviour
             effectsCanvas, screenPoint, null, out Vector2 localPoint);
         return localPoint;
     }
+
+    public void SpawnPointsFromCenter(int count)
+    {
+        StartCoroutine(SpawnPoints(Vector2.zero, count)); // centro del canvas
+    }
+
+    public void SpawnPointsFromWorldPosition(Vector3 worldPos, int count)
+    {
+        // Convertir posición 3D a posición en el canvas de efectos
+        Camera cam = Camera.main ?? FindFirstObjectByType<Camera>();
+        if (cam == null) { SpawnPointsFromCenter(count); return; }
+
+        Vector2 screenPos = cam.WorldToScreenPoint(worldPos);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            effectsCanvas, screenPos, null, out Vector2 canvasPos);
+
+        StartCoroutine(SpawnPoints(canvasPos, count));
+    }
 }

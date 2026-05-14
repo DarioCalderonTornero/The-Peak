@@ -241,7 +241,10 @@ public class TurnManager : MonoBehaviour
 
         if (!pointsAddedThisTurn)
         {
-            PointsManager.Instance.AddPoints(3);
+            if (BalloonEventManager.Instance != null)
+                BalloonEventManager.Instance.SpawnPointsFromCenter(3);
+            else
+                PointsManager.Instance.AddPoints(3);
             pointsAddedThisTurn = true;
         }
 

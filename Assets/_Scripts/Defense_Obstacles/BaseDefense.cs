@@ -10,6 +10,10 @@ public abstract class BaseDefense : MonoBehaviour
     [SerializeField] private float popScale = 1.15f;
     [SerializeField] private float shovelPopDuration = 0.15f;
 
+    private Renderer[] cachedRenderers;
+    private Material[][] originalMaterials;
+    private bool materialsStored = false;
+
     public virtual void Initialize()
     {
         originalScale = transform.localScale;
@@ -19,6 +23,44 @@ public abstract class BaseDefense : MonoBehaviour
     {
         if (popRoutine != null) StopCoroutine(popRoutine);
         popRoutine = StartCoroutine(PopScale(active ? originalScale * popScale : originalScale));
+
+        if (active)
+            ApplyShovelMaterial();
+        else
+            RestoreOriginalMaterials();
+    }
+
+    private void ApplyShovelMaterial()
+    {
+        var config = Resources.Load<DefenseConfig>("DefenseConfig");
+        if (config == null || config.shovelHoverMaterial == null) return;
+
+        cachedRenderers = GetComponentsInChildren<Renderer>(true);
+        originalMaterials = new Material[cachedRenderers.Length][];
+
+        for (int i = 0; i < cachedRenderers.Length; i++)
+        {
+            originalMaterials[i] = cachedRenderers[i].materials;
+            var mats = new Material[cachedRenderers[i].materials.Length];
+            for (int j = 0; j < mats.Length; j++)
+                mats[j] = config.shovelHoverMaterial;
+            cachedRenderers[i].materials = mats;
+        }
+
+        materialsStored = true;
+    }
+
+    private void RestoreOriginalMaterials()
+    {
+        if (!materialsStored || cachedRenderers == null) return;
+
+        for (int i = 0; i < cachedRenderers.Length; i++)
+        {
+            if (cachedRenderers[i] == null) continue;
+            cachedRenderers[i].materials = originalMaterials[i];
+        }
+
+        materialsStored = false;
     }
 
     private IEnumerator PopScale(Vector3 target)

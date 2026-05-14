@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 280dc5276da2b8840adb7c859bc13e5e, type: 3}
+  m_Name: DefenseConfig
+  m_EditorClassIdentifier: 
+  shovelHoverMaterial: {fileID: 2100000, guid: c51fef329000ab343a8c221a3b8868df, type: 2}

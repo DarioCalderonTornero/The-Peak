@@ -112,11 +112,17 @@ public class ShovelUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         {
             hoveredDefense.SetShovelHover(false);
             Temporal_Sound_Music.Instance.Play2DSound(shovelAudioClip, 1f);
+
+            // Guardar posición de la defensa antes de destruirla
+            Vector3 defenseWorldPos = hoveredDefense.transform.position;
+
             Destroy(hoveredDefense.gameObject);
             hoveredDefense = null;
 
-            // +1 punto por destruir con la pala
-            if (PointsManager.Instance != null)
+            // Animar 1 punto desde la posición de la defensa
+            if (BalloonEventManager.Instance != null)
+                BalloonEventManager.Instance.SpawnPointsFromWorldPosition(defenseWorldPos, 1);
+            else if (PointsManager.Instance != null)
                 PointsManager.Instance.AddPoints(1);
         }
 

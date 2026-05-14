@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using System.Collections;
 
 public class ClimberListUI : MonoBehaviour
 {
@@ -9,7 +10,8 @@ public class ClimberListUI : MonoBehaviour
 
     [SerializeField] private Transform content;
     [SerializeField] private GameObject climberEntryPrefab;
-    [SerializeField] private Button showHideButton; 
+    [SerializeField] private Button hidepanel;
+    [SerializeField] private Button showPanel;
 
     private readonly Dictionary<ClimberMovement, ClimberEntryUI> entries = new();
     private ClimberMovement selectedClimber;
@@ -27,7 +29,10 @@ public class ClimberListUI : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
-        showHideButton.onClick.AddListener(() => ShowHideGameObject());
+        showPanel.gameObject.SetActive(false);
+
+        hidepanel.onClick.AddListener(() => ShowHideGameObject());
+        showPanel.onClick.AddListener(() => ShowHideGameObject());  
     }
 
     private void ShowHideGameObject()
@@ -38,22 +43,29 @@ public class ClimberListUI : MonoBehaviour
 
         if (!isHidden)
         {
+            // Ocultar panel
             seq.Append(
                 rect.DOAnchorPosX(rect.anchoredPosition.x - 20f, 0.12f)
                     .SetEase(Ease.OutQuad)
             );
 
             seq.Append(
-                rect.DOAnchorPosX(900f, 0.45f)
+                rect.DOAnchorPosX(200f, 0.45f)
                     .SetEase(Ease.InOutCubic)
             );
+
+            StartCoroutine(ShowButton());
         }
         else
         {
+            // Mostrar panel
             seq.Append(
-                rect.DOAnchorPosX(0f, 0.5f)
+                rect.DOAnchorPosX(-200f, 0.5f)
                     .SetEase(Ease.OutBack, 0.8f)
             );
+
+            hidepanel.gameObject.SetActive(true);
+            showPanel.gameObject.SetActive(false);
         }
 
         isHidden = !isHidden;
@@ -108,6 +120,16 @@ public class ClimberListUI : MonoBehaviour
     }
 
     // ─── Registro ────────────────────────────────────────────────────────────
+
+    private IEnumerator ShowButton()
+    {
+        float timeElapsed = .25f;
+        yield return new WaitForSeconds(timeElapsed);
+
+        hidepanel.gameObject.SetActive(false);
+        showPanel.gameObject.SetActive(true);
+    }
+
 
     private void HandleClimberRegistered(ClimberMovement climber)
     {

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2307220117036127058}
   - component: {fileID: 5291531747746730885}
   - component: {fileID: 3180385786167316586}
+  - component: {fileID: 6040962492594714918}
   m_Layer: 5
   m_Name: ClimberEntryUI
   m_TagString: Untagged
@@ -145,6 +146,22 @@ MonoBehaviour:
   urgencyInactiveColor: {r: 1, g: 1, b: 1, a: 0}
   selectedBorderColor: {r: 0.5394562, g: 0.3915094, b: 1, a: 1}
   spawnDuration: 0.4
+--- !u!114 &6040962492594714918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1126248756026253869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 975c3c5fcffceb14f9321afaee91fdb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverScale: 1.05
+  duration: 0.15
+  easeIn: 27
+  easeOut: 6
 --- !u!1 &1612663429302111684
 GameObject:
   m_ObjectHideFlags: 0

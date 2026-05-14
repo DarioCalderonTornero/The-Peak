@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
 
 public class ClimberListUI : MonoBehaviour
 {
@@ -7,6 +9,7 @@ public class ClimberListUI : MonoBehaviour
 
     [SerializeField] private Transform content;
     [SerializeField] private GameObject climberEntryPrefab;
+    [SerializeField] private Button showHideButton; 
 
     private readonly Dictionary<ClimberMovement, ClimberEntryUI> entries = new();
     private ClimberMovement selectedClimber;
@@ -17,10 +20,43 @@ public class ClimberListUI : MonoBehaviour
     [SerializeField] private float heightOffset = 2f;
     [SerializeField] private float sideOffset = 1f;
 
+    private bool isHidden = false;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        showHideButton.onClick.AddListener(() => ShowHideGameObject());
+    }
+
+    private void ShowHideGameObject()
+    {
+        RectTransform rect = GetComponent<RectTransform>();
+
+        Sequence seq = DOTween.Sequence();
+
+        if (!isHidden)
+        {
+            seq.Append(
+                rect.DOAnchorPosX(rect.anchoredPosition.x - 20f, 0.12f)
+                    .SetEase(Ease.OutQuad)
+            );
+
+            seq.Append(
+                rect.DOAnchorPosX(900f, 0.45f)
+                    .SetEase(Ease.InOutCubic)
+            );
+        }
+        else
+        {
+            seq.Append(
+                rect.DOAnchorPosX(0f, 0.5f)
+                    .SetEase(Ease.OutBack, 0.8f)
+            );
+        }
+
+        isHidden = !isHidden;
     }
 
     private void Start()

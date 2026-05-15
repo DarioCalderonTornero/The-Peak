@@ -4341,7 +4341,7 @@ MonoBehaviour:
   cardsPerPage: 6
   selectedColor: {r: 1, g: 1, b: 1, a: 1}
   normalColor: {r: 0.2627451, g: 0.2627451, b: 0.2627451, a: 1}
-  cardScale: {x: 1.2, y: 1.2, z: 1.2}
+  cardScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverScaleMultiplier: 1.1
   hoverSmoothTime: 0.1
   availableCards:

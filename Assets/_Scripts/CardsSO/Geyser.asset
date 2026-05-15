@@ -18,7 +18,7 @@ MonoBehaviour:
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 1391558099927299792, guid: 4920ddcab506aa542aa2eca0d92c85e5, type: 3}
   cost: 4
-  worldSprite: {fileID: -832806478, guid: 45574b990458b1942aea8e161209adec, type: 3}
+  worldSprite: {fileID: -453905670, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}
   previewMaterial: {fileID: 2100000, guid: 591e678a6dde22747a90261c049f3f55, type: 2}
@@ -28,14 +28,13 @@ MonoBehaviour:
   supportYOffset: 0.1
   placementCheckExtents: {x: 0.5, y: 0.5, z: 0.5}
   gridSize: {x: 2, y: 2}
-  decalOffset: {x: 0, y: 0}
   cardType: 0
-  backBackground: {fileID: -1779182069, guid: 2e12fc3c6b373244d8511cd5f2abfd8e, type: 3}
-  backIllustration: {fileID: 0}
-  loreText: 
-  extendedDescription: 
+  temporalTurns: 3
+  backBackground: {fileID: 1987502595, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   counterIcon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
-  counterName: 
   counterColorSprite: {fileID: -1574946980, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 1490940440, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
   explanationVideo: {fileID: 0}
+  functionText: 
+  counterInfo: 
+  lockedMessage: 

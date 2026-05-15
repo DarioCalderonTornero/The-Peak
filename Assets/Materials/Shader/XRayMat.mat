@@ -92,7 +92,7 @@ Material:
     m_Colors:
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
-    - _MainCameraPosition: {r: 183.41681, g: 25.764875, b: 202.74065, a: 0}
+    - _MainCameraPosition: {r: 179.12, g: 30.45, b: 199.84, a: 0}
     - _XRayColor: {r: 1, g: 1, b: 1, a: 0}
     - _prueba: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []

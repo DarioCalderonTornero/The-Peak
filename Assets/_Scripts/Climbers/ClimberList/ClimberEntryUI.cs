@@ -150,8 +150,13 @@ public class ClimberEntryUI : MonoBehaviour
     {
         if (clickedIcon == null) return;
 
+        //float backgroundSelectedScaleMultiplier = 1.5f;
+
         if (selected)
+        {
             background.color = selectedBorderColor;
+            //background.rectTransform.localScale = Vector3.one * backgroundSelectedScaleMultiplier;
+        }
         else
             background.color = Color.white;
     }

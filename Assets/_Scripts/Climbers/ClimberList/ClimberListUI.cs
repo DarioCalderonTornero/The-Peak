@@ -219,6 +219,8 @@ public class ClimberListUI : MonoBehaviour
     {
         selectedClimber = climber;
 
+        OnWorldClimberSelected(climber);
+
         FreeCameraMovement cam = Object.FindFirstObjectByType<FreeCameraMovement>();
         if (cam == null) return;
 

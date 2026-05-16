@@ -44,6 +44,7 @@ public class SelectionManager : MonoBehaviour
         currentSelectedClimber.SetSelected(false);
         currentSelectedClimber = null;
         OnClimberDeselected?.Invoke();
+        ClimberListUI.Instance?.OnWorldClimberDeselected();
     }
 
     public void ForceDeselect() => DeselectCurrent();

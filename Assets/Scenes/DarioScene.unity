@@ -3088,6 +3088,10 @@ PrefabInstance:
       propertyPath: cinematicModeToggleButton
       value: 
       objectReference: {fileID: 683846220}
+    - target: {fileID: 6605705802089748732, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
+      propertyPath: m_FillAmount
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 8931963588108777376, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0

@@ -68,7 +68,7 @@ public class SettingsUI : MonoBehaviour
 
     public void ShowMainButtons()
     {
-        SetTitle("SETTINGS");
+        SetTitle("OPCIONES");
 
         backToNormalGamepauseButton.gameObject.SetActive(true);
 
@@ -94,7 +94,7 @@ public class SettingsUI : MonoBehaviour
 
     public void ShowGeneralSettings()
     {
-        SetTitle("CAMERA");
+        SetTitle("CAMARA");
 
         volumeSettingsButton.gameObject.SetActive(false);
         generalSettingsButton.gameObject.SetActive(false);
@@ -141,7 +141,7 @@ public class SettingsUI : MonoBehaviour
 
     public void ShowVolumeSettings()
     {
-        SetTitle("VOLUME");
+        SetTitle("SONIDO");
 
         volumeSettingsButton.gameObject.SetActive(false);
         generalSettingsButton.gameObject.SetActive(false);
@@ -204,8 +204,14 @@ public class SettingsUI : MonoBehaviour
     {
         if (cameraSettingsPanel != null && cameraSettingsPanel.activeSelf)
         {
-            cameraSpeedText.text = "Camera Speed: " + cameraSpeedSlider.value.ToString("F1");
-            cameraPanText.text = "Camera Pan: " + cameraPanSlider.value.ToString("F1");
+            cameraSpeedText.text = "Velocidad camara: " + cameraSpeedSlider.value.ToString("F1");
+            cameraPanText.text = "Paneo camara: " + cameraPanSlider.value.ToString("F1");
+        }
+
+        if (volumeSettingsPanel != null && volumeSettingsPanel.activeSelf)
+        {
+            musicVolumeText.text = "Volumen musica: " + musicSlider.value.ToString("F1");
+            effectsVolumeText.text = "Volumen efectos: " + effectsSlider.value.ToString("F1");
         }
     }
 }

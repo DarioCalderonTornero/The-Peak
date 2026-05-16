@@ -85,12 +85,11 @@ public class SettingsUI : MonoBehaviour
         cameraSpeedText.gameObject.SetActive(false);
         cameraPanText.gameObject.SetActive(false);
 
-        // Desactivar antes de animar para resetear escala
         generalSettingsButton.gameObject.SetActive(false);
         volumeSettingsButton.gameObject.SetActive(false);
 
-        AnimateButton(generalSettingsButton, 0, panelSpawnDuration);
-        AnimateButton(volumeSettingsButton, 1, panelSpawnDuration);
+        AnimateElement(generalSettingsButton.gameObject, 0);
+        AnimateElement(volumeSettingsButton.gameObject, 1);
     }
 
     public void ShowGeneralSettings()
@@ -103,16 +102,13 @@ public class SettingsUI : MonoBehaviour
         if (volumeSettingsPanel != null) volumeSettingsPanel.SetActive(false);
         if (cameraSettingsPanel != null) cameraSettingsPanel.SetActive(true);
 
-        cameraSpeedSlider.gameObject.SetActive(true);
-        cameraPanSlider.gameObject.SetActive(true);
-        cameraSpeedText.gameObject.SetActive(true);
-        cameraPanText.gameObject.SetActive(true);
-
+        // Ocultar volume
         musicSlider.gameObject.SetActive(false);
         effectsSlider.gameObject.SetActive(false);
         musicVolumeText.gameObject.SetActive(false);
         effectsVolumeText.gameObject.SetActive(false);
 
+        // Listeners
         cameraSpeedSlider.onValueChanged.RemoveAllListeners();
         cameraPanSlider.onValueChanged.RemoveAllListeners();
 
@@ -130,6 +126,17 @@ public class SettingsUI : MonoBehaviour
 
         cameraSpeedSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("CameraSpeedMultiplier", 1f));
         cameraPanSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("CameraPanMultiplier", 1f));
+
+        // Animar sliders y labels escalonados
+        cameraSpeedText.gameObject.SetActive(false);
+        cameraSpeedSlider.gameObject.SetActive(false);
+        cameraPanText.gameObject.SetActive(false);
+        cameraPanSlider.gameObject.SetActive(false);
+
+        AnimateElement(cameraSpeedText.gameObject, 0);
+        AnimateElement(cameraSpeedSlider.gameObject, 1);
+        AnimateElement(cameraPanText.gameObject, 2);
+        AnimateElement(cameraPanSlider.gameObject, 3);
     }
 
     public void ShowVolumeSettings()
@@ -142,11 +149,7 @@ public class SettingsUI : MonoBehaviour
         if (cameraSettingsPanel != null) cameraSettingsPanel.SetActive(false);
         if (volumeSettingsPanel != null) volumeSettingsPanel.SetActive(true);
 
-        musicSlider.gameObject.SetActive(true);
-        effectsSlider.gameObject.SetActive(true);
-        musicVolumeText.gameObject.SetActive(true);
-        effectsVolumeText.gameObject.SetActive(true);
-
+        // Listeners
         musicSlider.onValueChanged.RemoveAllListeners();
         effectsSlider.onValueChanged.RemoveAllListeners();
 
@@ -155,6 +158,17 @@ public class SettingsUI : MonoBehaviour
 
         musicSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("MusicVolume", 1.0f));
         effectsSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("EffectsVolume", 1.0f));
+
+        // Animar sliders y labels escalonados
+        musicVolumeText.gameObject.SetActive(false);
+        musicSlider.gameObject.SetActive(false);
+        effectsVolumeText.gameObject.SetActive(false);
+        effectsSlider.gameObject.SetActive(false);
+
+        AnimateElement(musicVolumeText.gameObject, 0);
+        AnimateElement(musicSlider.gameObject, 1);
+        AnimateElement(effectsVolumeText.gameObject, 2);
+        AnimateElement(effectsSlider.gameObject, 3);
     }
 
     private void HideSettings()
@@ -173,15 +187,16 @@ public class SettingsUI : MonoBehaviour
             titleText.text = title;
     }
 
-    private void AnimateButton(Button btn, int index, float delayOffset = 0f)
+    // Método genérico: funciona para botones, sliders, labels, cualquier GO
+    private void AnimateElement(GameObject element, int index)
     {
-        btn.gameObject.SetActive(true);
-        btn.transform.localScale = Vector3.zero;
-        btn.transform.DOKill();
-        btn.transform
+        element.SetActive(true);
+        element.transform.localScale = Vector3.zero;
+        element.transform.DOKill();
+        element.transform
             .DOScale(Vector3.one, buttonSpawnDuration)
             .SetEase(Ease.OutBack)
-            .SetDelay(delayOffset + index * buttonSpawnDelay)
+            .SetDelay(panelSpawnDuration + index * buttonSpawnDelay)
             .SetUpdate(true);
     }
 

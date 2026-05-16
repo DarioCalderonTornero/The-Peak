@@ -152,6 +152,15 @@ public class CloudKillDefense : BaseDefense
             cause = DeathCause.StormyCloud
         };
 
+        if (!DeathCinematicManager.Instance.UseDeathCinematics)
+        {
+            if (climber != null) Destroy(climber.gameObject);
+            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            PointsManager.Instance?.AddPoints(5);
+            StartCoroutine(DisappearAndDestroy());
+            return;
+        }
+
         if (keepFrozenRoutine != null) StopCoroutine(keepFrozenRoutine);
         keepFrozenRoutine = StartCoroutine(KeepFrozenWhileWaiting(climber));
 

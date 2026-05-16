@@ -236,6 +236,17 @@ public class GeyserDefense : BaseDefense
         if (keepFrozenRoutine != null) StopCoroutine(keepFrozenRoutine);
         keepFrozenRoutine = StartCoroutine(KeepFrozenWhileWaiting());
 
+        if (!DeathCinematicManager.Instance.UseDeathCinematics)
+        {
+            if (capturedClimber != null) Destroy(capturedClimber.gameObject);
+            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            PointsManager.Instance?.AddPoints(5);
+            isBusy = false;
+            capturedClimber = null;
+            capturedAgent = null;
+            yield break;
+        }
+
         DeathCinematicManager.Instance.RequestSpectacleSlot(OnSpectacleSlotGranted);
     }
 

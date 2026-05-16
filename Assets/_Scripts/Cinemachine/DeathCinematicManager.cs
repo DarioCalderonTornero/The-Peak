@@ -56,8 +56,11 @@ public class DeathCinematicManager : MonoBehaviour
     private Transform cameraAnchor;
     private bool animationComplete = false;
     private bool skipRequested = false;
+    public bool UseDeathCinematics => useDeathCinematics;
 
-    // ─── Propiedad pública para que las defensas puedan leer el skip ─────────
+    // ─── Nuevo: controla si la cámara está activa para esta muerte ───────────
+    private bool cameraActiveForCurrentDeath = true;
+
     public bool SkipRequested => skipRequested;
 
     private void Awake()
@@ -90,7 +93,8 @@ public class DeathCinematicManager : MonoBehaviour
 
     private void InputManager_OnSkipCinematic(object sender, EventArgs e)
     {
-        if (isPlayingCinematic) skipRequested = true;
+        if (isPlayingCinematic)
+            skipRequested = true;
     }
 
     // ─── Handle ──────────────────────────────────────────────────────────────
@@ -100,6 +104,8 @@ public class DeathCinematicManager : MonoBehaviour
         if (!useDeathCinematics)
         {
             if (deathInfo.climber != null) Destroy(deathInfo.climber.gameObject);
+            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            PointsManager.Instance?.AddPoints(5);
             return;
         }
 
@@ -170,10 +176,6 @@ public class DeathCinematicManager : MonoBehaviour
             processQueueCoroutine = StartCoroutine(ProcessDeathQueue());
     }
 
-    /// <summary>
-    /// Llamado por defensas espectaculares cuando el jugador hace skip
-    /// durante su propia secuencia. Restaura el estado del juego limpiamente.
-    /// </summary>
     public void ForceEndSpectacle(GameManager.DeathInfo deathInfo)
     {
         skipRequested = false;
@@ -222,6 +224,8 @@ public class DeathCinematicManager : MonoBehaviour
             if (currentDeathInfo.climber == null)
                 continue;
 
+            // Al empezar cada muerte, la cámara está activa por defecto
+            cameraActiveForCurrentDeath = true;
             skipRequested = false;
 
             bool isSpectacular = currentDeathInfo.cause == DeathCause.Geyser
@@ -233,7 +237,8 @@ public class DeathCinematicManager : MonoBehaviour
 
             spectacleCinematicTarget = null;
 
-            if (!cameraAlreadySet)
+            // ─── Posicionamiento de cámara ────────────────────────────────
+            if (!cameraAlreadySet && cameraActiveForCurrentDeath)
             {
                 if (isSpectacular)
                     CalculateCameraAnchorPosition(currentDeathInfo.climber.transform,
@@ -247,6 +252,7 @@ public class DeathCinematicManager : MonoBehaviour
 
                 if (!isSpectacular)
                 {
+                    // Blend in — salimos si se skipea
                     float elapsed = 0f;
                     while (elapsed < blendInTime && !skipRequested)
                     {
@@ -254,9 +260,20 @@ public class DeathCinematicManager : MonoBehaviour
                         yield return null;
                     }
 
+                    if (skipRequested)
+                    {
+                        // Desactivar cámara pero continuar la muerte
+                        DeactivateCameraKeepDeath();
+                        // Si hay más muertes en cola, pasar a la siguiente
+                        if (deathQueue.Count > 0)
+                        {
+                            FinishCurrentDeath();
+                            continue;
+                        }
+                    }
+
                     if (currentDeathInfo.climber == null)
                     {
-                        Debug.LogWarning("[DeathCinematicManager] Escalador destruido antes de tiempo.");
                         if (deathQueue.Count == 0) deathCamera.Priority = 0;
                         continue;
                     }
@@ -278,7 +295,7 @@ public class DeathCinematicManager : MonoBehaviour
                     }
                 }
             }
-            else
+            else if (!cameraAlreadySet)
             {
                 if (!barsAreShown)
                 {
@@ -286,11 +303,13 @@ public class DeathCinematicManager : MonoBehaviour
                     barsAreShown = true;
                 }
             }
-
-            if (skipRequested)
+            else
             {
-                HandleSkipCleanup(isSpectacular);
-                continue;
+                if (!barsAreShown)
+                {
+                    if (CinematicBars.Instance != null) CinematicBars.Instance.ShowBars();
+                    barsAreShown = true;
+                }
             }
 
             if (CameraShake.Instance != null)
@@ -354,48 +373,55 @@ public class DeathCinematicManager : MonoBehaviour
                 animationComplete = true;
             }
 
-            while (!animationComplete && !skipRequested)
-                yield return null;
-
-            if (skipRequested)
+            // Esperar animación — si se skipea, desactivar cámara pero dejar que termine
+            while (!animationComplete)
             {
-                HandleSkipCleanup(isSpectacular);
-                continue;
+                if (skipRequested && cameraActiveForCurrentDeath)
+                {
+                    DeactivateCameraKeepDeath();
+
+                    // Si hay más muertes, pasar a la siguiente sin esperar
+                    if (deathQueue.Count > 0)
+                    {
+                        FinishCurrentDeath();
+                        break;
+                    }
+                }
+                yield return null;
             }
 
+            if (!animationComplete)
+                continue;
+
+            // Delay post explosión — si se skipea, saltar directamente
             float waitElapsed = 0f;
-            while (waitElapsed < delayAfterExplosion && !skipRequested)
+            while (waitElapsed < delayAfterExplosion)
             {
+                if (skipRequested && cameraActiveForCurrentDeath)
+                {
+                    DeactivateCameraKeepDeath();
+                    if (deathQueue.Count > 0)
+                    {
+                        FinishCurrentDeath();
+                        break;
+                    }
+                }
                 waitElapsed += Time.deltaTime;
                 yield return null;
             }
 
-            OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
+            FinishCurrentDeath();
 
             if (isSpectacular)
                 spectacleInProgress = false;
 
-            if (skipRequested)
-            {
+            // Si hay más muertes y la cámara ya fue desactivada,
+            // la siguiente muerte arranca con cámara activa de nuevo
+            if (deathQueue.Count > 0 && !cameraActiveForCurrentDeath)
                 skipRequested = false;
-                continue;
-            }
-
-            if (deathQueue.Count == 0)
-            {
-                if (spectacleQueue.Count == 0 && !spectacleInProgress)
-                {
-                    deathCamera.Priority = 0;
-                    float blendElapsed = 0f;
-                    while (blendElapsed < blendInTime && !skipRequested)
-                    {
-                        blendElapsed += Time.deltaTime;
-                        yield return null;
-                    }
-                }
-            }
         }
 
+        // Cola vacía — limpiar todo
         isPlayingCinematic = false;
         TryStartNextSpectacle();
 
@@ -404,6 +430,7 @@ public class DeathCinematicManager : MonoBehaviour
             if (spectacleQueue.Count == 0)
                 deathCamera.Priority = 0;
 
+            // Solo ahora se ocultan las barras
             if (CinematicBars.Instance != null) CinematicBars.Instance.HideBars();
             UIManager.Instance.ShowMultiple(UICanvasType.Alex, UICanvasType.Dario);
             GameManager.Instance.SetState(GameManager.GameState.Playing);
@@ -411,6 +438,34 @@ public class DeathCinematicManager : MonoBehaviour
         }
 
         processQueueCoroutine = null;
+    }
+
+    // ─── Desactiva cámara pero deja la muerte ocurrir ────────────────────────
+
+    private void DeactivateCameraKeepDeath()
+    {
+        cameraActiveForCurrentDeath = false;
+        skipRequested = false;
+
+        // Bajar prioridad → Cinemachine transiciona sola de vuelta
+        deathCamera.Priority = 0;
+
+        if (slowMotionCoroutine != null)
+        {
+            StopCoroutine(slowMotionCoroutine);
+            slowMotionCoroutine = null;
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+        }
+
+        if (CameraShake.Instance != null)
+            CameraShake.Instance.StopShake();
+    }
+
+    private void FinishCurrentDeath()
+    {
+        OnOwnClimberCinematicFinished?.Invoke(currentDeathInfo);
+        skipRequested = false;
     }
 
     // ─── Skip ─────────────────────────────────────────────────────────────────

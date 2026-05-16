@@ -28,6 +28,9 @@ public class BalloonEventManager : MonoBehaviour
     [SerializeField] private float collectDelay = 0.4f;        // pausa antes de ir al target
     [SerializeField] private float collectDuration = 0.5f;
 
+    [Header("Sonidos")]
+    [SerializeField] private AudioClip pointsAudioClip;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -165,6 +168,7 @@ public class BalloonEventManager : MonoBehaviour
             {
                 Destroy(tokens[captured]);
                 PointsManager.Instance?.AddPoints(1);
+                Temporal_Sound_Music.Instance.Play2DSound(pointsAudioClip, 1f);
                 collected++;
             }));
 

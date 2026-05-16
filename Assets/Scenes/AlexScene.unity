@@ -453,6 +453,7 @@ MonoBehaviour:
   dispersionRadius: 150
   collectDelay: 0.4
   collectDuration: 0.5
+  pointsAudioClip: {fileID: 8300000, guid: e648d9ad76325204982510cd03bf98d7, type: 3}
 --- !u!4 &78481102
 Transform:
   m_ObjectHideFlags: 0
@@ -4366,6 +4367,7 @@ MonoBehaviour:
   cardUnlockData: {fileID: 11400000, guid: dbe84acad1b0ae54fbb3f64b94d3f7ff, type: 2}
   lockedSprite: {fileID: -665944860, guid: bc40ddbcb676e6642a1eaf7e3857eb52, type: 3}
   pendingSprite: {fileID: 21300000, guid: 07103c52b3aaeca4da8a83361edd059f, type: 3}
+  changePageAudioClip: {fileID: 8300000, guid: 4dc2cfd6c5112604cb72f4d4b33650b5, type: 3}
   pendingSpritePermanente: {fileID: -1653565644, guid: bc40ddbcb676e6642a1eaf7e3857eb52, type: 3}
   pendingSpriteTemporal: {fileID: -1752674202, guid: bc40ddbcb676e6642a1eaf7e3857eb52, type: 3}
 --- !u!4 &895229883

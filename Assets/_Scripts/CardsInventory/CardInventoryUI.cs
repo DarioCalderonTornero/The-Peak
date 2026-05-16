@@ -69,6 +69,8 @@ public class CardInventoryUI : MonoBehaviour
     [SerializeField] private Sprite lockedSprite; 
     [SerializeField] private Sprite pendingSprite;
 
+    [Header("Sounds")]
+    [SerializeField] private AudioClip changePageAudioClip;
 
     private void Awake()
     {
@@ -608,12 +610,14 @@ public class CardInventoryUI : MonoBehaviour
     {
         if (isChangingPage || currentPage <= 0) return;
         StartCoroutine(ChangePageWithSlide(-1));
+        Temporal_Sound_Music.Instance.Play2DSound(changePageAudioClip, 1f);
     }
 
     private void GoToNextPage()
     {
         if (isChangingPage || currentPage >= GetTotalPages() - 1) return;
         StartCoroutine(ChangePageWithSlide(1));
+        Temporal_Sound_Music.Instance.Play2DSound(changePageAudioClip, 1f);
     }
 
     private void UpdatePaginationUI()

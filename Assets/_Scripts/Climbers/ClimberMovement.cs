@@ -238,27 +238,56 @@ public class ClimberMovement : MonoBehaviour
 
         if (path.status != NavMeshPathStatus.PathComplete) { pathLineRenderer.positionCount = 0; return; }
 
-        List<Vector3> finalPoints = new List<Vector3>();
+        // 1. Subdividimos de forma lineal (puntos rectos de esquina a esquina)
+        List<Vector3> points = new List<Vector3>();
         for (int i = 0; i < path.corners.Length - 1; i++)
         {
-            Vector3 a = path.corners[i];
-            Vector3 b = path.corners[i + 1];
-            for (int j = 0; j <= subdivisionsPerSegment; j++)
+            Vector3 a = path.corners[i] + Vector3.up * floatOffset;
+            Vector3 sig = path.corners[i + 1] + Vector3.up * floatOffset;
+
+            // Metemos más subdivisiones por segmento para tener margen de suavizado
+            int steps = subdivisionsPerSegment * 2;
+            for (int j = 0; j <= steps; j++)
             {
-                float t = j / (float)subdivisionsPerSegment;
-                Vector3 samplePoint = Vector3.Lerp(a, b, t);
-                Ray ray = new Ray(samplePoint + Vector3.up * raycastHeight, Vector3.down);
-                if (Physics.Raycast(ray, out RaycastHit hit, raycastHeight * 2f, mountainLayer))
-                    finalPoints.Add(hit.point + hit.normal * floatOffset);
-                else
-                    finalPoints.Add(samplePoint + Vector3.up * floatOffset);
+                if (i > 0 && j == 0) continue; // Evitamos duplicados
+                float t = j / (float)steps;
+                points.Add(Vector3.Lerp(a, sig, t));
             }
         }
 
-        pathLineRenderer.positionCount = finalPoints.Count;
-        pathLineRenderer.SetPositions(finalPoints.ToArray());
-    }
+        if (points.Count < 3)
+        {
+            pathLineRenderer.positionCount = points.Count;
+            pathLineRenderer.SetPositions(points.ToArray());
+            return;
+        }
 
+        // 2. Aplicamos un filtro de suavizado (Chaikin / Media Móvil) pasándole varias pasadas
+        // 2 o 3 pasadas eliminan cualquier esquina o punta sin deformar el camino real
+        int pasadasDeSuavizado = 3;
+        for (int pasada = 0; pasada < pasadasDeSuavizado; pasada++)
+        {
+            List<Vector3> smoothed = new List<Vector3>();
+
+            // El primer punto se queda fijo para que empiece exactamente en el escalador
+            smoothed.Add(points[0]);
+
+            for (int i = 1; i < points.Count - 1; i++)
+            {
+                // Promedio del punto anterior, el actual y el siguiente (Suavizado Laplaciano)
+                Vector3 smoothPoint = (points[i - 1] + points[i] + points[i + 1]) / 3f;
+                smoothed.Add(smoothPoint);
+            }
+
+            // El último punto se queda fijo para que termine exactamente en el campamento
+            smoothed.Add(points[points.Count - 1]);
+            points = smoothed;
+        }
+
+        // 3. Asignar al LineRenderer
+        pathLineRenderer.positionCount = points.Count;
+        pathLineRenderer.SetPositions(points.ToArray());
+    }
     private void AnimateLine()
     {
         if (lineMaterialInstance != null)

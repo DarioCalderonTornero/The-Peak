@@ -85,6 +85,9 @@ public class ClimberMovement : MonoBehaviour
     public float GetAltitude() => transform.position.y;
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
+
+    public CampGraphBuilder.CampNode CurrentNode => currentNode;
+
     public bool isEating = false;
     public Vector3 originalDestination;
     [HideInInspector] public bool hasEatenThisTurn = false;

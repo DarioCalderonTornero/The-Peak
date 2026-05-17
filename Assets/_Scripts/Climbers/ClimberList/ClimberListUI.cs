@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using System.Collections;
+using TMPro;
 
 public class ClimberListUI : MonoBehaviour
 {
@@ -12,6 +13,9 @@ public class ClimberListUI : MonoBehaviour
     [SerializeField] private GameObject climberEntryPrefab;
     [SerializeField] private Button hidepanel;
     [SerializeField] private Button showPanel;
+
+    [SerializeField] private Scrollbar scrollBar;
+    [SerializeField] private float scrollHandleValue = 0.1f;
 
     private Vector2 showPanelOriginalPos;
 
@@ -23,6 +27,8 @@ public class ClimberListUI : MonoBehaviour
     [SerializeField] private float cameraDistance = 5f;
     [SerializeField] private float heightOffset = 2f;
     [SerializeField] private float sideOffset = 1f;
+
+    [SerializeField] private TextMeshProUGUI climberCounterText;
 
     private bool isHidden = false;
 
@@ -40,6 +46,12 @@ public class ClimberListUI : MonoBehaviour
         showPanel.onClick.AddListener(() => ShowHideGameObject());
     }
 
+    
+
+    private void Update()
+    {
+        //scrollBar.size = scrollHandleValue;
+    }
     private void ShowHideGameObject()
     { 
 
@@ -116,6 +128,8 @@ public class ClimberListUI : MonoBehaviour
             SelectionManager.Instance.OnClimberSelected += OnWorldClimberSelected;
             SelectionManager.Instance.OnClimberDeselected += OnWorldClimberDeselected;
         }
+
+        UpdateClimberCount();
     }
 
     private void OnDestroy()
@@ -170,6 +184,7 @@ public class ClimberListUI : MonoBehaviour
         entries[climber] = entry;
 
         RefreshList();
+        UpdateClimberCount();
     }
 
     private void HandleClimberUnregistered(ClimberMovement climber)
@@ -184,6 +199,14 @@ public class ClimberListUI : MonoBehaviour
             Destroy(entry.gameObject);
 
         RefreshList();
+        UpdateClimberCount();
+    }
+
+    private void UpdateClimberCount()
+    {
+        if (climberCounterText == null)
+            return;
+        climberCounterText.text = $"{ClimberRegistry.Instance.Climbers.Count}";
     }
 
     // ─── Refresh ─────────────────────────────────────────────────────────────

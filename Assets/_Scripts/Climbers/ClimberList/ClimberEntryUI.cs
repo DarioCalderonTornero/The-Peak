@@ -29,6 +29,11 @@ public class ClimberEntryUI : MonoBehaviour
     [Header("Configuración selección")]
     [SerializeField] private Color selectedBorderColor = new Color(1f, 1f, 1f, 1f);
 
+    [Header("Altitud")]
+    [SerializeField] private TMPro.TextMeshProUGUI altitudeText;
+    [SerializeField] private float worldYMin = 0f;
+    [SerializeField] private float worldYMax = 50f;
+
     [Header("Animación entrada")]
     [SerializeField] private float spawnDuration = 0.3f;
 
@@ -84,6 +89,14 @@ public class ClimberEntryUI : MonoBehaviour
         if (equipmentDefinition == null) return;
         if (equipmentIcon != null)
             equipmentIcon.sprite = equipmentDefinition.climberIcon;
+    }
+
+    private void Update()
+    {
+        if (climber == null || altitudeText == null) return;
+        float t = Mathf.InverseLerp(worldYMin, worldYMax, climber.transform.position.y);
+        int meters = Mathf.RoundToInt(t * 1000);
+        altitudeText.text = $"{meters}m";
     }
 
     private void OnHelmetColorChanged(Color color)

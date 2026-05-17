@@ -1,0 +1,649 @@
+fileFormatVersion: 2
+guid: e6681395b3fef0d4481c3f9efe27dec1
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_0"
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 945
+        width: 301
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65c3cb206a216664f887af7f4527ad56
+      internalID: 2098234623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_1"
+      rect:
+        serializedVersion: 2
+        x: 487
+        y: 937
+        width: 130
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d012526d63ba2f946a43627df362603d
+      internalID: -513204082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_2"
+      rect:
+        serializedVersion: 2
+        x: 800
+        y: 958
+        width: 55
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a9c0a614f3e8fd498ab2ae0f38e7e40
+      internalID: -805760578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_3"
+      rect:
+        serializedVersion: 2
+        x: 821
+        y: 1008
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3bc254608ee98214e87c34247717ab06
+      internalID: 306098350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_4"
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 960
+        width: 72
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4683591f0b02981498e2b7e4300b7174
+      internalID: -694876742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_5"
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 388
+        width: 380
+        height: 513
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 36faddcc19437324dbaab511c457a16e
+      internalID: 381430155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_6"
+      rect:
+        serializedVersion: 2
+        x: 461
+        y: 438
+        width: 15
+        height: 439
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e80e61474ed19b846821a7231b371185
+      internalID: -594323571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_7"
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 823
+        width: 19
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6536c6f32ce9dce4691a2e920f7cd2f0
+      internalID: -45504318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_8"
+      rect:
+        serializedVersion: 2
+        x: 744
+        y: 817
+        width: 305
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 133abd135e9743a42bc863b4e70df69d
+      internalID: 1347116668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_9"
+      rect:
+        serializedVersion: 2
+        x: 1508
+        y: 202
+        width: 412
+        height: 626
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50388558fb73e804d84ff79a39fb5101
+      internalID: 301008892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_10"
+      rect:
+        serializedVersion: 2
+        x: 749
+        y: 729
+        width: 105
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7781453387dcb3d49af6ebff2ce10814
+      internalID: -1662503004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_11"
+      rect:
+        serializedVersion: 2
+        x: 959
+        y: 724
+        width: 81
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5e3f448bfea48894abf05b3767578911
+      internalID: 2074732842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_12"
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 651
+        width: 64
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3538d5b5d8c351e4f9c0ad14aaea8e03
+      internalID: 464151459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_13"
+      rect:
+        serializedVersion: 2
+        x: 1087
+        y: 686
+        width: 21
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 081d81a5cf9d61d47af59c9da7c09b78
+      internalID: 358152469
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_14"
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 659
+        width: 72
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0cb8c4e72523d8c428a0ae265109ea0b
+      internalID: -1541280291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_15"
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 630
+        width: 72
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 019ee3dee72d6594cb6387ae7451f993
+      internalID: -1358252251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_16"
+      rect:
+        serializedVersion: 2
+        x: 766
+        y: 523
+        width: 74
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d4571c7bffd3e242802944d0497d91b
+      internalID: 1046778580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_17"
+      rect:
+        serializedVersion: 2
+        x: 966
+        y: 570
+        width: 63
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9bc9f9db2b2cf944292b77c038449e3d
+      internalID: 1201759014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_18"
+      rect:
+        serializedVersion: 2
+        x: 964
+        y: 486
+        width: 67
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d5f187e8b12d32d45b8cca29f547f139
+      internalID: -2068346852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_19"
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 286
+        width: 64
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0dac701a4b45e1243958b68153dd0ae6
+      internalID: -503835346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_20"
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 221
+        width: 136
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f3a327e8a9274e24bb22e0a39fd726a6
+      internalID: -1833942865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasEscaladoresFinal_21"
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 177
+        width: 65
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: feea025a138e68341b84b52f4e0e47c5
+      internalID: -659425925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 72f7c9ef6b923b84087b7a6e2b47d710
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      "Vi\xF1etasEscaladoresFinal_0": 2098234623
+      "Vi\xF1etasEscaladoresFinal_1": -513204082
+      "Vi\xF1etasEscaladoresFinal_10": -1662503004
+      "Vi\xF1etasEscaladoresFinal_11": 2074732842
+      "Vi\xF1etasEscaladoresFinal_12": 464151459
+      "Vi\xF1etasEscaladoresFinal_13": 358152469
+      "Vi\xF1etasEscaladoresFinal_14": -1541280291
+      "Vi\xF1etasEscaladoresFinal_15": -1358252251
+      "Vi\xF1etasEscaladoresFinal_16": 1046778580
+      "Vi\xF1etasEscaladoresFinal_17": 1201759014
+      "Vi\xF1etasEscaladoresFinal_18": -2068346852
+      "Vi\xF1etasEscaladoresFinal_19": -503835346
+      "Vi\xF1etasEscaladoresFinal_2": -805760578
+      "Vi\xF1etasEscaladoresFinal_20": -1833942865
+      "Vi\xF1etasEscaladoresFinal_21": -659425925
+      "Vi\xF1etasEscaladoresFinal_3": 306098350
+      "Vi\xF1etasEscaladoresFinal_4": -694876742
+      "Vi\xF1etasEscaladoresFinal_5": 381430155
+      "Vi\xF1etasEscaladoresFinal_6": -594323571
+      "Vi\xF1etasEscaladoresFinal_7": -45504318
+      "Vi\xF1etasEscaladoresFinal_8": 1347116668
+      "Vi\xF1etasEscaladoresFinal_9": 301008892
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

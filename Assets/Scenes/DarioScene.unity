@@ -1572,6 +1572,8 @@ MonoBehaviour:
   cameraDistance: 5
   heightOffset: 5
   sideOffset: 10
+  scrollRect: {fileID: 504972919}
+  climberCounterInfoGameObject: {fileID: 324139539}
   climberCounterText: {fileID: 1731176055}
 --- !u!1 &389656969
 GameObject:
@@ -5822,7 +5824,7 @@ MonoBehaviour:
     m_Top: 16
     m_Bottom: 6
   m_ChildAlignment: 1
-  m_Spacing: 12
+  m_Spacing: 18
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1

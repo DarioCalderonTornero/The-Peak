@@ -28,6 +28,9 @@ public class ClimberListUI : MonoBehaviour
     [SerializeField] private float heightOffset = 2f;
     [SerializeField] private float sideOffset = 1f;
 
+    [SerializeField] private ScrollRect scrollRect;
+
+    [SerializeField] private GameObject climberCounterInfoGameObject;
     [SerializeField] private TextMeshProUGUI climberCounterText;
 
     private bool isHidden = false;
@@ -269,6 +272,33 @@ public class ClimberListUI : MonoBehaviour
             bool isSelected = kvp.Key == climber;
             kvp.Value.SetSelected(isSelected);
         }
+
+        if (entries.TryGetValue(climber, out ClimberEntryUI entry))
+            ScrollToEntry(entry);
+    }
+
+    private void ScrollToEntry(ClimberEntryUI entry)
+    {
+        Canvas.ForceUpdateCanvases();
+
+        RectTransform entryRect = entry.GetComponent<RectTransform>();
+        RectTransform contentRect = scrollRect.content;
+        RectTransform viewportRect = scrollRect.viewport;
+
+        float contentHeight = contentRect.rect.height;
+        float viewportHeight = viewportRect.rect.height;
+        float scrollableHeight = contentHeight - viewportHeight;
+
+        if (scrollableHeight <= 0f) return;
+
+        // Posición de la viñeta relativa al content (de arriba hacia abajo)
+        float entryPosInContent = -entryRect.anchoredPosition.y - (entryRect.rect.height / 2f);
+
+        // Queremos centrarla en el viewport
+        float targetY = entryPosInContent - (viewportHeight / 2f);
+        float normalizedY = 1f - Mathf.Clamp01(targetY / scrollableHeight);
+
+        scrollRect.DOVerticalNormalizedPos(normalizedY, 0.3f).SetEase(Ease.OutCubic);
     }
 
     public void OnWorldClimberDeselected()

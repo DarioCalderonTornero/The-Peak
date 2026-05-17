@@ -191,6 +191,12 @@ public class GeyserDefense : BaseDefense
             return;
         }
 
+        // ─── CAMBIO AQUÍ: El escalador no tiene inmunidad, va a morir definitivamente ───
+        if (ClimberDeathPointsManager.Instance != null)
+        {
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints(climber);
+        }
+
         if (captureRoutine != null) StopCoroutine(captureRoutine);
         captureRoutine = StartCoroutine(CaptureAfterDelay(climber, captureDelay));
     }
@@ -239,7 +245,7 @@ public class GeyserDefense : BaseDefense
         if (!DeathCinematicManager.Instance.UseDeathCinematics)
         {
             if (capturedClimber != null) Destroy(capturedClimber.gameObject);
-            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            // FOClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
             PointsManager.Instance?.AddPoints(5);
             isBusy = false;
             capturedClimber = null;
@@ -289,7 +295,7 @@ public class GeyserDefense : BaseDefense
             GameManager.Instance.NotifyClimberDied(pendingDeathInfo);
 
             if (ClimberDeathPointsManager.Instance != null)
-                ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+                // ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
 
             if (PointsManager.Instance != null)
                 PointsManager.Instance.AddPoints(5);

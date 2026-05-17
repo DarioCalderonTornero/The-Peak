@@ -182,7 +182,7 @@ public class BerryTreeDefense : BaseDefense
                 position = climber.transform.position,
                 cause = DeathCause.BadBerry
             });
-            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+            // ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
             PointsManager.Instance?.AddPoints(5);
         }
 

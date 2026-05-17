@@ -296,7 +296,7 @@ public class LodoDefense : BaseDefense
                 cause = DeathCause.Mud
             });
 
-            ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+            // ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
             PointsManager.Instance.AddPoints(5);
         }
 

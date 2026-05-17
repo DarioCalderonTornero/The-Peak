@@ -239,6 +239,10 @@ public class TurnManager : MonoBehaviour
         if (CurrentTurnState != TurnState.ClimberTurn)
             return;
 
+        // ¡SOLUCIÓN! Cambiamos el estado a Idle inmediatamente para evitar 
+        // que el Update vuelva a entrar aquí en el siguiente frame.
+        CurrentTurnState = TurnState.Idle;
+
         if (!pointsAddedThisTurn)
         {
             if (BalloonEventManager.Instance != null)
@@ -255,15 +259,29 @@ public class TurnManager : MonoBehaviour
             PlayerPrefs.Save();
         }
 
-        // Actualizamos el contador de turnos en el UI
         if (playerTurnsUI != null)
         {
-            //playerTurnsUI.currentTurns.text = (currentTurnNumber).ToString(); 
-            ShowFinalStats.Instance.totalRounds.text = "TOTAL ROUNDS: " + (currentTurnNumber).ToString();  
+            ShowFinalStats.Instance.totalRounds.text = "TOTAL ROUNDS: " + (currentTurnNumber).ToString();
             ShowFinalStats.Instance.recordTotalRounds.text = "MAX ROUNDS: " + recordTurnNumber.ToString();
         }
 
         OnClimberTurnEnd?.Invoke();
+
+        // Si hay cinemáticas pendientes, esperar a que terminen
+        if (DeathCinematicManager.Instance != null &&
+            (DeathCinematicManager.Instance.IsProcessingDeaths()))
+        {
+            DeathCinematicManager.Instance.OnCinematicFinished += OnCinematicsFinishedThenStartPlayerTurn;
+        }
+        else
+        {
+            StartPlayerTurn();
+        }
+    }
+
+    private void OnCinematicsFinishedThenStartPlayerTurn(object sender, System.EventArgs e)
+    {
+        DeathCinematicManager.Instance.OnCinematicFinished -= OnCinematicsFinishedThenStartPlayerTurn;
         StartPlayerTurn();
     }
 

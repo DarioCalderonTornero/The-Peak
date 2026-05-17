@@ -309,23 +309,17 @@ public class ClimberMovement : MonoBehaviour
     {
         if (pointsAddedThisTurn) return;
 
-        PointsManager.Instance.AddPoints(5);
-        ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+        // CAMBIO: Pasamos 'this' para registrarlo bajo el control de duplicados
+        if (ClimberDeathPointsManager.Instance != null)
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints(this);
 
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
-            {
-                climber = this,
-                position = transform.position,
-                cause = cause
-            });
+            GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo { climber = this, position = transform.position, cause = cause });
         }
-
         isActiveThisTurn = false;
         isAtCamp = false;
         pointsAddedThisTurn = true;
-
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.isStopped = true;

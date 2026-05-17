@@ -75,7 +75,7 @@ public class BrambleDefense : BaseDefense
                         position = climber.transform.position,
                         cause = DeathCause.Bramble
                     });
-                    ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
+                    // ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
                     PointsManager.Instance?.AddPoints(5);
 
                     brambleAudioSource.Stop();

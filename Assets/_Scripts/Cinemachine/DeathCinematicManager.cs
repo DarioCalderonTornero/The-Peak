@@ -101,10 +101,15 @@ public class DeathCinematicManager : MonoBehaviour
 
     private void HandleClimberDeath(GameManager.DeathInfo deathInfo)
     {
+        // CAMBIO: Contar inmediatamente al entrar al sistema de cinemáticas normales
+        if (deathInfo.climber != null && ClimberDeathPointsManager.Instance != null)
+        {
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints(deathInfo.climber);
+        }
+
         if (!useDeathCinematics)
         {
             if (deathInfo.climber != null) Destroy(deathInfo.climber.gameObject);
-            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
             PointsManager.Instance?.AddPoints(5);
             return;
         }
@@ -589,5 +594,11 @@ public class DeathCinematicManager : MonoBehaviour
     public void IsPlayingCinematic()
     {
         useDeathCinematics = !useDeathCinematics;
+    }
+
+    public bool IsProcessingDeaths()
+    {
+        return isPlayingCinematic || spectacleInProgress ||
+               deathQueue.Count > 0 || spectacleQueue.Count > 0;
     }
 }

@@ -30,6 +30,8 @@ public class CloudKillDefense : BaseDefense
     private Vector3 originalVisualScale;
     private bool slotCancelled = false;
 
+    private bool deathNotified = false;
+
     private class CloudVictimData
     {
         public bool isBeingKilled;
@@ -40,6 +42,8 @@ public class CloudKillDefense : BaseDefense
 
     private Coroutine keepFrozenRoutine;
     private Coroutine killSequenceRoutine;
+
+    public static event System.Action OnCloudKillComplete;
 
     private void Awake()
     {
@@ -140,23 +144,19 @@ public class CloudKillDefense : BaseDefense
 
         climber.FreezeInPlace();
         climber.SuppressStaminaDeath();
-
         var data = new CloudVictimData();
         victims[climber] = data;
         slotCancelled = false;
+        var deathInfo = new GameManager.DeathInfo { climber = climber, position = climber.transform.position, cause = DeathCause.StormyCloud };
 
-        var deathInfo = new GameManager.DeathInfo
-        {
-            climber = climber,
-            position = climber.transform.position,
-            cause = DeathCause.StormyCloud
-        };
+        // ─── CAMBIO CRÍTICO: CONTAR AQUÍ MISMO, AL ENTRAR A LA COLA DE ESPERA ───
+        if (ClimberDeathPointsManager.Instance != null)
+            ClimberDeathPointsManager.Instance.AddClimberDeathPoints(climber);
 
         if (!DeathCinematicManager.Instance.UseDeathCinematics)
         {
             if (climber != null) Destroy(climber.gameObject);
-            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
-            PointsManager.Instance?.AddPoints(5);
+            // PointsManager.Instance?.AddPoints(5);
             StartCoroutine(DisappearAndDestroy());
             return;
         }
@@ -164,8 +164,7 @@ public class CloudKillDefense : BaseDefense
         if (keepFrozenRoutine != null) StopCoroutine(keepFrozenRoutine);
         keepFrozenRoutine = StartCoroutine(KeepFrozenWhileWaiting(climber));
 
-        DeathCinematicManager.Instance.RequestSpectacleSlot(() =>
-        {
+        DeathCinematicManager.Instance.RequestSpectacleSlot(() => {
             OnSpectacleSlotGranted(climber, data, deathInfo);
         });
     }
@@ -203,8 +202,7 @@ public class CloudKillDefense : BaseDefense
         keepFrozenRoutine = null;
     }
 
-    private void OnSpectacleSlotGranted(ClimberMovement climber, CloudVictimData data,
-        GameManager.DeathInfo deathInfo)
+    private void OnSpectacleSlotGranted(ClimberMovement climber, CloudVictimData data, GameManager.DeathInfo deathInfo)
     {
         if (keepFrozenRoutine != null)
         {
@@ -219,14 +217,13 @@ public class CloudKillDefense : BaseDefense
         }
 
         data.isBeingKilled = true;
-
         DeathCinematicManager.Instance.BeginSpectacleCinematic(climber);
 
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(deathInfo);
-            ClimberDeathPointsManager.Instance?.AddClimberDeathPoints();
-            PointsManager.Instance?.AddPoints(5);
+            deathNotified = true; // ¡Marcamos como notificado!
+            // PointsManager.Instance?.AddPoints(5);
         }
 
         if (killSequenceRoutine != null) StopCoroutine(killSequenceRoutine);
@@ -241,7 +238,17 @@ public class CloudKillDefense : BaseDefense
         hasKilled = true;
 
         if (climber != null)
+        {
+            // ¡SOLUCIÓN! Si el jugador saltó la cinemática ANTES de que se otorgara el slot,
+            // forzamos la notificación al GameManager aquí para no perder los puntos ni el conteo.
+            if (!deathNotified && GameManager.Instance != null)
+            {
+                GameManager.Instance.NotifyClimberDied(deathInfo);
+                PointsManager.Instance?.AddPoints(5);
+                deathNotified = true;
+            }
             UnityEngine.Object.Destroy(climber.gameObject);
+        }
 
         DeathCinematicManager.Instance.ForceEndSpectacle(deathInfo);
         Destroy(gameObject);
@@ -310,6 +317,7 @@ public class CloudKillDefense : BaseDefense
         yield return new WaitUntil(() => disappeared);
 
         if (visualChild != null) Destroy(visualChild.gameObject);
+        OnCloudKillComplete?.Invoke();
         Destroy(gameObject);
         killSequenceRoutine = null;
     }
@@ -371,6 +379,7 @@ public class CloudKillDefense : BaseDefense
         StartCoroutine(AnimateDisappear(visualChild, () => done = true));
         yield return new WaitUntil(() => done);
         if (visualChild != null) Destroy(visualChild.gameObject);
+        OnCloudKillComplete?.Invoke();
         Destroy(gameObject);
     }
 

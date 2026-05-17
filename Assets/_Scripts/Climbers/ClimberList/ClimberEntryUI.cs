@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,6 +22,7 @@ public class ClimberEntryUI : MonoBehaviour
     [Header("Configuración estado")]
     [SerializeField] private Sprite iconMoving;
     [SerializeField] private Sprite iconInTent;
+    [SerializeField] private Sprite iconCounter;
 
     [Header("Configuración urgencia")]
     [SerializeField] private Color urgencyColor = new Color(0.88f, 0.24f, 0.24f, 1f);
@@ -36,6 +38,11 @@ public class ClimberEntryUI : MonoBehaviour
 
     [Header("Animación entrada")]
     [SerializeField] private float spawnDuration = 0.3f;
+
+    [Header("Counter")]
+    [SerializeField] private float counterHighlightDuration = 3f;
+
+    private Coroutine counterHighlightRoutine;
 
     private ClimberMovement climber;
     private ClimberLoadout loadout;
@@ -75,6 +82,9 @@ public class ClimberEntryUI : MonoBehaviour
         climber.OnStaminaChanged += UpdateStamina;
         climber.OnTentStateChanged += OnTentStateChanged;
 
+        if (loadout != null)
+            loadout.OnCounterStarted += OnCounterStarted;
+
         if (selectButton != null)
             selectButton.onClick.AddListener(OnSelectClicked);
 
@@ -83,6 +93,44 @@ public class ClimberEntryUI : MonoBehaviour
     }
 
     // ─── Updates desde eventos ────────────────────────────────────────────────
+
+    private void OnCounterStarted()
+    {
+        if (counterHighlightRoutine != null)
+            StopCoroutine(counterHighlightRoutine);
+        counterHighlightRoutine = StartCoroutine(CounterHighlightRoutine());
+    }
+
+    private IEnumerator CounterHighlightRoutine()
+    {
+        if (stateBadgeIcon != null)
+        {
+            stateBadgeIcon.sprite = iconCounter;
+
+            // Animación de respiración + color rojo
+            stateBadgeIcon.color = Color.red;
+            stateBadgeIcon.transform.DOKill();
+            stateBadgeIcon.transform.DOScale(1.3f, 0.4f)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo);
+        }
+
+        ClimberListUI.Instance?.OnCounterHighlight(climber);
+
+        yield return new WaitForSeconds(counterHighlightDuration);
+
+        // Restaurar
+        if (stateBadgeIcon != null)
+        {
+            stateBadgeIcon.transform.DOKill();
+            stateBadgeIcon.transform.DOScale(1f, 0.15f);
+            stateBadgeIcon.color = Color.white;
+            UpdateStateBadge();
+        }
+
+        ClimberListUI.Instance?.OnCounterHighlightEnd(climber);
+        counterHighlightRoutine = null;
+    }
 
     private void Loadout_OnEquipmentInitialized(EquipmentDefinitionSO equipmentDefinition)
     {
@@ -201,6 +249,9 @@ public class ClimberEntryUI : MonoBehaviour
             loadout.OnHelmetColorChanged -= OnHelmetColorChanged;
             loadout.OnEquipmentInitialized -= Loadout_OnEquipmentInitialized;
         }
+
+        if (loadout != null)
+            loadout.OnCounterStarted -= OnCounterStarted;
 
         if (selectButton != null)
             selectButton.onClick.RemoveAllListeners();

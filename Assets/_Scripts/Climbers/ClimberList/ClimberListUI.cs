@@ -301,6 +301,24 @@ public class ClimberListUI : MonoBehaviour
         scrollRect.DOVerticalNormalizedPos(normalizedY, 0.3f).SetEase(Ease.OutCubic);
     }
 
+    public void OnCounterHighlight(ClimberMovement climber)
+    {
+        ClimberMovement previous = selectedClimber;
+        OnWorldClimberSelected(climber);
+        if (entries.TryGetValue(climber, out ClimberEntryUI entry))
+            ScrollToEntry(entry);
+        selectedClimber = previous; // guardamos el anterior
+    }
+
+    public void OnCounterHighlightEnd(ClimberMovement climber)
+    {
+        // Restaura el estado visual al anterior
+        if (selectedClimber != null)
+            OnWorldClimberSelected(selectedClimber);
+        else
+            OnWorldClimberDeselected();
+    }
+
     public void OnWorldClimberDeselected()
     {
         selectedClimber = null;

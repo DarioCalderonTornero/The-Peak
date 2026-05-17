@@ -220,6 +220,7 @@ MonoBehaviour:
   staminaLowColor: {r: 0.88, g: 0.25, b: 0.25, a: 1}
   iconMoving: {fileID: 464151459, guid: e6681395b3fef0d4481c3f9efe27dec1, type: 3}
   iconInTent: {fileID: 1201759014, guid: e6681395b3fef0d4481c3f9efe27dec1, type: 3}
+  iconCounter: {fileID: -2068346852, guid: e6681395b3fef0d4481c3f9efe27dec1, type: 3}
   urgencyColor: {r: 1, g: 1, b: 1, a: 1}
   urgencyInactiveColor: {r: 1, g: 1, b: 1, a: 0}
   selectedBorderColor: {r: 0.5394562, g: 0.3915094, b: 1, a: 1}
@@ -227,6 +228,7 @@ MonoBehaviour:
   worldYMin: 0
   worldYMax: 28
   spawnDuration: 0.4
+  counterHighlightDuration: 3
 --- !u!114 &6040962492594714918
 MonoBehaviour:
   m_ObjectHideFlags: 0

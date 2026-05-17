@@ -26,8 +26,12 @@ public class ClimberLoadout : MonoBehaviour
     [Header("Initialization")]
     [SerializeField] private bool autoInitializeOnAwake = true;
 
+    [SerializeField] private float counterDelay = 1f;
+
     public event Action<Color> OnHelmetColorChanged;
     public event Action<EquipmentDefinitionSO> OnEquipmentInitialized;
+
+    public event Action OnCounterStarted;
 
     private bool _isInitialized = false;
 
@@ -233,20 +237,26 @@ public class ClimberLoadout : MonoBehaviour
 
     private IEnumerator EquipmentSequenceRoutine(float duration, ObstacleType obstacleType = ObstacleType.None)
     {
-        // 1. Parar al escalador
-        RequestClimberStop(duration);
+        // 1. Avisar UI inmediatamente
+        OnCounterStarted?.Invoke();
 
-        // 2. Sacar equipo a la mano
+        // 2. Parar al escalador inmediatamente
+        RequestClimberStop(duration + counterDelay);
+
+        // 3. Esperar antes de ejecutar la animación
+        yield return new WaitForSeconds(counterDelay);
+
+        // 4. Sacar equipo a la mano
         if (equipmentVisuals != null)
         {
             equipmentVisuals.MoveEquipmentToHand();
             equipmentVisuals.PlayHandEffect(obstacleType);
         }
 
-        // 3. Esperar la duración
+        // 5. Esperar la duración
         yield return new WaitForSeconds(duration);
 
-        // 4. Guardar equipo en la espalda
+        // 6. Guardar equipo en la espalda
         if (equipmentVisuals != null)
             equipmentVisuals.MoveEquipmentToBack();
     }

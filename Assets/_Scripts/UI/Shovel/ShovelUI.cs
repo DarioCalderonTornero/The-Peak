@@ -24,9 +24,18 @@ public class ShovelUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     [Header("Control por turno")]
     [SerializeField] private GameObject shovelGameObject;
 
+    [Header("Sprites")]
+    [SerializeField] private Sprite spriteIdle;
+    [SerializeField] private Sprite spriteDrag;
+    private Image shovelImage;
+
+    private Vector3 originalScale;
+
     private void Awake()
     {
         rt = GetComponent<RectTransform>();
+        shovelImage = GetComponent<Image>();
+        originalScale = transform.localScale;
 
         // Buscar la cámara — primero Camera.main, luego cualquier cámara activa
         if (mainCamera == null)
@@ -63,6 +72,11 @@ public class ShovelUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (returnRoutine != null) StopCoroutine(returnRoutine);
+        if (shovelImage != null)
+        {
+            shovelImage.sprite = spriteIdle;
+            shovelImage.transform.localScale = originalScale;
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -74,30 +88,42 @@ public class ShovelUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
             if (mainCamera == null) return;
         }
 
-        // Mover la pala con el ratón
-        rt.anchoredPosition += eventData.delta / GetComponentInParent<Canvas>().scaleFactor;
+        Canvas canvas = GetComponentInParent<Canvas>();
 
-        // Raycast 3D hacia los obstáculos
+        // Convertir al espacio local del PADRE de la pala, no del canvas raíz
+        RectTransform parentRT = rt.parent as RectTransform;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            parentRT,
+            eventData.position,
+            canvas.worldCamera,
+            out Vector2 localPoint
+        );
+        rt.anchoredPosition = localPoint;
+
+        if (shovelImage != null && spriteDrag != null)
+        {
+            shovelImage.sprite = spriteDrag;
+
+            if (eventData.delta.x > 0.5f)
+                shovelImage.transform.localScale = new Vector3(-1f, 1f, 1f);
+            else if (eventData.delta.x < -0.5f)
+                shovelImage.transform.localScale = new Vector3(1f, 1f, 1f);
+        }
+
+        // Raycast 3D
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f, defenseMask))
         {
             var defense = hit.collider.GetComponentInParent<BaseDefense>();
             if (defense != hoveredDefense)
             {
-                // Quitar outline del anterior
-                if (hoveredDefense != null)
-                    SetOutline(hoveredDefense, false);
-
+                if (hoveredDefense != null) SetOutline(hoveredDefense, false);
                 hoveredDefense = defense;
-
-                // Poner outline al nuevo
-                if (hoveredDefense != null)
-                    SetOutline(hoveredDefense, true);
+                if (hoveredDefense != null) SetOutline(hoveredDefense, true);
             }
         }
         else
         {
-            // No hay obstáculo bajo el cursor
             if (hoveredDefense != null)
             {
                 SetOutline(hoveredDefense, false);
@@ -137,11 +163,16 @@ public class ShovelUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         while (t < returnDuration)
         {
             t += Time.unscaledDeltaTime;
-            float n = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / returnDuration), 3f); // EaseOut
+            float n = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / returnDuration), 3f);
             rt.anchoredPosition = Vector2.Lerp(from, originalPosition, n);
             yield return null;
         }
         rt.anchoredPosition = originalPosition;
+        if (shovelImage != null)
+        {
+            shovelImage.sprite = spriteIdle;
+            shovelImage.transform.localScale = originalScale;
+        }
     }
 
     private void SetOutline(BaseDefense defense, bool active)

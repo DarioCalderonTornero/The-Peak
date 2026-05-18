@@ -32,6 +32,15 @@ public class GameOverManager : MonoBehaviour
 
     public void SetGameOverCamera()
     {
+        // Guardar ranking antes de cualquier otra cosa
+        if (RankingManager.Instance != null && RankingManager.Instance.RankingEnabled)
+        {
+            RankingManager.Instance.SaveCurrentSession(
+                TurnManager.Instance != null ? TurnManager.Instance.CurrentTurnNumber : 0,
+                ClimberDeathPointsManager.Instance != null ? ClimberDeathPointsManager.Instance.GetTotalClimberDeathPoints() : 0
+            );
+        }
+
         OnGameOver?.Invoke(this, EventArgs.Empty);
         StartCoroutine(GetClimberSound());
         ClimberMovement.Instance.SetExternalSpeedMultiplier(0f);

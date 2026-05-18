@@ -31,7 +31,7 @@ public class CloudDefensePreview : MonoBehaviour
         if (visualChild != null)
         {
             visualChild.position = cloudPosition;
-            visualChild.rotation = Quaternion.Euler(-90f, currentYaw, 0f);
+            visualChild.rotation = Quaternion.Euler(0f, currentYaw, 0f);
         }
 
         if (rainObject != null)

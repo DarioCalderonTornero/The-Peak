@@ -82,7 +82,7 @@ public class CloudKillDefense : BaseDefense
     private void Update()
     {
         if (visualChild != null)
-            visualChild.rotation = Quaternion.Euler(-90f, placedYaw, 0f);
+            visualChild.rotation = Quaternion.Euler(0f, placedYaw, 0f);
 
         if (rainObject != null)
             rainObject.rotation = Quaternion.Euler(0f, placedYaw, 0f);
@@ -104,7 +104,7 @@ public class CloudKillDefense : BaseDefense
         {
             // visualChild.SetParent(null);
             visualChild.position = cloudPosition;
-            visualChild.rotation = Quaternion.Euler(-90f, placedYaw, 0f);
+            visualChild.rotation = Quaternion.Euler(0f, placedYaw, 0f);
             StartCoroutine(AnimateAppear(visualChild));
         }
 

@@ -59,6 +59,12 @@ public class ClimberMovement : MonoBehaviour
     [SerializeField] private GameObject climberVisual;
     private bool isInsideTent = false;
 
+    private HashSet<int> blockedNodeIds = new HashSet<int>();
+
+    public void AddBlockedNode(int nodeId) => blockedNodeIds.Add(nodeId);
+    public void ClearBlockedNodes() => blockedNodeIds.Clear();
+    public bool IsNodeBlocked(int nodeId) => blockedNodeIds.Contains(nodeId);
+
     private static float _globalNextMoveTime = 0f;
 
     [SerializeField] private float currentStamina;
@@ -85,6 +91,8 @@ public class ClimberMovement : MonoBehaviour
     public float GetAltitude() => transform.position.y;
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
+
+    public ClimberLoadout Loadout => loadout;
 
     public CampGraphBuilder.CampNode CurrentNode => currentNode;
 
@@ -502,6 +510,10 @@ public class ClimberMovement : MonoBehaviour
         foreach (var edge in currentNode.neighbors)
         {
             bool hasRealObstacle = edge.hasObstacle && edge.obstacleType != ObstacleType.None;
+
+            // La roca se gestiona físicamente en RockDefense, no en el grafo
+            if (edge.obstacleType == ObstacleType.Rock) hasRealObstacle = false;
+
             bool canPassObstacle = !hasRealObstacle || (loadout != null && loadout.CanHandleObstacle(edge.obstacleType));
 
             if (hasRealObstacle && !canPassObstacle) continue;

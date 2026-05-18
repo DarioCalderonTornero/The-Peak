@@ -726,6 +726,7 @@ MonoBehaviour:
   pickaxeAudioClip: {fileID: 8300000, guid: b8d18d9d5b744cd4aa384d6dfe047182, type: 3}
   rockDestroyAudioClip: {fileID: 8300000, guid: 5781afa438855dc419473fa391108a19, type: 3}
   autoInitializeOnAwake: 1
+  counterDelay: 1
   climberAnimator: {fileID: 7752139572246176441}
 --- !u!95 &7752139572246176441
 Animator:

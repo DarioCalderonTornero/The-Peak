@@ -62,9 +62,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f41785e6e5105ed458c9969c79633bad, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6154926346034016542}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f41785e6e5105ed458c9969c79633bad, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 4446983705596972412}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f41785e6e5105ed458c9969c79633bad, type: 3}
       insertIndex: -1
@@ -83,34 +80,13 @@ PrefabInstance:
       addedObject: {fileID: 4850379402856322189}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f41785e6e5105ed458c9969c79633bad, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5600332845571894252}
+      addedObject: {fileID: 878217686071042529}
   m_SourcePrefab: {fileID: 100100000, guid: f41785e6e5105ed458c9969c79633bad, type: 3}
 --- !u!1 &6260695087336479492 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f41785e6e5105ed458c9969c79633bad, type: 3}
   m_PrefabInstance: {fileID: 6495066780224218709}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &6154926346034016542
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6260695087336479492}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 3.0454617, y: 2.328255, z: 2.4843926}
-  m_Center: {x: -0.018955767, y: 0.61743116, z: 0.16700679}
 --- !u!54 &4446983705596972412
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -150,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd3eb3b29260b4b498edf4d4b4dd522e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obstacleRadius: 5
+  obstacleRadius: 3
   debugDrawGizmo: 1
   gizmoColor: {r: 1, g: 0, b: 0, a: 0.25}
   debugLog: 0
@@ -194,6 +170,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bdcc574b18f7a542900218b1d45fd87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  popScale: 1.15
+  shovelPopDuration: 0.15
   navMeshObstacle: {fileID: 0}
   spawnVfxPrefab: {fileID: 0}
   spawnVfxDuration: 2
@@ -209,19 +187,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e173e01a8b7c2c24dbafa9d8005a04f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!208 &5600332845571894252
-NavMeshObstacle:
+--- !u!65 &878217686071042529
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6260695087336479492}
-  m_Enabled: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
   serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 0.94500005, y: 0.73, z: 0.77000004}
-  m_MoveThreshold: 0.1
-  m_Carve: 1
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0.012, y: 0.565, z: 0.041}
-  m_TimeToStationary: 0.5
+  m_Size: {x: 4.183914, y: 1.4595201, z: 4.1861877}
+  m_Center: {x: -0.009414673, y: 0.56463706, z: -0.084472656}

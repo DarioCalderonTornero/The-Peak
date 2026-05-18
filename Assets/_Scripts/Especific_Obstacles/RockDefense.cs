@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.VFX;
 
@@ -11,6 +11,41 @@ public class RockDefense : BaseDefense
     [SerializeField] private VisualEffect spawnVfxPrefab;
     [SerializeField] private float spawnVfxDuration = 1f;
 
+    public override void Initialize()
+    {
+        base.Initialize();
+        PlaySpawnVfx();
+        NotifyNearbyClimbers();
+    }
+
+    private void NotifyNearbyClimbers()
+    {
+        CampGraphBuilder graph = FindObjectOfType<CampGraphBuilder>();
+        if (graph == null) return;
+
+        // Encontrar el nodo más cercano a esta roca
+        CampGraphBuilder.CampNode rockNode = null;
+        float minDist = float.PositiveInfinity;
+        foreach (var node in graph.nodes)
+        {
+            float d = Vector3.Distance(node.position, transform.position);
+            if (d < minDist) { minDist = d; rockNode = node; }
+        }
+
+        if (rockNode == null) return;
+
+        // Decirle a todos los escaladores que bloqueen ese nodo
+        ClimberMovement[] climbers = FindObjectsOfType<ClimberMovement>();
+        foreach (var climber in climbers)
+        {
+            if (climber.Loadout != null && climber.Loadout.CanHandleObstacle(ObstacleType.Rock))
+                continue; // el counter no necesita bloquearlo
+
+            climber.AddBlockedNode(rockNode.id);
+            climber.RecalculateIntention();
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         var loadout = other.GetComponent<ClimberLoadout>();
@@ -19,7 +54,7 @@ public class RockDefense : BaseDefense
         // Si tiene counter, HandleRockObstacle ya se encarga
         if (loadout.CanHandleObstacle(ObstacleType.Rock)) return;
 
-        // Sin counter forzar ruta alternativa
+        // Sin counter → forzar ruta alternativa
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
 
@@ -31,6 +66,17 @@ public class RockDefense : BaseDefense
         CampGraphBuilder graph = FindObjectOfType<CampGraphBuilder>();
         if (graph == null || graph.nodes == null) return;
 
+        // Bloquear el nodo más cercano a esta roca
+        CampGraphBuilder.CampNode rockNode = null;
+        float minDist = float.PositiveInfinity;
+        foreach (var node in graph.nodes)
+        {
+            float d = Vector3.Distance(node.position, transform.position);
+            if (d < minDist) { minDist = d; rockNode = node; }
+        }
+        if (rockNode != null)
+            climber.AddBlockedNode(rockNode.id);
+
         CampGraphBuilder.CampNode bestNode = null;
         float bestDist = float.PositiveInfinity;
         NavMeshPath path = new NavMeshPath();
@@ -41,7 +87,11 @@ public class RockDefense : BaseDefense
             if (climber.CurrentNode != null && node.id == climber.CurrentNode.id)
                 continue;
 
-            // Excluir nodos cerca de la roca
+            // Excluir nodos bloqueados
+            if (climber.IsNodeBlocked(node.id))
+                continue;
+
+            // Excluir nodos cerca de esta roca
             if (Vector3.Distance(node.position, transform.position) < 3f)
                 continue;
 
@@ -63,15 +113,19 @@ public class RockDefense : BaseDefense
         }
 
         if (bestNode != null)
+        {
             climber.ForceMoveToCampNode(bestNode);
+        }
+        else if (climber.CurrentNode != null)
+        {
+            // No hay alternativa volver al campamento de origen
+            climber.ClearBlockedNodes();
+            climber.ForceMoveToCampNode(climber.CurrentNode);
+        }
         else
+        {
             climber.SetCurrentStamina(0f);
-    }
-
-    public override void Initialize()
-    {
-        base.Initialize();
-        PlaySpawnVfx();
+        }
     }
 
     private void PlaySpawnVfx()

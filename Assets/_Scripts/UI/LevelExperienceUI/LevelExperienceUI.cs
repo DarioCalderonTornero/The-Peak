@@ -12,6 +12,8 @@ public class LevelExperienceUI : MonoBehaviour
     [SerializeField] private Image levelBarImage;
     [SerializeField] private float fillSpeed = 1.5f;
 
+    [SerializeField] private RectTransform barGroup;
+
     [Header("Bar Shine")]
     [SerializeField] private RectTransform barShineRect;
     [SerializeField] private Image barShineImage;
@@ -271,24 +273,22 @@ public class LevelExperienceUI : MonoBehaviour
 
     private IEnumerator PlayBarLevelUpFX()
     {
-        RectTransform barRect = levelBarImage.rectTransform;
-
-        // Flash blanco
+        // Flash blanco en el fill
         levelBarImage.DOColor(Color.white, barFlashDuration).OnComplete(() =>
         {
             levelBarImage.DOColor(barColorBase, barFlashDuration);
         });
 
-        // Pulse scale Y
-        barRect.DOScaleY(barPulseScale, barPulseDuration * 0.5f).SetEase(Ease.OutQuad).OnComplete(() =>
+        // Pulse sobre el BarGroup completo
+        barGroup.DOScaleY(barPulseScale, barPulseDuration * 0.5f).SetEase(Ease.OutQuad).OnComplete(() =>
         {
-            barRect.DOScaleY(1f, barPulseDuration * 0.5f).SetEase(Ease.OutBounce);
+            barGroup.DOScaleY(1f, barPulseDuration * 0.5f).SetEase(Ease.OutBounce);
         });
 
         yield return new WaitForSeconds(barPulseDuration);
 
-        // Shake horizontal
-        barRect.DOShakeAnchorPos(barShakeDuration, new Vector2(barShakeStrength, 0f), barShakeVibrato, 0f);
+        // Shake horizontal sobre el BarGroup
+        barGroup.DOShakeAnchorPos(barShakeDuration, new Vector2(barShakeStrength, 0f), barShakeVibrato, 0f);
     }
 
     private IEnumerator PlayBarShine(float fillAmount)
@@ -298,7 +298,7 @@ public class LevelExperienceUI : MonoBehaviour
         float barWidth = levelBarImage.rectTransform.rect.width;
 
         float startX = -(barWidth * 0.5f);
-        float endX = startX + (barWidth * fillAmount);
+        float endX = barWidth * 0.5f;
 
         barShineRect.sizeDelta = new Vector2(shineWidth, barShineRect.sizeDelta.y);
         barShineRect.anchoredPosition = new Vector2(startX, 0f);

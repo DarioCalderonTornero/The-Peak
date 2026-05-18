@@ -15,5 +15,5 @@ MonoBehaviour:
   equipmentName: Cuerno
   icon: {fileID: 964691463, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   logicClassName: MudCloudEquipment
-  color: {r: 0.3647059, g: 0, b: 0.5803922, a: 1}
+  color: {r: 0.49203214, g: 0, b: 0.7830189, a: 1}
   climberIcon: {fileID: 964691463, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}

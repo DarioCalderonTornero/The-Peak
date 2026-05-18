@@ -5176,6 +5176,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardData: {fileID: 11400000, guid: 8691fa1db76ed334db2dbe27375bdb1f, type: 2}
   infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}
+  geyserActiveSprite: {fileID: 0}
+  geyserCooldownSprite: {fileID: 0}
 --- !u!1 &7234493821655946169
 GameObject:
   m_ObjectHideFlags: 0
@@ -10206,11 +10208,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 57c5e27d99291724e9da92bdd76033f8, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071067
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 57c5e27d99291724e9da92bdd76033f8, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 57c5e27d99291724e9da92bdd76033f8, type: 3}
       propertyPath: m_LocalRotation.y
@@ -10218,7 +10220,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 57c5e27d99291724e9da92bdd76033f8, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 57c5e27d99291724e9da92bdd76033f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

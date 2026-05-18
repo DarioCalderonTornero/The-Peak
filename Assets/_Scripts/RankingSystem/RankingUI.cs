@@ -13,6 +13,14 @@ public class RankingUI : MonoBehaviour
     [SerializeField] private Button rankingButton;
     [SerializeField] private RankingUI rankingUI;
 
+    public static RankingUI Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+
     private void Start()
     {
         if (closeButton != null)

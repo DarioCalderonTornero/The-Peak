@@ -445,7 +445,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 770, y: 253}
+  m_AnchoredPosition: {x: -746, y: 253}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &13347734
@@ -1116,9 +1116,9 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 162346907}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.93743, y: 0.94867, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 313016805}
@@ -1130,12 +1130,12 @@ RectTransform:
   - {fileID: 1401063467}
   - {fileID: 1662368182}
   - {fileID: 13347733}
-  m_Father: {fileID: 829626363}
+  m_Father: {fileID: 1195690980}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -14.818115, y: 0}
-  m_SizeDelta: {x: -1072.6, y: 0}
+  m_AnchoredPosition: {x: 487.83475, y: -12.005978}
+  m_SizeDelta: {x: -901.777, y: 115.98999}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &162346909
 MonoBehaviour:
@@ -5345,7 +5345,6 @@ RectTransform:
   - {fileID: 701707202}
   - {fileID: 539447162}
   - {fileID: 808155824}
-  - {fileID: 162346908}
   m_Father: {fileID: 1581161916}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -7560,6 +7559,7 @@ RectTransform:
   - {fileID: 1248026893}
   - {fileID: 1673990625}
   - {fileID: 1722160226}
+  - {fileID: 162346908}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -10134,7 +10134,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 770, y: 340}
+  m_AnchoredPosition: {x: -746, y: 340}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1662368183

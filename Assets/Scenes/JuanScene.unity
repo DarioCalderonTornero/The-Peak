@@ -382,7 +382,7 @@ MonoBehaviour:
     invertFade: 0
     distanceFadeStart: 10000
     distanceFadeEnd: 10000
-    textureOffset: {x: -776.4906, y: -0, z: -388.2453}
+    textureOffset: {x: -3.903422, y: -0, z: -1.951711}
     falloffMode: 1
     maskMode: 0
     materialMask: {fileID: 0}
@@ -642,7 +642,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skyMaterial: {fileID: 2100000, guid: 62e06cdbf79695e4f82d3e18cae94334, type: 2}
   timeOfDay: 0
-  dayDurationInSeconds: 120
+  dayDurationInSeconds: 300
   zenithGradient:
     serializedVersion: 2
     key0: {r: 0.03529412, g: 0, b: 0.4039216, a: 1}
@@ -654,9 +654,9 @@ MonoBehaviour:
     key6: {r: 0, g: 0, b: 0, a: 0}
     key7: {r: 0, g: 0, b: 0, a: 0}
     ctime0: 0
-    ctime1: 26214
+    ctime1: 22937
     ctime2: 32768
-    ctime3: 39321
+    ctime3: 42598
     ctime4: 65535
     ctime5: 0
     ctime6: 0
@@ -2202,7 +2202,7 @@ SphereCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}

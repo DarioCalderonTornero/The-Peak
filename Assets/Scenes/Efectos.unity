@@ -29723,6 +29723,10 @@ PrefabInstance:
       propertyPath: ShapeModule.m_Position.y
       value: 0.8
       objectReference: {fileID: 0}
+    - target: {fileID: 3220588506562343808, guid: c92c5aa89bd8ffd43a152a689d0cf132, type: 3}
+      propertyPath: ShapeModule.m_Position.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3715605854781016189, guid: c92c5aa89bd8ffd43a152a689d0cf132, type: 3}
       propertyPath: m_Name
       value: vfx_Explosion+Blood

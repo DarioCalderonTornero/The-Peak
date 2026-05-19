@@ -790,6 +790,7 @@ GameObject:
   - component: {fileID: 228919151}
   - component: {fileID: 228919150}
   - component: {fileID: 228919149}
+  - component: {fileID: 228919152}
   m_Layer: 5
   m_Name: ShowButton
   m_TagString: Untagged
@@ -898,6 +899,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 228919147}
   m_CullTransparentMesh: 1
+--- !u!114 &228919152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 228919147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 975c3c5fcffceb14f9321afaee91fdb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverScale
+  hoverScale: 1.05
+  duration: 0.15
+  easeIn: 27
+  easeOut: 6
 --- !u!1 &230477812
 GameObject:
   m_ObjectHideFlags: 0
@@ -3992,6 +4009,7 @@ GameObject:
   - component: {fileID: 830944599}
   - component: {fileID: 830944598}
   - component: {fileID: 830944597}
+  - component: {fileID: 830944600}
   m_Layer: 5
   m_Name: HideButton
   m_TagString: Untagged
@@ -4100,6 +4118,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 830944595}
   m_CullTransparentMesh: 1
+--- !u!114 &830944600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 830944595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 975c3c5fcffceb14f9321afaee91fdb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverScale
+  hoverScale: 1.05
+  duration: 0.15
+  easeIn: 27
+  easeOut: 6
 --- !u!114 &831929931 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6577234822114319534, guid: 4b40fbb78789eb14b90d084dde03c26c, type: 3}
@@ -7040,7 +7074,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -62.9, y: 136.6}
+  m_AnchoredPosition: {x: -62.899902, y: 128.8}
   m_SizeDelta: {x: 250, y: 90}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &1534971994
@@ -7389,7 +7423,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -150, y: 42.600006}
+  m_AnchoredPosition: {x: -156.5, y: 48}
   m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &1611408025
@@ -7568,7 +7602,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -65, y: 43.600006}
+  m_AnchoredPosition: {x: -68.9, y: 49}
   m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &1620822229
@@ -9893,7 +9927,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -235, y: 43.6}
+  m_AnchoredPosition: {x: -241.5, y: 49}
   m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &2100247593

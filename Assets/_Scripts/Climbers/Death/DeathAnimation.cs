@@ -48,7 +48,7 @@ public class DeathAnimation : MonoBehaviour
             //case DeathCause.Quicksand: StartCoroutine(QuicksandDeathRoutine()); break;
             case DeathCause.BadBerry: BadBerryDeathRoutine(); break;
             case DeathCause.Geyser: StartCoroutine(GeyserDeathRoutine()); break;
-            case DeathCause.Snow: StartCoroutine(SnowDeathRoutine()); break;
+            case DeathCause.Snow: SnowDeathRoutine(); break;
             case DeathCause.StormyCloud: StormyCloudDeath(); break;
             default: StartCoroutine(DefaultDeathRoutine()); break;
         }
@@ -117,12 +117,14 @@ public class DeathAnimation : MonoBehaviour
         NotifyReadyForExplosion();
     }
 
-    private IEnumerator SnowDeathRoutine()
+    private void SnowDeathRoutine()
     {
-        yield return StartCoroutine(ScaleRoutine(transform.localScale * 1.5f, 0.3f));
-        yield return StartCoroutine(ScaleRoutine(Vector3.zero, 0.2f));
-        NotifyComplete();
+        float snowDelayExplosion = 1.0f;
+        StartCoroutine(ShakeRoutine(snowDelayExplosion, 0.1f));
+        Invoke(nameof(NotifyReadyForExplosion), snowDelayExplosion);
+        Invoke(nameof(NotifyComplete), snowDelayExplosion);
     }
+
     private void StormyCloudDeath()
     {
         Invoke(nameof(NotifyReadyForExplosion), stormyCloudAnimDelay);

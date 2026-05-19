@@ -993,7 +993,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clickClip: {fileID: 8300000, guid: 7b2bfb16922d41f40826b42b973a5a09, type: 3}
-  volume: 0.1
+  volume: 0.2
 --- !u!114 &8136521595072771668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1333,7 +1333,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clickClip: {fileID: 8300000, guid: 7b2bfb16922d41f40826b42b973a5a09, type: 3}
-  volume: 0.1
+  volume: 0.2
 --- !u!114 &685757071040887927
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1496,7 +1496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clickClip: {fileID: 8300000, guid: 7b2bfb16922d41f40826b42b973a5a09, type: 3}
-  volume: 0.1
+  volume: 0.2
 --- !u!1 &2222440640412848691
 GameObject:
   m_ObjectHideFlags: 0
@@ -1757,8 +1757,8 @@ GameObject:
   - component: {fileID: 3214567311703607149}
   - component: {fileID: 8904945772290829631}
   - component: {fileID: 1310260041123631575}
-  - component: {fileID: 3229990702388284621}
   - component: {fileID: 1317217021521511086}
+  - component: {fileID: 1339368823193087687}
   m_Layer: 5
   m_Name: SettingsButton
   m_TagString: Untagged
@@ -1868,7 +1868,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3229990702388284621}
+      - m_Target: {fileID: 1339368823193087687}
         m_TargetAssemblyTypeName: UIAudioManager, Assembly-CSharp
         m_MethodName: Play
         m_Mode: 1
@@ -1880,20 +1880,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &3229990702388284621
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3050668000649203886}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87f82742d7ab44a49895a5032f1d207a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clickClip: {fileID: 8300000, guid: 7b2bfb16922d41f40826b42b973a5a09, type: 3}
-  volume: 0.1
 --- !u!114 &1317217021521511086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1910,6 +1896,20 @@ MonoBehaviour:
   duration: 0.15
   easeIn: 27
   easeOut: 6
+--- !u!114 &1339368823193087687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3050668000649203886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87f82742d7ab44a49895a5032f1d207a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAudioManager
+  clickClip: {fileID: 8300000, guid: 7b2bfb16922d41f40826b42b973a5a09, type: 3}
+  volume: 0.2
 --- !u!1 &3060026404962880253
 GameObject:
   m_ObjectHideFlags: 0
@@ -2097,7 +2097,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clickClip: {fileID: 8300000, guid: 7b2bfb16922d41f40826b42b973a5a09, type: 3}
-  volume: 0.1
+  volume: 0.2
 --- !u!114 &6673536243511136984
 MonoBehaviour:
   m_ObjectHideFlags: 0

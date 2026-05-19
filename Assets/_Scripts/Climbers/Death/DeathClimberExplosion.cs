@@ -66,6 +66,7 @@ public class DeathClimberExplosion : MonoBehaviour
             case DeathCause.Geyser:
                 ClimberExplosion(); break;
             case DeathCause.Snow:
+                Debug.Log("Snow Death Explosion");
                 ClimberExplosion(); break;
             case DeathCause.StormyCloud:
                 ClimberToBlackColor(); break;

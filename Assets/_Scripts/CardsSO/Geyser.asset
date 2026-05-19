@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Geyser
   m_EditorClassIdentifier: 
   cardName: Geyser
-  description: When a climber passes over it, it is blown into the air and is therefore
-    instantly eliminated.
+  description: "El escalador que pase por \xE9l, lo har\xE1 volar por los aires,
+    cooldown de dos turnos."
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 1391558099927299792, guid: 4920ddcab506aa542aa2eca0d92c85e5, type: 3}
   cost: 4
+  counterDescriptionText: "Lo golpea y desactiva el obst\xE1culo 2 turnos"
   worldSprite: {fileID: -453905670, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

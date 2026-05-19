@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: RockRescaled
   m_EditorClassIdentifier: 
   cardName: Roca
-  description: Block the path wherever you place the rock.
+  description: "Enga\xF1a a los escaladores y redirige su ruta hacia otro campamento"
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 6260695087336479492, guid: 7998f4210673b174fbb79a75757277a4, type: 3}
   cost: 3
+  counterDescriptionText: "Se acerca con el pico y destruye el obst\xE1culo"
   worldSprite: {fileID: -1714433395, guid: f13d8a652fa9d2c4a8ae24d339da6d42, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 8.3, y: 132.1, z: 12.1}

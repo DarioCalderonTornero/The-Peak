@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: BerryTree
   m_EditorClassIdentifier: 
   cardName: Berry Tree
-  description: "Climbers who pass by it will eat a berry. The good one gives them
-    an extra 200 maximum energy, while the bad one kills them\u2014it\u2019s random."
+  description: "Cada dos turnos crecen bayas, depende de cu\xE1l se coman aumenta
+    su estamina, o mueren"
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 7238312057479520051, guid: 5ff1cfd0171d7e14a88490e3d47bbb08, type: 3}
   cost: 5
+  counterDescriptionText: "El escalador con el libro elegir\xE1 siempre la baya buena"
   worldSprite: {fileID: 557976378, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

@@ -16,7 +16,8 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public TextMeshProUGUI costText;
     public TextMeshProUGUI nameText;
     public Image worldSpriteImage;
-    
+    public TextMeshProUGUI descriptionText;
+
     [Header("Counter")]
     public Image counterIconImage;
     public Image counterColorImage;
@@ -220,6 +221,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (iconImage != null) iconImage.sprite = cardData.icon;
         if (costText != null) costText.text = cardData.cost.ToString();
         if (nameText != null) nameText.text = cardData.cardName;
+        if (descriptionText != null) descriptionText.text = cardData.description;
 
         if (worldSpriteImage != null && cardData.worldSprite != null)
             worldSpriteImage.sprite = cardData.worldSprite;
@@ -1625,10 +1627,10 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             usingSegmentGrid = true;
 
             if (TrySnapOnSegmentGrid(seg, hit.point, currentRotationDegrees, cardData.gridSize,
-                out var pos, out var rot, out var nrm,
-                currentFootprintKeys, out var snapReason))
+    out var pos, out var rot, out var nrm,
+    currentFootprintKeys, out var snapReason))
             {
-                if (snapReason == "Válido")
+                if (snapReason == "Válido" || snapReason == "Zona bloqueada")
                 {
                     if (!previewInstance.activeSelf)
                         previewInstance.SetActive(true);
@@ -1638,10 +1640,16 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     lastValidPreviewPos = pos;
                     lastValidPreviewRot = rot;
                     hasValidPreviewPos = true;
-                    currentPreviewIsValid = true;
-                    ApplyPreviewMaterial(true);
+
+                    // Verificar ocupación
+                    bool isOccupied = GridOccupancyManager.Instance != null &&
+                                      GridOccupancyManager.Instance.AnyOccupied(currentFootprintKeys);
+
+                    bool isBlocked = snapReason == "Zona bloqueada";
+
+                    currentPreviewIsValid = !isOccupied && !isBlocked;
+                    ApplyPreviewMaterial(currentPreviewIsValid);
                 }
-                // Cualquier otro resultado → no hacer nada, preview se queda donde estaba
             }
             // Snap fallido → no hacer nada
 

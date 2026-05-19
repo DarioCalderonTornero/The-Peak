@@ -9,7 +9,11 @@ public class CardData : ScriptableObject
     public Sprite icon;
     public GameObject defensePrefab;
     public int cost;
-    
+
+    [Tooltip("Descripción del counter que aparece en el reverso de la carta")]
+    [TextArea(2, 3)]
+    public string counterDescriptionText;
+
     [Header("Sprite extra")]
     public Sprite worldSprite;
 

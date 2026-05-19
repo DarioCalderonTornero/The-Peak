@@ -10,11 +10,12 @@ public class CardBackSetup : MonoBehaviour
 {
     [Header("Referencias UI del reverso")]
     [SerializeField] private Image backgroundImage;          // fondo del reverso
+    [SerializeField] private TextMeshProUGUI counterDescriptionText;
     // [SerializeField] private Image illustrationImage;        // icono/ilustración grande
     // [SerializeField] private TextMeshProUGUI titleText;      // título (nombre carta)
     // [SerializeField] private TextMeshProUGUI typeText;       // "🏔 PERMANENTE · COSTE 3"
     // [SerializeField] private TextMeshProUGUI loreText;       // frase de lore
-    // [SerializeField] private TextMeshProUGUI descriptionText;// descripción extendida
+    //[SerializeField] private TextMeshProUGUI descriptionText;// descripción extendida
 
     [Header("Counter (opcional)")]
     [SerializeField] private GameObject counterGroup;        // contenedor del counter
@@ -117,8 +118,11 @@ public class CardBackSetup : MonoBehaviour
                 counterIconImage.gameObject.SetActive(true);
             }
 
-            // if (counterNameText != null)
-                // counterNameText.text = data.counterName;
+            if (counterDescriptionText != null)
+            {
+                counterDescriptionText.text = data.counterDescriptionText;
+                counterDescriptionText.gameObject.SetActive(!string.IsNullOrEmpty(data.counterDescriptionText));
+            }
         }
 
         var playButton = GetComponentInChildren<CardPlayButton>(true);

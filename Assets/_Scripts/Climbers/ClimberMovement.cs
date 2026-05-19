@@ -92,6 +92,8 @@ public class ClimberMovement : MonoBehaviour
     public bool IsOutOfStamina => currentStamina <= 0f;
     public bool IsDoneThisTurn => externallyForcedDone || isAtCamp || reachedSummit || IsOutOfStamina;
 
+    public GameObject ClimberVisual => climberVisual;
+
     public ClimberLoadout Loadout => loadout;
 
     public CampGraphBuilder.CampNode CurrentNode => currentNode;

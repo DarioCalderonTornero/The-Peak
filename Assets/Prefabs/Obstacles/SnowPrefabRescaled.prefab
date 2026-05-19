@@ -902,6 +902,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   spawnDuration: 0.25
+  sinkTargetY: 0.3
+  sinkDuration: 0.5
+  struggleRotationAmount: 12
+  struggleBobAmount: 0.06
+  struggleCycleTime: 0.45
 --- !u!114 &-9125083257597627176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -916,6 +921,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardData: {fileID: 11400000, guid: ff7324c04c6fa6542b3f1025eb1d93ca, type: 2}
   infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}
+  geyserActiveSprite: {fileID: 0}
+  geyserCooldownSprite: {fileID: 0}
 --- !u!1001 &1291543825288040690
 PrefabInstance:
   m_ObjectHideFlags: 0

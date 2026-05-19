@@ -5404,7 +5404,7 @@ MonoBehaviour:
   burstParticleScale: 0.35
   burstEase: 9
   useIdle: 1
-  idleScaleAmount: 0.03
+  idleScaleAmount: 0.1
   idlePeriod: 1.6
   useLevelColor: 1
   levelColorGradient:

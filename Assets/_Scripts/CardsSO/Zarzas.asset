@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Zarzas
   m_EditorClassIdentifier: 
   cardName: Zarzas
-  description: Slows enemies by 40%.
+  description: Gasta una ran cantidad de stamina, pero no altera su velocidad.
   icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 1863183457221247532, guid: fa7810970c0374b4293b284e3ce38248, type: 3}
   cost: 3
+  counterDescriptionText: Destruye las propias zarzas
   worldSprite: {fileID: 1856576572, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

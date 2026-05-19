@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: StormyCloud
   m_EditorClassIdentifier: 
   cardName: Nube de rayos
-  description: 
+  description: "Al pasar por debajo de ella el escalador morir\xE1 al recibir un
+    rayo"
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 3271114533185505083, guid: 8390b10bca356fe498636057d1770050, type: 3}
   cost: 5
+  counterDescriptionText: "Disipa la nube el\xE9ctrica soplando el cuerno"
   worldSprite: {fileID: 332950873, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

@@ -223,7 +223,7 @@ MonoBehaviour:
   iconCounter: {fileID: -2068346852, guid: e6681395b3fef0d4481c3f9efe27dec1, type: 3}
   urgencyColor: {r: 1, g: 1, b: 1, a: 1}
   urgencyInactiveColor: {r: 1, g: 1, b: 1, a: 0}
-  selectedBorderColor: {r: 0.5394562, g: 0.3915094, b: 1, a: 1}
+  selectedBorderColor: {r: 0.7803922, g: 0.5803922, b: 0.32941177, a: 1}
   altitudeText: {fileID: 5894375066183396839}
   worldYMin: 0
   worldYMax: 28

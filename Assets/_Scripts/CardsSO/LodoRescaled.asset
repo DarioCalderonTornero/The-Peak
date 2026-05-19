@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: LodoRescaled
   m_EditorClassIdentifier: 
   cardName: Lodo
-  description: Slows enemies while they consume 1.5 times their energy. Triggers
-    when they have 20% or less health, and the slow effect ends.
+  description: "Gasta una peque\xF1a cantidad de estamina pero la movilidad se ve
+    muy reducida (al llegar a 20 en el lodo, se mueren)"
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 9104421247320485007, guid: b629a1f5b7aca7a4e8ac34cf02145a61, type: 3}
   cost: 3
+  counterDescriptionText: "Sopla al obst\xE1culo y lo desactiva durante dos turnos"
   worldSprite: {fileID: 257114182, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

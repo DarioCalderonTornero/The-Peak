@@ -168,23 +168,12 @@ public class CardSlotsUI : MonoBehaviour
             RectTransform rt = currentCards[i].GetComponent<RectTransform>();
             if (rt == null) continue;
 
-            float center = (count - 1) / 2f;
-            float relIndex = i - center;
-
-            float angle = -relIndex * cardRotationAngle;
-            float angleRad = angle * Mathf.Deg2Rad;
-
-            // Dirección en que apunta la carta (perpendicular a su eje local)
-            // sin(angle) es el componente X, cos(angle) es el componente Y
-            float liftX = Mathf.Sin(angleRad) * cardLiftAmount;
-            float liftY = Mathf.Cos(angleRad) * cardLiftAmount;
-
-            rt.localRotation = Quaternion.Euler(0f, 0f, angle);
-            currentCards[i].handRotationAngle = angle;
+            // Todas rectas, sin rotación
+            rt.localRotation = Quaternion.identity;
+            currentCards[i].handRotationAngle = 0f;
 
             var pos = rt.anchoredPosition;
-            pos.x += liftX;
-            pos.y = liftY;
+            pos.y = 0f;
             rt.anchoredPosition = pos;
         }
     }

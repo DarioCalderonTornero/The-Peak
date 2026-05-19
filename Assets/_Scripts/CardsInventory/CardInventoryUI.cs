@@ -239,6 +239,9 @@ public class CardInventoryUI : MonoBehaviour
 
     private void SetupLockedCard(GameObject cardObj, CardData cardData, Sprite sprite)
     {
+        var flip = cardObj.GetComponent<CardFlip>();
+        if (flip != null) flip.enabled = false;
+
         var drag = cardObj.GetComponent<DragCardUI>();
         if (drag != null) drag.enabled = false;
 

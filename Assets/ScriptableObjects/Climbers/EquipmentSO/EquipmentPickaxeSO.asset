@@ -15,5 +15,5 @@ MonoBehaviour:
   equipmentName: Pickaxe
   icon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   logicClassName: PickaxeEquipment
-  color: {r: 0.8000001, g: 0.0627451, b: 0.08627451, a: 1}
+  color: {r: 1, g: 0, b: 0.03191471, a: 1}
   climberIcon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}

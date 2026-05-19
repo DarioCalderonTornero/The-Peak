@@ -1,4 +1,4 @@
-using Unity.Cinemachine;
+﻿using Unity.Cinemachine;
 using UnityEngine;
 using System.Collections;
 using Unity.VisualScripting.Antlr3.Runtime;
@@ -32,11 +32,26 @@ public class GameOverManager : MonoBehaviour
 
     public void SetGameOverCamera()
     {
+        if (RankingManager.Instance != null && RankingManager.Instance.RankingEnabled)
+        {
+            RankingManager.Instance.SaveCurrentSession(
+                TurnManager.Instance != null ? TurnManager.Instance.CurrentTurnNumber : 0,
+                ClimberDeathPointsManager.Instance != null ? ClimberDeathPointsManager.Instance.GetTotalClimberDeathPoints() : 0
+            );
+        }
+
         OnGameOver?.Invoke(this, EventArgs.Empty);
         StartCoroutine(GetClimberSound());
+        StartCoroutine(ShowRankingDelayed()); // ← añadir
         ClimberMovement.Instance.SetExternalSpeedMultiplier(0f);
         gameOverCinemachineCam.Priority = 100;
         Time.timeScale = 1f;
+    }
+
+    private IEnumerator ShowRankingDelayed()
+    {
+        yield return new WaitForSecondsRealtime(4.5f); // después de la cinemática
+        RankingUI.Instance?.Show();
     }
 
     private IEnumerator GetClimberSound()

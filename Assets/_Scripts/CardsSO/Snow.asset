@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Snow
   m_EditorClassIdentifier: 
   cardName: Nieve
-  description: It traps an enemy, slowly swallowing it whole until it is completely
-    covered, then eliminates it. If another climber passes by, it saves them.
+  description: Atrapa al escalador durante dos turnos y lo mata, si un escalador
+    se acerca antes, puede salvarlo
   icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   defensePrefab: {fileID: 9104421247320485007, guid: 272bd9776cb7d3c4985a6fb336eb75f7, type: 3}
   cost: 6
+  counterDescriptionText: "Quita la nieve y destruye el obst\xE1culo"
   worldSprite: {fileID: -1812936108, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   hasFixedPlacement: 0
   fixedPosition: {x: 0, y: 0, z: 0}

@@ -5455,7 +5455,6 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   maxLevelForGradient: 20
-  starSpinAudioClip: {fileID: 8300000, guid: c35f87c99886fed4595cd2f0cc4dc1a9, type: 3}
 --- !u!1 &1089094619
 GameObject:
   m_ObjectHideFlags: 0
@@ -5710,7 +5709,7 @@ MonoBehaviour:
   minDistance: 2
   introUniqueEquipments:
   - {fileID: 11400000, guid: b14c1b0fe7b443a4ca6e34148399cf9b, type: 2}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 338103a60dc2c2141ada12844300638e, type: 2}
   - {fileID: 11400000, guid: f20865c9945b6864dadbeff59303e58d, type: 2}
   - {fileID: 11400000, guid: 1236b83ce39cd3d41af52823a5564cce, type: 2}
   spawnCooldownTimer: 0
@@ -7217,7 +7216,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -31}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1540668716
@@ -8254,7 +8253,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 628.4, y: -77.7}
+  m_AnchoredPosition: {x: 610.53796, y: -67}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1725098413

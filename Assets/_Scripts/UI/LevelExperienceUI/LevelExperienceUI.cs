@@ -90,6 +90,9 @@ public class LevelExperienceUI : MonoBehaviour
     [SerializeField] private Gradient levelColorGradient;
     [SerializeField] private int maxLevelForGradient = 50;
 
+    [Header("Sounds")]
+    [SerializeField] private AudioClip starSpinAudioClip;
+
     // Internals
     private Coroutine fillCoroutine;
     private Tween idleTween;
@@ -409,11 +412,13 @@ public class LevelExperienceUI : MonoBehaviour
         float startY = starRect.anchoredPosition.y;
         float halfSpin = spinDuration * 0.5f;
 
+        Temporal_Sound_Music.Instance.Play2DSound(starSpinAudioClip, 1f);
+
         starSequence = DOTween.Sequence();
 
         // ── AVISO: pulso rápido + flash blanco antes del spin ──
         float warnScale = 1.4f;
-        float warnDuration = 0.07f;
+        float warnDuration = 0.1f;
 
         starSequence.Append(
             starRect.DOScale(starBaseScale * warnScale, warnDuration)

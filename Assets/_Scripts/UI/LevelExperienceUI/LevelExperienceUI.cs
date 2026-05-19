@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
@@ -411,6 +411,28 @@ public class LevelExperienceUI : MonoBehaviour
 
         starSequence = DOTween.Sequence();
 
+        // ── AVISO: pulso rápido + flash blanco antes del spin ──
+        float warnScale = 1.4f;
+        float warnDuration = 0.07f;
+
+        starSequence.Append(
+            starRect.DOScale(starBaseScale * warnScale, warnDuration)
+                .SetEase(Ease.OutQuad)
+        );
+        starSequence.Join(
+            starIconImage.DOColor(Color.white, warnDuration)
+                .SetEase(Ease.OutQuad)
+        );
+        starSequence.Append(
+            starRect.DOScale(starBaseScale, warnDuration)
+                .SetEase(Ease.InQuad)
+        );
+        starSequence.Join(
+            starIconImage.DOColor(starBaseColor, warnDuration)
+                .SetEase(Ease.InQuad)
+        );
+
+        // ── SPIN ──
         // Primera mitad: squish X 1 0 + sube
         starSequence.Append(
             DOTween.To(

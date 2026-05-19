@@ -145,14 +145,14 @@ public class QuicksandDefense : BaseDefense
             absorbedAgent.updateRotation = false;
         }
 
-        absorbedClimber.SetExternallyDoneThisTurn(true); // ← primero
+        absorbedClimber.SetExternallyDoneThisTurn(true); //primero
 
         if (absorbedAgent != null)
-            absorbedAgent.enabled = false; // ← luego
+            absorbedAgent.enabled = false; //luego
 
         // Desactivar collider para que la rampa no lo deslice
         absorbedCollider = climber.GetComponent<Collider>();
-        if (absorbedCollider != null) absorbedCollider.enabled = false;
+        //if (absorbedCollider != null) absorbedCollider.enabled = false;
 
         // Desactivar animator para que no override la animación por código
         absorbedAnimator = climber.GetComponent<Animator>();
@@ -363,7 +363,7 @@ public class QuicksandDefense : BaseDefense
             }
 
             // Reactivar collider y animator
-            if (absorbedCollider != null) absorbedCollider.enabled = true;
+            //if (absorbedCollider != null) absorbedCollider.enabled = true;
             if (absorbedAnimator != null) absorbedAnimator.enabled = true;
 
             Vector3 safePos = transform.position + Vector3.up * 0.3f;

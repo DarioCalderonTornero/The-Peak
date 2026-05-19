@@ -1,0 +1,262 @@
+fileFormatVersion: 2
+guid: 3770ae6e825c7b343944f1151f36cc6a
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: "Vi\xF1etasMonta\xF1aTotal_6"
+      rect:
+        serializedVersion: 2
+        x: 1475
+        y: 784
+        width: 240
+        height: 93
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e26c038d47e77d439f2190b7e35ddf1
+      internalID: -775509255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasMonta\xF1aTotal_19"
+      rect:
+        serializedVersion: 2
+        x: 1741
+        y: 316
+        width: 70
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f5f6271541a0e9140bade0aab72e7d9e
+      internalID: 428100436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasMonta\xF1aTotal_23"
+      rect:
+        serializedVersion: 2
+        x: 1741
+        y: 240
+        width: 70
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bdc92e5902a54cf4abac8ff3fffd3da4
+      internalID: 169125002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Vi\xF1etasMonta\xF1aTotal_27"
+      rect:
+        serializedVersion: 2
+        x: 1741
+        y: 162
+        width: 70
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97f8ff5840482114b82b4135977eb057
+      internalID: -703457129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 2e3978b08f6eb0e46b418a8dc8782084
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      "Vi\xF1etasMonta\xF1aTotal_0": 1507541535
+      "Vi\xF1etasMonta\xF1aTotal_1": 1028860475
+      "Vi\xF1etasMonta\xF1aTotal_10": 1023257179
+      "Vi\xF1etasMonta\xF1aTotal_11": 819696809
+      "Vi\xF1etasMonta\xF1aTotal_12": 2145559463
+      "Vi\xF1etasMonta\xF1aTotal_13": 1115203691
+      "Vi\xF1etasMonta\xF1aTotal_14": -1341319528
+      "Vi\xF1etasMonta\xF1aTotal_15": -719825289
+      "Vi\xF1etasMonta\xF1aTotal_16": -1018385187
+      "Vi\xF1etasMonta\xF1aTotal_17": -1573977676
+      "Vi\xF1etasMonta\xF1aTotal_18": -923265449
+      "Vi\xF1etasMonta\xF1aTotal_19": 428100436
+      "Vi\xF1etasMonta\xF1aTotal_2": 98205766
+      "Vi\xF1etasMonta\xF1aTotal_20": -406314078
+      "Vi\xF1etasMonta\xF1aTotal_21": -1455040151
+      "Vi\xF1etasMonta\xF1aTotal_22": 636184159
+      "Vi\xF1etasMonta\xF1aTotal_23": 169125002
+      "Vi\xF1etasMonta\xF1aTotal_24": -1564186658
+      "Vi\xF1etasMonta\xF1aTotal_25": 807639703
+      "Vi\xF1etasMonta\xF1aTotal_26": 765777838
+      "Vi\xF1etasMonta\xF1aTotal_27": -703457129
+      "Vi\xF1etasMonta\xF1aTotal_28": 1237569332
+      "Vi\xF1etasMonta\xF1aTotal_3": -1667846432
+      "Vi\xF1etasMonta\xF1aTotal_4": -1378288352
+      "Vi\xF1etasMonta\xF1aTotal_5": -163855172
+      "Vi\xF1etasMonta\xF1aTotal_6": -775509255
+      "Vi\xF1etasMonta\xF1aTotal_7": -1343837537
+      "Vi\xF1etasMonta\xF1aTotal_8": 1771362146
+      "Vi\xF1etasMonta\xF1aTotal_9": -951431762
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

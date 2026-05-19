@@ -59,8 +59,22 @@ public class SettingsUI : MonoBehaviour
     {
         if (panel != null)
         {
+            panel.DOKill();
             panel.localScale = Vector3.zero;
             panel.DOScale(Vector3.one, panelSpawnDuration)
+                .SetEase(Ease.OutBack)
+                .SetUpdate(true);
+        }
+    }
+
+    private void AnimateTitleText()
+    {
+        if (titleText != null)
+        {
+            titleText.transform.DOKill();
+            titleText.transform.localScale = Vector3.zero;
+            titleText.transform
+                .DOScale(Vector3.one, panelSpawnDuration)
                 .SetEase(Ease.OutBack)
                 .SetUpdate(true);
         }
@@ -69,6 +83,7 @@ public class SettingsUI : MonoBehaviour
     public void ShowMainButtons()
     {
         SetTitle("OPCIONES");
+        AnimateTitleText();
 
         backToNormalGamepauseButton.gameObject.SetActive(true);
 
@@ -88,13 +103,15 @@ public class SettingsUI : MonoBehaviour
         generalSettingsButton.gameObject.SetActive(false);
         volumeSettingsButton.gameObject.SetActive(false);
 
-        AnimateElement(generalSettingsButton.gameObject, 0);
-        AnimateElement(volumeSettingsButton.gameObject, 1);
+        AnimateElement(backToNormalGamepauseButton.gameObject, 0);
+        AnimateElement(generalSettingsButton.gameObject, 1);
+        AnimateElement(volumeSettingsButton.gameObject, 2);
     }
 
     public void ShowGeneralSettings()
     {
         SetTitle("CAMARA");
+        AnimateTitleText();
 
         volumeSettingsButton.gameObject.SetActive(false);
         generalSettingsButton.gameObject.SetActive(false);
@@ -133,15 +150,17 @@ public class SettingsUI : MonoBehaviour
         cameraPanText.gameObject.SetActive(false);
         cameraPanSlider.gameObject.SetActive(false);
 
-        AnimateElement(cameraSpeedText.gameObject, 0);
-        AnimateElement(cameraSpeedSlider.gameObject, 1);
-        AnimateElement(cameraPanText.gameObject, 2);
-        AnimateElement(cameraPanSlider.gameObject, 3);
+        AnimateElement(backToNormalGamepauseButton.gameObject, 0);
+        AnimateElement(cameraSpeedText.gameObject, 1);
+        AnimateElement(cameraSpeedSlider.gameObject, 2);
+        AnimateElement(cameraPanText.gameObject, 3);
+        AnimateElement(cameraPanSlider.gameObject, 4);
     }
 
     public void ShowVolumeSettings()
     {
         SetTitle("SONIDO");
+        AnimateTitleText();
 
         volumeSettingsButton.gameObject.SetActive(false);
         generalSettingsButton.gameObject.SetActive(false);
@@ -165,10 +184,11 @@ public class SettingsUI : MonoBehaviour
         effectsVolumeText.gameObject.SetActive(false);
         effectsSlider.gameObject.SetActive(false);
 
-        AnimateElement(musicVolumeText.gameObject, 0);
-        AnimateElement(musicSlider.gameObject, 1);
-        AnimateElement(effectsVolumeText.gameObject, 2);
-        AnimateElement(effectsSlider.gameObject, 3);
+        AnimateElement(backToNormalGamepauseButton.gameObject, 0);
+        AnimateElement(musicVolumeText.gameObject, 1);
+        AnimateElement(musicSlider.gameObject, 2);
+        AnimateElement(effectsVolumeText.gameObject, 3);
+        AnimateElement(effectsSlider.gameObject, 4);
     }
 
     private void HideSettings()

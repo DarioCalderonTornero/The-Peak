@@ -472,6 +472,7 @@ public class ClimberMovement : MonoBehaviour
         lastFrameHeight = transform.position.y;
     }
 
+    // FindClosestCampNode vuelve a su versión simple original:
     private CampGraphBuilder.CampNode FindClosestCampNode()
     {
         if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();

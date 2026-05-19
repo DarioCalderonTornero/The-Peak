@@ -106,9 +106,7 @@ public class ClimberEntryUI : MonoBehaviour
         if (stateBadgeIcon != null)
         {
             stateBadgeIcon.sprite = iconCounter;
-
-            // Animación de respiración + color rojo
-            stateBadgeIcon.color = Color.red;
+            //stateBadgeIcon.color = Color.red;
             stateBadgeIcon.transform.DOKill();
             stateBadgeIcon.transform.DOScale(1.3f, 0.4f)
                 .SetEase(Ease.InOutSine)
@@ -124,12 +122,12 @@ public class ClimberEntryUI : MonoBehaviour
         {
             stateBadgeIcon.transform.DOKill();
             stateBadgeIcon.transform.DOScale(1f, 0.15f);
-            stateBadgeIcon.color = Color.white;
-            UpdateStateBadge();
+            //stateBadgeIcon.color = Color.white;
         }
 
-        ClimberListUI.Instance?.OnCounterHighlightEnd(climber);
         counterHighlightRoutine = null;
+        UpdateStateBadge();            
+        ClimberListUI.Instance?.OnCounterHighlightEnd(climber);
     }
 
     private void Loadout_OnEquipmentInitialized(EquipmentDefinitionSO equipmentDefinition)
@@ -159,6 +157,7 @@ public class ClimberEntryUI : MonoBehaviour
     private void OnTentStateChanged(bool inTent)
     {
         if (stateBadgeIcon == null) return;
+        if (counterHighlightRoutine != null) return; 
         stateBadgeIcon.sprite = inTent ? iconInTent : iconMoving;
     }
 
@@ -189,6 +188,7 @@ public class ClimberEntryUI : MonoBehaviour
     private void UpdateStateBadge()
     {
         if (stateBadgeIcon == null || climber == null) return;
+        if (counterHighlightRoutine != null) return;
         stateBadgeIcon.sprite = climber.IsInsideTent ? iconInTent : iconMoving;
     }
 

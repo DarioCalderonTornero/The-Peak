@@ -15,37 +15,9 @@ public class RockDefense : BaseDefense
     {
         base.Initialize();
         PlaySpawnVfx();
-        NotifyNearbyClimbers();
     }
 
-    private void NotifyNearbyClimbers()
-    {
-        CampGraphBuilder graph = FindObjectOfType<CampGraphBuilder>();
-        if (graph == null) return;
-
-        // Encontrar el nodo más cercano a esta roca
-        CampGraphBuilder.CampNode rockNode = null;
-        float minDist = float.PositiveInfinity;
-        foreach (var node in graph.nodes)
-        {
-            float d = Vector3.Distance(node.position, transform.position);
-            if (d < minDist) { minDist = d; rockNode = node; }
-        }
-
-        if (rockNode == null) return;
-
-        // Decirle a todos los escaladores que bloqueen ese nodo
-        ClimberMovement[] climbers = FindObjectsOfType<ClimberMovement>();
-        foreach (var climber in climbers)
-        {
-            if (climber.Loadout != null && climber.Loadout.CanHandleObstacle(ObstacleType.Rock))
-                continue; // el counter no necesita bloquearlo
-
-            climber.AddBlockedNode(rockNode.id);
-            climber.RecalculateIntention();
-        }
-    }
-
+   
     private void OnTriggerEnter(Collider other)
     {
         var loadout = other.GetComponent<ClimberLoadout>();

@@ -303,7 +303,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8322863346289681276}
-  - component: {fileID: 5899417830659951145}
   m_Layer: 0
   m_Name: ClimberVisual
   m_TagString: Untagged
@@ -334,28 +333,6 @@ Transform:
   - {fileID: 8724122982636317912}
   m_Father: {fileID: 4485760709519042262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5899417830659951145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3989725419049320024}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1aa6c987cf83e6f459b52fc9fa558d84, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  backPickaxe: {fileID: 0}
-  backMagicBook: {fileID: 0}
-  backPala: {fileID: 0}
-  backCuerno: {fileID: 0}
-  handPickaxe: {fileID: 0}
-  handMagicBook: {fileID: 0}
-  handPala: {fileID: 0}
-  handCuerno: {fileID: 0}
-  lodoVFX: {fileID: 0}
-  nubeVFX: {fileID: 0}
 --- !u!1 &4162578474424946795
 GameObject:
   m_ObjectHideFlags: 0
@@ -1205,7 +1182,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 457fe72dac382244ba3eb5073a9e378c, type: 2}
+  - {fileID: 2100000, guid: 101f3b931a9e5ed4186c2f8d91b32b47, type: 2}
   - {fileID: 2100000, guid: 62003b4dd34b8f349ad434cf050bbd41, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0

@@ -291,6 +291,7 @@ MonoBehaviour:
   - {fileID: 6000075628774388916}
   destroyDelay: 3
   stormyCloudAnimDelay: 0.5
+  snowVFXGameObject: {fileID: 0}
 --- !u!136 &4989636344134590157
 CapsuleCollider:
   m_ObjectHideFlags: 0

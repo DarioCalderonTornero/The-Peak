@@ -42,6 +42,8 @@ public class ClimberEntryUI : MonoBehaviour
     [Header("Counter")]
     [SerializeField] private float counterHighlightDuration = 3f;
 
+    [SerializeField] private AudioClip selectClimberAudioClip;
+
     private Coroutine counterHighlightRoutine;
 
     private ClimberMovement climber;
@@ -226,6 +228,7 @@ public class ClimberEntryUI : MonoBehaviour
     {
         if (climber == null) return;
         ClimberListUI.Instance?.OnEntryClicked(climber);
+        Temporal_Sound_Music.Instance.Play2DSound(selectClimberAudioClip, 1f);
     }
 
     // ─── Getter ───────────────────────────────────────────────────────────────

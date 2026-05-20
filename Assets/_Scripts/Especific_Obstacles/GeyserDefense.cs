@@ -201,6 +201,13 @@ public class GeyserDefense : BaseDefense
         captureRoutine = StartCoroutine(CaptureAfterDelay(climber, captureDelay));
     }
 
+    public void ActivateCooldown()
+    {
+        inCooldown = true;
+        cooldownRemaining = cooldownTurns;
+        ShowCooldownIndicator();
+    }
+
     private IEnumerator CaptureAfterDelay(ClimberMovement climber, float delay)
     {
         float t = 0f;

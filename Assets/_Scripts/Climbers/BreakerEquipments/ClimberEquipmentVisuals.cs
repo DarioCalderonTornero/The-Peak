@@ -107,24 +107,26 @@ public class ClimberEquipmentVisuals : MonoBehaviour
     /// </summary>
     public void MoveEquipmentToBack()
     {
-        if (activeHandObject != null)
-            activeHandObject.SetActive(false);
+        if (activeHandObject != null) activeHandObject.SetActive(false);
+        if (activeBackObject != null) activeBackObject.SetActive(true);
 
-        if (activeBackObject != null)
-            activeBackObject.SetActive(true);
+        if (lodoVFX != null) lodoVFX.SetActive(false);
+        if (nubeVFX != null) nubeVFX.SetActive(false);
     }
 
     public void PlayHandEffect(ObstacleType type)
     {
-        switch(type)
+        if (lodoVFX != null) lodoVFX.SetActive(false);
+        if (nubeVFX != null) nubeVFX.SetActive(false);
+
+        switch (type)
         {
             case ObstacleType.Mud:
-                if (lodoVFX != null) lodoVFX.gameObject.SetActive(true);
+                if (lodoVFX != null) lodoVFX.SetActive(true);
                 break;
             case ObstacleType.Cloud:
-                if (nubeVFX != null) nubeVFX.gameObject.SetActive(true);
+                if (nubeVFX != null) nubeVFX.SetActive(true);
                 break;
-             
         }
     }
 

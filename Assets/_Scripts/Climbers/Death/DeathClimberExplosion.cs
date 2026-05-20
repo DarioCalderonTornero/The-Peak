@@ -113,11 +113,10 @@ public class DeathClimberExplosion : MonoBehaviour
     }
     private void ClimberToBlackColor()
     {
-        float shakeMagnitude = 0.01f;
-        float animDuration = 0.75f;
+        float animDuration = 0.0f;
 
-        StartCoroutine(deathAnimation.ScaleRoutine(transform.localScale * 1.5f, animDuration));
-        StartCoroutine(deathAnimation.ShakeRoutine(animDuration, shakeMagnitude));
+        //StartCoroutine(deathAnimation.ScaleRoutine(transform.localScale * 1.5f, animDuration));
+        //StartCoroutine(deathAnimation.ShakeRoutine(animDuration, shakeMagnitude));
         StartCoroutine(deathAnimation.BodyColorToRedRoutine(Color.black, animDuration));
 
         StartCoroutine(BlackColorSequence(animDuration));

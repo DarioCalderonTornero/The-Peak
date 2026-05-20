@@ -22,6 +22,21 @@ public class PickaxeEquipment : EquipmentInstance
         if (ownerLoadout == null) return;
         ownerLoadout.StartEquipmentSequence(2f, obstacleType: type);
         OwnerLoadout.TriggerAnimation("Geyser");
+
+        var geyser = ownerLoadout.GetComponentInParent<GeyserDefense>();
+        if (geyser == null)
+        {
+            var collider = ownerLoadout.GetComponent<Collider>();
+            Collider[] hits = Physics.OverlapSphere(ownerLoadout.transform.position, 2f);
+            foreach (var hit in hits)
+            {
+                geyser = hit.GetComponent<GeyserDefense>();
+                if (geyser != null) break;
+            }
+        }
+
+        if (geyser != null)
+            geyser.ActivateCooldown();
     }
 
     public override bool CanHandleObstacle(ObstacleType obstacleType)

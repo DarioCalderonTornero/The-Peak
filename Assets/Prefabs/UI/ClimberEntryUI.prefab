@@ -229,6 +229,7 @@ MonoBehaviour:
   worldYMax: 28
   spawnDuration: 0.4
   counterHighlightDuration: 3
+  selectClimberAudioClip: {fileID: 8300000, guid: 9af6dcbcb874cd848a227012451f9125, type: 3}
 --- !u!114 &6040962492594714918
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -965,6 +966,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

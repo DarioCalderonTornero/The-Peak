@@ -20,6 +20,10 @@ public class DeathAnimation : MonoBehaviour
     [Header("StormyCloud")]
     [SerializeField] private float stormyCloudAnimDelay = 0.5f;
 
+    [Header("Snow")]
+    [SerializeField] private GameObject snowVFXGameObject;
+
+
     private DeathClimberExplosion climberExplosion;
 
     /// <summary>
@@ -119,6 +123,11 @@ public class DeathAnimation : MonoBehaviour
 
     private void SnowDeathRoutine()
     {
+        if (snowVFXGameObject != null)
+        {
+            Instantiate(snowVFXGameObject, transform.position, Quaternion.identity);
+        }
+
         float snowDelayExplosion = 1.0f;
         StartCoroutine(ShakeRoutine(snowDelayExplosion, 0.1f));
         Invoke(nameof(NotifyReadyForExplosion), snowDelayExplosion);

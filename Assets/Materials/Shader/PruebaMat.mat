@@ -59,9 +59,9 @@ Material:
     - _AlphaDstBlend: 10
     - _AlphaSrcBlend: 1
     - _BlendMode: 0
-    - _CausticCutout: 0.14
+    - _CausticCutout: 0.15
     - _CausticSpeed: 0.02
-    - _CausticTiling: 5.44
+    - _CausticTiling: 6.63
     - _ConservativeDepthOffsetEnable: 0
     - _CullMode: 2
     - _CullModeForward: 2
@@ -119,14 +119,14 @@ Material:
     - _TransparentDepthPrepassEnable: 0
     - _TransparentSortPriority: 0
     - _TransparentWritingMotionVec: 0
-    - _TransparentZWrite: 0
+    - _TransparentZWrite: 1
     - _UseShadowThreshold: 0
-    - _WaveIntensity: 0.01
+    - _WaveIntensity: 0.002
     - _WaveSpeed: 1
     - _ZTestDepthEqualForOpaque: 4
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
-    - _ZWrite: 0
+    - _ZWrite: 1
     m_Colors:
     - _CausticColor: {r: 0.9116143, g: 1.6865596, b: 1.7411011, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}

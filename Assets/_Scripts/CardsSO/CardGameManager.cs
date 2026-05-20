@@ -76,6 +76,9 @@ public class CardGameManager : MonoBehaviour
     {
         OnInventoryHide?.Invoke(this, EventArgs.Empty);
 
+        if (TutorialManagerr.Instance != null)
+            TutorialManagerr.Instance.TryShowTutorial();
+
         GameManager.Instance.StartGame();
 
         inventoryUI.HideInventory();

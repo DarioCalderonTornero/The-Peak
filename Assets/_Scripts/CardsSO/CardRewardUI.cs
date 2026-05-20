@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -18,7 +18,7 @@ public class CardRewardUI : MonoBehaviour
     [SerializeField] private Transform cardContainerB;
     [SerializeField] private GameObject cardPrefab;
 
-    [Header("Configuración visual")]
+    [Header("ConfiguraciÃ³n visual")]
     [SerializeField] private Vector3 cardScale = Vector3.one;
     [SerializeField][Range(1.01f, 1.5f)] private float hoverScaleMultiplier = 1.1f;
     [SerializeField] private float hoverSmoothTime = 0.12f;
@@ -74,7 +74,7 @@ public class CardRewardUI : MonoBehaviour
             LevelExperienceManager.Instance.OnCardRewardTriggered += HandleCardRewardTriggered;
         }
 
-        // TurnManager — puede llegar tarde
+        // TurnManager â€” puede llegar tarde
         if (TurnManager.Instance != null)
         {
             TurnManager.Instance.OnPlayerTurnStart -= HandlePlayerTurnStart;
@@ -96,8 +96,6 @@ public class CardRewardUI : MonoBehaviour
 
     private void HandleCardRewardTriggered()
     {
-        Debug.Log("[CardRewardUI] HandleCardRewardTriggered EJECUTADO");
-
         List<CardData> locked = cardUnlockData != null
             ? cardUnlockData.GetLockedCards()
             : new List<CardData>();
@@ -106,10 +104,9 @@ public class CardRewardUI : MonoBehaviour
 
         locked.Sort((a, b) => UnityEngine.Random.Range(-1, 2));
         optionA = locked[0];
-        optionB = locked.Count > 1 ? locked[1] : locked[0];
+        optionB = locked.Count > 1 ? locked[1] : null; // â† null si solo hay una
 
-        // Mostrar en el siguiente frame en lugar de esperar al próximo turno
-        StartCoroutine(ShowRewardNextFrame());
+        rewardPending = true;
     }
 
     private IEnumerator ShowRewardNextFrame()
@@ -129,19 +126,23 @@ public class CardRewardUI : MonoBehaviour
 
     private void ShowReward()
     {
-        Debug.Log("[CardRewardUI] ShowReward llamado");
-        if (rewardPanel == null || cardPrefab == null)
-        {
-            Debug.Log($"[CardRewardUI] ShowReward ABORTADO | rewardPanel={rewardPanel} | cardPrefab={cardPrefab}");
-            return;
-        }
         if (rewardPanel == null || cardPrefab == null) return;
 
         if (cardObjA != null) Destroy(cardObjA);
         if (cardObjB != null) Destroy(cardObjB);
 
         cardObjA = InstantiateCard(optionA, cardContainerA, () => Choose(optionA));
-        cardObjB = InstantiateCard(optionB, cardContainerB, () => Choose(optionB));
+
+        // Solo mostrar carta B si existe
+        if (optionB != null)
+        {
+            cardObjB = InstantiateCard(optionB, cardContainerB, () => Choose(optionB));
+            cardContainerB.gameObject.SetActive(true);
+        }
+        else
+        {
+            cardContainerB.gameObject.SetActive(false);
+        }
 
         rewardPanel.SetActive(true);
         Time.timeScale = 0f;

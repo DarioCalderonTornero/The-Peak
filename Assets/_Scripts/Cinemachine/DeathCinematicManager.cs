@@ -323,6 +323,10 @@ public class DeathCinematicManager : MonoBehaviour
             DeathEffectConfigSO config = GameManager.Instance.GetDeathEffectConfig(currentDeathInfo.cause);
 
             Vector3 deathPos = currentDeathInfo.climber.transform.position;
+
+            if (currentDeathInfo.cause == DeathCause.Snow)
+                deathPos += Vector3.up * 0.5f;
+
             Quaternion deathRot = GetDeathVisualRotation(currentDeathInfo.climber.transform);
 
             var loadout = currentDeathInfo.climber.GetComponent<ClimberLoadout>();

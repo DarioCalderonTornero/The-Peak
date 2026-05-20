@@ -23,6 +23,8 @@ public class DeathAnimation : MonoBehaviour
     [Header("Snow")]
     [SerializeField] private GameObject snowVFXGameObject;
 
+    [Header("Lodo")]
+    [SerializeField] private GameObject mudVFXGameObject;
 
     private DeathClimberExplosion climberExplosion;
 
@@ -89,8 +91,16 @@ public class DeathAnimation : MonoBehaviour
 
     private void MudDeathRoutine()
     {
-        NotifyComplete();
-        NotifyReadyForExplosion();
+        float mudDelayExplosion = 0.75f;
+
+        if (mudVFXGameObject != null)
+        {
+            GameObject vfx = Instantiate(mudVFXGameObject, transform.position + Vector3.up * 0.25f, Quaternion.identity);
+            Destroy(vfx, 1f);
+        }
+
+        Invoke(nameof(NotifyReadyForExplosion), mudDelayExplosion);
+        Invoke(nameof(NotifyComplete), mudDelayExplosion);
     }
 
     private IEnumerator QuicksandDeathRoutine()

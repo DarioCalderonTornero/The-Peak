@@ -44,6 +44,9 @@ public class ClimberEntryUI : MonoBehaviour
 
     [SerializeField] private AudioClip selectClimberAudioClip;
 
+    [SerializeField] private Color alertColor = new Color(1f, 0.65f, 0f, 1f);
+
+
     private Coroutine counterHighlightRoutine;
 
     private ClimberMovement climber;
@@ -105,30 +108,49 @@ public class ClimberEntryUI : MonoBehaviour
 
     private IEnumerator CounterHighlightRoutine()
     {
+        // Pulse de escala durante todo el counter
+        transform.DOKill();
+        transform.DOScale(1.05f, 0.4f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
+
+        // Icono counter + animación respiración
         if (stateBadgeIcon != null)
         {
             stateBadgeIcon.sprite = iconCounter;
-            //stateBadgeIcon.color = Color.red;
             stateBadgeIcon.transform.DOKill();
             stateBadgeIcon.transform.DOScale(1.3f, 0.4f)
                 .SetEase(Ease.InOutSine)
                 .SetLoops(-1, LoopType.Yoyo);
         }
 
+        // Pulse del background
+        Color originalBackgroundColor = background.color;
+        Color alertColor = new Color(1f, 0.65f, 0f, 1f);
+        background.DOKill();
+        background.DOColor(alertColor, 0.4f).SetLoops(-1, LoopType.Yoyo);
+
         ClimberListUI.Instance?.OnCounterHighlight(climber);
 
         yield return new WaitForSeconds(counterHighlightDuration);
 
-        // Restaurar
+        // Restaurar escala
+        transform.DOKill();
+        transform.DOScale(1f, 0.15f);
+
+        // Restaurar icono
         if (stateBadgeIcon != null)
         {
             stateBadgeIcon.transform.DOKill();
             stateBadgeIcon.transform.DOScale(1f, 0.15f);
-            //stateBadgeIcon.color = Color.white;
         }
 
+        // Restaurar background
+        background.DOKill();
+        background.DOColor(Color.white, 0.15f);
+
         counterHighlightRoutine = null;
-        UpdateStateBadge();            
+        UpdateStateBadge();
         ClimberListUI.Instance?.OnCounterHighlightEnd(climber);
     }
 

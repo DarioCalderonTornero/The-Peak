@@ -88,6 +88,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: EscaladorExplosivo
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4c66f3b58a920af4c85a80ac16e64c44, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3255329377932257402, guid: 4c66f3b58a920af4c85a80ac16e64c44, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -292,6 +296,7 @@ MonoBehaviour:
   destroyDelay: 3
   stormyCloudAnimDelay: 0.5
   snowVFXGameObject: {fileID: 0}
+  mudVFXGameObject: {fileID: 623304030148535544, guid: 052491a18bb07654fb9851e909eba037, type: 3}
 --- !u!136 &4989636344134590157
 CapsuleCollider:
   m_ObjectHideFlags: 0

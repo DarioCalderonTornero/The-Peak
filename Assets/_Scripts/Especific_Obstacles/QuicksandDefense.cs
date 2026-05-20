@@ -315,7 +315,7 @@ public class QuicksandDefense : BaseDefense
                 GameManager.Instance.NotifyClimberDied(deathInfo);
 
             if (ClimberDeathPointsManager.Instance != null)
-                ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
+                //ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
             if (PointsManager.Instance != null)
                 PointsManager.Instance.AddPoints(10);
 

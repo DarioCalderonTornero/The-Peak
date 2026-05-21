@@ -651,9 +651,9 @@ MonoBehaviour:
   floatOffset: 2
   subdivisionsPerSegment: 6
   reachedThreshold: 0.2
-  maxStamina: 150
-  staminaDrainPerSecond: 2
-  slowDownSlopeFactor: 2
+  maxStamina: 30
+  staminaDrainPerSecond: 3
+  slowDownSlopeFactor: 1.25
   externalSpeedMultiplier: 0.3
   revisitPenaltyPerVisit: 200
   maxVisitsToDie: 3

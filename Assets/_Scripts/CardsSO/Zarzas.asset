@@ -34,7 +34,7 @@ MonoBehaviour:
   counterIcon: {fileID: 264506223, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterColorSprite: {fileID: -973223281, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 1729673018, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
-  explanationVideo: {fileID: 0}
-  functionText: 
-  counterInfo: 
+  explanationVideo: {fileID: 32900000, guid: 9855dc4502629724fbc964160a3247bb, type: 3}
+  functionText: Gasta una ran cantidad de stamina, pero no altera su velocidad.
+  counterInfo: Destruye las propias zarzas
   lockedMessage: 

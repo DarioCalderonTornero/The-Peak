@@ -35,7 +35,8 @@ MonoBehaviour:
   counterIcon: {fileID: 264506223, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterColorSprite: {fileID: -973223281, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 0}
-  explanationVideo: {fileID: 0}
-  functionText: 
-  counterInfo: 
+  explanationVideo: {fileID: 32900000, guid: 1b56b34835279b84696ec13a26467458, type: 3}
+  functionText: "Cada dos turnos crecen bayas, depende de cu\xE1l se coman aumenta
+    su estamina, o mueren"
+  counterInfo: "El escalador con el libro elegir\xE1 siempre la baya buena"
   lockedMessage: 

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,18 +7,17 @@ using TMPro;
 public class RankingUI : MonoBehaviour
 {
     [SerializeField] private GameObject rankingPanel;
-    [SerializeField] private Transform entriesContainer;   // padre de las filas
-    [SerializeField] private GameObject entryPrefab;       // prefab de una fila
+    [SerializeField] private Transform entriesContainer;
+    [SerializeField] private GameObject entryPrefab;
     [SerializeField] private Button closeButton;
-    [SerializeField] private Button clearButton;           // opcional
+    [SerializeField] private Button clearButton;
     [SerializeField] private Button rankingButton;
-    [SerializeField] private RankingUI rankingUI;
 
     [Header("Sprites de posición")]
-    [SerializeField] private Sprite spriteGold;    // 1º
-    [SerializeField] private Sprite spriteSilver;  // 2º
-    [SerializeField] private Sprite spriteBronze;  // 3º
-    [SerializeField] private Sprite spriteDefault; // resto
+    [SerializeField] private Sprite spriteGold;
+    [SerializeField] private Sprite spriteSilver;
+    [SerializeField] private Sprite spriteBronze;
+    [SerializeField] private Sprite spriteDefault;
 
     public static RankingUI Instance { get; private set; }
 
@@ -29,32 +29,34 @@ public class RankingUI : MonoBehaviour
 
     private void Start()
     {
+        if (rankingPanel != null)
+            rankingPanel.SetActive(false);
+
         if (closeButton != null)
             closeButton.onClick.AddListener(Hide);
 
         if (clearButton != null)
             clearButton.onClick.AddListener(OnClear);
 
-        if (rankingPanel != null) rankingPanel.SetActive(false);
-
         if (rankingButton != null)
-            rankingButton.onClick.AddListener(() => rankingUI?.Show());
+            rankingButton.onClick.AddListener(Show);
     }
 
     public void Show()
     {
-        if (rankingPanel != null) rankingPanel.SetActive(true);
+        if (rankingPanel != null)
+            rankingPanel.SetActive(true);
         RefreshEntries();
     }
 
     public void Hide()
     {
-        if (rankingPanel != null) rankingPanel.SetActive(false);
+        if (rankingPanel != null)
+            rankingPanel.SetActive(false);
     }
 
     private void RefreshEntries()
     {
-        // Limpiar filas anteriores
         foreach (Transform child in entriesContainer)
             Destroy(child.gameObject);
 
@@ -72,7 +74,6 @@ public class RankingUI : MonoBehaviour
             SetText(row, "Rounds", $"Rondas: {entry.rounds}");
             SetText(row, "Kills", $"{entry.killCount}");
 
-            // Asignar sprite de fondo según posición
             var bg = row.transform.Find("Background")?.GetComponent<Image>();
             if (bg != null)
             {
@@ -99,12 +100,5 @@ public class RankingUI : MonoBehaviour
     {
         RankingManager.Instance?.ClearRanking();
         RefreshEntries();
-    }
-
-    private string FormatTime(float seconds)
-    {
-        int m = Mathf.FloorToInt(seconds / 60f);
-        int s = Mathf.FloorToInt(seconds % 60f);
-        return $"{m:00}:{s:00}";
     }
 }

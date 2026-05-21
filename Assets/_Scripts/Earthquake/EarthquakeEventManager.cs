@@ -44,6 +44,16 @@ public class EarthquakeEventManager : MonoBehaviour
 
     [SerializeField] private Sprite newCardSprite;
 
+    [Header("Probabilidad y cooldown")]
+    [SerializeField] private float triggerChance = 0.1f;    // 10%
+    [SerializeField] private int cooldownTurns = 2;         // turnos de cooldown tras activar
+
+    private int cooldownRemaining = 0;
+
+    [Header("Probabilidad destrucción")]
+    [SerializeField] private float climberDestroyChance = 0.2f;  // 20%
+    [SerializeField] private float defenseDestroyChance = 0.2f;  // 20%
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -53,6 +63,33 @@ public class EarthquakeEventManager : MonoBehaviour
     private void Start()
     {
         if (countdownWidget != null) countdownWidget.SetActive(false);
+
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnPlayerTurnStart += HandlePlayerTurnStart;
+    }
+
+    private void OnDestroy()
+    {
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnPlayerTurnStart -= HandlePlayerTurnStart;
+    }
+
+    private void HandlePlayerTurnStart()
+    {
+        // En cooldown → decrementar y salir
+        if (cooldownRemaining > 0)
+        {
+            cooldownRemaining--;
+            return;
+        }
+
+        // Ya hay evento activo → no lanzar otro
+        if (eventActive) return;
+
+        // Probabilidad 10%
+        if (Random.value > triggerChance) return;
+
+        TriggerEvent();
     }
 
     // ── Llamar esto para iniciar el evento (manualmente o por código) ──
@@ -276,19 +313,50 @@ public class EarthquakeEventManager : MonoBehaviour
         var dragUI = card.GetComponent<DragCardUI>();
         if (dragUI != null) dragUI.enabled = false;
 
-        // FrontImage
-        if (cardFrontSprite != null)
+        var flipComp = card.GetComponent<CardFlip>();
+        if (flipComp != null) flipComp.enabled = false;
+
+        // Sprite frontal
+        var frontImg = card.transform.Find("FrontCard/FrontImage")?.GetComponent<Image>();
+        if (frontImg != null && cardFrontSprite != null)
+            frontImg.sprite = cardFrontSprite;
+
+        // Ocultar todo en FrontCard excepto FrontImage
+        var frontCard = card.transform.Find("FrontCard");
+        if (frontCard != null)
         {
-            var frontImg = card.transform.Find("FrontCard/FrontImage")?.GetComponent<Image>();
-            if (frontImg != null) frontImg.sprite = cardFrontSprite;
+            foreach (Transform child in frontCard)
+            {
+                if (child.name != "FrontImage")
+                    child.gameObject.SetActive(false);
+            }
         }
 
-        // BackImage
-        if (cardBackSprite != null)
+        // Ocultar todo en BackCard excepto BackImage
+        var backCard = card.transform.Find("BackCard");
+        if (backCard != null)
         {
-            var backImg = card.transform.Find("BackCard/BackImage")?.GetComponent<Image>();
-            if (backImg != null) backImg.sprite = cardBackSprite;
+            foreach (Transform child in backCard)
+            {
+                if (child.name != "BackImage")
+                    child.gameObject.SetActive(false);
+            }
         }
+
+        // Sprite trasero
+        var backImg = card.transform.Find("BackCard/BackImage")?.GetComponent<Image>();
+        if (backImg != null && cardBackSprite != null)
+            backImg.sprite = cardBackSprite;
+
+        // Ocultar Glow y otros elementos raíz
+        var glow = card.transform.Find("Glow");
+        if (glow != null) glow.gameObject.SetActive(false);
+
+        var star = card.transform.Find("Star");
+        if (star != null) star.gameObject.SetActive(false);
+
+        var pending = card.transform.Find("PendingCard");
+        if (pending != null) pending.gameObject.SetActive(false);
 
         return card;
     }
@@ -623,32 +691,26 @@ public class EarthquakeEventManager : MonoBehaviour
 
     private IEnumerator ActivateEarthquake()
     {
-        // 1. Primero mostrar y quemar la carta
         yield return StartCoroutine(ShowAndBurnCard());
 
-        // 2. Luego el shake
         CameraShake.Instance?.ShakeMainCamera(8f, 10f, 1f);
         if (warningSound != null)
             Temporal_Sound_Music.Instance?.Play2DSound(warningSound, 1f);
 
         yield return new WaitForSeconds(1f);
 
-        // 3. Solo después destruir
         var climbers = Object.FindObjectsOfType<ClimberMovement>();
         foreach (var c in climbers)
-        {
-            if (c != null && Random.value < 0.2f)
-                Destroy(c.gameObject);
-        }
+            if (c != null && Random.value < climberDestroyChance) Destroy(c.gameObject);
 
         var defenses = Object.FindObjectsOfType<BaseDefense>();
         foreach (var d in defenses)
-        {
-            if (d != null && Random.value < 0.2f)
-                Destroy(d.gameObject);
-        }
+            if (d != null && Random.value < defenseDestroyChance) Destroy(d.gameObject);
 
         eventActive = false;
+
+        // Iniciar cooldown — no podrá triggear hasta que pasen cooldownTurns turnos
+        cooldownRemaining = cooldownTurns;
     }
 
     private IEnumerator ShowAndBurnCard()

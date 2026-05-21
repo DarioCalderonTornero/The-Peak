@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &9165577601049392364
+--- !u!1001 &9066348401859895739
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 179.88876
+      value: 244.77104
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.5851164
+      value: 4.908
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 203.97685
+      value: 257.574
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -49,8 +49,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7638781897660018307, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7638781897660018307, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: -6490658990687575064, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -6490658990687575064, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -60,9 +68,13 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e257c7fabbc3aca46bba2feae0880b20, type: 2}
+    - target: {fileID: -1390440098070946274, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_Name
-      value: "CartelSe\xF1alesCaminos"
+      value: "CartelSe\xF1alesCaminos 1"
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -72,10 +84,18 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e257c7fabbc3aca46bba2feae0880b20, type: 2}
+    - target: {fileID: 2044130007372524581, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4320318931834446081, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e257c7fabbc3aca46bba2feae0880b20, type: 2}
+    - target: {fileID: 4784655795150572064, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4784655795150572064, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -84,6 +104,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e257c7fabbc3aca46bba2feae0880b20, type: 2}
+    - target: {fileID: 6786936455404935758, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6786936455404935758, guid: cadcfe7c85dea734faf6598ff103de2d, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647

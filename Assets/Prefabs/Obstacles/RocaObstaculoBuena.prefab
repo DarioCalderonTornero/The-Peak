@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   obstacleType: 1
-  breakRockPrefab: {fileID: 6481499901940509601, guid: 70a9b849608a05f4580b498f89608ae6, type: 3}
+  breakRockPrefab: {fileID: 145344573614897390, guid: 7484d2822dc1ca94899602ce1264b60a, type: 3}
   delayAfterSpawn: 2
 --- !u!114 &5997546810899515373
 MonoBehaviour:

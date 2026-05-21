@@ -102,7 +102,6 @@ public class CloudKillDefense : BaseDefense
 
         if (visualChild != null)
         {
-            // visualChild.SetParent(null);
             visualChild.position = cloudPosition;
             visualChild.rotation = Quaternion.Euler(0f, placedYaw, 0f);
             StartCoroutine(AnimateAppear(visualChild));
@@ -126,7 +125,6 @@ public class CloudKillDefense : BaseDefense
     private void OnTriggerEnter(Collider other)
     {
         if (hasKilled) return;
-        if (victims.Count > 0) return;
 
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
@@ -136,6 +134,15 @@ public class CloudKillDefense : BaseDefense
         {
             loadout.TryHandleObstacle(ObstacleType.Cloud);
             StartCoroutine(DelayedDisappear());
+            return;
+        }
+
+        // Si ya hay una víctima siendo procesada, registrar al escalador
+        // para poder liberarlo cuando la nube se destruya
+        if (victims.Count > 0)
+        {
+            if (!victims.ContainsKey(climber))
+                victims[climber] = new CloudVictimData();
             return;
         }
 
@@ -149,14 +156,12 @@ public class CloudKillDefense : BaseDefense
         slotCancelled = false;
         var deathInfo = new GameManager.DeathInfo { climber = climber, position = climber.transform.position, cause = DeathCause.StormyCloud };
 
-        // ─── CAMBIO CRÍTICO: CONTAR AQUÍ MISMO, AL ENTRAR A LA COLA DE ESPERA ───
         if (ClimberDeathPointsManager.Instance != null)
             ClimberDeathPointsManager.Instance.AddClimberDeathPoints(climber);
 
         if (!DeathCinematicManager.Instance.UseDeathCinematics)
         {
             if (climber != null) Destroy(climber.gameObject);
-            // PointsManager.Instance?.AddPoints(5);
             StartCoroutine(DisappearAndDestroy());
             return;
         }
@@ -174,10 +179,14 @@ public class CloudKillDefense : BaseDefense
         float maxAudioDistance = 30f;
 
         if (Temporal_Sound_Music.Instance != null && counterAirAudioClip != null)
-        {
             Temporal_Sound_Music.Instance.Play3DSound(counterAirAudioClip, transform.position, 1f, 15f, maxAudioDistance);
-        }
+
         yield return new WaitForSeconds(1f);
+
+        // Esperar a que termine cualquier muerte en proceso
+        while (killSequenceRoutine != null)
+            yield return null;
+
         StartCoroutine(DisappearAndDestroy());
     }
 
@@ -222,8 +231,7 @@ public class CloudKillDefense : BaseDefense
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(deathInfo);
-            deathNotified = true; // ¡Marcamos como notificado!
-            // PointsManager.Instance?.AddPoints(5);
+            deathNotified = true;
         }
 
         if (killSequenceRoutine != null) StopCoroutine(killSequenceRoutine);
@@ -239,8 +247,6 @@ public class CloudKillDefense : BaseDefense
 
         if (climber != null)
         {
-            // ¡SOLUCIÓN! Si el jugador saltó la cinemática ANTES de que se otorgara el slot,
-            // forzamos la notificación al GameManager aquí para no perder los puntos ni el conteo.
             if (!deathNotified && GameManager.Instance != null)
             {
                 GameManager.Instance.NotifyClimberDied(deathInfo);
@@ -278,11 +284,9 @@ public class CloudKillDefense : BaseDefense
 
         climber.FreezeInPlace();
 
-        // Activar VFX
         if (killVFX != null)
             killVFX.SetActive(true);
 
-        // Sonido con delay configurable respecto al VFX
         StartCoroutine(PlaySoundDelayed(audioDelay));
 
         float elapsed2 = 0f;
@@ -308,7 +312,6 @@ public class CloudKillDefense : BaseDefense
 
         hasKilled = true;
 
-        // Esperar antes de desaparecer la nube
         yield return new WaitForSeconds(cloudDisappearDelay);
 
         isDisappearing = true;
@@ -387,6 +390,16 @@ public class CloudKillDefense : BaseDefense
 
     private void OnDestroy()
     {
+        // Liberar todos los escaladores registrados para que el turno no se quede pillado
+        foreach (var climber in victims.Keys)
+        {
+            if (climber != null)
+            {
+                climber.SetExternallyDoneThisTurn(false);
+                climber.SetExternalSpeedMultiplier(1f);
+            }
+        }
+
         if (!isDisappearing && visualChild != null)
             Destroy(visualChild.gameObject);
         if (rainObject != null)

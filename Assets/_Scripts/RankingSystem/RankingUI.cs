@@ -13,6 +13,12 @@ public class RankingUI : MonoBehaviour
     [SerializeField] private Button rankingButton;
     [SerializeField] private RankingUI rankingUI;
 
+    [Header("Sprites de posición")]
+    [SerializeField] private Sprite spriteGold;    // 1º
+    [SerializeField] private Sprite spriteSilver;  // 2º
+    [SerializeField] private Sprite spriteBronze;  // 3º
+    [SerializeField] private Sprite spriteDefault; // resto
+
     public static RankingUI Instance { get; private set; }
 
     private void Awake()
@@ -61,13 +67,23 @@ public class RankingUI : MonoBehaviour
             var entry = entries[i];
             GameObject row = Instantiate(entryPrefab, entriesContainer);
 
-            // Buscar los textos por nombre en el prefab
-            SetText(row, "Position", $"#{i + 1}");
+            SetText(row, "Position", $"{i + 1}");
             SetText(row, "Name", entry.playerName);
-            SetText(row, "Rounds", $"{entry.rounds}");
+            SetText(row, "Rounds", $"Rondas: {entry.rounds}");
             SetText(row, "Kills", $"{entry.killCount}");
-            SetText(row, "Time", FormatTime(entry.playTime));
-            SetText(row, "Date", entry.date);
+
+            // Asignar sprite de fondo según posición
+            var bg = row.transform.Find("Background")?.GetComponent<Image>();
+            if (bg != null)
+            {
+                bg.sprite = i switch
+                {
+                    0 => spriteGold,
+                    1 => spriteSilver,
+                    2 => spriteBronze,
+                    _ => spriteDefault
+                };
+            }
         }
     }
 

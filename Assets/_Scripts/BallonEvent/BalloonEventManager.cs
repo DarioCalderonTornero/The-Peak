@@ -49,10 +49,13 @@ public class BalloonEventManager : MonoBehaviour
             TurnManager.Instance.OnPlayerTurnStart -= HandlePlayerTurnStart;
     }
 
+    private bool balloonEventRunning = false;
+
     private void HandlePlayerTurnStart()
     {
         if (PointsManager.Instance == null) return;
         if (PointsManager.Instance.GetCurrentPoints() > pointThreshold) return;
+        if (balloonEventRunning) return; // ya hay un evento activo
         if (Random.value > triggerChance) return;
 
         StartCoroutine(RunBalloonEvent());
@@ -60,23 +63,39 @@ public class BalloonEventManager : MonoBehaviour
 
     private IEnumerator RunBalloonEvent()
     {
-        // Instanciar globo fuera de pantalla
+        balloonEventRunning = true;
+
+        bool clicked = false;
+
+        // Primera pasada — desde la izquierda
+        yield return StartCoroutine(RunSinglePass(true, (result) => clicked = result));
+        if (clicked) { balloonEventRunning = false; yield break; }
+
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        // Segunda pasada — desde la derecha
+        yield return StartCoroutine(RunSinglePass(false, (result) => clicked = result));
+
+        balloonEventRunning = false;
+    }
+
+    private IEnumerator RunSinglePass(bool fromLeft, System.Action<bool> onResult)
+    {
         GameObject balloon = Instantiate(balloonPrefab, effectsCanvas);
         RectTransform balloonRT = balloon.GetComponent<RectTransform>();
 
-        float canvasWidth = effectsCanvas.rect.width;
-        bool fromLeft = Random.value > 0.5f;
+        // Guardar escala original del prefab
+        Vector3 originalScale = balloonRT.localScale;
 
+        float canvasWidth = effectsCanvas.rect.width;
         float startX = fromLeft ? -canvasWidth / 2f - 100f : canvasWidth / 2f + 100f;
         float endX = fromLeft ? canvasWidth / 2f + 100f : -canvasWidth / 2f - 100f;
 
         balloonRT.anchoredPosition = new Vector2(startX, balloonY);
+        balloonRT.localScale = fromLeft
+            ? originalScale
+            : new Vector3(-originalScale.x, originalScale.y, originalScale.z);
 
-        // Escalar si va de derecha a izquierda
-        if (!fromLeft)
-            balloonRT.localScale = new Vector3(-1, 1, 1);
-
-        // Hacer el globo clicable
         bool clicked = false;
         var btn = balloon.GetComponent<Button>();
         if (btn == null) btn = balloon.AddComponent<Button>();
@@ -91,23 +110,21 @@ public class BalloonEventManager : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float n = Mathf.Clamp01(t / duration);
-
             float x = Mathf.Lerp(startX, endX, n);
             float sineY = Mathf.Sin(t * 1.2f + sineOffset) * 30f
                         + Mathf.Sin(t * 2.8f + sineOffset) * 10f;
-
             balloonRT.anchoredPosition = new Vector2(x, balloonY + sineY);
-
             yield return null;
         }
 
         if (!clicked)
         {
             Destroy(balloon);
+            onResult?.Invoke(false);
             yield break;
         }
 
-        // ── CLIC: caída ──────────────────────────────────────────
+        // Caída
         btn.interactable = false;
         Vector2 fallStart = balloonRT.anchoredPosition;
         float canvasBottom = -effectsCanvas.rect.height / 2f;
@@ -117,8 +134,7 @@ public class BalloonEventManager : MonoBehaviour
         while (t < fallDuration)
         {
             t += Time.unscaledDeltaTime;
-            float n = t / fallDuration;
-            float ease = n * n; // EaseIn
+            float ease = (t / fallDuration) * (t / fallDuration);
             balloonRT.anchoredPosition = Vector2.Lerp(fallStart, fallEnd, ease);
             yield return null;
         }
@@ -126,9 +142,10 @@ public class BalloonEventManager : MonoBehaviour
         Vector2 explosionPos = balloonRT.anchoredPosition;
         Destroy(balloon);
 
-        // ── EXPLOSIÓN: soltar puntos ─────────────────────────────
         int pointCount = Random.Range(minPoints, maxPoints + 1);
         yield return StartCoroutine(SpawnPoints(explosionPos, pointCount));
+
+        onResult?.Invoke(true);
     }
 
     private IEnumerator SpawnPoints(Vector2 origin, int count)

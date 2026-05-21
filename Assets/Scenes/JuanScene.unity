@@ -1038,6 +1038,112 @@ MonoBehaviour:
   sunQuad: {fileID: 2062150065}
   moonQuad: {fileID: 1697527329}
   distance: 639.1
+  sunMaterial: {fileID: 2100000, guid: af2254fb53d3ee044905167387deba1d, type: 2}
+  sunBaseColor: {r: 1, g: 1, b: 1, a: 1}
+  sunAlphaCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.35
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.65
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  moonMaterial: {fileID: 2100000, guid: 0f073ae500d00fc4a8bdfe4a534e935e, type: 2}
+  moonBaseColor: {r: 1, g: 1, b: 1, a: 1}
+  moonAlphaCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.35
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.5
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.65
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   sunLight: {fileID: 241634782}
   sunIntensityCurve:
     serializedVersion: 2
@@ -1096,7 +1202,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 35000
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -1132,7 +1238,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 35000
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -3455,7 +3561,7 @@ Light:
   serializedVersion: 13
   m_Type: 1
   m_Color: {r: 0.73903656, g: 0.6650944, b: 1, a: 1}
-  m_Intensity: 9925.865
+  m_Intensity: 0.28359622
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208

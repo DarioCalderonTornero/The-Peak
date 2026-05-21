@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: de47192ec0bcef1438beaf67c1821178
+guid: 5571735bf8a547b4581587902add9d5c
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -95,56 +95,12 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites:
-    - serializedVersion: 2
-      name: SOL_Y_LUNA_0
-      rect:
-        serializedVersion: 2
-        x: 170
-        y: 312
-        width: 457
-        height: 444
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3ea915b8569dcca4687a2dcd4052d364
-      internalID: -402700216
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: SOL_Y_LUNA_1
-      rect:
-        serializedVersion: 2
-        x: 750
-        y: 324
-        width: 448
-        height: 478
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ceab11d6c40178d45b6d162925b23200
-      internalID: 1281148755
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
+    sprites: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: ca603a7cc0cd307429c4bd844482fc02
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -152,12 +108,8 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":660.0,"y":660.0},"gridSpriteOffset":{"x":0.0,"y":250.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
-    nameFileIdTable:
-      SOL_Y_LUNA_0: -402700216
-      SOL_Y_LUNA_1: 1281148755
+      entries: []
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

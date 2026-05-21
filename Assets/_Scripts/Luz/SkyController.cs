@@ -11,6 +11,14 @@ public class SkyController : MonoBehaviour
     public Transform moonQuad;
     public float distance = 450f;
 
+    [Header("Materiales de los Astros (Para Fundido)")]
+    public Material sunMaterial;
+    [ColorUsage(true, true)] public Color sunBaseColor = Color.white;
+    public AnimationCurve sunAlphaCurve;
+    public Material moonMaterial;
+    [ColorUsage(true, true)] public Color moonBaseColor = Color.white;
+    public AnimationCurve moonAlphaCurve;
+
     [Header("Luces Reales (Sombra e Iluminación)")]
     public Light sunLight;
     public AnimationCurve sunIntensityCurve;
@@ -37,6 +45,9 @@ public class SkyController : MonoBehaviour
     private int starsIntensityId;
     private int cloudColorId;
     private int cloudDensityId;
+    private int baseColorId;
+    private int alphaId;
+
     void Start()
     {
         // Convertimos los textos en IDs una sola vez al inicio
@@ -46,6 +57,8 @@ public class SkyController : MonoBehaviour
         starsIntensityId = Shader.PropertyToID("_StarsIntensity");
         cloudColorId = Shader.PropertyToID("_CloudColor");
         cloudDensityId = Shader.PropertyToID("_CloudDensity");
+        baseColorId = Shader.PropertyToID("_BaseColor");
+        alphaId = Shader.PropertyToID("_Alpha");
     }
 
     void Update()
@@ -56,12 +69,12 @@ public class SkyController : MonoBehaviour
             if (timeOfDay >= 1f) timeOfDay -= 1f;
         }
 
-        // 1. Calcular rotación general
+        // 1. Calcular rotación general del sistema
         float sunAngle = timeOfDay * 360f - 90f;
         Quaternion rotation = Quaternion.Euler(sunAngle, 170f, 0f);
         transform.rotation = rotation;
 
-        // 2. Posicionar los Quads
+        // 2. Posicionar los Quads en extremos opuestos
         Vector3 sunDirection = transform.forward;
         Vector3 centerPosition = skySphere != null ? skySphere.position : Vector3.zero;
 
@@ -78,18 +91,27 @@ public class SkyController : MonoBehaviour
             moonQuad.forward = moonDirection;
         }
 
-        // 3. Actualizar Luces
-        if (sunLight != null)
+        // 3. Controlar el Fundido de los Sprites enviando el valor de la curva al Float del shader
+        if (sunMaterial != null)
         {
-            sunLight.intensity = sunIntensityCurve.Evaluate(timeOfDay);
+            sunMaterial.SetColor(baseColorId, sunBaseColor);
+            sunMaterial.SetFloat(alphaId, sunAlphaCurve.Evaluate(timeOfDay));
         }
+
+        if (moonMaterial != null)
+        {
+            moonMaterial.SetColor(baseColorId, moonBaseColor);
+            moonMaterial.SetFloat(alphaId, moonAlphaCurve.Evaluate(timeOfDay));
+        }
+
+        // 4. Actualizar la Intensidad de las Luces Direccionales
+        if (sunLight != null)
+            sunLight.intensity = sunIntensityCurve.Evaluate(timeOfDay);
 
         if (moonLight != null)
-        {
             moonLight.intensity = moonIntensityCurve.Evaluate(timeOfDay);
-        }
 
-        // 4. Pasar todos los datos al Shader usando los IDs optimizados
+        // 5. Pasar todos los datos al Shader del domo de cielo
         if (skyMaterial != null)
         {
             skyMaterial.SetVector(sunDirectionId, -sunDirection);

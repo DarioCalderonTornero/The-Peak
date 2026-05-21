@@ -651,7 +651,7 @@ MonoBehaviour:
   floatOffset: 2
   subdivisionsPerSegment: 6
   reachedThreshold: 0.2
-  maxStamina: 30
+  maxStamina: 40
   staminaDrainPerSecond: 3
   slowDownSlopeFactor: 1.25
   externalSpeedMultiplier: 0.3

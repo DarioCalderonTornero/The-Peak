@@ -351,19 +351,22 @@ public class FreeCameraMovement : MonoBehaviour
 
     private void HandleFlyRMB()
     {
-        if (!InputManager.Instance.IsCameraRotationHold()) return;
+        // — Rotación: solo con RMB —
+        if (InputManager.Instance.IsCameraRotationHold())
+        {
+            Vector2 delta = InputManager.Instance.GetCameraRotationDelta();
 
-        Vector2 delta = InputManager.Instance.GetCameraRotationDelta();
+            float dx = delta.x * rotateSensitivity;
+            float dy = delta.y * rotateSensitivity * (invertY ? 1f : -1f);
 
-        float dx = delta.x * rotateSensitivity;
-        float dy = delta.y * rotateSensitivity * (invertY ? 1f : -1f);
+            yaw += dx;
+            pitch += dy;
+            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-        yaw += dx;
-        pitch += dy;
-        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+        }
 
-        transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
-
+        // — Movimiento WASD: siempre activo —
         Vector2 fly2D = InputManager.Instance.GetCameraFlyMovement();
         float upDown = InputManager.Instance.GetCameraFlyUpDown();
 
@@ -377,7 +380,6 @@ public class FreeCameraMovement : MonoBehaviour
 
         desiredMove *= flySpeed * Time.deltaTime;
 
-        // Aplicamos colisión con frenado progresivo
         transform.position += ApplyCollision(desiredMove);
     }
 

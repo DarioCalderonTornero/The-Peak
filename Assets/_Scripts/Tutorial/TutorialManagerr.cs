@@ -20,7 +20,6 @@ public class TutorialManagerr : MonoBehaviour
     [Header("Animación")]
     [SerializeField] private float fadeDuration = 0.4f;
 
-    private const string TUTORIAL_DONE_KEY = "TUTORIAL_DONE";
     private int currentStep = 0;
     private bool animating = false;
 
@@ -36,7 +35,6 @@ public class TutorialManagerr : MonoBehaviour
             nextButton.onClick.AddListener(OnNext);
 
         if (tutorialPanel != null) tutorialPanel.SetActive(false);
-
         SetAlpha(step1, 0f);
         SetAlpha(step2, 0f);
         SetAlpha(step3, 0f);
@@ -44,9 +42,11 @@ public class TutorialManagerr : MonoBehaviour
 
     public void TryShowTutorial()
     {
-        if (PlayerPrefs.GetInt(TUTORIAL_DONE_KEY, 0) == 1) return;
-
         currentStep = 0;
+        SetAlpha(step1, 0f);
+        SetAlpha(step2, 0f);
+        SetAlpha(step3, 0f);
+
         if (tutorialPanel != null) tutorialPanel.SetActive(true);
         if (nextButtonText != null) nextButtonText.text = "Siguiente";
 
@@ -61,15 +61,11 @@ public class TutorialManagerr : MonoBehaviour
         {
             currentStep++;
             StartCoroutine(FadeIn(GetStep(currentStep)));
-
             if (currentStep == 2 && nextButtonText != null)
                 nextButtonText.text = "¡Empezar!";
         }
         else
         {
-            // Último paso → cerrar
-            PlayerPrefs.SetInt(TUTORIAL_DONE_KEY, 1);
-            PlayerPrefs.Save();
             StartCoroutine(HideTutorial());
         }
     }
@@ -134,11 +130,5 @@ public class TutorialManagerr : MonoBehaviour
         var cg = obj.GetComponent<CanvasGroup>();
         if (cg == null) cg = obj.AddComponent<CanvasGroup>();
         return cg;
-    }
-
-    [ContextMenu("Reset Tutorial")]
-    public void ResetTutorial()
-    {
-        PlayerPrefs.DeleteKey(TUTORIAL_DONE_KEY);
     }
 }

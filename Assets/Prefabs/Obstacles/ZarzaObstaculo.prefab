@@ -190,7 +190,7 @@ MonoBehaviour:
   popScale: 1.15
   shovelPopDuration: 0.15
   slowFactor: 0.05
-  staminaMultiplier: 20
+  staminaMultiplier: 1
   brambleAudioSource: {fileID: 3653686631558448835}
 --- !u!114 &9002646512306724513
 MonoBehaviour:

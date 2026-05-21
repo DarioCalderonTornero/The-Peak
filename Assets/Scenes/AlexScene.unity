@@ -3825,8 +3825,8 @@ MonoBehaviour:
   newCardSprite: {fileID: 288395485, guid: 5e75f57a316f6c64a923f056cf0a4df7, type: 3}
   triggerChance: 0.1
   cooldownTurns: 2
-  climberDestroyChance: 0.2
-  defenseDestroyChance: 0.2
+  climberDestroyChance: 0.5
+  defenseDestroyChance: 0.5
 --- !u!4 &600488884
 Transform:
   m_ObjectHideFlags: 0

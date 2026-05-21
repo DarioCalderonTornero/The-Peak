@@ -37,6 +37,9 @@ public class LodoDefense : BaseDefense
     private Coroutine spawnRoutine;
     private Vector3 spawnTargetLocalScale;
 
+    // Contador de muertes en progreso — el lodo no se destruye hasta que sea 0
+    private int _pendingDeaths = 0;
+
     private class MudClimberData
     {
         public float lastStamina;
@@ -85,11 +88,8 @@ public class LodoDefense : BaseDefense
             if (lodoVFX != null)
             {
                 var vfx = lodoVFX.GetComponent<LodoVFXController>();
-
                 if (vfx != null)
-                {
                     vfx.SetBubbles(true);
-                }
             }
         }
     }
@@ -114,7 +114,6 @@ public class LodoDefense : BaseDefense
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / spawnDuration);
             float eased = t * t * (3f - 2f * t);
-
             transform.localScale = spawnTargetLocalScale * eased;
             yield return null;
         }
@@ -144,18 +143,14 @@ public class LodoDefense : BaseDefense
 
             if (lodoVFX != null)
             {
-                var vfx = lodoVFX.GetComponent<LodoVFXController>();    
-                
+                var vfx = lodoVFX.GetComponent<LodoVFXController>();
                 if (vfx != null)
-                {
                     vfx.SetBubbles(false);
-                }
             }
 
             return;
         }
-        // Si está en cooldown solo dejamos pasar al counter
-        // El counter ya se gestiona desde BaseObstacle → OnHandleBy
+
         if (inCooldown) return;
 
         climber.SetExternalSpeedMultiplier(slowFactor);
@@ -287,6 +282,15 @@ public class LodoDefense : BaseDefense
 
     private IEnumerator QuickAbsorbAndKill(ClimberMovement climber, MudClimberData data)
     {
+        _pendingDeaths++;
+
+        // Capturamos todo lo necesario en variables locales antes de que
+        // el lodo pueda destruirse, así el coroutine es autosuficiente
+        NavMeshAgent agent = data.agent != null ? data.agent : climber.GetComponent<NavMeshAgent>();
+        bool hasOffset = data.hasInitialOffset;
+        float initialOffset = data.initialBaseOffset;
+        float targetOffset = initialOffset - (maxVisualSinkDepth + deathExtraSinkDepth);
+
         if (climber != null && GameManager.Instance != null)
         {
             GameManager.Instance.NotifyClimberDied(new GameManager.DeathInfo
@@ -296,16 +300,12 @@ public class LodoDefense : BaseDefense
                 cause = DeathCause.Mud
             });
 
-            // ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
             PointsManager.Instance.AddPoints(5);
         }
 
-        NavMeshAgent agent = data.agent != null ? data.agent : climber.GetComponent<NavMeshAgent>();
-
-        if (agent != null && data.hasInitialOffset)
+        // Animación de hundimiento — usa solo variables locales
+        if (agent != null && hasOffset)
         {
-            float targetOffset = data.initialBaseOffset - (maxVisualSinkDepth + deathExtraSinkDepth);
-
             while (agent != null && Mathf.Abs(agent.baseOffset - targetOffset) > 0.01f)
             {
                 agent.baseOffset = Mathf.MoveTowards(
@@ -330,21 +330,26 @@ public class LodoDefense : BaseDefense
             }
         }
 
+        _pendingDeaths--;
+
+        // Suscribirse a la cinemática para destruirse cuando toque
         if (DeathCinematicManager.Instance != null)
         {
-            ClimberMovement cachedClimber = climber;
-
-            void OnThisDeath(GameManager.DeathInfo info)
+            Action<GameManager.DeathInfo> handler = null;
+            handler = (info) =>
             {
-                DeathCinematicManager.Instance.OnOwnClimberCinematicFinished -= OnThisDeath;
-                Destroy(gameObject);
-            }
+                DeathCinematicManager.Instance.OnOwnClimberCinematicFinished -= handler;
 
-            DeathCinematicManager.Instance.OnOwnClimberCinematicFinished += OnThisDeath;
+                if (_pendingDeaths <= 0)
+                    Destroy(gameObject);
+            };
+
+            DeathCinematicManager.Instance.OnOwnClimberCinematicFinished += handler;
         }
         else
         {
-            Destroy(gameObject, 3f);
+            if (_pendingDeaths <= 0)
+                Destroy(gameObject, 3f);
         }
     }
 

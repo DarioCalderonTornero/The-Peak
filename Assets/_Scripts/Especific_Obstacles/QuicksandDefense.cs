@@ -92,16 +92,10 @@ public class QuicksandDefense : BaseDefense
     private void OnTriggerEnter(Collider other)
     {
         var loadout = other.GetComponent<ClimberLoadout>();
-        bool isImmune = false;
+        bool isImmune = loadout != null && loadout.CanHandleObstacle(ObstacleType.Snow);
 
-        if (loadout != null)
-        {
-            loadout.TryHandleObstacle(ObstacleType.Snow);
-            isImmune = loadout.CanHandleObstacle(ObstacleType.Snow);
-        }
-
-        if (isImmune)
-            return;
+        // Si es immune, HandleSnowObstacle gestiona el counter
+        if (isImmune) return;
 
         var climber = other.GetComponent<ClimberMovement>();
         if (climber == null) return;
@@ -121,13 +115,11 @@ public class QuicksandDefense : BaseDefense
         absorbedClimber = climber;
         absorbedTurns = 0;
 
-        // Calcular la Y correcta desde la superficie de la nieve
         if (Physics.Raycast(transform.position + Vector3.up * 2f, Vector3.down, out RaycastHit hit, 5f))
             fixedRootY = hit.point.y;
         else
             fixedRootY = transform.position.y;
 
-        // Guardar referencia al visual y su estado original
         absorbedVisual = climber.ClimberVisual;
         if (absorbedVisual != null)
         {
@@ -145,20 +137,16 @@ public class QuicksandDefense : BaseDefense
             absorbedAgent.updateRotation = false;
         }
 
-        absorbedClimber.SetExternallyDoneThisTurn(true); //primero
+        absorbedClimber.SetExternallyDoneThisTurn(true);
 
         if (absorbedAgent != null)
-            absorbedAgent.enabled = false; //luego
+            absorbedAgent.enabled = false;
 
-        // Desactivar collider para que la rampa no lo deslice
         absorbedCollider = climber.GetComponent<Collider>();
-        //if (absorbedCollider != null) absorbedCollider.enabled = false;
 
-        // Desactivar animator para que no override la animación por código
         absorbedAnimator = climber.GetComponent<Animator>();
         if (absorbedAnimator != null) absorbedAnimator.enabled = false;
 
-        // Arrancar animaciones sobre el visual
         if (absorbedVisual != null)
         {
             if (struggleRoutine != null) StopCoroutine(struggleRoutine);
@@ -168,7 +156,6 @@ public class QuicksandDefense : BaseDefense
 
     private IEnumerator SinkAndStruggleRoutine()
     {
-        // 1. Hundimiento inicial del visual en Y local
         Vector3 startLocalPos = absorbedVisual.transform.localPosition;
         Vector3 sunkLocalPos = startLocalPos + Vector3.down * sinkTargetY;
 
@@ -186,7 +173,6 @@ public class QuicksandDefense : BaseDefense
         if (absorbedVisual != null)
             absorbedVisual.transform.localPosition = sunkLocalPos;
 
-        // 2. Forcejeo en bucle
         while (absorbedVisual != null && absorbedClimber != null)
         {
             float cycleElapsed = 0f;
@@ -199,7 +185,6 @@ public class QuicksandDefense : BaseDefense
                 float t = cycleElapsed / struggleCycleTime;
 
                 float wave = Mathf.Sin(t * Mathf.PI * 2f);
-
                 float rotX = wave * struggleRotationAmount * 0.6f;
                 float rotZ = Mathf.Cos(t * Mathf.PI * 2f) * struggleRotationAmount;
                 absorbedVisual.transform.localRotation = Quaternion.Euler(rotX, 0f, rotZ);
@@ -214,8 +199,7 @@ public class QuicksandDefense : BaseDefense
 
     private void Update()
     {
-        if (absorbedClimber == null)
-            return;
+        if (absorbedClimber == null) return;
 
         if (absorbedClimber.gameObject == null)
         {
@@ -229,7 +213,6 @@ public class QuicksandDefense : BaseDefense
         CheckRescueByRadius();
         if (absorbedClimber == null) return;
 
-        // Fijar posición del root: Y hundida, XZ centrado hacia la trampa
         Vector3 pos = absorbedClimber.transform.position;
         pos.y = Mathf.Lerp(pos.y, fixedRootY - sinkTargetY, Time.deltaTime * centerLerpSpeed);
         pos.x = Mathf.Lerp(pos.x, transform.position.x, Time.deltaTime * centerLerpSpeed);
@@ -251,7 +234,6 @@ public class QuicksandDefense : BaseDefense
     {
         if (subscribedToTurns) return;
         if (TurnManager.Instance == null) return;
-
         TurnManager.Instance.OnClimberTurnEnd += HandleClimberTurnEnd;
         subscribedToTurns = true;
     }
@@ -260,7 +242,6 @@ public class QuicksandDefense : BaseDefense
     {
         if (!subscribedToTurns) return;
         if (TurnManager.Instance == null) return;
-
         TurnManager.Instance.OnClimberTurnEnd -= HandleClimberTurnEnd;
         subscribedToTurns = false;
     }
@@ -302,27 +283,28 @@ public class QuicksandDefense : BaseDefense
 
         if (absorbedClimber != null)
         {
-            Vector3 pos = absorbedClimber.transform.position;
+            ClimberMovement climberRef = absorbedClimber;
+            absorbedClimber = null;
+
+            Vector3 deathPos = climberRef.transform.position;
+            deathPos.y = fixedRootY - sinkTargetY;
+            climberRef.transform.position = deathPos;
 
             var deathInfo = new GameManager.DeathInfo
             {
-                climber = absorbedClimber,
-                position = pos,
+                climber = climberRef,
+                position = deathPos,
                 cause = DeathCause.Snow
             };
 
             if (GameManager.Instance != null)
                 GameManager.Instance.NotifyClimberDied(deathInfo);
 
-            if (ClimberDeathPointsManager.Instance != null)
-                //ClimberDeathPointsManager.Instance.AddClimberDeathPoints();
             if (PointsManager.Instance != null)
                 PointsManager.Instance.AddPoints(10);
 
             if (DeathCinematicManager.Instance != null)
             {
-                ClimberMovement climberRef = absorbedClimber;
-
                 void OnThisDeath(GameManager.DeathInfo info)
                 {
                     if (info.climber == climberRef)
@@ -332,7 +314,6 @@ public class QuicksandDefense : BaseDefense
                             Destroy(gameObject);
                     }
                 }
-
                 DeathCinematicManager.Instance.OnOwnClimberCinematicFinished += OnThisDeath;
             }
             else
@@ -341,7 +322,6 @@ public class QuicksandDefense : BaseDefense
             }
         }
 
-        absorbedClimber = null;
         absorbedAgent = null;
         absorbedVisual = null;
         absorbedCollider = null;
@@ -355,15 +335,12 @@ public class QuicksandDefense : BaseDefense
 
         if (absorbedClimber != null)
         {
-            // Restaurar visual
             if (absorbedVisual != null)
             {
                 absorbedVisual.transform.localPosition = visualOriginalLocalPos;
                 absorbedVisual.transform.localRotation = visualOriginalLocalRot;
             }
 
-            // Reactivar collider y animator
-            //if (absorbedCollider != null) absorbedCollider.enabled = true;
             if (absorbedAnimator != null) absorbedAnimator.enabled = true;
 
             Vector3 safePos = transform.position + Vector3.up * 0.3f;
@@ -431,7 +408,6 @@ public class QuicksandDefense : BaseDefense
     {
         Gizmos.color = new Color(1f, 0.85f, 0.15f, 0.2f);
         Gizmos.DrawSphere(transform.position, rescueRadius);
-
         Gizmos.color = new Color(1f, 0.85f, 0.15f, 1f);
         Gizmos.DrawWireSphere(transform.position, rescueRadius);
     }

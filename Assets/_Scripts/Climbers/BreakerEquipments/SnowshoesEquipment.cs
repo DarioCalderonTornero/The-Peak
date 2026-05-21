@@ -20,6 +20,7 @@ public class SnowshoesEquipment : EquipmentInstance
         base.OnCounterSuccess(type);
         if (ownerLoadout == null) return;
         ownerLoadout.StartEquipmentSequence(2f);
+        ownerLoadout.TriggerAnimation("SnowCounter");
     }
 
     public override bool CanHandleObstacle(ObstacleType obstacleType)

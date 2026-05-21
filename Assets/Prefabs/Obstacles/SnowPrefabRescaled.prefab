@@ -775,6 +775,7 @@ GameObject:
   - component: {fileID: -232483701889047724}
   - component: {fileID: -158187287109305426}
   - component: {fileID: -9125083257597627176}
+  - component: {fileID: 3068221286081840037}
   m_Layer: 7
   m_Name: SnowPrefabRescaled
   m_TagString: Untagged
@@ -959,6 +960,22 @@ MonoBehaviour:
   infoPanelPrefab: {fileID: 4013392729433457045, guid: 5ae6ce6b38337854fa44ba0aa6ae9b1a, type: 3}
   geyserActiveSprite: {fileID: 0}
   geyserCooldownSprite: {fileID: 0}
+--- !u!114 &3068221286081840037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9104421247320485007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 748e96ccd339deb438a20df2598a92ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HandleSnowObstacle
+  obstacleType: 0
+  shrinkDuration: 0.4
+  counterAudioClip: {fileID: 8300000, guid: 90e4bfa79882a444b8f8b3bbe536ae00, type: 3}
+  counterVFX: {fileID: 1936789083218576998, guid: 92dd21fa462273b4b98643c27f6206bf, type: 3}
 --- !u!1001 &1291543825288040690
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -494,6 +494,7 @@ public class ClimberMovement : MonoBehaviour
 
     private CampGraphBuilder.CampNode CalculateBestNeighborNode()
     {
+        // 1. Control de seguridad por si ya superó las visitas máximas en este mismo nodo
         if (currentNode != null &&
             nodeVisitCount.ContainsKey(currentNode.id) &&
             nodeVisitCount[currentNode.id] >= maxVisitsToDie)
@@ -505,60 +506,71 @@ public class ClimberMovement : MonoBehaviour
         if (currentNode == null || currentNode.neighbors == null || currentNode.neighbors.Count == 0)
             return null;
 
-        CampGraphBuilder.CampEdge bestAffordable = null;
-        float bestAffordableScore = float.PositiveInfinity;
-        CampGraphBuilder.CampEdge bestUnaffordable = null;
-        float bestUnaffordableScore = float.PositiveInfinity;
+        // Lista exclusiva para vecinos directos válidos que avancen hacia arriba
+        List<CampGraphBuilder.CampNode> validUpwardNeighbors = new List<CampGraphBuilder.CampNode>();
 
         foreach (var edge in currentNode.neighbors)
         {
-            bool hasRealObstacle = edge.hasObstacle && edge.obstacleType != ObstacleType.None;
+            if (edge.to == null) continue;
 
-            // La roca se gestiona físicamente en RockDefense, no en el grafo
-            if (edge.obstacleType == ObstacleType.Rock) hasRealObstacle = false;
+            // --- FILTRO 1: OBSTÁCULOS ---
+            bool hasRealObstacle = edge.hasObstacle && edge.obstacleType != ObstacleType.None;
+            if (edge.obstacleType == ObstacleType.Rock) hasRealObstacle = false; // Ignorado por RockDefense
 
             bool canPassObstacle = !hasRealObstacle || (loadout != null && loadout.CanHandleObstacle(edge.obstacleType));
+            if (hasRealObstacle && !canPassObstacle) continue; // Si está bloqueado, se descarta
 
-            if (hasRealObstacle && !canPassObstacle) continue;
+            // --- FILTRO 2: DIRECCIÓN ESTRICTAMENTE ASCENDENTE ---
+            bool isHigherY = edge.to.position.y > currentNode.position.y;
+            bool isCloserToSummit = edge.to.stepsToSummit < currentNode.stepsToSummit;
 
-            float effectiveWeight = edge.weight;
-            int myVisits = nodeVisitCount.ContainsKey(edge.to.id) ? nodeVisitCount[edge.to.id] : 0;
-            effectiveWeight += myVisits * revisitPenaltyPerVisit;
-
-            if (summit != null && currentNode != null && edge.to != null)
+            if (isHigherY || isCloserToSummit)
             {
-                float distNow = Vector3.Distance(currentNode.position, summit.position);
-                float distNext = Vector3.Distance(edge.to.position, summit.position);
-                float approach = distNow - distNext;
-                if (approach < -backtrackTolerance)
-                    effectiveWeight += (-approach - backtrackTolerance) * backtrackPenaltyPerMeter;
-            }
-
-            effectiveWeight = Mathf.Max(effectiveWeight, 0.01f);
-            float perceivedWeight = Mathf.Max(effectiveWeight + UnityEngine.Random.Range(-noiseRange, noiseRange), 0.1f);
-            int steps = edge.to != null ? edge.to.stepsToSummit : 999;
-            float finalScore = perceivedWeight + (steps * stepConversionFactor);
-
-            if (CalculateStaminaCost(edge) <= currentStamina)
-            {
-                if (finalScore < bestAffordableScore)
-                {
-                    bestAffordableScore = finalScore;
-                    bestAffordable = edge;
-                }
-            }
-            else
-            {
-                float penaltyScore = finalScore + 10000f;
-                if (penaltyScore < bestUnaffordableScore)
-                {
-                    bestUnaffordableScore = penaltyScore;
-                    bestUnaffordable = edge;
-                }
+                validUpwardNeighbors.Add(edge.to);
             }
         }
 
-        return (bestAffordable != null ? bestAffordable : bestUnaffordable)?.to;
+        // --- OPCIÓN A: SELECCIÓN ALEATORIA DE VECINOS DIRECTOS ---
+        if (validUpwardNeighbors.Count > 0)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, validUpwardNeighbors.Count);
+            return validUpwardNeighbors[randomIndex];
+        }
+
+        // --- OPCIÓN B: BUSCAR EL CAMPAMENTO MÁS CERCANO GLOBAL QUE ESTÉ MÁS ALTO ---
+        // Si no encontramos vecinos directos hacia arriba libres, escaneamos toda la montaña
+        if (campGraph != null && campGraph.nodes != null)
+        {
+            float bestDist = float.PositiveInfinity;
+            CampGraphBuilder.CampNode closestHigherNode = null;
+
+            foreach (var node in campGraph.nodes)
+            {
+                if (node == null || node.id == currentNode.id) continue;
+
+                // Filtro estricto: Debe estar más alto que el campamento actual en el eje Y
+                if (node.position.y > currentNode.position.y)
+                {
+                    float d = Vector3.Distance(transform.position, node.position);
+                    if (d < bestDist)
+                    {
+                        bestDist = d;
+                        closestHigherNode = node;
+                    }
+                }
+            }
+
+            if (closestHigherNode != null)
+            {
+                // Retornamos este nodo. El NavMeshAgent recalculará la ruta física hacia él
+                // aunque topológicamente no sea un vecino directo en el árbol de conexiones recortado.
+                return closestHigherNode;
+            }
+        }
+
+        // --- SIN OPCIONES ---
+        // Si no hay absolutamente ningún campamento más alto en toda la montaña, se queda quieto.
+        return null;
     }
 
     private void HandleReachedCamp()

@@ -94,12 +94,12 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: ea2ad41820d062d40ba4904839b8ce8a, type: 2}
     - target: {fileID: 3565342095032745670, guid: 4c66f3b58a920af4c85a80ac16e64c44, type: 3}
       propertyPath: m_Materials.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3565342095032745670, guid: 4c66f3b58a920af4c85a80ac16e64c44, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: ea2ad41820d062d40ba4904839b8ce8a, type: 2}
+      objectReference: {fileID: 2100000, guid: e6d6d8a1345fa2c409b54c34b0d2d815, type: 2}
     - target: {fileID: 3565342095032745670, guid: 4c66f3b58a920af4c85a80ac16e64c44, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
@@ -340,6 +340,7 @@ MonoBehaviour:
   destroyDelay: 3
   stormyCloudAnimDelay: 0.5
   snowVFXGameObject: {fileID: 0}
+  mudVFXGameObject: {fileID: 0}
 --- !u!136 &4989636344134590157
 CapsuleCollider:
   m_ObjectHideFlags: 0

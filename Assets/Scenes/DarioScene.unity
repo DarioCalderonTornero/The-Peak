@@ -2892,7 +2892,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &612281714
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6617,8 +6617,8 @@ MonoBehaviour:
   snapAngleEpsilon: 0.75
   snapEarlyCompleteMinT: 0.85
   enableBounds: 1
-  minBounds: {x: 140, y: 0, z: 130}
-  maxBounds: {x: 280, y: 55, z: 270}
+  minBounds: {x: 0, y: 0, z: 75}
+  maxBounds: {x: 400, y: 100, z: 375}
   mountainCenter: {fileID: 1738578964}
   bounceDuration: 0.75
   bounceStrength: 10
@@ -8915,7 +8915,7 @@ Transform:
   m_GameObject: {fileID: 1787620390}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 294.45, y: -15.85, z: 560.17}
+  m_LocalPosition: {x: 293.55, y: -15.85, z: 556.79}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10470,7 +10470,7 @@ Transform:
   m_GameObject: {fileID: 2122093106}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 262.6, y: -15.85, z: 558.85}
+  m_LocalPosition: {x: 264.1, y: -15.85, z: 556.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

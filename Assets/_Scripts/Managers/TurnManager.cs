@@ -261,8 +261,8 @@ public class TurnManager : MonoBehaviour
 
         if (playerTurnsUI != null)
         {
-            ShowFinalStats.Instance.totalRounds.text = "TOTAL ROUNDS: " + (currentTurnNumber).ToString();
-            ShowFinalStats.Instance.recordTotalRounds.text = "MAX ROUNDS: " + recordTurnNumber.ToString();
+            //ShowFinalStats.Instance.totalRounds.text = "TOTAL ROUNDS: " + (currentTurnNumber).ToString();
+            //ShowFinalStats.Instance.recordTotalRounds.text = "MAX ROUNDS: " + recordTurnNumber.ToString();
         }
 
         OnClimberTurnEnd?.Invoke();

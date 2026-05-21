@@ -34,9 +34,9 @@ MonoBehaviour:
   backBackground: {fileID: -797550548, guid: 9189998e55afd3e43b79c19b428fda24, type: 3}
   counterIcon: {fileID: 264506223, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterColorSprite: {fileID: -973223281, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
-  deckSlotIcon: {fileID: 0}
+  deckSlotIcon: {fileID: -617474435, guid: 39e2864fbacd7294ca289e7894b67bb9, type: 3}
   explanationVideo: {fileID: 32900000, guid: 1b56b34835279b84696ec13a26467458, type: 3}
   functionText: "Cada dos turnos crecen bayas, depende de cu\xE1l se coman aumenta
     su estamina, o mueren"
   counterInfo: "El escalador con el libro elegir\xE1 siempre la baya buena"
-  lockedMessage: 
+  lockedMessage: Se desbloquea en el nivel 5

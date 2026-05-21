@@ -1,3 +1,4 @@
+ï»¿using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,24 +9,20 @@ public class TutorialManagerr : MonoBehaviour
 
     [Header("Panel")]
     [SerializeField] private GameObject tutorialPanel;
-    [SerializeField] private Image illustrationImage;
-    [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private Button nextButton;
     [SerializeField] private TextMeshProUGUI nextButtonText;
 
-    [Header("Ilustraciones")]
-    [SerializeField] private Sprite illustrationMountain;
-    [SerializeField] private Sprite illustrationCards;
-    [SerializeField] private Sprite illustrationSkull;
+    [Header("Pasos")]
+    [SerializeField] private GameObject step1;
+    [SerializeField] private GameObject step2;
+    [SerializeField] private GameObject step3;
+
+    [Header("AnimaciÃ³n")]
+    [SerializeField] private float fadeDuration = 0.4f;
 
     private const string TUTORIAL_DONE_KEY = "TUTORIAL_DONE";
     private int currentStep = 0;
-
-    private readonly string[] messages = {
-        "¡Eres una montaña que nunca ha sido escalada... y tienes que mantener esa fama!",
-        "Arrastra las cartas de la zona inferior para colocar obstáculos y defenderte.",
-        "Si un escalador llega a la cima... ¡has perdido!"
-    };
+    private bool animating = false;
 
     private void Awake()
     {
@@ -39,50 +36,104 @@ public class TutorialManagerr : MonoBehaviour
             nextButton.onClick.AddListener(OnNext);
 
         if (tutorialPanel != null) tutorialPanel.SetActive(false);
+
+        SetAlpha(step1, 0f);
+        SetAlpha(step2, 0f);
+        SetAlpha(step3, 0f);
     }
 
     public void TryShowTutorial()
     {
         if (PlayerPrefs.GetInt(TUTORIAL_DONE_KEY, 0) == 1) return;
-        ShowStep(0);
-    }
 
-    private void ShowStep(int step)
-    {
-        currentStep = step;
+        currentStep = 0;
         if (tutorialPanel != null) tutorialPanel.SetActive(true);
+        if (nextButtonText != null) nextButtonText.text = "Siguiente";
 
-        if (messageText != null) messageText.text = messages[step];
-
-        if (illustrationImage != null)
-        {
-            illustrationImage.sprite = step switch
-            {
-                0 => illustrationMountain,
-                1 => illustrationCards,
-                2 => illustrationSkull,
-                _ => null
-            };
-        }
-
-        if (nextButtonText != null)
-            nextButtonText.text = step < messages.Length - 1 ? "Siguiente" : "¡Empezar!";
+        StartCoroutine(FadeIn(GetStep(0)));
     }
 
     private void OnNext()
     {
-        if (currentStep < messages.Length - 1)
+        if (animating) return;
+
+        if (currentStep < 2)
         {
-            ShowStep(currentStep + 1);
+            currentStep++;
+            StartCoroutine(FadeIn(GetStep(currentStep)));
+
+            if (currentStep == 2 && nextButtonText != null)
+                nextButtonText.text = "Â¡Empezar!";
         }
         else
         {
-            // Último paso — cerrar y marcar como visto
+            // Ãšltimo paso â†’ cerrar
             PlayerPrefs.SetInt(TUTORIAL_DONE_KEY, 1);
             PlayerPrefs.Save();
-            if (tutorialPanel != null) tutorialPanel.SetActive(false);
-            Time.timeScale = 1f;
+            StartCoroutine(HideTutorial());
         }
+    }
+
+    private IEnumerator HideTutorial()
+    {
+        nextButton.interactable = false;
+        StartCoroutine(FadeOut(step1));
+        StartCoroutine(FadeOut(step2));
+        yield return StartCoroutine(FadeOut(step3));
+        if (tutorialPanel != null) tutorialPanel.SetActive(false);
+        nextButton.interactable = true;
+        Time.timeScale = 1f;
+    }
+
+    private GameObject GetStep(int index) => index switch
+    {
+        0 => step1,
+        1 => step2,
+        2 => step3,
+        _ => null
+    };
+
+    private IEnumerator FadeIn(GameObject obj)
+    {
+        if (obj == null) yield break;
+        animating = true;
+        var cg = GetOrAddCanvasGroup(obj);
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            cg.alpha = Mathf.Clamp01(elapsed / fadeDuration);
+            yield return null;
+        }
+        cg.alpha = 1f;
+        animating = false;
+    }
+
+    private IEnumerator FadeOut(GameObject obj)
+    {
+        if (obj == null) yield break;
+        var cg = GetOrAddCanvasGroup(obj);
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            cg.alpha = Mathf.Lerp(1f, 0f, elapsed / fadeDuration);
+            yield return null;
+        }
+        cg.alpha = 0f;
+    }
+
+    private void SetAlpha(GameObject obj, float alpha)
+    {
+        if (obj == null) return;
+        GetOrAddCanvasGroup(obj).alpha = alpha;
+    }
+
+    private CanvasGroup GetOrAddCanvasGroup(GameObject obj)
+    {
+        var cg = obj.GetComponent<CanvasGroup>();
+        if (cg == null) cg = obj.AddComponent<CanvasGroup>();
+        return cg;
     }
 
     [ContextMenu("Reset Tutorial")]

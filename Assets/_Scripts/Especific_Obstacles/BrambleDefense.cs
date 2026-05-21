@@ -138,13 +138,13 @@ public class BrambleDefense : BaseDefense
         if (staminaTracked.TryGetValue(climber, out BrambleClimberData data))
         {
             if (!data.wasImmune)
-                climber.SetExternalSpeedMultiplier(0.3f);
+                climber.SetExternalSpeedMultiplier(1f);
 
             data.inside = false;
         }
         else
         {
-            climber.SetExternalSpeedMultiplier(0.3f);
+            climber.SetExternalSpeedMultiplier(1f);
         }
     }
 }

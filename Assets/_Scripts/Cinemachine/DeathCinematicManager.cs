@@ -349,7 +349,10 @@ public class DeathCinematicManager : MonoBehaviour
                         if (config.deathAudioClip != null)
                             Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
                         if (config.deathVFX_Effect != null)
-                            Instantiate(config.deathVFX_Effect, deathPos, deathRot);
+                        {
+                            GameObject vfx = Instantiate(config.deathVFX_Effect, deathPos, deathRot);
+                            Destroy(vfx, 10f);
+                        }
                         animationComplete = true;
                         deathAnim.OnAnimationComplete -= HandleDeathMoment;
                     }
@@ -362,7 +365,10 @@ public class DeathCinematicManager : MonoBehaviour
                     if (config.deathAudioClip != null)
                         Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
                     if (config.deathVFX_Effect != null)
-                        Instantiate(config.deathVFX_Effect, deathPos, deathRot);
+                    {
+                        GameObject Vfx = Instantiate(config.deathVFX_Effect, deathPos, deathRot);
+                        Destroy(Vfx, 10f);
+                    }
                     animationComplete = true;
                 }
             }
@@ -376,7 +382,10 @@ public class DeathCinematicManager : MonoBehaviour
                     if (config.deathAudioClip != null)
                         Temporal_Sound_Music.Instance.Play2DSound(config.deathAudioClip, 1f);
                     if (config.deathVFX_Effect != null)
-                        Instantiate(config.deathVFX_Effect, deathPos, deathRot);
+                    {
+                        GameObject VFX = Instantiate(config.deathVFX_Effect, deathPos, deathRot);
+                        Destroy(VFX, 10f);
+                    }
                 }
 
                 animationComplete = true;

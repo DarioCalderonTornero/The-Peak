@@ -658,7 +658,7 @@ public class ClimberMovement : MonoBehaviour
         if (agent != null) agent.isStopped = true;
 
         GameOverManager.Instance.SetGameOverCamera();
-        ShowFinalStats.Instance.Show();
+        //ShowFinalStats.Instance.Show();
     }
 
     private void HandleClimberTurnEnd()

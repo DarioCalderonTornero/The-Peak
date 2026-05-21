@@ -932,7 +932,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   popScale: 1.15
   shovelPopDuration: 0.15
-  turnsToKill: 1
+  turnsToKill: 3
   centerLerpSpeed: 6
   rescueRadius: 3
   climberLayer:
@@ -976,6 +976,7 @@ MonoBehaviour:
   shrinkDuration: 0.4
   counterAudioClip: {fileID: 8300000, guid: 90e4bfa79882a444b8f8b3bbe536ae00, type: 3}
   counterVFX: {fileID: 1936789083218576998, guid: 92dd21fa462273b4b98643c27f6206bf, type: 3}
+  snowCounterDelay: 1
 --- !u!1001 &1291543825288040690
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -11,6 +11,12 @@ public class SkyController : MonoBehaviour
     public Transform moonQuad;
     public float distance = 450f;
 
+    [Header("Luces Reales (Sombra e Iluminación)")]
+    public Light sunLight;
+    public AnimationCurve sunIntensityCurve;
+    public Light moonLight;
+    public AnimationCurve moonIntensityCurve;
+
     [Header("Control del Tiempo")]
     [Range(0f, 1f)] public float timeOfDay = 0.5f;
     public float dayDurationInSeconds = 120f;
@@ -24,6 +30,24 @@ public class SkyController : MonoBehaviour
     public AnimationCurve cloudDensityCurve; // 0 = muchas nubes, 1 = sin nubes
     public AnimationCurve starsIntensityCurve;
 
+
+    private int sunDirectionId;
+    private int zenithColorId;
+    private int horizonColorId;
+    private int starsIntensityId;
+    private int cloudColorId;
+    private int cloudDensityId;
+    void Start()
+    {
+        // Convertimos los textos en IDs una sola vez al inicio
+        sunDirectionId = Shader.PropertyToID("_SunDirection");
+        zenithColorId = Shader.PropertyToID("_ZenithColor");
+        horizonColorId = Shader.PropertyToID("_HorizonColor");
+        starsIntensityId = Shader.PropertyToID("_StarsIntensity");
+        cloudColorId = Shader.PropertyToID("_CloudColor");
+        cloudDensityId = Shader.PropertyToID("_CloudDensity");
+    }
+
     void Update()
     {
         if (Application.isPlaying)
@@ -32,7 +56,7 @@ public class SkyController : MonoBehaviour
             if (timeOfDay >= 1f) timeOfDay -= 1f;
         }
 
-        // 1. Calcular rotación
+        // 1. Calcular rotación general
         float sunAngle = timeOfDay * 360f - 90f;
         Quaternion rotation = Quaternion.Euler(sunAngle, 170f, 0f);
         transform.rotation = rotation;
@@ -54,17 +78,29 @@ public class SkyController : MonoBehaviour
             moonQuad.forward = moonDirection;
         }
 
-        // 3. Pasar todos los datos al Shader
+        // 3. Actualizar Luces
+        if (sunLight != null)
+        {
+            sunLight.intensity = sunIntensityCurve.Evaluate(timeOfDay);
+        }
+
+        if (moonLight != null)
+        {
+            moonLight.intensity = moonIntensityCurve.Evaluate(timeOfDay);
+        }
+
+        // 4. Pasar todos los datos al Shader usando los IDs optimizados
         if (skyMaterial != null)
         {
-            skyMaterial.SetVector("_SunDirection", -sunDirection);
-            skyMaterial.SetColor("_ZenithColor", zenithGradient.Evaluate(timeOfDay));
-            skyMaterial.SetColor("_HorizonColor", horizonGradient.Evaluate(timeOfDay));
-            skyMaterial.SetFloat("_StarsIntensity", starsIntensityCurve.Evaluate(timeOfDay));
+            skyMaterial.SetVector(sunDirectionId, -sunDirection);
+            skyMaterial.SetColor(zenithColorId, zenithGradient.Evaluate(timeOfDay));
+            skyMaterial.SetColor(horizonColorId, horizonGradient.Evaluate(timeOfDay));
+            skyMaterial.SetFloat(starsIntensityId, starsIntensityCurve.Evaluate(timeOfDay));
 
-            // Nuevas variables de nubes
-            skyMaterial.SetColor("_CloudColor", cloudColorGradient.Evaluate(timeOfDay));
-            skyMaterial.SetFloat("_CloudDensity", cloudDensityCurve.Evaluate(timeOfDay));
+            if (skyMaterial.HasProperty(cloudColorId))
+                skyMaterial.SetColor(cloudColorId, cloudColorGradient.Evaluate(timeOfDay));
+            if (skyMaterial.HasProperty(cloudDensityId))
+                skyMaterial.SetFloat(cloudDensityId, cloudDensityCurve.Evaluate(timeOfDay));
         }
     }
 }

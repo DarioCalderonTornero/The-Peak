@@ -35,7 +35,8 @@ MonoBehaviour:
   counterIcon: {fileID: 1290112092, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterColorSprite: {fileID: -1574946980, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: 1490940440, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
-  explanationVideo: {fileID: 0}
-  functionText: 
-  counterInfo: 
+  explanationVideo: {fileID: 32900000, guid: 9d32cd5b3cec0c3458f3d12e84d2ae75, type: 3}
+  functionText: "El escalador que pase por \xE9l, lo har\xE1 volar por los aires,
+    cooldown de dos turnos."
+  counterInfo: "Lo golpea y desactiva el obst\xE1culo 2 turnos"
   lockedMessage: 

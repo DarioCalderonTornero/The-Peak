@@ -35,7 +35,8 @@ MonoBehaviour:
   counterIcon: {fileID: 964691463, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterColorSprite: {fileID: 1373193114, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: -1783629522, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
-  explanationVideo: {fileID: 0}
-  functionText: 
-  counterInfo: 
+  explanationVideo: {fileID: 32900000, guid: f50c3d9faebec8242acca190b58e25c8, type: 3}
+  functionText: "Al pasar por debajo de ella el escalador morir\xE1 al recibir un
+    rayo"
+  counterInfo: "Disipa la nube el\xE9ctrica soplando el cuerno"
   lockedMessage: 

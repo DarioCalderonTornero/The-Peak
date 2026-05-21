@@ -35,7 +35,8 @@ MonoBehaviour:
   counterIcon: {fileID: 964691463, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   counterColorSprite: {fileID: 1373193114, guid: e650e3019449768458ff8e27eea4e1cb, type: 3}
   deckSlotIcon: {fileID: -2132144692, guid: 85c6a3b7c1e503d45badd68a84531316, type: 3}
-  explanationVideo: {fileID: 0}
-  functionText: 
-  counterInfo: 
+  explanationVideo: {fileID: 32900000, guid: fd0686c0b86995149bf695523e47231c, type: 3}
+  functionText: "Gasta una peque\xF1a cantidad de estamina pero la movilidad se ve
+    muy reducida (al llegar a 20 en el lodo, se mueren)"
+  counterInfo: "Sopla al obst\xE1culo y lo desactiva durante dos turnos"
   lockedMessage: 

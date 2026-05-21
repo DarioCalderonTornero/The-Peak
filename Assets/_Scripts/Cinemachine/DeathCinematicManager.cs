@@ -110,7 +110,7 @@ public class DeathCinematicManager : MonoBehaviour
         if (!useDeathCinematics)
         {
             if (deathInfo.climber != null) Destroy(deathInfo.climber.gameObject);
-            PointsManager.Instance?.AddPoints(5);
+            //PointsManager.Instance?.AddPoints(5);
             return;
         }
 

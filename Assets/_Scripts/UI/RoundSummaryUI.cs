@@ -109,7 +109,7 @@ public class RoundSummaryUI : MonoBehaviour
         if (BalloonEventManager.Instance != null)
             BalloonEventManager.Instance.SpawnPointsFromCenter(totalPoints);
         else
-            PointsManager.Instance?.AddPoints(deaths);
+            //PointsManager.Instance?.AddPoints(deaths);
 
         yield return new WaitForSeconds(visibleDuration);
 

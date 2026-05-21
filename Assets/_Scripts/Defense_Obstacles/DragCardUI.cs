@@ -446,7 +446,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         if (placed == null)
         {
-            if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(cardData.cost);
+            //if (PointsManager.Instance != null) PointsManager.Instance.AddPoints(cardData.cost);
             StartCoroutine(ShakeCard());
             CancelClickPlaceMode();
             return;
@@ -828,7 +828,7 @@ public class DragCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             // Si no tienes AddPoints, quita esto
             if (PointsManager.Instance != null)
-                PointsManager.Instance.AddPoints(cardData.cost);
+                //PointsManager.Instance.AddPoints(cardData.cost);
 
             StartCoroutine(ShakeCard());
             CleanupPreview();

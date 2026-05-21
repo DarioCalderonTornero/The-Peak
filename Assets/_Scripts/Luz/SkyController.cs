@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.VFX;
 
 [ExecuteAlways]
 public class SkyController : MonoBehaviour
@@ -25,6 +26,10 @@ public class SkyController : MonoBehaviour
     public Light moonLight;
     public AnimationCurve moonIntensityCurve;
 
+    [Header("Efectos Visuales (Luciérnagas)")]
+    public VisualEffect[] fireflyEffects; 
+    public AnimationCurve firefliesIntensityCurve; 
+
     [Header("Control del Tiempo")]
     [Range(0f, 1f)] public float timeOfDay = 0.5f;
     public float dayDurationInSeconds = 120f;
@@ -47,6 +52,7 @@ public class SkyController : MonoBehaviour
     private int cloudDensityId;
     private int baseColorId;
     private int alphaId;
+    private int fireflyFloatId;
 
     void Start()
     {
@@ -59,6 +65,8 @@ public class SkyController : MonoBehaviour
         cloudDensityId = Shader.PropertyToID("_CloudDensity");
         baseColorId = Shader.PropertyToID("_BaseColor");
         alphaId = Shader.PropertyToID("_Alpha");
+        fireflyFloatId = Shader.PropertyToID("IntensidadLuciernagas");
+
     }
 
     void Update()
@@ -74,7 +82,7 @@ public class SkyController : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(sunAngle, 170f, 0f);
         transform.rotation = rotation;
 
-        // 2. Posicionar los Quads en extremos opuestos
+        // 2. Posicionar los Quads
         Vector3 sunDirection = transform.forward;
         Vector3 centerPosition = skySphere != null ? skySphere.position : Vector3.zero;
 
@@ -91,7 +99,7 @@ public class SkyController : MonoBehaviour
             moonQuad.forward = moonDirection;
         }
 
-        // 3. Controlar el Fundido de los Sprites enviando el valor de la curva al Float del shader
+        // 3. Fundido de los Sprites
         if (sunMaterial != null)
         {
             sunMaterial.SetColor(baseColorId, sunBaseColor);
@@ -104,14 +112,24 @@ public class SkyController : MonoBehaviour
             moonMaterial.SetFloat(alphaId, moonAlphaCurve.Evaluate(timeOfDay));
         }
 
-        // 4. Actualizar la Intensidad de las Luces Direccionales
+        // 4. Actualizar Intensidad de las Luces
         if (sunLight != null)
             sunLight.intensity = sunIntensityCurve.Evaluate(timeOfDay);
 
         if (moonLight != null)
             moonLight.intensity = moonIntensityCurve.Evaluate(timeOfDay);
 
-        // 5. Pasar todos los datos al Shader del domo de cielo
+        // 5. ACTUALIZAR LUCIÉRNAGAS (VFX GRAPH)
+        float currentFireflyIntensity = firefliesIntensityCurve.Evaluate(timeOfDay);
+        for (int i = 0; i < fireflyEffects.Length; i++)
+        {
+            if (fireflyEffects[i] != null)
+            {
+                fireflyEffects[i].SetFloat(fireflyFloatId, currentFireflyIntensity);
+            }
+        }
+
+        // 6. Pasar datos al Shader del domo de cielo
         if (skyMaterial != null)
         {
             skyMaterial.SetVector(sunDirectionId, -sunDirection);

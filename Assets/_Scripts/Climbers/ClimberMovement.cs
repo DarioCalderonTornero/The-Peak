@@ -392,6 +392,7 @@ public class ClimberMovement : MonoBehaviour
     {
         if (reachedSummit || externallyForcedDone) return;
 
+        // Si acaba de terminar su primer turno de espera, limpiamos isAtCamp
         if (!waitingFirstTurn && isAtCamp && currentNode == null)
             isAtCamp = false;
 
@@ -403,6 +404,7 @@ public class ClimberMovement : MonoBehaviour
     private void PlanNextMove()
     {
         if (campGraph == null) campGraph = FindObjectOfType<CampGraphBuilder>();
+        if (campGraph != null) campGraph.RecalculateObstaclesOnEdges();
 
         if (isGoingToFirstCamp || currentNode == null)
         {

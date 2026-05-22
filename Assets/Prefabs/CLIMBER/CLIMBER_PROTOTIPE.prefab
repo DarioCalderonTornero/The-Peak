@@ -647,7 +647,7 @@ MonoBehaviour:
   mountainLayer:
     serializedVersion: 2
     m_Bits: 64
-  raycastHeight: 8
+  raycastHeight: 2
   floatOffset: 2
   subdivisionsPerSegment: 6
   reachedThreshold: 0.2

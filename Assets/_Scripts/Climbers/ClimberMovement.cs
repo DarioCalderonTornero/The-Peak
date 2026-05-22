@@ -396,7 +396,6 @@ public class ClimberMovement : MonoBehaviour
             isAtCamp = false;
 
         pointsAddedThisTurn = false;
-        PlanNextMove();
         if (isSelected) UpdatePathVisualization();
     }
 
@@ -443,7 +442,7 @@ public class ClimberMovement : MonoBehaviour
 
         if (isInsideTent) ExitTent();
 
-        PlanNextMove();
+
         if (isSelected) UpdatePathVisualization();
 
         if (plannedTargetNode != null)
@@ -593,6 +592,9 @@ public class ClimberMovement : MonoBehaviour
         NotifyStaminaChanged();
 
         if (agent != null) agent.speed = originalSpeed;
+
+       
+        PlanNextMove();
 
         if (campGraph != null && currentNode != null && currentNode.id == campGraph.finalDestinationNodeId)
             HandleReachedGoal();

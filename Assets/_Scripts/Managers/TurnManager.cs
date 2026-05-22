@@ -162,7 +162,11 @@ public class TurnManager : MonoBehaviour
     private void StartPlayerTurn()
     {
         Debug.Log("[TurnManager] StartPlayerTurn llamado");
-        pointsAddedThisTurn = false; 
+
+        var graph = FindFirstObjectByType<CampGraphBuilder>();
+        if (graph != null) graph.RecalculateObstaclesOnEdges();
+
+        pointsAddedThisTurn = false;
         CurrentTurnState = TurnState.PlayerTurn;
         currentTurnNumber++;
         OnTurnNumberChanged?.Invoke(currentTurnNumber);
@@ -171,16 +175,12 @@ public class TurnManager : MonoBehaviour
             playerTurnsUI.currentTurns.text = currentTurnNumber.ToString();
 
         if (CardSlotsUI.Instance != null)
-        {
             CardSlotsUI.Instance.ShowSlotContainer();
-        }
 
         OnPlayerTurnStart?.Invoke();
 
         if (nextTurnButton != null)
-        {
             nextTurnButton.interactable = true;
-        }
     }
 
     public void EndPlayerTurn()

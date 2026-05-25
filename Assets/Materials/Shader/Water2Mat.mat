@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PruebaMat
+  m_Name: Water2Mat
   m_Shader: {fileID: -6465566751694194690, guid: 73f9f807b5b8e844aa7cd483915c9b27, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -76,6 +76,8 @@ Material:
     - _EnableBlendModePreserveSpecularLighting: 0
     - _EnableFogOnTransparent: 0
     - _ExcludeFromTUAndAA: 0
+    - _FadeEnd: 400
+    - _FadeStart: 40
     - _FoamAmount: 0.33
     - _FoamCutout: 0.12
     - _FoamDepth: 8.88
@@ -86,6 +88,7 @@ Material:
     - _MaterialTypeMask: 2
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0
+    - _PosicionCamara: 0
     - _RayTracing: 0
     - _ReceivesSSR: 1
     - _ReceivesSSRTransparent: 0
@@ -133,6 +136,7 @@ Material:
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _FoamColor: {r: 1, g: 1, b: 1, a: 0}
     - _FoamSpeed: {r: 0, g: 0.02, b: 0, a: 0}
+    - _HorizonBlendColor: {r: 0, g: 27.569592, b: 29.857058, a: 1}
     - _MainColor: {r: 0.17101279, g: 0.19977917, b: 0.5943396, a: 0}
     - _ShoreColor: {r: 0, g: 0.71566486, b: 1, a: 0}
   m_BuildTextureStacks: []

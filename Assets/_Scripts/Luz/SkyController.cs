@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.VFX;
+using UnityEngine.Rendering;
 
 [ExecuteAlways]
 public class SkyController : MonoBehaviour
@@ -25,6 +26,10 @@ public class SkyController : MonoBehaviour
     public AnimationCurve sunIntensityCurve;
     public Light moonLight;
     public AnimationCurve moonIntensityCurve;
+
+    [Header("Efecto de Destello (Sol)")]
+    public LensFlareComponentSRP sunLensFlare;
+    public AnimationCurve sunLensFlareIntensityCurve;
 
     [Header("Efectos Visuales (Luciérnagas)")]
     public VisualEffect[] fireflyEffects; 
@@ -118,7 +123,11 @@ public class SkyController : MonoBehaviour
 
         if (moonLight != null)
             moonLight.intensity = moonIntensityCurve.Evaluate(timeOfDay);
-
+       
+        if (sunLensFlare != null)
+        {
+            sunLensFlare.intensity = sunLensFlareIntensityCurve.Evaluate(timeOfDay);
+        }
         // 5. ACTUALIZAR LUCIÉRNAGAS (VFX GRAPH)
         float currentFireflyIntensity = firefliesIntensityCurve.Evaluate(timeOfDay);
         for (int i = 0; i < fireflyEffects.Length; i++)

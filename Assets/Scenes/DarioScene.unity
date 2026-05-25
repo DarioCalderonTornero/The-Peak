@@ -5781,6 +5781,7 @@ MonoBehaviour:
   boolPropertyName: _IsActive
   objectsToToggle: []
   xrayMaterial: {fileID: 2100000, guid: 62003b4dd34b8f349ad434cf050bbd41, type: 2}
+  waterMaterial: {fileID: 2100000, guid: 8d75d906a1f7ffa44ab0adcd634fb9b6, type: 2}
 --- !u!1 &1116203803
 GameObject:
   m_ObjectHideFlags: 0

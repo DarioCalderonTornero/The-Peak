@@ -10,7 +10,6 @@ public class MountainVision : MonoBehaviour
     private MaterialPropertyBlock propBlock;
 
     [Header("Objetos de Visión (Manual)")]
-    [Tooltip("Arrastra aquí los GameObjects que quieras activar/desactivar con la visión")]
     [SerializeField] private List<GameObject> objectsToToggle = new List<GameObject>();
 
     private bool isVisionActive = false;
@@ -18,15 +17,8 @@ public class MountainVision : MonoBehaviour
 
     public Material xrayMaterial;
 
-    void Update()
-    {
-        // Comprobamos que tenemos el material asignado y una cámara principal
-        if (xrayMaterial != null && Camera.main != null)
-        {
-            // Le enviamos la posición de la cámara SOLO a tu material XRayMat
-            xrayMaterial.SetVector("_MainCameraPosition", Camera.main.transform.position);
-        }
-    }
+    public Material waterMaterial;
+    private int waterCameraPosId;
 
     private void Awake()
     {
@@ -38,7 +30,11 @@ public class MountainVision : MonoBehaviour
         {
             Instance = this;
         }
+
         propBlock = new MaterialPropertyBlock();
+
+        // Cacheamos el ID de la posición para el agua
+        waterCameraPosId = Shader.PropertyToID("_PosicionCamara");
     }
 
     private void Start()
@@ -48,6 +44,29 @@ public class MountainVision : MonoBehaviour
         // Inicializar el estado de los objetos según el estado de la visión al empezar
         UpdateManualObjectsState();
     }
+
+    void Update()
+    {
+        Camera mainCam = Camera.main;
+
+        if (mainCam != null)
+        {
+            Vector3 camPosition = mainCam.transform.position;
+
+            // 1. Le enviamos la posición al XRayMat
+            if (xrayMaterial != null)
+            {
+                xrayMaterial.SetVector("_MainCameraPosition", camPosition);
+            }
+
+            // 2. Le enviamos la posición al material del Agua
+            if (waterMaterial != null)
+            {
+                waterMaterial.SetVector(waterCameraPosId, camPosition);
+            }
+        }
+    }
+   
 
     private void InputManager_OnClimberVision(object sender, System.EventArgs e)
     {

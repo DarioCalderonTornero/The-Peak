@@ -24,6 +24,6 @@ MonoBehaviour:
   - card: {fileID: 11400000, guid: 1e5e43a2db2ce844d856910d790669ba, type: 2}
     defaultState: 2
   - card: {fileID: 11400000, guid: 659e4c6cffe64814fa48d561db32f7a6, type: 2}
-    defaultState: 2
+    defaultState: 1
   - card: {fileID: 11400000, guid: 47362b00288441e49a59a6677321d422, type: 2}
     defaultState: 1

@@ -1035,9 +1035,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   popScale: 1.15
   shovelPopDuration: 0.15
-  slowFactor: 0.13
-  staminaMultiplier: 1
-  deathThresholdPercent: 0.15
+  slowFactor: 0.2
+  staminaMultiplier: 3
+  deathThresholdPercent: 0.2
   spawnDuration: 0.25
   idleSinkSpeed: 0.2
   maxVisualSinkDepth: 0.8

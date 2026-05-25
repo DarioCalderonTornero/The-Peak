@@ -932,7 +932,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   popScale: 1.15
   shovelPopDuration: 0.15
-  turnsToKill: 3
+  turnsToKill: 2
   centerLerpSpeed: 6
   rescueRadius: 3
   climberLayer:

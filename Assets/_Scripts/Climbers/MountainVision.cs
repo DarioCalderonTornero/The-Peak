@@ -17,8 +17,6 @@ public class MountainVision : MonoBehaviour
 
     public Material xrayMaterial;
 
-    public Material waterMaterial;
-    private int waterCameraPosId;
 
     private void Awake()
     {
@@ -33,8 +31,6 @@ public class MountainVision : MonoBehaviour
 
         propBlock = new MaterialPropertyBlock();
 
-        // Cacheamos el ID de la posición para el agua
-        waterCameraPosId = Shader.PropertyToID("_PosicionCamara");
     }
 
     private void Start()
@@ -57,12 +53,6 @@ public class MountainVision : MonoBehaviour
             if (xrayMaterial != null)
             {
                 xrayMaterial.SetVector("_MainCameraPosition", camPosition);
-            }
-
-            // 2. Le enviamos la posición al material del Agua
-            if (waterMaterial != null)
-            {
-                waterMaterial.SetVector(waterCameraPosId, camPosition);
             }
         }
     }

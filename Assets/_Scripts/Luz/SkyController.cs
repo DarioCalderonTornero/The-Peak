@@ -49,6 +49,7 @@ public class SkyController : MonoBehaviour
     public AnimationCurve starsIntensityCurve;
 
 
+
     private int sunDirectionId;
     private int zenithColorId;
     private int horizonColorId;
@@ -137,6 +138,8 @@ public class SkyController : MonoBehaviour
                 fireflyEffects[i].SetFloat(fireflyFloatId, currentFireflyIntensity);
             }
         }
+
+       
 
         // 6. Pasar datos al Shader del domo de cielo
         if (skyMaterial != null)

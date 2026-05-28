@@ -33,7 +33,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _CausticTexture:
-        m_Texture: {fileID: 2800000, guid: 7aad8c583ef292e48b06af0d1f2fab97, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4d3d7a4a4fbfcc54db2d1a73d962e4bf, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FoamTexture:
@@ -61,7 +61,7 @@ Material:
     - _BlendMode: 0
     - _CausticCutout: 0.15
     - _CausticSpeed: 0.02
-    - _CausticTiling: 6.63
+    - _CausticTiling: 6.64
     - _ConservativeDepthOffsetEnable: 0
     - _CullMode: 2
     - _CullModeForward: 2
@@ -76,8 +76,8 @@ Material:
     - _EnableBlendModePreserveSpecularLighting: 0
     - _EnableFogOnTransparent: 0
     - _ExcludeFromTUAndAA: 0
-    - _FadeEnd: 400
-    - _FadeStart: 40
+    - _FadeEnd: 1072.1
+    - _FadeStart: 1
     - _FoamAmount: 0.33
     - _FoamCutout: 0.12
     - _FoamDepth: 8.88
@@ -136,8 +136,9 @@ Material:
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _FoamColor: {r: 1, g: 1, b: 1, a: 0}
     - _FoamSpeed: {r: 0, g: 0.02, b: 0, a: 0}
-    - _HorizonBlendColor: {r: 0, g: 27.569592, b: 29.857058, a: 1}
+    - _HorizonBlendColor: {r: 0.0033743256, g: 0.004435102, b: 0.042065598, a: 1}
     - _MainColor: {r: 0.17101279, g: 0.19977917, b: 0.5943396, a: 0}
+    - _PosicionCamara: {r: 0, g: 0, b: 0, a: 0}
     - _ShoreColor: {r: 0, g: 0.71566486, b: 1, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

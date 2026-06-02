@@ -463,7 +463,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -584,7 +584,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -973,7 +973,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -1164,7 +1164,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -1293,7 +1293,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 241634779}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0650131, y: 0.6634775, z: -0.74310267, w: 0.0580468}
+  m_LocalRotation: {x: -0.0027376316, y: 0.99570316, z: 0.03129125, w: 0.08711279}
   m_LocalPosition: {x: 90.942, y: -93.2, z: 539.41}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1858,7 +1858,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  timeOfDay: 0.518
+  timeOfDay: 0.24
   dayDurationInSeconds: 600
   zenithGradient:
     serializedVersion: 2
@@ -2066,7 +2066,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.LensFlareComponentSRP
   m_LensFlareData: {fileID: 11400000, guid: bd7eaf3bd49c39f4cb77bd809459aa72, type: 2}
   version: 0
-  intensity: 5.911167
+  intensity: 0
   maxAttenuationDistance: 100
   maxAttenuationScale: 100
   distanceAttenuationCurve:
@@ -2358,7 +2358,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -2479,7 +2479,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -2792,7 +2792,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -2991,7 +2991,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -3112,7 +3112,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -3449,7 +3449,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -3570,7 +3570,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -4041,7 +4041,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -4162,7 +4162,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -4833,7 +4833,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -5237,7 +5237,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -5358,7 +5358,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -5666,7 +5666,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -5874,7 +5874,7 @@ Light:
   serializedVersion: 13
   m_Type: 1
   m_Color: {r: 0.73903656, g: 0.6650944, b: 1, a: 1}
-  m_Intensity: 0
+  m_Intensity: 0.28359622
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -6144,7 +6144,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -6269,8 +6269,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1697527328}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.05804683, y: 0.7431026, z: 0.66347754, w: 0.06501313}
-  m_LocalPosition: {x: 237.78534, y: -618.8871, z: 432.14075}
+  m_LocalRotation: {x: 0.031291246, y: -0.08711278, z: 0.0027376306, w: 0.99570316}
+  m_LocalPosition: {x: 361.06964, y: 56.259438, z: -267.03876}
   m_LocalScale: {x: 151.5338, y: 151.5338, z: 151.5338}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -6645,7 +6645,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -6766,7 +6766,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -7077,7 +7077,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 0
+      - m_Value: 0.2342391
         m_Name: IntensidadLuciernagas
         m_Overridden: 1
     m_Vector2f:
@@ -7354,8 +7354,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2062150064}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.66347754, y: -0.06501313, z: 0.05804683, w: 0.7431026}
-  m_LocalPosition: {x: 262.83466, y: 651.147, z: 290.07922}
+  m_LocalRotation: {x: -0.0027376306, y: 0.99570316, z: 0.031291246, w: 0.08711278}
+  m_LocalPosition: {x: 139.55038, y: -23.99945, z: 989.2588}
   m_LocalScale: {x: 151.53375, y: 151.53375, z: 151.53375}
   m_ConstrainProportionsScale: 0
   m_Children: []

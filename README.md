@@ -8,6 +8,12 @@
 ![Award](https://img.shields.io/badge/🏆-Best%20Game%20Award-gold)
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
+> **About this repository.** This is a public copy of the project, published with the team's permission so the code can be reviewed. The original development took place in a private repository shared by the team; the full commit history is preserved here.
+>
+> The paid Asset Store package *AllIn1 Sprite Shader* has been removed and is **not included**, so some materials will show missing shader references if the project is opened in Unity.
+
+🌐 [Project page](https://dariogamedev.com/the-peak.html) · 🎬 [Trailer](https://www.youtube.com/watch?v=yPSrY-lxvu4)
+
 ---
 
 ## 🎮 Overview
@@ -22,14 +28,18 @@ The game was developed as a university capstone project and won the **Best Game 
 
 Developed by a team of **6**:
 
-| Role | Name |
-|------|------|
-| Gameplay Programmer | Darío Calderón Tornero |
-| Gameplay Programmer | [Teammate] |
-| Gameplay Programmer | [Teammate] |
-| VFX Artist | [Teammate] |
-| 3D Artist | [Teammate] |
-| Game Designer | [Teammate] |
+3 gameplay programmers, 1 VFX artist, 1 3D artist and 1 game designer.
+
+**My role — Gameplay Programmer** ([Darío Calderón Tornero](https://github.com/DarioCalderonTornero)):
+- Death system: hit detection, death types, cinematic camera and per-death VFX
+- Vignette system: dynamic HUD of active climbers, reordered in real time by proximity to the summit
+- Counter system: climber reactions to each obstacle type
+- Game managers: `GameManager`, `TurnManager` and `SpawnManager`
+- Full Cinemachine camera setup: panning, rotation, zoom and cinematic framing
+- Audio implementation and event-driven sound
+- Shared work on the grid, pathfinding and the scoring and progression systems
+
+The rest of the team is credited in the commit history.
 
 ---
 
@@ -124,10 +134,16 @@ Developed by a team of **6**:
 
 ---
 
-## 📸 Screenshots
+## 📸 Media
 
-<!-- Add screenshots or GIFs here -->
-> *Coming soon*
+🎬 **[Watch the trailer](https://www.youtube.com/watch?v=yPSrY-lxvu4)** — gameplay, card system and cinematic deaths.
+
+---
+
+## 👤 Author
+
+**Darío Calderón Tornero** — Gameplay Programmer (Unity & Unreal Engine 5)
+[Portfolio](https://dariogamedev.com) · [LinkedIn](https://www.linkedin.com/in/dariocalderontornero/) · [GitHub](https://github.com/DarioCalderonTornero)
 
 ---
 

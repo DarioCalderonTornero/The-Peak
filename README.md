@@ -1,4 +1,4 @@
-# 🏔️ The Peak — Don't Climb It
+# 🏔️ The Peak, Don't Climb It
 
 > A turn-based tower defense game where players must stop climbers from reaching the summit of a mountain using a card-based obstacle system. Winner of the **Best Game Award** at the university end-of-year showcase.
 
@@ -18,7 +18,7 @@
 
 ## 🎮 Overview
 
-**The Peak — Don't Climb It** is a turn-based tower defense game developed in Unity. Players must prevent a group of climbers from reaching the top of a mountain by strategically placing obstacles through a card-based system inspired by Clash Royale. Each climber has unique behaviors and counters to specific obstacles, creating a layer of strategic depth on top of the core tower defense loop.
+**The Peak, Don't Climb It** is a turn-based tower defense game developed in Unity. Players must prevent a group of climbers from reaching the top of a mountain by strategically placing obstacles through a card-based system inspired by Clash Royale. Each climber has unique behaviors and counters to specific obstacles, creating a layer of strategic depth on top of the core tower defense loop.
 
 The game was developed as a university capstone project and won the **Best Game Award** at the end-of-year showcase.
 
@@ -30,7 +30,7 @@ Developed by a team of **6**:
 
 3 gameplay programmers, 1 VFX artist, 1 3D artist and 1 game designer.
 
-**My role — Gameplay Programmer** ([Darío Calderón Tornero](https://github.com/DarioCalderonTornero)):
+**My role, Gameplay Programmer** ([Darío Calderón Tornero](https://github.com/DarioCalderonTornero)):
 - Death system: hit detection, death types, cinematic camera and per-death VFX
 - Vignette system: dynamic HUD of active climbers, reordered in real time by proximity to the summit
 - Counter system: climber reactions to each obstacle type
@@ -45,7 +45,7 @@ The rest of the team is credited in the commit history.
 
 ## 🏆 Awards
 
-- 🥇 **Best Game Award** — University End-of-Year Showcase
+- 🥇 **Best Game Award**, University End-of-Year Showcase
 
 ---
 
@@ -53,7 +53,7 @@ The rest of the team is credited in the commit history.
 
 - Place obstacle cards on a mountain grid to stop climbers before they reach the summit
 - Each turn, climbers advance along dynamically calculated paths
-- Different climber types counter specific obstacles — strategy is key
+- Different climber types counter specific obstacles, so strategy is key
 - Cinematic death sequences play when a climber is eliminated
 - Mountain difficulty scales as the game progresses through levels
 
@@ -80,9 +80,9 @@ The rest of the team is credited in the commit history.
 - Some climbers blow air, swing a pickaxe, or perform unique reactions depending on the obstacle
 
 ### 🧠 Manager Architecture
-- **GameManager** — Global game state and flow control
-- **TurnManager** — Turn sequencing, player and climber phases, path recalculation triggered once per turn
-- **SpawnManager** — Climber spawning logic tied to mountain level progression
+- **GameManager.** Global game state and flow control
+- **TurnManager.** Turn sequencing, player and climber phases, path recalculation triggered once per turn
+- **SpawnManager.** Climber spawning logic tied to mountain level progression
 
 ### 🗺️ Grid & Pathfinding
 - Tile-based mountain grid for obstacle placement
@@ -111,11 +111,11 @@ The rest of the team is credited in the commit history.
 
 ## 🧠 Technical Highlights
 
-- **Decoupled death callbacks** — `OnAnimationComplete` and `OnReadyForExplosion` separated to allow independent sound/VFX timing control without modifying central managers
-- **Shared state dictionaries** — All climbers registered immediately on spawn to prevent stuck states; all freed on `OnDestroy`
-- **Path recalculation once per turn** — Triggered in `TurnManager.StartPlayerTurn` rather than per-climber to avoid direction-change artifacts
-- **Vignette urgency sorting** — Dynamic reordering based on real-time climber position on the mountain
-- **Lambda closure safety** — Local references stored before nulling fields to prevent `MissingReferenceException` in coroutines
+- **Decoupled death callbacks.** `OnAnimationComplete` and `OnReadyForExplosion` separated to allow independent sound/VFX timing control without modifying central managers
+- **Shared state dictionaries.** All climbers registered immediately on spawn to prevent stuck states; all freed on `OnDestroy`
+- **Path recalculation once per turn.** Triggered in `TurnManager.StartPlayerTurn` rather than per-climber to avoid direction-change artifacts
+- **Vignette urgency sorting.** Dynamic reordering based on real-time climber position on the mountain
+- **Lambda closure safety.** Local references stored before nulling fields to prevent `MissingReferenceException` in coroutines
 
 ---
 
@@ -136,13 +136,13 @@ The rest of the team is credited in the commit history.
 
 ## 📸 Media
 
-🎬 **[Watch the trailer](https://www.youtube.com/watch?v=yPSrY-lxvu4)** — gameplay, card system and cinematic deaths.
+🎬 **[Watch the trailer](https://www.youtube.com/watch?v=yPSrY-lxvu4).** Gameplay, card system and cinematic deaths.
 
 ---
 
 ## 👤 Author
 
-**Darío Calderón Tornero** — Gameplay Programmer (Unity & Unreal Engine 5)
+**Darío Calderón Tornero**, Gameplay Programmer (Unity & Unreal Engine 5)
 [Portfolio](https://dariogamedev.com) · [LinkedIn](https://www.linkedin.com/in/dariocalderontornero/) · [GitHub](https://github.com/DarioCalderonTornero)
 
 ---
